@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Production
+dist/
+build/
+.next/
+out/
+
+# Environnement
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Cache
+.npm
+.eslintcache
+.stylelintcache
+.prettiercache
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Couverture de tests
+coverage/
+.nyc_output/
+
+# IDE et éditeurs
+/.idea
+/.vscode
+*.swp
+*.swo
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma
+/prisma/*.db
+/prisma/migrations/*_init/
+
+# Système d'exploitation
+Thumbs.db
+desktop.ini
