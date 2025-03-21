@@ -1,0 +1,247 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(uuid())
+  email        String      @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  profileType  ProfileType
+  preferences  Json // Stocke les préférences en JSON (restrictions alimentaires, allergies, etc.)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  inventory     InventoryItem[]
+  shoppingLists ShoppingList[]
+  budgets       Budget[]
+  expenses      Expense[]
+  notifications Notification[]
+}
+
+enum ProfileType {
+  FAMILY
+  STUDENT
+  SINGLE
+}
+
+model Product {
+  id         String      @id @default(uuid())
+  barcode    String      @unique
+  name       String
+  brand      String
+  category   Category    @relation(fields: [categoryId], references: [id])
+  categoryId String
+  nutriscore NutriScore?
+  ecoScore   EcoScore?
+  novaScore  NovaScore?
+  unitType   UnitType
+  nutrients  Json? // Informations nutritionnelles stockées en JSON
+  imageUrl   String?
+  externalId String? // ID de référence dans OpenFoodFacts
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  inventoryItems    InventoryItem[]
+  shoppingItems     ShoppingItem[]
+  recipeIngredients RecipeIngredient[]
+}
+
+enum NutriScore {
+  A
+  B
+  C
+  D
+  E
+}
+
+enum NovaScore {
+  A
+  B
+  C
+  D
+}
+
+enum EcoScore {
+  A
+  B
+  C
+  D
+  E
+}
+
+enum UnitType {
+  KG
+  G
+  L
+  ML
+  UNIT
+}
+
+model Category {
+  id       String     @id @default(uuid())
+  name     String
+  parentId String?
+  parent   Category?  @relation("CategoryToSubcategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToSubcategory")
+  icon     String?
+
+  products Product[]
+}
+
+model InventoryItem {
+  id              String    @id @default(uuid())
+  user            User      @relation(fields: [userId], references: [id])
+  userId          String
+  product         Product   @relation(fields: [productId], references: [id])
+  productId       String
+  quantity        Float
+  expiryDate      DateTime?
+  purchaseDate    DateTime
+  purchasePrice   Float?
+  storageLocation String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([productId])
+  @@index([expiryDate])
+}
+
+model ShoppingList {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ShoppingItem[]
+
+  @@index([userId])
+}
+
+model ShoppingItem {
+  id             String       @id @default(uuid())
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id])
+  shoppingListId String
+  product        Product      @relation(fields: [productId], references: [id])
+  productId      String
+  quantity       Float
+  isPurchased    Boolean      @default(false)
+  estimatedPrice Float?
+  actualPrice    Float?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([shoppingListId])
+  @@index([productId])
+}
+
+model Recipe {
+  id              String           @id @default(uuid())
+  name            String
+  description     String?
+  instructions    String
+  preparationTime Int? // en minutes
+  cookingTime     Int? // en minutes
+  servings        Int
+  difficulty      RecipeDifficulty
+  imageUrl        String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  ingredients RecipeIngredient[]
+}
+
+enum RecipeDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+model RecipeIngredient {
+  id        String  @id @default(uuid())
+  recipe    Recipe  @relation(fields: [recipeId], references: [id])
+  recipeId  String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Float
+  unit      String
+  notes     String?
+
+  @@index([recipeId])
+  @@index([productId])
+}
+
+model Budget {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  amount      Float
+  periodStart DateTime
+  periodEnd   DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  expenses Expense[]
+
+  @@index([userId])
+  @@index([periodStart, periodEnd])
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  budget    Budget   @relation(fields: [budgetId], references: [id])
+  budgetId  String
+  amount    Float
+  date      DateTime
+  source    String?
+  receiptId String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([budgetId])
+  @@index([date])
+}
+
+model Notification {
+  id            String           @id @default(uuid())
+  user          User             @relation(fields: [userId], references: [id])
+  userId        String
+  type          NotificationType
+  title         String
+  message       String
+  isRead        Boolean          @default(false)
+  referenceId   String?
+  referenceType String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+}
+
+enum NotificationType {
+  EXPIRY
+  BUDGET
+  SYSTEM
+}
