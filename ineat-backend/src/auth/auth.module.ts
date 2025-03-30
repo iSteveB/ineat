@@ -2,9 +2,6 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-
-// Modules
 import { PrismaModule } from '../prisma/prisma.module';
 
 // Stratégies
@@ -19,14 +16,13 @@ import { OAuthController } from './controllers/oauth.controller';
 // Services
 import { AuthService } from './auth.service';
 
-// Gardes et intercepteurs
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
-
 @Module({
   imports: [
     PrismaModule,
-    PassportModule,
+    PassportModule.register({
+      session: false,
+      defaultStrategy: 'jwt',
+    }),
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -46,18 +42,6 @@ import { CurrentUserInterceptor } from './interceptors/current-user.interceptor'
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
-
-    // Gardes globaux
-    {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-
-    // Intercepteurs globaux
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: CurrentUserInterceptor,
-    },
   ],
   exports: [AuthService],
 })

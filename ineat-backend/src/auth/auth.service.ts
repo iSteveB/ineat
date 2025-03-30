@@ -5,19 +5,33 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, SafeUserDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
+import { Response } from 'express';
+import { User } from '@prisma/client';
+
+interface GoogleUserData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo?: string;
+}
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   // Valider un utilisateur pour l'authentification locale
-  async validateUser(email: string, password: string): Promise<any> {
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<SafeUserDto | null> {
     const user = await this.prisma.user.findUnique({
       where: { email },
     });
@@ -25,16 +39,30 @@ export class AuthService {
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash, ...result } = user;
-      return result;
+      return result as SafeUserDto;
     }
 
     return null;
   }
 
-  // Générer un JWT
-  async login(user: any) {
+  async setCookies(user: SafeUserDto, response: Response) {
+    // Générer le JWT token
     const payload = { email: user.email, sub: user.id };
+    const accessToken = this.jwtService.sign(payload);
 
+    // Configurer les options du cookie
+    const isProd = this.configService.get('NODE_ENV') === 'production';
+
+    // Définir le cookie HTTP-only
+    response.cookie('auth_token', accessToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: isProd ? 'strict' : 'lax', // Protection CSRF
+      maxAge: 24 * 60 * 60 * 1000, // 24 heures (ou utiliser la valeur de JWT_EXPIRES_IN)
+      path: '/', // Disponible sur toutes les routes
+    });
+
+    // Retourner les informations utilisateur pour la réponse API
     return {
       user: {
         id: user.id,
@@ -43,12 +71,33 @@ export class AuthService {
         lastName: user.lastName,
         profileType: user.profileType,
       },
-      accessToken: this.jwtService.sign(payload),
+      // Inclus quand même le token dans la réponse pour les clients mobiles
+      accessToken,
+    };
+  }
+
+  // Méthode de connexion
+  async login(user: User, response: Response) {
+    return this.setCookies(user as SafeUserDto, response);
+  }
+
+  async logout(response: Response) {
+    // Effacer le cookie en définissant une date d'expiration dans le passé
+    response.cookie('auth_token', '', {
+      httpOnly: true,
+      secure: true,
+      expires: new Date(0), // Date dans le passé
+      path: '/',
+    });
+
+    return {
+      success: true,
+      message: 'Déconnexion réussie',
     };
   }
 
   // Enregistrer un nouvel utilisateur
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto, response: Response) {
     // Vérifier si l'email existe déjà
     const existingUser = await this.prisma.user.findUnique({
       where: { email: registerDto.email },
@@ -78,17 +127,11 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _, ...user } = newUser;
 
-    // Générer un JWT
-    const payload = { email: user.email, sub: user.id };
-
-    return {
-      user,
-      accessToken: this.jwtService.sign(payload),
-    };
+    return this.setCookies(user as SafeUserDto, response);
   }
 
   // Trouver ou créer un utilisateur avec Google OAuth
-  async findOrCreateGoogleUser(googleUser: any) {
+  async findOrCreateGoogleUser(googleUser: GoogleUserData, response: Response) {
     const { email, firstName, lastName, photo } = googleUser;
 
     // Chercher l'utilisateur par email
@@ -117,7 +160,7 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...result } = user;
 
-    return result;
+    return this.setCookies(result as SafeUserDto, response);
   }
 
   // Récupérer le profil de l'utilisateur courant

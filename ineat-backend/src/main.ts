@@ -2,25 +2,42 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import cookieParser from 'cookie-parser';
-import compression from 'compression';
+import * as cookieParser from 'cookie-parser';
+import * as compression from 'compression';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
+import { homedir } from 'os';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // Options HTTPS
+  const httpsOptions = {
+    key: fs.readFileSync(path.resolve(homedir(), '.cert/localhost+2-key.pem')),
+    cert: fs.readFileSync(path.resolve(homedir(), '.cert/localhost+2.pem')),
+  };
+
+  // Création de l'application
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+  });
   const configService = app.get(ConfigService);
 
-  // Configuration globale
-  app.enableCors({
-    origin: configService.get<string>('CLIENT_URL'),
-    credentials: true,
-  });
+  // Récupérer la clé secrète pour signer les cookies
+  const cookieSecret =
+    configService.get<string>('COOKIE_SECRET') ||
+    configService.get<string>('JWT_SECRET');
 
   // Middlewares de sécurité et performance
   app.use(helmet());
   app.use(compression());
-  app.use(cookieParser());
+  app.use(cookieParser(cookieSecret));
+
+  // Configuration CORS pour permettre les cookies dans les requêtes cross-origin
+  app.enableCors({
+    origin: configService.get<string>('CLIENT_URL'),
+    credentials: true, // IMPORTANT: Permet l'envoi de cookies dans les requêtes CORS
+  });
 
   // Préfixe global pour les API
   app.setGlobalPrefix('api');
@@ -38,7 +55,7 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
 
-  console.log(`Application démarrée sur: http://localhost:${port}`);
+  console.log(`Application démarrée sur: ${await app.getUrl()}`);
   console.log(`Mode: ${configService.get<string>('NODE_ENV')}`);
 }
 

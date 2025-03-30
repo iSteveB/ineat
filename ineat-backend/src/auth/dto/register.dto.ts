@@ -38,3 +38,14 @@ export const validateRegisterDto = (data: unknown): RegisterDto => {
     throw error;
   }
 };
+
+export const SafeUserSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  firstName: z.string(),
+  lastName: z.string(),
+  profileType: z.enum(['FAMILY', 'STUDENT', 'SINGLE']),
+  preferences: z.object({}).passthrough().optional(),
+});
+
+export type SafeUserDto = z.infer<typeof SafeUserSchema>;

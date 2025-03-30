@@ -1,8 +1,18 @@
+// src/auth/strategies/google.strategy.ts
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../auth.service';
+
+// Interface pour les données utilisateur reçues de Google
+interface GoogleUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  photo: string;
+  accessToken: string;
+}
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -11,9 +21,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     private authService: AuthService,
   ) {
     super({
-      clientID: configService.get('GOOGLE_CLIENT_ID'),
-      clientSecret: configService.get('GOOGLE_CLIENT_SECRET'),
-      callbackURL: configService.get('GOOGLE_CALLBACK_URL'),
+      clientID: configService.get<string>('GOOGLE_CLIENT_ID'),
+      clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET'),
+      callbackURL: configService.get<string>('GOOGLE_CALLBACK_URL'),
       scope: ['email', 'profile'],
     });
   }
@@ -23,20 +33,35 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     refreshToken: string,
     profile: any,
     done: VerifyCallback,
-  ): Promise<any> {
-    const { name, emails, photos } = profile;
+  ): Promise<void> {
+    try {
+      // Extraire les informations pertinentes du profil Google
+      const { name, emails, photos } = profile;
 
-    const user = {
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      photo: photos[0].value,
-      accessToken,
-    };
+      if (!emails || emails.length === 0 || !emails[0].value) {
+        return done(
+          new Error('Aucune adresse email trouvée dans le profil Google'),
+          null,
+        );
+      }
 
-    // Créer ou récupérer l'utilisateur dans la base de données
-    const userFromDb = await this.authService.findOrCreateGoogleUser(user);
+      // Construire l'objet d'information utilisateur
+      const googleUser: GoogleUser = {
+        email: emails[0].value,
+        firstName: name?.givenName || '',
+        lastName: name?.familyName || '',
+        photo: photos && photos.length > 0 ? photos[0].value : '',
+        accessToken,
+      };
 
-    done(null, userFromDb);
+      // La méthode validate ne crée pas de cookies directement ici,
+      // car elle n'a pas accès à l'objet response.
+      // On passe simplement les informations utilisateur au contrôleur OAuth
+      // qui s'occupera de la création des cookies.
+
+      done(null, googleUser);
+    } catch (error) {
+      done(error, null);
+    }
   }
 }
