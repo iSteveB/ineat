@@ -21,6 +21,7 @@ import { Route as ErrorErrorImport } from './routes/_error/error'
 import { Route as AuthRegisterImport } from './routes/_auth/register'
 import { Route as AuthLoginImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordImport } from './routes/_auth/forgot-password'
+import { Route as AuthCallbackImport } from './routes/_auth/callback'
 import { Route as AppRecipesIndexImport } from './routes/app/recipes/index'
 import { Route as AppProfileIndexImport } from './routes/app/profile/index'
 import { Route as AppNotificationsIndexImport } from './routes/app/notifications/index'
@@ -92,6 +93,12 @@ const AuthLoginRoute = AuthLoginImport.update({
 const AuthForgotPasswordRoute = AuthForgotPasswordImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => AuthRouteRoute,
+} as any)
+
+const AuthCallbackRoute = AuthCallbackImport.update({
+  id: '/callback',
+  path: '/callback',
   getParentRoute: () => AuthRouteRoute,
 } as any)
 
@@ -204,6 +211,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRoute
+    }
+    '/_auth/callback': {
+      id: '/_auth/callback'
+      path: '/callback'
+      fullPath: '/callback'
+      preLoaderRoute: typeof AuthCallbackImport
+      parentRoute: typeof AuthRouteImport
     }
     '/_auth/forgot-password': {
       id: '/_auth/forgot-password'
@@ -344,12 +358,14 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface AuthRouteRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
 }
 
 const AuthRouteRouteChildren: AuthRouteRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
@@ -415,6 +431,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof ErrorRouteRouteWithChildren
   '/app': typeof AppRouteRouteWithChildren
+  '/callback': typeof AuthCallbackRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -439,6 +456,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof ErrorRouteRouteWithChildren
+  '/callback': typeof AuthCallbackRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -466,6 +484,7 @@ export interface FileRoutesById {
   '/_auth': typeof AuthRouteRouteWithChildren
   '/_error': typeof ErrorRouteRouteWithChildren
   '/app': typeof AppRouteRouteWithChildren
+  '/_auth/callback': typeof AuthCallbackRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
@@ -493,6 +512,7 @@ export interface FileRouteTypes {
     | '/'
     | ''
     | '/app'
+    | '/callback'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -516,6 +536,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | ''
+    | '/callback'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -541,6 +562,7 @@ export interface FileRouteTypes {
     | '/_auth'
     | '/_error'
     | '/app'
+    | '/_auth/callback'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
@@ -599,6 +621,7 @@ export const routeTree = rootRoute
     "/_auth": {
       "filePath": "_auth/route.tsx",
       "children": [
+        "/_auth/callback",
         "/_auth/forgot-password",
         "/_auth/login",
         "/_auth/register"
@@ -629,6 +652,10 @@ export const routeTree = rootRoute
         "/app/profile/",
         "/app/recipes/"
       ]
+    },
+    "/_auth/callback": {
+      "filePath": "_auth/callback.tsx",
+      "parent": "/_auth"
     },
     "/_auth/forgot-password": {
       "filePath": "_auth/forgot-password.tsx",

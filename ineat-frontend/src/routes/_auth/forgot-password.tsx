@@ -1,9 +1,21 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import ForgotPasswordForm from '../../components/auth/ForgotPasswordForm';
+import { isAuthenticated } from '@/utils/auth';
 
 export const Route = createFileRoute('/_auth/forgot-password')({
-  component: RouteComponent,
-})
+  beforeLoad: async () => {
+    // Vérifier l'authentification la fonction utilitaire
+    const userIsAuthenticated = await isAuthenticated();
+    
+    if (userIsAuthenticated) {
+      throw redirect({ to: '/app' });
+    }
+    
+    return null;
+  },
+  component: ForgotPasswordPage,
+});
 
-function RouteComponent() {
-  return <div>Hello "/_auth/forgot-password"!</div>
+export default function ForgotPasswordPage() {
+  return <ForgotPasswordForm />;
 }

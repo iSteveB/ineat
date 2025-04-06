@@ -1,17 +1,19 @@
-// src/routes/(auth)/_auth.tsx
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_auth')({
   component: AuthLayout,
-})
+});
 
-function AuthLayout() {
+export default function AuthLayout() {
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold text-center mb-6">InEat</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-primary">InEat</h1>
+          <p className="text-gray-600">Gérez votre inventaire alimentaire efficacement</p>
+        </div>
         <Outlet />
       </div>
     </div>
-  )
-}
+  );
+};
