@@ -1,13 +1,25 @@
 import '@testing-library/jest-dom';
-import { vi, beforeAll, afterEach } from 'vitest';
+import { vi, beforeAll, afterEach, afterAll } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import { server } from './mocks/server';
 
-// Configuration pour supprimer les warnings de console pendant les tests
+// Démarrer le serveur MSW avant tous les tests
 beforeAll(() => {
-	console.error = vi.fn();
-	console.warn = vi.fn();
+  server.listen();
+  
+  // Configuration pour supprimer les warnings de console pendant les tests
+  console.error = vi.fn();
+  console.warn = vi.fn();
 });
 
-// Nettoyage après chaque test
+// Reset les handlers après chaque test pour isoler les tests
 afterEach(() => {
-	vi.clearAllMocks();
+  cleanup();
+  server.resetHandlers();
+  vi.clearAllMocks();
+});
+
+// Fermer le serveur après tous les tests
+afterAll(() => {
+  server.close();
 });
