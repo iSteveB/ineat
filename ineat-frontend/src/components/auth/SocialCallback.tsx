@@ -46,9 +46,11 @@ const SocialCallback = () => {
 
 	if (isProcessing) {
 		return (
-			<div className='flex flex-col items-center justify-center min-h-screen'>
-				<Spinner size='lg' />
-				<p className='mt-4 text-gray-600'>
+			<div
+				className='flex flex-col items-center justify-center min-h-screen'
+				data-testid='loading-container'>
+				<Spinner size='lg' data-testid='loading-spinner' />
+				<p className='mt-4 text-gray-600' data-testid='loading-text'>
 					Finalisation de la connexion...
 				</p>
 			</div>
@@ -57,13 +59,21 @@ const SocialCallback = () => {
 
 	if (error) {
 		return (
-			<div className='flex flex-col items-center justify-center min-h-screen p-4'>
-				<Alert variant='destructive' className='mb-4 max-w-md'>
-					<AlertDescription>{error}</AlertDescription>
+			<div
+				className='flex flex-col items-center justify-center min-h-screen p-4'
+				data-testid='error-container'>
+				<Alert
+					variant='destructive'
+					className='mb-4 max-w-md'
+					data-testid='error-alert'>
+					<AlertDescription data-testid='error-message'>
+						{error}
+					</AlertDescription>
 				</Alert>
 				<button
 					className='text-primary hover:underline'
-					onClick={() => navigate({ to: '/login' })}>
+					onClick={() => navigate({ to: '/login' })}
+					data-testid='login-button'>
 					Retour à la page de connexion
 				</button>
 			</div>

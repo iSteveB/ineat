@@ -88,10 +88,15 @@ const LoginForm = () => {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form onSubmit={handleSubmit} className='space-y-4'>
+				<form
+					onSubmit={handleSubmit}
+					className='space-y-4'
+					data-testid='login-form'>
 					{/* Message d'expiration de session */}
 					{sessionExpired && (
-						<Alert className='mb-4'>
+						<Alert
+							className='mb-4'
+							data-testid='session-expired-alert'>
 							<AlertDescription>
 								Votre session a expiré. Veuillez vous
 								reconnecter.
@@ -101,11 +106,15 @@ const LoginForm = () => {
 
 					{/* Affichage des erreurs */}
 					{(formError || error) && (
-						<Alert variant='destructive'>
-							<AlertDescription>
-								{formError || error}
-							</AlertDescription>
-						</Alert>
+						<div data-testid='error-container'>
+							<Alert
+								variant='destructive'
+								data-testid='error-alert'>
+								<AlertDescription data-testid='error-message'>
+									{formError || error}
+								</AlertDescription>
+							</Alert>
+						</div>
 					)}
 
 					{/* Champ email */}
@@ -123,6 +132,7 @@ const LoginForm = () => {
 							}}
 							required
 							disabled={isLoading}
+							data-testid='email-input'
 						/>
 					</div>
 
@@ -137,7 +147,8 @@ const LoginForm = () => {
 									navigate({ to: '/forgot-password' })
 								}
 								type='button'
-								disabled={isLoading}>
+								disabled={isLoading}
+								data-testid='forgot-password-button'>
 								Mot de passe oublié ?
 							</Button>
 						</div>
@@ -153,6 +164,7 @@ const LoginForm = () => {
 							}}
 							required
 							disabled={isLoading}
+							data-testid='password-input'
 						/>
 					</div>
 
@@ -160,7 +172,8 @@ const LoginForm = () => {
 					<Button
 						type='submit'
 						className='w-full'
-						disabled={isLoading}>
+						disabled={isLoading}
+						data-testid='submit-button'>
 						{isLoading ? 'Connexion en cours...' : 'Se connecter'}
 					</Button>
 
@@ -178,7 +191,8 @@ const LoginForm = () => {
 						variant='outline'
 						className='w-full'
 						onClick={() => loginWithGoogle()}
-						disabled={isLoading}>
+						disabled={isLoading}
+						data-testid='google-button'>
 						<svg
 							className='mr-2 h-4 w-4'
 							aria-hidden='true'
@@ -203,13 +217,14 @@ const LoginForm = () => {
 						variant='link'
 						className='p-0 h-auto'
 						onClick={() => navigate({ to: '/register' })}
-						disabled={isLoading}>
+						disabled={isLoading}
+						data-testid='register-button'>
 						S'inscrire
 					</Button>
 				</p>
 			</CardFooter>
 		</Card>
 	);
-}
+};
 
 export default LoginForm;

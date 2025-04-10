@@ -92,7 +92,7 @@ const ForgotPasswordForm = () => {
 			</CardHeader>
 			<CardContent>
 				{isSuccess ? (
-					<Alert className='mb-4'>
+					<Alert className='mb-4' data-testid='success-alert'>
 						<AlertDescription>
 							Si un compte existe avec cette adresse email, vous
 							recevrez un email contenant les instructions pour
@@ -100,12 +100,21 @@ const ForgotPasswordForm = () => {
 						</AlertDescription>
 					</Alert>
 				) : (
-					<form onSubmit={handleSubmit} className='space-y-4'>
+					<form
+						onSubmit={handleSubmit}
+						className='space-y-4'
+						data-testid='reset-form'>
 						{/* Affichage des erreurs */}
 						{formError && (
-							<Alert variant='destructive'>
-								<AlertDescription>{formError}</AlertDescription>
-							</Alert>
+							<div data-testid='error-container'>
+								<Alert
+									variant='destructive'
+									data-testid='error-alert'>
+									<AlertDescription data-testid='error-message'>
+										{formError}
+									</AlertDescription>
+								</Alert>
+							</div>
 						)}
 
 						{/* Champ email */}
@@ -122,6 +131,7 @@ const ForgotPasswordForm = () => {
 								}}
 								required
 								disabled={isLoading}
+								data-testid='email-input'
 							/>
 						</div>
 
@@ -129,7 +139,8 @@ const ForgotPasswordForm = () => {
 						<Button
 							type='submit'
 							className='w-full'
-							disabled={isLoading}>
+							disabled={isLoading}
+							data-testid='submit-button'>
 							{isLoading
 								? 'Envoi en cours...'
 								: 'Envoyer le lien de réinitialisation'}
@@ -143,7 +154,8 @@ const ForgotPasswordForm = () => {
 						variant='link'
 						className='p-0 h-auto'
 						onClick={() => navigate({ to: '/login' })}
-						disabled={isLoading}>
+						disabled={isLoading}
+						data-testid='back-to-login'>
 						Retour à la connexion
 					</Button>
 				</p>

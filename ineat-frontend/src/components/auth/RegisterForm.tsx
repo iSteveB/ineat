@@ -102,7 +102,10 @@ const RegisterForm = () => {
 	// Rendu du formulaire d'inscription
 	const renderEmailForm = () => {
 		return (
-			<form onSubmit={handleSubmit} className='space-y-4'>
+			<form
+				onSubmit={handleSubmit}
+				className='space-y-4'
+				data-testid='register-email-form'>
 				{/* Champs prénom et nom */}
 				<div className='grid grid-cols-2 gap-4'>
 					<div className='space-y-2'>
@@ -116,6 +119,7 @@ const RegisterForm = () => {
 							autoComplete='given-name'
 							required
 							disabled={isLoading}
+							data-testid='firstName-input'
 						/>
 					</div>
 					<div className='space-y-2'>
@@ -129,6 +133,7 @@ const RegisterForm = () => {
 							onChange={handleChange}
 							required
 							disabled={isLoading}
+							data-testid='lastName-input'
 						/>
 					</div>
 				</div>
@@ -146,6 +151,7 @@ const RegisterForm = () => {
 						onChange={handleChange}
 						required
 						disabled={isLoading}
+						data-testid='email-input'
 					/>
 				</div>
 
@@ -162,6 +168,7 @@ const RegisterForm = () => {
 						onChange={handleChange}
 						required
 						disabled={isLoading}
+						data-testid='password-input'
 					/>
 					<p className='text-xs text-gray-500'>
 						Au moins 8 caractères
@@ -174,21 +181,34 @@ const RegisterForm = () => {
 					<RadioGroup
 						value={formData.profileType}
 						onValueChange={handleProfileTypeChange}
-						className='flex flex-col space-y-2'>
+						className='flex flex-col space-y-2'
+						data-testid='profile-type-group'>
 						<div className='flex items-center space-x-2'>
-							<RadioGroupItem value='FAMILY' id='FAMILY' />
+							<RadioGroupItem
+								value='FAMILY'
+								id='FAMILY'
+								data-testid='profile-type-family'
+							/>
 							<Label htmlFor='FAMILY' className='cursor-pointer'>
 								Famille
 							</Label>
 						</div>
 						<div className='flex items-center space-x-2'>
-							<RadioGroupItem value='STUDENT' id='STUDENT' />
+							<RadioGroupItem
+								value='STUDENT'
+								id='STUDENT'
+								data-testid='profile-type-student'
+							/>
 							<Label htmlFor='STUDENT' className='cursor-pointer'>
 								Étudiant
 							</Label>
 						</div>
 						<div className='flex items-center space-x-2'>
-							<RadioGroupItem value='SINGLE' id='SINGLE' />
+							<RadioGroupItem
+								value='SINGLE'
+								id='SINGLE'
+								data-testid='profile-type-single'
+							/>
 							<Label htmlFor='SINGLE' className='cursor-pointer'>
 								Personne seule
 							</Label>
@@ -197,7 +217,11 @@ const RegisterForm = () => {
 				</div>
 
 				{/* Bouton d'inscription */}
-				<Button type='submit' className='w-full' disabled={isLoading}>
+				<Button
+					type='submit'
+					className='w-full'
+					disabled={isLoading}
+					data-testid='register-submit-button'>
 					{isLoading ? 'Inscription en cours...' : "S'inscrire"}
 				</Button>
 			</form>
@@ -215,11 +239,16 @@ const RegisterForm = () => {
 			<CardContent>
 				{/* Affichage des erreurs */}
 				{(formError || error) && (
-					<Alert variant='destructive' className='mb-4'>
-						<AlertDescription>
-							{formError || error}
-						</AlertDescription>
-					</Alert>
+					<div data-testid='error-container'>
+						<Alert
+							variant='destructive'
+							className='mb-4'
+							data-testid='error-alert'>
+							<AlertDescription data-testid='error-message'>
+								{formError || error}
+							</AlertDescription>
+						</Alert>
+					</div>
 				)}
 
 				{/* Bouton d'inscription avec Google (prioritaire) */}
@@ -228,7 +257,8 @@ const RegisterForm = () => {
 					variant='outline'
 					className='w-full mb-4'
 					onClick={() => loginWithGoogle()}
-					disabled={isLoading}>
+					disabled={isLoading}
+					data-testid='google-button'>
 					<svg
 						className='mr-2 h-4 w-4'
 						aria-hidden='true'
@@ -262,7 +292,8 @@ const RegisterForm = () => {
 						variant='secondary'
 						className='w-full'
 						onClick={() => setShowForm(true)}
-						disabled={isLoading}>
+						disabled={isLoading}
+						data-testid='show-email-form-button'>
 						S'inscrire avec mon email
 					</Button>
 				)}
@@ -274,7 +305,8 @@ const RegisterForm = () => {
 						variant='link'
 						className='p-0 h-auto'
 						onClick={() => navigate({ to: '/login' })}
-						disabled={isLoading}>
+						disabled={isLoading}
+						data-testid='login-button'>
 						Se connecter
 					</Button>
 				</p>
