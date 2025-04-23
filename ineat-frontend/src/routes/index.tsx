@@ -10,8 +10,10 @@ export const Route = createFileRoute('/')({
   beforeLoad: ({ context }) => {
     const authStore = (context as RouterContext).authStore;
     
-    console.log('authStore.isAuthenticated', authStore.isAuthenticated);
-    console.log('authStore.user', authStore.user);
+    // Si l'utilisateur est authentifié, continuer
+    if (authStore.isAuthenticated && authStore.user) {
+      return;
+    }
     // Sinon, rediriger vers la page de connexion
     throw redirect({ to: '/login' });
   },

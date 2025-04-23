@@ -37,7 +37,7 @@ export function UserMenu() {
       case 'STUDENT':
         return 'Étudiant';
       case 'SINGLE':
-        return 'Personne seule';
+        return 'Solo';
       default:
         return user.profileType;
     }
@@ -61,13 +61,13 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="user-menu-button">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full cursor-pointer" data-testid="user-menu-button">
           <Avatar className="h-8 w-8" data-testid="user-avatar">
             <AvatarFallback data-testid="avatar-initials">{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56" data-testid="dropdown-content">
+      <DropdownMenuContent align="end" className="w-56 bg-neutral-50" data-testid="dropdown-content">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1" data-testid="user-info">
             <p className="text-sm font-medium leading-none" data-testid="user-name">

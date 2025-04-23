@@ -83,8 +83,8 @@ const LoginForm = () => {
 			<CardHeader>
 				<CardTitle>Connexion</CardTitle>
 				<CardDescription>
-					Accédez à votre compte InEat pour gérer votre inventaire
-					alimentaire
+					Accédez à votre compte pour gérer votre inventaire
+					alimentaire.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>

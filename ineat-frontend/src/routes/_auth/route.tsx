@@ -1,19 +1,25 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router';
+import Logo from '@/components/layout/Logo';
 
 export const Route = createFileRoute('/_auth')({
-  component: AuthLayout,
+	component: AuthLayout,
 });
 
 export default function AuthLayout() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">InEat</h1>
-          <p className="text-gray-600">Gérez votre inventaire alimentaire efficacement</p>
-        </div>
-        <Outlet />
-      </div>
-    </div>
-  );
-};
+	return (
+		<div className='min-h-screen flex items-center justify-center p-4'>
+			<div className='w-full max-w-md'>
+				<div className='text-center mb-8'>
+					<div className='flex item-center justify-center'>
+						<Logo />
+					</div>
+					<h1 className='text-3xl font-bold font-fredoka'>InEat</h1>
+					<p className='text-gray-600'>
+						Gérez vos <strong>courses</strong> comme un <strong>chef</strong> !
+					</p>
+				</div>
+				<Outlet />
+			</div>
+		</div>
+	);
+}

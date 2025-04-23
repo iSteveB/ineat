@@ -5,5 +5,5 @@ export const Route = createFileRoute('/app/')({
 })
 
 function Dashboard() {
-  return <div>Hello "/app/"!</div>
+  return <p>Hello "/app/"!</p>
 }
