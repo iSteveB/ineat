@@ -9,8 +9,8 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { createFileRoute } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/app/')({
-  component: () => <Dashboard />,
-})
+	component: () => <Dashboard />,
+});
 
 const Dashboard: FC = () => {
 	const {
@@ -51,7 +51,7 @@ const Dashboard: FC = () => {
 	}
 
 	return (
-		<div className='p-6 bg-neutral-100 min-h-screen'>
+		<div className='p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 xl:max-w-1/2 lg:m-auto'>
 			<header className='mb-8'>
 				<h1 className='text-3xl font-bold text-neutral-300'>
 					Bonjour {dashboardData.user.firstName},
@@ -61,7 +61,7 @@ const Dashboard: FC = () => {
 				</p>
 			</header>
 
-			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
+			<div className='grid grid-cols-2 gap-6 mb-8'>
 				{/* Première rangée de widgets */}
 				<InventoryWidget
 					totalProducts={expiryCounts.total}
@@ -74,7 +74,9 @@ const Dashboard: FC = () => {
 					averageScore={nutriscoreData.average}
 					variation={nutriscoreData.variation}
 				/>
+			</div>
 
+			<div className='mb-8'>
 				<BudgetWidget budget={budget} />
 			</div>
 
