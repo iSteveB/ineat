@@ -28,7 +28,7 @@ const Dashboard: FC = () => {
 	if (isLoading) {
 		return (
 			<div className='flex justify-center items-center h-screen'>
-				<div className='animate-spin rounded-full size-12 border-t-2 border-b-2 border-info-500'></div>
+				<div className='animate-spin rounded-full size-12 border-t-4 border-b-4 border-info-500'></div>
 			</div>
 		);
 	}
@@ -51,7 +51,7 @@ const Dashboard: FC = () => {
 	}
 
 	return (
-		<div className='p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 xl:max-w-1/2 lg:m-auto'>
+		<div className='p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto'>
 			<header className='mb-8'>
 				<h1 className='text-3xl font-bold text-neutral-300'>
 					Bonjour {dashboardData.user.firstName},

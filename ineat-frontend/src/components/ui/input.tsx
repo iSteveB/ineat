@@ -1,21 +1,52 @@
 import * as React from "react"
-
+import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
-  return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+const inputVariants = cva(
+  "flex w-full min-w-0 rounded-md border text-neutral-300 bg-transparent px-3 py-2 text-base shadow-xs transition-all outline-none placeholder:text-neutral-200 disabled:pointer-events-none disabled:opacity-50 file:border-0 file:bg-transparent file:text-sm file:font-medium",
+  {
+    variants: {
+      variant: {
+        default: 
+          "border-neutral-200 focus:border-success-50 focus:ring-2 focus:ring-success-50/20",
+        error: 
+          "border-error-50 focus:border-error-100 focus:ring-2 focus:ring-error-50/20",
+        success: 
+          "border-success-50 focus:border-success-50 focus:ring-2 focus:ring-success-50/20",
+      },
+      size: {
+        sm: "h-8 text-sm px-2 py-1",
+        default: "h-10",
+        lg: "h-12 text-lg",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
 
-export { Input }
+export interface InputProps 
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+    variant?: "default" | "error" | "success"
+    size?: "sm" | "default" | "lg"
+  }
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, variant, size, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        data-slot="input"
+        className={cn(inputVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Input.displayName = "Input"
+
+// eslint-disable-next-line react-refresh/only-export-components
+export { Input, inputVariants }

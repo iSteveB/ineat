@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Header } from './Header';
+import { NavigationBar } from './NavigationBar';
 
 interface MainLayoutProps {
 	children: ReactNode;
@@ -8,15 +9,17 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
 	// Contenu du layout comme précédemment
 	return (
-		<div className='min-h-screen flex flex-col'>
+		<div className='min-h-screen flex flex-col pb-12'>
 			{/* En-tête global */}
-			<Header />
+				<Header />
 
 			{/* Contenu principal */}
 			<main className='flex-grow'>{children}</main>
 
 			{/* Pied de page global */}
-			<footer className='bg-gray-100 py-6'>{/* ... */}</footer>
+			<div className='bg-gray-100'>
+				<NavigationBar />
+			</div>
 		</div>
 	);
 }
