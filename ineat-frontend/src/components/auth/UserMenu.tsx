@@ -39,7 +39,7 @@ export function UserMenu() {
       case 'SINGLE':
         return 'Solo';
       default:
-        return user.profileType;
+        return 'Inconnu';
     }
   };
 

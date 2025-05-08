@@ -110,8 +110,8 @@ describe('UserMenu', () => {
 		const profileTypes = [
 			{ type: 'FAMILY', label: 'Famille' },
 			{ type: 'STUDENT', label: 'Étudiant' },
-			{ type: 'SINGLE', label: 'Personne seule' },
-			{ type: 'UNKNOWN', label: 'UNKNOWN' }, // Cas par défaut
+			{ type: 'SINGLE', label: 'Solo' },
+			{ type: 'UNKNOWN', label: 'Inconnu' }, // Cas par défaut
 		];
 
 		for (const { type, label } of profileTypes) {

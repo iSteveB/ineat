@@ -9,7 +9,7 @@ interface MainLayoutProps {
 export default function MainLayout({ children }: MainLayoutProps) {
 	// Contenu du layout comme précédemment
 	return (
-		<div className='min-h-screen flex flex-col pb-12'>
+		<div className='min-h-screen flex flex-col pb-24 lg:pb-12'>
 			{/* En-tête global */}
 				<Header />
 

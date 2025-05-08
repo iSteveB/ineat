@@ -86,7 +86,7 @@ describe('LogoutButton', () => {
     
     // Vérifier que le bouton a les classes correspondant au variant destructive
     // Les classes exactes sont définies dans buttonVariants dans button.tsx
-    expect(button).toHaveClass('bg-destructive');
-    expect(button).toHaveClass('text-white');
+    expect(button).toHaveClass('bg-error-50');
+    expect(button).toHaveClass('text-neutral-50');
   });
 });
