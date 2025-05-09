@@ -37,23 +37,16 @@ function ProfilePage() {
 	const accountItems: ProfileMenuItem[] = [
 		{
 			title: 'Informations personnelles',
-			href: '/app/profile/personal-info',
+			href: '/app/profile/personal-infos',
 		},
 		{ title: 'Abonnement Premium', href: '/app/profile/subscription' },
 		{ title: 'Sécurité & Confidentialité', href: '/app/profile/security' },
 	];
 
-	const preferencesItems: ProfileMenuItem[] = [
-		{
-			title: 'Restrictions alimentaires',
-			href: '/app/profile/diet-restrictions',
-		},
-		{
-			title: 'Préférences nutritionnelles',
-			href: '/app/profile/nutrition-preferences',
-		},
-		{ title: 'Notifications', href: '/app/profile/notifications' },
-	];
+  const preferencesItems: ProfileMenuItem[] = [
+    { title: 'Restrictions alimentaires', href: '/app/profile/diet-restrictions' },
+    { title: 'Notifications', href: '/app/profile/notifications' },
+  ];
 
 	const handleDeleteAccount = () => {
 		// TODO : Implémentation réelle à ajouter
