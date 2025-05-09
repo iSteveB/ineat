@@ -12,6 +12,7 @@ export const UserSchema = z.object({
 	email: z.string().email(),
 	firstName: z.string(),
 	lastName: z.string(),
+	avatarUrl: z.string().optional(),
 	profileType: ProfileTypeSchema,
 	preferences: z.record(z.unknown()).optional(),
 	createdAt: z.string().optional(),
