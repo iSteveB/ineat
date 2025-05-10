@@ -41,10 +41,10 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  profileType: 'family' | 'student' | 'single';
-  subscription: 'free' | 'premium';
+  profileType: 'FAMILY' | 'STUDENT' | 'SINGLE';
+  subscription: 'FREE' | 'PREMIUM' | 'ADMIN';
   preferences: {
-    diet?: 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian';
+    diet?: 'OMNIVORE' | 'VEGETARIAN' | 'VEGAN' | 'PESCETARIAN';
     allergies?: string[];
     dislikedIngredients?: string[];
   };

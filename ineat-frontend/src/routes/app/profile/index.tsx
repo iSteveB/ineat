@@ -37,16 +37,19 @@ function ProfilePage() {
 	const accountItems: ProfileMenuItem[] = [
 		{
 			title: 'Informations personnelles',
-			href: '/app/profile/personal-infos',
+			href: '/app/profile/personal-info',
 		},
 		{ title: 'Abonnement Premium', href: '/app/profile/subscription' },
 		{ title: 'Sécurité & Confidentialité', href: '/app/profile/security' },
 	];
 
-  const preferencesItems: ProfileMenuItem[] = [
-    { title: 'Restrictions alimentaires', href: '/app/profile/diet-restrictions' },
-    { title: 'Notifications', href: '/app/profile/notifications' },
-  ];
+	const preferencesItems: ProfileMenuItem[] = [
+		{
+			title: 'Restrictions alimentaires',
+			href: '/app/profile/diet-restrictions',
+		},
+		{ title: 'Notifications', href: '/app/profile/notifications' },
+	];
 
 	const handleDeleteAccount = () => {
 		// TODO : Implémentation réelle à ajouter
@@ -60,16 +63,20 @@ function ProfilePage() {
 			{/* Profil utilisateur */}
 			<div className='bg-neutral-50 py-8'>
 				<div className='flex flex-col items-center space-y-4'>
-					<div className='size-32 rounded-full border-6 border-primary-100 flex items-center justify-center overflow-hidden'>
-						{/* Avatar utilisateur */}
-						<img
-							src={
-								user?.avatarUrl ||
-								'https://avatar.iran.liara.run/public'
-							}
-							alt='Avatar utilisateur'
-							className='size-full object-cover'
-						/>
+				<div className='size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden'>
+						{user?.avatarUrl ? (
+							<img
+								src={user.avatarUrl}
+								alt='Photo de profil'
+								className='size-full object-cover'
+							/>
+						) : (
+							<span className='text-2xl font-semibold'>
+								{user?.firstName && user?.lastName
+									? `${user?.firstName[0]}${user?.lastName[0]}`
+									: '?'}
+							</span>
+						)}
 					</div>
 
 					<div className='text-center'>
@@ -98,7 +105,7 @@ function ProfilePage() {
 							to={item.href}
 							className='flex items-center justify-between p-4 border-b border-neutral-100 last:border-b-0'>
 							<span className='text-lg'>{item.title}</span>
-							<ChevronRight className='size--5 text-neutral-200' />
+							<ChevronRight className='size-5 text-neutral-200' />
 						</Link>
 					))}
 				</div>
