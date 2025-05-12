@@ -22,6 +22,7 @@ import { Route as AuthRegisterImport } from './routes/_auth/register'
 import { Route as AuthLoginImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordImport } from './routes/_auth/forgot-password'
 import { Route as AuthCallbackImport } from './routes/_auth/callback'
+import { Route as AppSettingsIndexImport } from './routes/app/settings/index'
 import { Route as AppRecipesIndexImport } from './routes/app/recipes/index'
 import { Route as AppProfileIndexImport } from './routes/app/profile/index'
 import { Route as AppNotificationsIndexImport } from './routes/app/notifications/index'
@@ -29,14 +30,13 @@ import { Route as AppInventoryIndexImport } from './routes/app/inventory/index'
 import { Route as AppBudgetIndexImport } from './routes/app/budget/index'
 import { Route as AppRecipesSuggestionsImport } from './routes/app/recipes/suggestions'
 import { Route as AppRecipesRecipeIdImport } from './routes/app/recipes/$recipeId'
-import { Route as AppProfileSettingsImport } from './routes/app/profile/settings'
 import { Route as AppInventoryScanProductImport } from './routes/app/inventory/scan-product'
 import { Route as AppInventoryImportProductImport } from './routes/app/inventory/import-product'
 import { Route as AppInventoryAddProductImport } from './routes/app/inventory/add-product'
 import { Route as AppInventoryProductIdImport } from './routes/app/inventory/$productId'
-import { Route as AppProfileSecurityIndexImport } from './routes/app/profile/security/index'
-import { Route as AppProfilePersonalInfoIndexImport } from './routes/app/profile/personal-info/index'
-import { Route as AppProfileDietRestrictionsIndexImport } from './routes/app/profile/diet-restrictions/index'
+import { Route as AppSettingsSecurityIndexImport } from './routes/app/settings/security/index'
+import { Route as AppSettingsPersonalInfoIndexImport } from './routes/app/settings/personal-info/index'
+import { Route as AppSettingsDietRestrictionsIndexImport } from './routes/app/settings/diet-restrictions/index'
 
 // Create/Update Routes
 
@@ -104,6 +104,12 @@ const AuthCallbackRoute = AuthCallbackImport.update({
   getParentRoute: () => AuthRouteRoute,
 } as any)
 
+const AppSettingsIndexRoute = AppSettingsIndexImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+
 const AppRecipesIndexRoute = AppRecipesIndexImport.update({
   id: '/recipes/',
   path: '/recipes/',
@@ -146,12 +152,6 @@ const AppRecipesRecipeIdRoute = AppRecipesRecipeIdImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 
-const AppProfileSettingsRoute = AppProfileSettingsImport.update({
-  id: '/profile/settings',
-  path: '/profile/settings',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-
 const AppInventoryScanProductRoute = AppInventoryScanProductImport.update({
   id: '/inventory/scan-product',
   path: '/inventory/scan-product',
@@ -176,23 +176,23 @@ const AppInventoryProductIdRoute = AppInventoryProductIdImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 
-const AppProfileSecurityIndexRoute = AppProfileSecurityIndexImport.update({
-  id: '/profile/security/',
-  path: '/profile/security/',
+const AppSettingsSecurityIndexRoute = AppSettingsSecurityIndexImport.update({
+  id: '/settings/security/',
+  path: '/settings/security/',
   getParentRoute: () => AppRouteRoute,
 } as any)
 
-const AppProfilePersonalInfoIndexRoute =
-  AppProfilePersonalInfoIndexImport.update({
-    id: '/profile/personal-info/',
-    path: '/profile/personal-info/',
+const AppSettingsPersonalInfoIndexRoute =
+  AppSettingsPersonalInfoIndexImport.update({
+    id: '/settings/personal-info/',
+    path: '/settings/personal-info/',
     getParentRoute: () => AppRouteRoute,
   } as any)
 
-const AppProfileDietRestrictionsIndexRoute =
-  AppProfileDietRestrictionsIndexImport.update({
-    id: '/profile/diet-restrictions/',
-    path: '/profile/diet-restrictions/',
+const AppSettingsDietRestrictionsIndexRoute =
+  AppSettingsDietRestrictionsIndexImport.update({
+    id: '/settings/diet-restrictions/',
+    path: '/settings/diet-restrictions/',
     getParentRoute: () => AppRouteRoute,
   } as any)
 
@@ -305,13 +305,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryScanProductImport
       parentRoute: typeof AppRouteImport
     }
-    '/app/profile/settings': {
-      id: '/app/profile/settings'
-      path: '/profile/settings'
-      fullPath: '/app/profile/settings'
-      preLoaderRoute: typeof AppProfileSettingsImport
-      parentRoute: typeof AppRouteImport
-    }
     '/app/recipes/$recipeId': {
       id: '/app/recipes/$recipeId'
       path: '/recipes/$recipeId'
@@ -361,25 +354,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRecipesIndexImport
       parentRoute: typeof AppRouteImport
     }
-    '/app/profile/diet-restrictions/': {
-      id: '/app/profile/diet-restrictions/'
-      path: '/profile/diet-restrictions'
-      fullPath: '/app/profile/diet-restrictions'
-      preLoaderRoute: typeof AppProfileDietRestrictionsIndexImport
+    '/app/settings/': {
+      id: '/app/settings/'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsIndexImport
       parentRoute: typeof AppRouteImport
     }
-    '/app/profile/personal-info/': {
-      id: '/app/profile/personal-info/'
-      path: '/profile/personal-info'
-      fullPath: '/app/profile/personal-info'
-      preLoaderRoute: typeof AppProfilePersonalInfoIndexImport
+    '/app/settings/diet-restrictions/': {
+      id: '/app/settings/diet-restrictions/'
+      path: '/settings/diet-restrictions'
+      fullPath: '/app/settings/diet-restrictions'
+      preLoaderRoute: typeof AppSettingsDietRestrictionsIndexImport
       parentRoute: typeof AppRouteImport
     }
-    '/app/profile/security/': {
-      id: '/app/profile/security/'
-      path: '/profile/security'
-      fullPath: '/app/profile/security'
-      preLoaderRoute: typeof AppProfileSecurityIndexImport
+    '/app/settings/personal-info/': {
+      id: '/app/settings/personal-info/'
+      path: '/settings/personal-info'
+      fullPath: '/app/settings/personal-info'
+      preLoaderRoute: typeof AppSettingsPersonalInfoIndexImport
+      parentRoute: typeof AppRouteImport
+    }
+    '/app/settings/security/': {
+      id: '/app/settings/security/'
+      path: '/settings/security'
+      fullPath: '/app/settings/security'
+      preLoaderRoute: typeof AppSettingsSecurityIndexImport
       parentRoute: typeof AppRouteImport
     }
   }
@@ -425,7 +425,6 @@ interface AppRouteRouteChildren {
   AppInventoryAddProductRoute: typeof AppInventoryAddProductRoute
   AppInventoryImportProductRoute: typeof AppInventoryImportProductRoute
   AppInventoryScanProductRoute: typeof AppInventoryScanProductRoute
-  AppProfileSettingsRoute: typeof AppProfileSettingsRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesSuggestionsRoute: typeof AppRecipesSuggestionsRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
@@ -433,9 +432,10 @@ interface AppRouteRouteChildren {
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
   AppRecipesIndexRoute: typeof AppRecipesIndexRoute
-  AppProfileDietRestrictionsIndexRoute: typeof AppProfileDietRestrictionsIndexRoute
-  AppProfilePersonalInfoIndexRoute: typeof AppProfilePersonalInfoIndexRoute
-  AppProfileSecurityIndexRoute: typeof AppProfileSecurityIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+  AppSettingsDietRestrictionsIndexRoute: typeof AppSettingsDietRestrictionsIndexRoute
+  AppSettingsPersonalInfoIndexRoute: typeof AppSettingsPersonalInfoIndexRoute
+  AppSettingsSecurityIndexRoute: typeof AppSettingsSecurityIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
@@ -444,7 +444,6 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppInventoryAddProductRoute: AppInventoryAddProductRoute,
   AppInventoryImportProductRoute: AppInventoryImportProductRoute,
   AppInventoryScanProductRoute: AppInventoryScanProductRoute,
-  AppProfileSettingsRoute: AppProfileSettingsRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesSuggestionsRoute: AppRecipesSuggestionsRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
@@ -452,9 +451,10 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,
   AppRecipesIndexRoute: AppRecipesIndexRoute,
-  AppProfileDietRestrictionsIndexRoute: AppProfileDietRestrictionsIndexRoute,
-  AppProfilePersonalInfoIndexRoute: AppProfilePersonalInfoIndexRoute,
-  AppProfileSecurityIndexRoute: AppProfileSecurityIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+  AppSettingsDietRestrictionsIndexRoute: AppSettingsDietRestrictionsIndexRoute,
+  AppSettingsPersonalInfoIndexRoute: AppSettingsPersonalInfoIndexRoute,
+  AppSettingsSecurityIndexRoute: AppSettingsSecurityIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
@@ -476,7 +476,6 @@ export interface FileRoutesByFullPath {
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
   '/app/inventory/import-product': typeof AppInventoryImportProductRoute
   '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
-  '/app/profile/settings': typeof AppProfileSettingsRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -484,9 +483,10 @@ export interface FileRoutesByFullPath {
   '/app/notifications': typeof AppNotificationsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
   '/app/recipes': typeof AppRecipesIndexRoute
-  '/app/profile/diet-restrictions': typeof AppProfileDietRestrictionsIndexRoute
-  '/app/profile/personal-info': typeof AppProfilePersonalInfoIndexRoute
-  '/app/profile/security': typeof AppProfileSecurityIndexRoute
+  '/app/settings': typeof AppSettingsIndexRoute
+  '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
+  '/app/settings/security': typeof AppSettingsSecurityIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -503,7 +503,6 @@ export interface FileRoutesByTo {
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
   '/app/inventory/import-product': typeof AppInventoryImportProductRoute
   '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
-  '/app/profile/settings': typeof AppProfileSettingsRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -511,9 +510,10 @@ export interface FileRoutesByTo {
   '/app/notifications': typeof AppNotificationsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
   '/app/recipes': typeof AppRecipesIndexRoute
-  '/app/profile/diet-restrictions': typeof AppProfileDietRestrictionsIndexRoute
-  '/app/profile/personal-info': typeof AppProfilePersonalInfoIndexRoute
-  '/app/profile/security': typeof AppProfileSecurityIndexRoute
+  '/app/settings': typeof AppSettingsIndexRoute
+  '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
+  '/app/settings/security': typeof AppSettingsSecurityIndexRoute
 }
 
 export interface FileRoutesById {
@@ -533,7 +533,6 @@ export interface FileRoutesById {
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
   '/app/inventory/import-product': typeof AppInventoryImportProductRoute
   '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
-  '/app/profile/settings': typeof AppProfileSettingsRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget/': typeof AppBudgetIndexRoute
@@ -541,9 +540,10 @@ export interface FileRoutesById {
   '/app/notifications/': typeof AppNotificationsIndexRoute
   '/app/profile/': typeof AppProfileIndexRoute
   '/app/recipes/': typeof AppRecipesIndexRoute
-  '/app/profile/diet-restrictions/': typeof AppProfileDietRestrictionsIndexRoute
-  '/app/profile/personal-info/': typeof AppProfilePersonalInfoIndexRoute
-  '/app/profile/security/': typeof AppProfileSecurityIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
+  '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/personal-info/': typeof AppSettingsPersonalInfoIndexRoute
+  '/app/settings/security/': typeof AppSettingsSecurityIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -563,7 +563,6 @@ export interface FileRouteTypes {
     | '/app/inventory/add-product'
     | '/app/inventory/import-product'
     | '/app/inventory/scan-product'
-    | '/app/profile/settings'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -571,9 +570,10 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/profile'
     | '/app/recipes'
-    | '/app/profile/diet-restrictions'
-    | '/app/profile/personal-info'
-    | '/app/profile/security'
+    | '/app/settings'
+    | '/app/settings/diet-restrictions'
+    | '/app/settings/personal-info'
+    | '/app/settings/security'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -589,7 +589,6 @@ export interface FileRouteTypes {
     | '/app/inventory/add-product'
     | '/app/inventory/import-product'
     | '/app/inventory/scan-product'
-    | '/app/profile/settings'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -597,9 +596,10 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/profile'
     | '/app/recipes'
-    | '/app/profile/diet-restrictions'
-    | '/app/profile/personal-info'
-    | '/app/profile/security'
+    | '/app/settings'
+    | '/app/settings/diet-restrictions'
+    | '/app/settings/personal-info'
+    | '/app/settings/security'
   id:
     | '__root__'
     | '/'
@@ -617,7 +617,6 @@ export interface FileRouteTypes {
     | '/app/inventory/add-product'
     | '/app/inventory/import-product'
     | '/app/inventory/scan-product'
-    | '/app/profile/settings'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget/'
@@ -625,9 +624,10 @@ export interface FileRouteTypes {
     | '/app/notifications/'
     | '/app/profile/'
     | '/app/recipes/'
-    | '/app/profile/diet-restrictions/'
-    | '/app/profile/personal-info/'
-    | '/app/profile/security/'
+    | '/app/settings/'
+    | '/app/settings/diet-restrictions/'
+    | '/app/settings/personal-info/'
+    | '/app/settings/security/'
   fileRoutesById: FileRoutesById
 }
 
@@ -688,7 +688,6 @@ export const routeTree = rootRoute
         "/app/inventory/add-product",
         "/app/inventory/import-product",
         "/app/inventory/scan-product",
-        "/app/profile/settings",
         "/app/recipes/$recipeId",
         "/app/recipes/suggestions",
         "/app/budget/",
@@ -696,9 +695,10 @@ export const routeTree = rootRoute
         "/app/notifications/",
         "/app/profile/",
         "/app/recipes/",
-        "/app/profile/diet-restrictions/",
-        "/app/profile/personal-info/",
-        "/app/profile/security/"
+        "/app/settings/",
+        "/app/settings/diet-restrictions/",
+        "/app/settings/personal-info/",
+        "/app/settings/security/"
       ]
     },
     "/_auth/callback": {
@@ -745,10 +745,6 @@ export const routeTree = rootRoute
       "filePath": "app/inventory/scan-product.tsx",
       "parent": "/app"
     },
-    "/app/profile/settings": {
-      "filePath": "app/profile/settings.tsx",
-      "parent": "/app"
-    },
     "/app/recipes/$recipeId": {
       "filePath": "app/recipes/$recipeId.tsx",
       "parent": "/app"
@@ -777,16 +773,20 @@ export const routeTree = rootRoute
       "filePath": "app/recipes/index.tsx",
       "parent": "/app"
     },
-    "/app/profile/diet-restrictions/": {
-      "filePath": "app/profile/diet-restrictions/index.tsx",
+    "/app/settings/": {
+      "filePath": "app/settings/index.tsx",
       "parent": "/app"
     },
-    "/app/profile/personal-info/": {
-      "filePath": "app/profile/personal-info/index.tsx",
+    "/app/settings/diet-restrictions/": {
+      "filePath": "app/settings/diet-restrictions/index.tsx",
       "parent": "/app"
     },
-    "/app/profile/security/": {
-      "filePath": "app/profile/security/index.tsx",
+    "/app/settings/personal-info/": {
+      "filePath": "app/settings/personal-info/index.tsx",
+      "parent": "/app"
+    },
+    "/app/settings/security/": {
+      "filePath": "app/settings/security/index.tsx",
       "parent": "/app"
     }
   }

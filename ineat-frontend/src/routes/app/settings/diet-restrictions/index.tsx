@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export const Route = createFileRoute('/app/profile/diet-restrictions/')({
+export const Route = createFileRoute('/app/settings/diet-restrictions/')({
 	component: DietaryRestrictionsPage,
 });
 

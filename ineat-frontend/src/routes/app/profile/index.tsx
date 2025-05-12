@@ -1,69 +1,77 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useAuthStore } from '@/stores/authStore';
 import { Link } from '@tanstack/react-router';
-import { ChevronRight, LogOut, Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { User } from '@/types/auth';
+	Settings,
+	Leaf,
+	Award,
+	Clock,
+	TrendingUp,
+	ChefHat,
+	ShoppingCart,
+} from 'lucide-react';
+import { useAuthStore } from '@/stores/authStore';
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 
 export const Route = createFileRoute('/app/profile/')({
 	component: ProfilePage,
 });
 
-interface ProfileMenuItem {
-	title: string;
-	href: string;
-}
-
-const isUserPremium = (user: User) => {
-	// TODO : Implémentation réelle à ajouter
-	return user?.role === 'PREMIUM';
+// TODO: Données fictives pour la démo - à remplacer par de vraies données
+const mockStatistics = {
+	savedMoney: 127.5,
+	productsCount: 87,
+	daysStreak: 14,
+	wasteReduction: 75, // pourcentage
+	memberSince: 'Janvier 2024',
+	topCategories: ['Produits laitiers', 'Fruits & Légumes', 'Céréales'],
+	nutritionalScore: 'B',
+	recentProducts: [
+		{
+			id: '1',
+			name: 'Yaourt Nature',
+			date: '15/05/2025',
+			expires: '22/05/2025',
+		},
+		{
+			id: '2',
+			name: 'Pain complet',
+			date: '14/05/2025',
+			expires: '18/05/2025',
+		},
+		{
+			id: '3',
+			name: 'Lait demi-écrémé',
+			date: '12/05/2025',
+			expires: '19/05/2025',
+		},
+	],
+	recentRecipes: [
+		'Salade Grecque',
+		'Pâtes Carbonara',
+		'Smoothie Fraise-Banane',
+	],
 };
 
 function ProfilePage() {
 	const user = useAuthStore((state) => state.user);
-	const logout = useAuthStore((state) => state.logout);
-	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+	const isPremium = user?.role === 'PREMIUM';
 
-	const accountItems: ProfileMenuItem[] = [
-		{
-			title: 'Informations personnelles',
-			href: '/app/profile/personal-info',
-		},
-		{ title: 'Abonnement Premium', href: '/app/profile/subscription' },
-		{ title: 'Sécurité & Confidentialité', href: '/app/profile/security' },
-	];
-
-	const preferencesItems: ProfileMenuItem[] = [
-		{
-			title: 'Restrictions alimentaires',
-			href: '/app/profile/diet-restrictions',
-		},
-		{ title: 'Notifications', href: '/app/profile/notifications' },
-	];
-
-	const handleDeleteAccount = () => {
-		// TODO : Implémentation réelle à ajouter
-		console.log('Compte supprimé');
-		setDeleteConfirmOpen(false);
-		logout();
-	};
+	// Récupérer les restrictions alimentaires (à implémenter)
+	const dietaryRestrictions = ['Sans Gluten', 'Végétarien'];
 
 	return (
 		<div className='min-h-screen bg-primary-50 pb-16'>
-			{/* Profil utilisateur */}
-			<div className='bg-neutral-50 py-8'>
+			{/* Header de profil amélioré */}
+			<div className='bg-neutral-50 pt-8 pb-12 relative'>
 				<div className='flex flex-col items-center space-y-4'>
-				<div className='size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden'>
+					<div className='size-32 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-primary-100'>
 						{user?.avatarUrl ? (
 							<img
 								src={user.avatarUrl}
@@ -71,7 +79,7 @@ function ProfilePage() {
 								className='size-full object-cover'
 							/>
 						) : (
-							<span className='text-2xl font-semibold'>
+							<span className='text-4xl font-semibold'>
 								{user?.firstName && user?.lastName
 									? `${user?.firstName[0]}${user?.lastName[0]}`
 									: '?'}
@@ -80,94 +88,213 @@ function ProfilePage() {
 					</div>
 
 					<div className='text-center'>
-						<h2 className='text-2xl font-bold'>
+						<h1 className='text-3xl font-bold'>
 							{user?.firstName} {user?.lastName}
-						</h2>
-						<p className='text-neutral-200'>{user?.email}</p>
+						</h1>
+						<p className='text-neutral-200 mt-1'>
+							Membre depuis {mockStatistics.memberSince}
+						</p>
 
-						{/* Badge Premium */}
-						{user && isUserPremium(user) && (
-							<span className='inline-block mt-2 px-4 py-1 bg-primary-100 text-neutral-300 font-semibold rounded-full'>
+						{isPremium && (
+							<Badge
+								variant='outline'
+								className='mt-2 bg-primary-100 border-0 text-neutral-300 px-3 py-1'>
 								Premium
-							</span>
+							</Badge>
 						)}
+
+						{/* Restrictions alimentaires */}
+						<div className='flex justify-center gap-2 mt-3'>
+							{dietaryRestrictions.map((restriction) => (
+								<Badge
+									key={restriction}
+									variant='secondary'
+									className='bg-success-50 bg-opacity-10 text-success-50 border-0'>
+									{restriction}
+								</Badge>
+							))}
+						</div>
 					</div>
 				</div>
+
+				{/* Bouton paramètres */}
+				<Link
+					to='/app/settings'
+					className='absolute top-4 right-4 p-2 rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors'>
+					<Settings className='size-5 text-neutral-300' />
+				</Link>
 			</div>
 
-			{/* Section Mon compte */}
-			<section className='px-4 py-6'>
-				<h2 className='text-2xl font-bold mb-4'>Mon compte</h2>
-				<div className='bg-neutral-50 rounded-lg shadow-sm overflow-hidden'>
-					{accountItems.map((item, index) => (
-						<Link
-							key={index}
-							to={item.href}
-							className='flex items-center justify-between p-4 border-b border-neutral-100 last:border-b-0'>
-							<span className='text-lg'>{item.title}</span>
-							<ChevronRight className='size-5 text-neutral-200' />
-						</Link>
-					))}
-				</div>
-			</section>
+			{/* Contenu principal */}
+			<div className='px-4 py-6 space-y-6 -mt-6'>
+				{/* Carte statistiques */}
+				<Card>
+					<CardHeader>
+						<CardTitle className='flex items-center gap-2'>
+							<TrendingUp className='size-5 text-success-50' />
+							Mes statistiques
+						</CardTitle>
+					</CardHeader>
+					<CardContent className='space-y-4'>
+						<div className='grid grid-cols-2 gap-4'>
+							<div className='flex flex-col items-center p-3 bg-neutral-50 rounded-lg'>
+								<ShoppingCart className='size-6 text-success-50 mb-1' />
+								<span className='text-xl font-bold'>
+									{mockStatistics.productsCount}
+								</span>
+								<span className='text-xs text-neutral-200'>
+									Produits enregistrés
+								</span>
+							</div>
 
-			{/* Section Préférences */}
-			<section className='px-4 py-6'>
-				<h2 className='text-2xl font-bold mb-4'>Préférences</h2>
-				<div className='bg-neutral-50 rounded-lg shadow-sm overflow-hidden'>
-					{preferencesItems.map((item, index) => (
-						<Link
-							key={index}
-							to={item.href}
-							className='flex items-center justify-between p-4 border-b border-neutral-100 last:border-b-0'>
-							<span className='text-lg'>{item.title}</span>
-							<ChevronRight className='size-5 text-neutral-200' />
-						</Link>
-					))}
-				</div>
-			</section>
+							<div className='flex flex-col items-center p-3 bg-neutral-50 rounded-lg'>
+								<Award className='size-6 text-success-50 mb-1' />
+								<span className='text-xl font-bold'>
+									{mockStatistics.daysStreak} jours
+								</span>
+								<span className='text-xs text-neutral-200'>
+									Streak d'utilisation
+								</span>
+							</div>
+						</div>
 
-			{/* Boutons d'action */}
-			<div className='px-4 mt-2 space-y-4'>
-				<button
-					onClick={() => logout()}
-					className='w-full py-3 px-4 rounded-lg bg-neutral-200 text-neutral-50 font-semibold flex items-center justify-center'>
-					<LogOut className='size-5 mr-2' />
-					Déconnexion
-				</button>
+						<div className='space-y-2'>
+							<div className='flex justify-between'>
+								<span className='text-sm font-medium'>
+									Économies réalisées
+								</span>
+								<span className='text-sm font-bold text-success-50'>
+									{mockStatistics.savedMoney.toFixed(2)} €
+								</span>
+							</div>
 
-				<button
-					onClick={() => setDeleteConfirmOpen(true)}
-					className='w-full py-3 px-4 rounded-lg bg-error-100 text-neutral-50 font-semibold flex items-center justify-center'>
-					<Trash2 className='size-5 mr-2' />
-					Supprimer mon compte
-				</button>
+							<div className='space-y-1'>
+								<div className='flex justify-between text-sm'>
+									<span>Réduction du gaspillage</span>
+									<span>
+										{mockStatistics.wasteReduction}%
+									</span>
+								</div>
+								<Progress
+									value={mockStatistics.wasteReduction}
+									className='h-2'
+								/>
+							</div>
+						</div>
+
+						<div className='flex items-center gap-2 justify-center mt-2'>
+							<Leaf className='size-5 text-success-50' />
+							<span className='font-medium'>
+								Impact écologique positif!
+							</span>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Carte Habitudes alimentaires */}
+				<Card>
+					<CardHeader>
+						<CardTitle className='flex items-center gap-2'>
+							<ChefHat className='size-5 text-success-50' />
+							Habitudes alimentaires
+						</CardTitle>
+					</CardHeader>
+					<CardContent className='space-y-4'>
+						<div className='space-y-2'>
+							<span className='text-sm font-medium'>
+								Catégories préférées
+							</span>
+							<div className='flex flex-wrap gap-2'>
+								{mockStatistics.topCategories.map(
+									(category) => (
+										<Badge
+											key={category}
+											variant='outline'
+											className='bg-neutral-50'>
+											{category}
+										</Badge>
+									)
+								)}
+							</div>
+						</div>
+
+						<div className='space-y-2'>
+							<div className='flex justify-between'>
+								<span className='text-sm font-medium'>
+									Nutriscore moyen
+								</span>
+								<div className='flex items-center'>
+									<Badge
+										className={`size-6 rounded-full flex items-center justify-center font-bold ${
+											mockStatistics.nutritionalScore ===
+											'A'
+												? 'bg-emerald-600'
+												: mockStatistics.nutritionalScore ===
+												  'B'
+												? 'bg-green-500'
+												: mockStatistics.nutritionalScore ===
+												  'C'
+												? 'bg-yellow-500'
+												: mockStatistics.nutritionalScore ===
+												  'D'
+												? 'bg-orange-500'
+												: 'bg-red-500'
+										} text-white`}>
+										{mockStatistics.nutritionalScore}
+									</Badge>
+								</div>
+							</div>
+						</div>
+					</CardContent>
+				</Card>
+
+				{/* Carte Activités récentes */}
+				<Card>
+					<CardHeader>
+						<CardTitle className='flex items-center gap-2'>
+							<Clock className='size-5 text-success-50' />
+							Activités récentes
+						</CardTitle>
+					</CardHeader>
+					<CardContent className='space-y-4'>
+						<div className='space-y-2'>
+							<h3 className='text-sm font-medium'>
+								Derniers produits ajoutés
+							</h3>
+							<div className='space-y-2'>
+								{mockStatistics.recentProducts.map(
+									(product) => (
+										<div
+											key={product.id}
+											className='flex justify-between items-center py-2 border-b border-neutral-100 last:border-0'>
+											<span>{product.name}</span>
+											<span className='text-xs text-neutral-200'>
+												{product.date}
+											</span>
+										</div>
+									)
+								)}
+							</div>
+						</div>
+
+						<div className='space-y-2'>
+							<h3 className='text-sm font-medium'>
+								Recettes consultées
+							</h3>
+							<div className='flex flex-wrap gap-2'>
+								{mockStatistics.recentRecipes.map((recipe) => (
+									<Badge
+										key={recipe}
+										variant='outline'
+										className='bg-neutral-50'>
+										{recipe}
+									</Badge>
+								))}
+							</div>
+						</div>
+					</CardContent>
+				</Card>
 			</div>
-
-			{/* Dialog de confirmation pour suppression de compte */}
-			<AlertDialog
-				open={deleteConfirmOpen}
-				onOpenChange={setDeleteConfirmOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							Êtes-vous sûr de vouloir supprimer votre compte ?
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							Cette action est irréversible. Vous perdrez toutes
-							vos données et serez déconnecté de l'application.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Annuler</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleDeleteAccount}
-							className='bg-error-100'>
-							Supprimer définitivement
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</div>
 	);
 }
