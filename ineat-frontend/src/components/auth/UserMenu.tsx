@@ -55,7 +55,7 @@ export function UserMenu() {
   };
 
   const handleSettingsClick = () => {
-    navigate({ to: '/app/profile/settings' });
+    navigate({ to: '/app/settings' });
   };
 
   return (
