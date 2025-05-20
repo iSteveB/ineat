@@ -1,4 +1,4 @@
-import { ExpiryStatus, ExpiryStatusType, NutriScore } from '../types/types';
+import { ExpiryStatus, ExpiryStatusType, NutriScore } from '../types';
 
 // Formater la date au format français
 export const formatDate = (date: Date): string => {
@@ -35,7 +35,7 @@ export const formatRelativeDate = (date: Date): string => {
 };
 
 // Obtenir la couleur associée au Nutriscore
-export const getNutriscoreColor = (score: NutriScore): string => {
+export const getNutriscoreColor = (score : NutriScore): string => {
   switch (score) {
     case 'A':
       return 'text-nutriscore-a';
@@ -75,14 +75,14 @@ export const getBudgetColorClass = (percentage: number): string => {
 
 // Convertir un Nutriscore en valeur numérique
 export const nutriscoreToNumber = (score: NutriScore): number => {
-  const mapping: Record<NutriScore, number> = {
+  const mapping = {
     'A': 5,
     'B': 4,
     'C': 3,
     'D': 2,
     'E': 1
   };
-  return mapping[score];
+  return score ? mapping[score] : 0;
 };
 
 // Convertir une valeur numérique en Nutriscore

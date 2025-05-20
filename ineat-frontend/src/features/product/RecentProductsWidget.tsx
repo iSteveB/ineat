@@ -1,4 +1,4 @@
-import { Product } from '@/types/types';
+import { Product } from '@/types';
 import { FC } from 'react';
 import ProductItem from '@/components/common/ProductItem';
 import {

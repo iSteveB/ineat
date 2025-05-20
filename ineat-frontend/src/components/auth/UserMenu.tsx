@@ -61,8 +61,8 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full cursor-pointer" data-testid="user-menu-button">
-          <Avatar className="h-8 w-8" data-testid="user-avatar">
+        <Button variant="ghost" className="relative size-8 rounded-full cursor-pointer" data-testid="user-menu-button">
+          <Avatar className="size-8" data-testid="user-avatar">
             <AvatarFallback data-testid="avatar-initials">{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>
@@ -83,16 +83,16 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer" data-testid="profile-menu-item">
-          <User className="mr-2 h-4 w-4" />
+          <User className="mr-2 size-4" />
           <span>Profil</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer" data-testid="settings-menu-item">
-          <Settings className="mr-2 h-4 w-4" />
+          <Settings className="mr-2 size-4" />
           <span>Paramètres</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-500" data-testid="logout-menu-item">
-          <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-error-100" data-testid="logout-menu-item">
+          <LogOut className="mr-2 size-4" />
           <span>Se déconnecter</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

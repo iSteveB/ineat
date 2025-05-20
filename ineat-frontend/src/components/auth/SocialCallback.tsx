@@ -63,7 +63,7 @@ const SocialCallback = () => {
 				className='flex flex-col items-center justify-center min-h-screen p-4'
 				data-testid='error-container'>
 				<Alert
-					variant='destructive'
+					variant='error'
 					className='mb-4 max-w-md'
 					data-testid='error-alert'>
 					<AlertDescription data-testid='error-message'>

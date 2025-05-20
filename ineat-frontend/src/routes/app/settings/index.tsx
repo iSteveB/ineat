@@ -13,7 +13,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { User } from '@/types/auth';
+import { User } from '@/types/user';
 
 export const Route = createFileRoute('/app/settings/')({
 	component: ProfilePage,
@@ -63,7 +63,7 @@ function ProfilePage() {
 			{/* Profil utilisateur */}
 			<div className='bg-neutral-50 py-8'>
 				<div className='flex flex-col items-center space-y-4'>
-				<div className='size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden'>
+					<div className='size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden'>
 						{user?.avatarUrl ? (
 							<img
 								src={user.avatarUrl}

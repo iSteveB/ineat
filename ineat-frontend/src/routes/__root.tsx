@@ -5,9 +5,9 @@ export const Route = createRootRoute({
 	component: () => (
 		<main className='bg-primary-50'>
 			<Outlet />
-			{/* {process.env.NODE_ENV === 'development' && (
+			{process.env.NODE_ENV === 'development' && (
 				<TanStackRouterDevtools />
-			)} */}
+			)}
 		</main>
 	),
 });

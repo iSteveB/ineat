@@ -47,9 +47,9 @@ export function AppProvider({ children }: AppProviderProps) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			{children}
-			{/* {import.meta.env.DEV && (
+			{import.meta.env.DEV && (
 				<ReactQueryDevtools initialIsOpen={false} />
-			)} */}
+			)}
 		</QueryClientProvider>
 	);
 }

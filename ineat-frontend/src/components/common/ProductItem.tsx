@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Product, ProductWithExpiryStatus } from '@/types/types';
+import { Product, ProductWithExpiryStatus } from '@/types';
 import { getNutriscoreColor, formatRelativeDate, calculateExpiryStatus } from '@/utils/utils';
 
 interface ProductItemProps {
@@ -18,7 +18,7 @@ const ProductItem: FC<ProductItemProps> = ({
   // Vérifier si le produit a déjà un statut d'expiration ou s'il faut le calculer
   const expiryStatus = 'expiryStatus' in product 
     ? product.expiryStatus 
-    : calculateExpiryStatus(product.expiryDate);
+    : calculateExpiryStatus(product.expiryDate ?? new Date());
 
   // Obtenir la couleur en fonction du statut d'expiration
   const getExpiryStatusColor = () => {
@@ -73,17 +73,17 @@ const ProductItem: FC<ProductItemProps> = ({
             {showEcoscore && (
               <div
                 className={`px-2 py-1 rounded-full text-xl font-medium ${getNutriscoreColor(
-                  product.ecoscore
+                  product.ecoScore
                 )}`}
               >
-                {product.ecoscore}
+                {product.ecoScore}
               </div>
             )}
           </div>
         )}
       </div>
       <span className={`text-2xl ${getExpiryStatusColor()} px-2 text-center font-bold text-neutral-50 rounded-md`}>
-        {formatRelativeDate(product.expiryDate)}
+        {formatRelativeDate(product.expiryDate ?? new Date())}
       </span>
     </div>
   );

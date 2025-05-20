@@ -3,6 +3,7 @@ import { z } from 'zod';
 // Type de profil utilisateur
 export const ProfileTypeSchema = z.enum(['FAMILY', 'STUDENT', 'SINGLE']);
 export type ProfileType = z.infer<typeof ProfileTypeSchema>;
+
 export const RoleTypeSchema = z.enum(['FREE', 'PREMIUM', 'ADMIN']);
 export type RoleType = z.infer<typeof RoleTypeSchema>;
 
@@ -14,7 +15,15 @@ export const UserSchema = z.object({
 	lastName: z.string(),
 	avatarUrl: z.string().optional(),
 	profileType: ProfileTypeSchema,
-	preferences: z.record(z.unknown()).optional(),
+	preferences: z
+		.object({
+			diet: z
+				.enum(['OMNIVORE', 'VEGETARIAN', 'VEGAN', 'PESCETARIAN', 'WITHOUT_PORK'])
+				.optional(),
+			allergies: z.array(z.string()).optional(),
+			dislikedIngredients: z.array(z.string()).optional(),
+		})
+		.optional(),
 	createdAt: z.string().optional(),
 	updatedAt: z.string().optional(),
 	role: RoleTypeSchema,
@@ -29,6 +38,15 @@ export const LoginCredentialsSchema = z.object({
 		.min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
 });
 export type LoginCredentials = z.infer<typeof LoginCredentialsSchema>;
+
+// Schéma de validation pour l'email
+export const emailSchema = z.object({
+	email: z
+		.string()
+		.min(1, "L'email est requis")
+		.email("Format d'email invalide"),
+});
+export type Email = z.infer<typeof emailSchema>;
 
 // Schéma pour l'inscription
 export const RegisterDataSchema = z.object({
@@ -64,20 +82,10 @@ export const RegisterFormSchema = RegisterDataSchema.extend({
 });
 export type RegisterFormData = z.infer<typeof RegisterFormSchema>;
 
-// Fonction pour formater les erreurs Zod
-export function formatZodError(error: z.ZodError): string {
-	const errors = error.errors.map((err) => err.message);
-	return errors.join('\n');
-}
-
+// Schéma pour les erreurs API
 export const ApiErrorSchema = z.object({
-  // Code de statut HTTP
-  status: z.number().int().positive(),
-  
-  // Message d'erreur
-  message: z.string().min(1),
-  
-  // Détails supplémentaires (optionnels)
-  details: z.record(z.unknown()).optional(),
+	status: z.number().int().positive(),
+	message: z.string().min(1),
+	details: z.record(z.unknown()).optional(),
 });
 export type ApiError = z.infer<typeof ApiErrorSchema>;

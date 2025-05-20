@@ -241,7 +241,7 @@ const RegisterForm = () => {
 				{(formError || error) && (
 					<div data-testid='error-container'>
 						<Alert
-							variant='destructive'
+							variant='error'
 							className='mb-4'
 							data-testid='error-alert'>
 							<AlertDescription data-testid='error-message'>

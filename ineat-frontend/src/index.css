@@ -164,7 +164,7 @@
 
 @utility nutriscore-c {
 	background-color: var(--color-nutriscore-c);
-	color: black;
+	color: var(--color-neutral-50);
 	border-radius: var(--radius-full);
 	width: 1.5rem;
 	height: 1.5rem;
@@ -176,7 +176,7 @@
 
 @utility nutriscore-d {
 	background-color: var(--color-nutriscore-d);
-	color: black;
+	color: var(--color-neutral-50);
 	border-radius: var(--radius-full);
 	width: 1.5rem;
 	height: 1.5rem;
@@ -188,7 +188,7 @@
 
 @utility nutriscore-e {
 	background-color: var(--color-nutriscore-e);
-	color: white;
+	color: var(--color-neutral-50);
 	border-radius: var(--radius-full);
 	width: 1.5rem;
 	height: 1.5rem;
@@ -196,61 +196,6 @@
 	align-items: center;
 	justify-content: center;
 	font-weight: var(--font-weight-bold);
-}
-
-/* Composants personnalisés */
-@utility btn-primary {
-	background-color: var(--color-accent-500);
-	color: white;
-	padding: var(--spacing-2) var(--spacing-4);
-	border-radius: var(--radius-md);
-	font-weight: var(--font-weight-medium);
-	transition: background-color 0.2s;
-}
-
-@utility btn-secondary {
-	background-color: white;
-	color: var(--color-text-primary);
-	padding: var(--spacing-2) var(--spacing-4);
-	border-radius: var(--radius-md);
-	font-weight: var(--font-weight-medium);
-	border: 1px solid var(--color-text-secondary);
-	transition: background-color 0.2s;
-}
-
-@utility btn-danger {
-	background-color: var(--color-error-500);
-	color: white;
-	padding: var(--spacing-2) var(--spacing-4);
-	border-radius: var(--radius-md);
-	font-weight: var(--font-weight-medium);
-	transition: background-color 0.2s;
-}
-
-@utility btn-tertiary {
-	color: var(--color-text-primary);
-	padding: var(--spacing-2) var(--spacing-4);
-	font-weight: var(--font-weight-medium);
-	transition: text-decoration 0.2s;
-}
-
-/* Les pseudo-classes comme :hover doivent être définies à l'aide de @layer */
-@layer utilities {
-	.btn-primary:hover {
-		background-color: var(--color-accent-600);
-	}
-
-	.btn-secondary:hover {
-		background-color: oklch(0.98 0.01 240);
-	}
-
-	.btn-danger:hover {
-		background-color: var(--color-error-600);
-	}
-
-	.btn-tertiary:hover {
-		text-decoration: underline;
-	}
 }
 
 @utility card {
@@ -304,47 +249,4 @@
 	height: 100%;
 	background-color: var(--color-accent-500);
 	border-radius: var(--radius-full);
-}
-
-/* Input styles */
-@utility input-text {
-	width: 100%;
-	padding: var(--spacing-2) var(--spacing-3);
-	border: 1px solid var(--color-text-secondary);
-	border-radius: var(--radius-md);
-	font-family: var(--font-sans);
-	font-size: var(--text-base);
-	transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-@layer utilities {
-	.input-text:focus {
-		outline: none;
-		border-color: var(--color-accent-500);
-		box-shadow: 0 0 0 3px var(--color-accent-100);
-	}
-}
-
-@utility input-select {
-	width: 100%;
-	padding: var(--spacing-2) var(--spacing-3);
-	padding-right: var(--spacing-8); /* Space for dropdown icon */
-	border: 1px solid var(--color-text-secondary);
-	border-radius: var(--radius-md);
-	font-family: var(--font-sans);
-	font-size: var(--text-base);
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd' /%3E%3C/svg%3E");
-	background-position: right var(--spacing-3) center;
-	background-repeat: no-repeat;
-	background-size: 1.25rem;
-	appearance: none;
-	transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-@layer utilities {
-	.input-select:focus {
-		outline: none;
-		border-color: var(--color-accent-500);
-		box-shadow: 0 0 0 3px var(--color-accent-100);
-	}
 }

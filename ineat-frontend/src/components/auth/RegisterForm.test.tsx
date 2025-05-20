@@ -6,7 +6,6 @@ import { useAuthStore } from '@/stores/authStore';
 import { RegisterDataSchema } from '@/schemas/authSchema';
 import userEvent from '@testing-library/user-event';
 import { z } from 'zod';
-import React from 'react';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({

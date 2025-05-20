@@ -20,7 +20,7 @@ export function LogoutButton(props: ButtonProps) {
 			onClick={handleLogout}
 			data-testid='logout-button'
 			{...props}>
-			<LogOut className='mr-2 h-4 w-4' />
+			<LogOut className='mr-2 size-4' />
 			Se déconnecter
 		</Button>
 	);

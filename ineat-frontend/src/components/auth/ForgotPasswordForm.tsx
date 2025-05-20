@@ -13,15 +13,8 @@ import {
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { z } from 'zod';
-import { apiClient } from '../../lib/api-client';
-
-// Schéma de validation pour l'email
-const emailSchema = z.object({
-	email: z
-		.string()
-		.min(1, "L'email est requis")
-		.email("Format d'email invalide"),
-});
+import { apiClient } from '@/lib/api-client';
+import { emailSchema } from '@/types/user';
 
 const ForgotPasswordForm = () => {
 	// États locaux du formulaire
@@ -108,7 +101,7 @@ const ForgotPasswordForm = () => {
 						{formError && (
 							<div data-testid='error-container'>
 								<Alert
-									variant='destructive'
+									variant='error'
 									data-testid='error-alert'>
 									<AlertDescription data-testid='error-message'>
 										{formError}

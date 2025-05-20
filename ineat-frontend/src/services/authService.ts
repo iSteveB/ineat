@@ -3,7 +3,7 @@ import {
 	RegisterData,
 	AuthResponse,
 	User,
-} from '../types/auth';
+} from '../types/user';
 import { apiClient } from '../lib/api-client';
 
 // Service gérant les opérations d'authentification
@@ -35,7 +35,7 @@ export const authService = {
 		try {
 			await apiClient.get('/auth/check');
 			return true;
-		} catch  {
+		} catch {
 			return false;
 		}
 	},

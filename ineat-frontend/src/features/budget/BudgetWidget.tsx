@@ -1,4 +1,4 @@
-import { Budget } from '@/types/types';
+import { Budget } from '@/types';
 import {
 	calculateBudgetPercentage,
 	formatPrice,

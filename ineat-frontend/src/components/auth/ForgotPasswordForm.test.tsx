@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ForgotPasswordForm from './ForgotPasswordForm';
 import { useNavigate } from '@tanstack/react-router';
-import { apiClient } from '../../lib/api-client';
+import { apiClient } from '@/lib/api-client';
 import userEvent from '@testing-library/user-event';
 
 // Mocks pour les dépendances

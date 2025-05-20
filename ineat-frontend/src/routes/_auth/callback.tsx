@@ -50,7 +50,7 @@ function OAuthCallback() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">
       {error ? (
-        <Alert variant="destructive" className="w-full max-w-md">
+        <Alert variant="error" className="w-full max-w-md">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : (

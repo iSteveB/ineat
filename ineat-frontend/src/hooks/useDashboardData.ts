@@ -5,7 +5,7 @@ import {
 	ExpiryStatus,
 	Budget,
 	NutriscoreHistory,
-} from '@/types/types';
+} from '@/types';
 import {
 	mockDashboardData,
 	mockProductsWithExpiryStatus,

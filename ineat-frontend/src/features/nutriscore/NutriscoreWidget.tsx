@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { getNutriscoreColor } from '@/utils/utils';
-import { NutriScore } from '@/types/types';
+import { NutriScore } from '@/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 

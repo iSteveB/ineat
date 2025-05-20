@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, LoginCredentials, RegisterData } from '../types/auth';
+import { User, LoginCredentials, RegisterData } from '../types/user';
 import { authService } from '../services/authService';
 
 interface AuthState {
@@ -136,7 +136,7 @@ export const useAuthStore = create<AuthState>()(
 					}
 
 					const isValid = await authService.verifyAuthentication();
-					
+
 					// Si la vérification échoue, effacer l'utilisateur
 					if (!isValid) {
 						set({

@@ -1,4 +1,4 @@
-import { ProductWithExpiryStatus } from '@/types/types';
+import { ProductWithExpiryStatus } from '@/types';
 import { FC } from 'react';
 import ProductItem from '@/components/common/ProductItem';
 import {
@@ -17,7 +17,7 @@ export const ExpiringProductsWidget: FC<ExpiringProductsWidgetProps> = ({
 	products,
 }) => {
 	return (
-		<Card className='bg-white'>
+		<Card className='bg-neutral-50'>
 			<CardHeader>
 				<CardTitle>Expirent bientôt</CardTitle>
 			</CardHeader>
