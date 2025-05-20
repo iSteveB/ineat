@@ -47,7 +47,7 @@ function InventoryPage() {
 	});
 
 	return (
-		<div className='flex flex-col h-full bg-primary-50'>
+		<div className='flex flex-col h-full bg-primary-50 lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto'>
 			{/* En-tête avec avatar et titre */}
 			<div className='px-4 py-6 flex items-center gap-4'>
 				<div className='size-16 rounded-full bg-primary-100 overflow-hidden'>
@@ -69,7 +69,7 @@ function InventoryPage() {
 			<div className='px-4 mb-4'>
 				<div className='relative'>
 					<div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
-						<Search className='h-5 w-5 text-neutral-200' />
+						<Search className='size-5 text-neutral-200' />
 					</div>
 					<input
 						type='text'
@@ -82,7 +82,7 @@ function InventoryPage() {
 			</div>
 
 			{/* Filtres par catégorie */}
-			<div className='px-4 mb-4'>
+			<div className='px-4 mb-4 mx-auto'>
 				<CategoryFilter
 					activeCategory={activeCategory}
 					onCategoryChange={setActiveCategory}

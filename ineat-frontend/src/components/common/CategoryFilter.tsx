@@ -20,14 +20,14 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 	onCategoryChange,
 }) => {
 	return (
-		<div className='flex space-x-2 overflow-x-auto pb-2'>
+		<div className='flexspace-x-2 overflow-x-auto pb-2'>
 			{categories.map((category) => (
 				<button
 					key={category.id}
-					className={`px-6 py-3 rounded-full font-medium transition-colors ${
+					className={`px-6 py-3 rounded-full font-medium cursor-pointer transition-colors ${
 						activeCategory === category.id
 							? 'bg-primary-100 text-neutral-300'
-							: 'bg-neutral-50 text-neutral-200 hover:bg-neutral-100'
+							: 'bg-neutral-50 text-neutral-200 hover:bg-neutral-200 hover:text-neutral-50'
 					}`}
 					onClick={() => onCategoryChange(category.id)}>
 					{category.label}
