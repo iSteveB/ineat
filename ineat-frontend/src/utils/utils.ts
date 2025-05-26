@@ -1,4 +1,4 @@
-import { ExpiryStatus, ExpiryStatusType, NutriScore } from '../types';
+import { ExpiryStatusType, NutriScore } from '../types';
 
 // Formater la date au format français
 export const formatDate = (date: Date): string => {
@@ -109,22 +109,22 @@ export const calculateExpiryStatus = (
   const diffTime = expiryDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return ExpiryStatus.EXPIRED;
-  if (diffDays <= 2) return ExpiryStatus.CRITICAL;
-  if (diffDays <= 5) return ExpiryStatus.WARNING;
-  return ExpiryStatus.GOOD;
+  if (diffDays < 0) return "EXPIRED";
+  if (diffDays <= 2) return "CRITICAL";
+  if (diffDays <= 5) return "WARNING";
+  return "GOOD";
 };
 
 // Obtenir la couleur associée au statut d'expiration
 export const getExpiryStatusColor = (status: ExpiryStatusType): string => {
   switch (status) {
-    case ExpiryStatus.EXPIRED:
+    case "EXPIRED":
       return 'bg-error-100';
-    case ExpiryStatus.CRITICAL:
+    case "CRITICAL":
       return 'bg-error-50';
-    case ExpiryStatus.WARNING:
+    case "WARNING":
       return 'bg-warning-50';
-    case ExpiryStatus.GOOD:
+    case "GOOD":
       return 'bg-success-50';
     default:
       return 'bg-neutral-200';

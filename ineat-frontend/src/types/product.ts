@@ -56,6 +56,8 @@ export const ProductSchema = z.object({
   purchaseDate: z.date().optional(),
   expiryDate: z.date().optional(),
   price: z.number().optional(),
+  ingredients: z.array(z.string()).optional(), // Liste d'ingrédients
+  allergens: z.array(z.string()).optional(), // Liste d'allergènes
 });
 export type Product = z.infer<typeof ProductSchema>;
 

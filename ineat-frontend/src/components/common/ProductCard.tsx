@@ -1,47 +1,43 @@
 import React from 'react';
-import { parseISO, differenceInDays } from 'date-fns';
-import { NutriScore } from '@/types/product';
-import { InventoryItem } from '@/types/inventory';
-import { ExpiryStatus, ExpiryStatusType } from '@/types/common';
+import { differenceInDays } from 'date-fns';
+import { useNavigate } from '@tanstack/react-router';
+import {
+	NutriScore,
+	StorageLocation,
+	ProductWithExpiryStatus,
+} from '@/types/product';
+import { Package } from 'lucide-react';
 
 // Définition du type pour les propriétés du composant
 interface ProductCardProps {
-	item: InventoryItem;
+	item: ProductWithExpiryStatus;
 }
 
-// Fonction pour déterminer le statut d'expiration
-const getExpiryStatus = (daysRemaining: number): ExpiryStatusType => {
-	if (daysRemaining < 0) return ExpiryStatus.EXPIRED;
-	if (daysRemaining <= 2) return ExpiryStatus.CRITICAL;
-	if (daysRemaining <= 5) return ExpiryStatus.WARNING;
-	return ExpiryStatus.GOOD;
-};
-
-// Fonction pour déterminer la couleur en fonction du statut d'expiration
-const getExpiryStatusColor = (daysRemaining: number): string => {
-	const status = getExpiryStatus(daysRemaining);
-
+// Fonction pour déterminer la couleur en fonction des jours restants
+const getExpiryStatusColor = (status: string): string => {
 	switch (status) {
-		case ExpiryStatus.EXPIRED:
-			return 'bg-error-100 text-neutral-50';
-		case ExpiryStatus.CRITICAL:
-			return 'bg-error-50 text-neutral-50';
-		case ExpiryStatus.WARNING:
-			return 'bg-warning-50 text-neutral-300';
-		case ExpiryStatus.GOOD:
-			return 'bg-success-50 text-neutral-50';
+		case 'EXPIRED':
+			return 'bg-error-100 text-white'; // Expiré
+		case 'CRITICAL':
+			return 'bg-error-50 text-white'; // Critique
+		case 'WARNING':
+			return 'bg-warning-50 text-neutral-300'; // Attention
+		case 'GOOD':
+			return 'bg-success-50 text-white'; // OK
 		default:
-			return 'bg-neutral-200 text-neutral-50';
+			return 'bg-neutral-100 text-neutral-200'; // Information non disponible
 	}
 };
 
 // Fonction pour obtenir la couleur du Nutriscore
-const getNutriscoreColor = (score?: NutriScore): string => {
-	if (!score) return 'bg-neutral-200 text-neutral-50';
+const getNutriscoreColor = (score?: NutriScore | null): string => {
+	if (score === null || score === undefined) {
+		return 'bg-neutral-200 text-neutral-50';
+	}
 
 	switch (score) {
 		case 'A':
-			return 'nutriscore-a ';
+			return 'nutriscore-a';
 		case 'B':
 			return 'nutriscore-b';
 		case 'C':
@@ -55,15 +51,23 @@ const getNutriscoreColor = (score?: NutriScore): string => {
 	}
 };
 
+const getStorageLocationText = (location?: StorageLocation): string => {
+	if (!location) return 'Non spécifié';
+
+	const locationMap: Record<StorageLocation, string> = {
+		FRESH: 'Frigo',
+		FREEZER: 'Congélateur',
+		PANTRY: 'Placard',
+		ALL: 'Tous',
+	};
+
+	return locationMap[location];
+};
+
 const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 	// Calcul des jours restants avant expiration
 	const daysRemaining = item.expiryDate
-		? differenceInDays(
-				typeof item.expiryDate === 'string'
-					? parseISO(item.expiryDate)
-					: item.expiryDate,
-				new Date()
-		  )
+		? differenceInDays(item.expiryDate, new Date())
 		: null;
 
 	// Formatage des jours restants
@@ -74,26 +78,50 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 				: `Expiré depuis ${Math.abs(daysRemaining)}j`
 			: '';
 
-	const expiryClass =
-		daysRemaining !== null ? getExpiryStatusColor(daysRemaining) : '';
+	const expiryClass = getExpiryStatusColor(item.expiryStatus);
+
+	// Utilisation de useNavigate pour rediriger vers la page de détail
+	const navigate = useNavigate();
+
+	const goToProductDetail = () => {
+		navigate({
+			to: '/app/inventory/$productId',
+			params: { productId: item.id },
+		});
+	};
+
+	const getQuantityText = (): string => {
+		if (!item.quantity) return '';
+
+		if (item.unitType === 'L' || item.unitType === 'ML') {
+			return item.unitType === 'L'
+				? `${item.quantity}L`
+				: `${item.quantity}mL`;
+		} else if (item.unitType === 'KG' || item.unitType === 'G') {
+			return item.unitType === 'KG'
+				? `${item.quantity}kg`
+				: `${item.quantity}g`;
+		} else {
+			return `${item.quantity} ${item.unit || 'unité(s)'}`;
+		}
+	};
 
 	return (
-		<div className='bg-neutral-50 rounded-lg shadow-sm overflow-hidden'>
+		<div
+			className='bg-neutral-50 rounded-lg shadow-sm overflow-hidden cursor-pointer'
+			onClick={goToProductDetail}>
 			<div className='flex p-3'>
 				{/* Image du produit */}
 				<div className='size-28 bg-primary-50 rounded-md mr-3 overflow-hidden'>
-					{item.product.imageUrl ? (
+					{item.imageUrl ? (
 						<img
-							src={item.product.imageUrl}
-							alt={item.product.name}
+							src={item.imageUrl}
+							alt={item.name}
 							className='size-full object-cover'
 						/>
 					) : (
-						<div className='size-full flex items-center justify-center bg-primary-50'>
-							{/* Placeholder pour l'image */}
-							<span className='text-xs text-neutral-200 text-center'>
-								Image non disponible
-							</span>
+						<div className='size--full flex items-center justify-center bg-primary-50'>
+							<Package size={32} className='text-neutral-200' />
 						</div>
 					)}
 				</div>
@@ -102,15 +130,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 				<div className='flex-1'>
 					<div className='flex justify-between'>
 						<div>
-							<h3 className='font-medium text-lg'>
-								{item.product.name}
-							</h3>
+							<h3 className='font-medium text-lg'>{item.name}</h3>
 							<p className='text-sm text-neutral-200'>
-								{item.product.brand}
+								{item.brand}
 							</p>
 							<p className='text-sm mt-1'>
-								{item.storageLocation} - {item.quantity}{' '}
-								{item.unity}
+								{getStorageLocationText(item.storageLocation)} -{' '}
+								{getQuantityText()}
 							</p>
 						</div>
 
@@ -128,22 +154,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 						{/* Nutriscore */}
 						<div
 							className={`${getNutriscoreColor(
-								item.product.nutriscore
+								item.nutriscore
 							)} size-8 rounded-full flex items-center justify-center font-bold text-lg`}>
-							{item.product.nutriscore || '?'}
-						</div>
-
-						{/* Quantité */}
-						<div className='bg-accent size-8 rounded-full flex items-center justify-center text-neutral-50 font-bold'>
-							{item.quantity}
+							{item.nutriscore || '?'}
 						</div>
 
 						{/* Eco-score */}
 						<div
 							className={`${getNutriscoreColor(
-								item.product.ecoScore as NutriScore
+								item.ecoScore as NutriScore
 							)} size-8 rounded-full flex items-center justify-center font-bold text-lg`}>
-							{item.product.ecoScore || '?'}
+							{item.ecoScore || '?'}
 						</div>
 					</div>
 				</div>

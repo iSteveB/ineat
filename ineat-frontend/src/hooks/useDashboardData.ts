@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
 	DashboardData,
 	ProductWithExpiryStatus,
-	ExpiryStatus,
 	Budget,
 	NutriscoreHistory,
 } from '@/types';
@@ -104,9 +103,9 @@ export const useDashboardData = (): DashboardDataHook => {
 			const expiryCountsData = countProductsByExpiryStatus();
 			setExpiryCounts({
 				total: mockProductsWithExpiryStatus.length,
-				soon: expiryCountsData[ExpiryStatus.WARNING],
-				critical: expiryCountsData[ExpiryStatus.CRITICAL],
-				expired: expiryCountsData[ExpiryStatus.EXPIRED],
+				soon: expiryCountsData["WARNING"],
+				critical: expiryCountsData["CRITICAL"],
+				expired: expiryCountsData["EXPIRED"],
 			});
 
 			const avgScore = calculateAverageNutriscore(

@@ -4,7 +4,6 @@ import {
 	User,
 	NutriscoreHistory,
 	DashboardData,
-	ExpiryStatus,
 	ProductWithExpiryStatus,
 	ExpiryStatusType,
 } from '../types';
@@ -617,8 +616,8 @@ export const getSoonExpiringProducts = (
 	return mockProductsWithExpiryStatus
 		.filter(
 			(p) =>
-				p.expiryStatus === ExpiryStatus.WARNING ||
-				p.expiryStatus === ExpiryStatus.CRITICAL
+				p.expiryStatus === "WARNING" ||
+				p.expiryStatus === "CRITICAL"
 		)
 		.sort((a, b) => (a.expiryDate?.getTime() ?? 0) - (b.expiryDate?.getTime() ?? 0))
 		.slice(0, count);
@@ -630,15 +629,20 @@ export const countProductsByExpiryStatus = (): Record<
 	number
 > => {
 	const counts = {
-		[ExpiryStatus.EXPIRED]: 0,
-		[ExpiryStatus.CRITICAL]: 0,
-		[ExpiryStatus.WARNING]: 0,
-		[ExpiryStatus.GOOD]: 0,
+		["EXPIRED"]: 0,
+		["CRITICAL"]: 0,
+		["WARNING"]: 0,
+		["GOOD"]: 0,
 	};
 
 	mockProductsWithExpiryStatus.forEach((product) => {
-		counts[product.expiryStatus]++;
+		if (product.expiryStatus !== 'UNKNOWN') {
+			counts[product.expiryStatus]++;
+		}
 	});
 
-	return counts;
+	return {
+		...counts,
+		["UNKNOWN"]: 0
+	};
 };
