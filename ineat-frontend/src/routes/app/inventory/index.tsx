@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Search, Plus } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useInventoryStore } from '@/stores/inventoryStore';
 import { StorageLocation, ProductWithExpiryStatus } from '@/types/product';
 import { calculateExpiryStatus } from '@/types/common';
@@ -96,16 +96,6 @@ function InventoryPage() {
 						</p>
 					</div>
 				)}
-			</div>
-
-			<div className='fixed bottom-20 right-4 z-10'>
-				<button
-					className='size-14 rounded-full bg-success-50 flex items-center justify-center shadow-lg text-neutral-50 hover:bg-accent-600 transition-colors'
-					onClick={() =>
-						(window.location.href = '/app/inventory/add-product')
-					}>
-					<Plus size={24} />
-				</button>
 			</div>
 		</div>
 	);
