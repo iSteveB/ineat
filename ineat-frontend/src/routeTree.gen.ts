@@ -32,7 +32,9 @@ import { Route as AppRecipesSuggestionsImport } from './routes/app/recipes/sugge
 import { Route as AppRecipesRecipeIdImport } from './routes/app/recipes/$recipeId'
 import { Route as AppInventoryScanProductImport } from './routes/app/inventory/scan-product'
 import { Route as AppInventoryImportProductImport } from './routes/app/inventory/import-product'
+import { Route as AppInventoryCreateProductImport } from './routes/app/inventory/create-product'
 import { Route as AppInventoryAddProductImport } from './routes/app/inventory/add-product'
+import { Route as AppInventoryAddManualImport } from './routes/app/inventory/add-manual'
 import { Route as AppInventoryProductIdImport } from './routes/app/inventory/$productId'
 import { Route as AppSettingsSecurityIndexImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexImport } from './routes/app/settings/personal-info/index'
@@ -164,9 +166,21 @@ const AppInventoryImportProductRoute = AppInventoryImportProductImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 
+const AppInventoryCreateProductRoute = AppInventoryCreateProductImport.update({
+  id: '/inventory/create-product',
+  path: '/inventory/create-product',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+
 const AppInventoryAddProductRoute = AppInventoryAddProductImport.update({
   id: '/inventory/add-product',
   path: '/inventory/add-product',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+
+const AppInventoryAddManualRoute = AppInventoryAddManualImport.update({
+  id: '/inventory/add-manual',
+  path: '/inventory/add-manual',
   getParentRoute: () => AppRouteRoute,
 } as any)
 
@@ -284,11 +298,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryProductIdImport
       parentRoute: typeof AppRouteImport
     }
+    '/app/inventory/add-manual': {
+      id: '/app/inventory/add-manual'
+      path: '/inventory/add-manual'
+      fullPath: '/app/inventory/add-manual'
+      preLoaderRoute: typeof AppInventoryAddManualImport
+      parentRoute: typeof AppRouteImport
+    }
     '/app/inventory/add-product': {
       id: '/app/inventory/add-product'
       path: '/inventory/add-product'
       fullPath: '/app/inventory/add-product'
       preLoaderRoute: typeof AppInventoryAddProductImport
+      parentRoute: typeof AppRouteImport
+    }
+    '/app/inventory/create-product': {
+      id: '/app/inventory/create-product'
+      path: '/inventory/create-product'
+      fullPath: '/app/inventory/create-product'
+      preLoaderRoute: typeof AppInventoryCreateProductImport
       parentRoute: typeof AppRouteImport
     }
     '/app/inventory/import-product': {
@@ -422,7 +450,9 @@ const ErrorRouteRouteWithChildren = ErrorRouteRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
+  AppInventoryAddManualRoute: typeof AppInventoryAddManualRoute
   AppInventoryAddProductRoute: typeof AppInventoryAddProductRoute
+  AppInventoryCreateProductRoute: typeof AppInventoryCreateProductRoute
   AppInventoryImportProductRoute: typeof AppInventoryImportProductRoute
   AppInventoryScanProductRoute: typeof AppInventoryScanProductRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
@@ -441,7 +471,9 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
+  AppInventoryAddManualRoute: AppInventoryAddManualRoute,
   AppInventoryAddProductRoute: AppInventoryAddProductRoute,
+  AppInventoryCreateProductRoute: AppInventoryCreateProductRoute,
   AppInventoryImportProductRoute: AppInventoryImportProductRoute,
   AppInventoryScanProductRoute: AppInventoryScanProductRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
@@ -473,7 +505,9 @@ export interface FileRoutesByFullPath {
   '/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
+  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
+  '/app/inventory/create-product': typeof AppInventoryCreateProductRoute
   '/app/inventory/import-product': typeof AppInventoryImportProductRoute
   '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -500,7 +534,9 @@ export interface FileRoutesByTo {
   '/notFound': typeof ErrorNotFoundRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
+  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
+  '/app/inventory/create-product': typeof AppInventoryCreateProductRoute
   '/app/inventory/import-product': typeof AppInventoryImportProductRoute
   '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -530,7 +566,9 @@ export interface FileRoutesById {
   '/_error/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
+  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
+  '/app/inventory/create-product': typeof AppInventoryCreateProductRoute
   '/app/inventory/import-product': typeof AppInventoryImportProductRoute
   '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -560,7 +598,9 @@ export interface FileRouteTypes {
     | '/notFound'
     | '/app/'
     | '/app/inventory/$productId'
+    | '/app/inventory/add-manual'
     | '/app/inventory/add-product'
+    | '/app/inventory/create-product'
     | '/app/inventory/import-product'
     | '/app/inventory/scan-product'
     | '/app/recipes/$recipeId'
@@ -586,7 +626,9 @@ export interface FileRouteTypes {
     | '/notFound'
     | '/app'
     | '/app/inventory/$productId'
+    | '/app/inventory/add-manual'
     | '/app/inventory/add-product'
+    | '/app/inventory/create-product'
     | '/app/inventory/import-product'
     | '/app/inventory/scan-product'
     | '/app/recipes/$recipeId'
@@ -614,7 +656,9 @@ export interface FileRouteTypes {
     | '/_error/notFound'
     | '/app/'
     | '/app/inventory/$productId'
+    | '/app/inventory/add-manual'
     | '/app/inventory/add-product'
+    | '/app/inventory/create-product'
     | '/app/inventory/import-product'
     | '/app/inventory/scan-product'
     | '/app/recipes/$recipeId'
@@ -685,7 +729,9 @@ export const routeTree = rootRoute
       "children": [
         "/app/",
         "/app/inventory/$productId",
+        "/app/inventory/add-manual",
         "/app/inventory/add-product",
+        "/app/inventory/create-product",
         "/app/inventory/import-product",
         "/app/inventory/scan-product",
         "/app/recipes/$recipeId",
@@ -733,8 +779,16 @@ export const routeTree = rootRoute
       "filePath": "app/inventory/$productId.tsx",
       "parent": "/app"
     },
+    "/app/inventory/add-manual": {
+      "filePath": "app/inventory/add-manual.tsx",
+      "parent": "/app"
+    },
     "/app/inventory/add-product": {
       "filePath": "app/inventory/add-product.tsx",
+      "parent": "/app"
+    },
+    "/app/inventory/create-product": {
+      "filePath": "app/inventory/create-product.tsx",
       "parent": "/app"
     },
     "/app/inventory/import-product": {
