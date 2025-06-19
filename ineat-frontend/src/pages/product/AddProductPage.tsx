@@ -16,7 +16,7 @@ export const AddProductPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-100">
+      <div className="bg-neutral-50 border-b border-neutral-100">
         <div className="max-w-md mx-auto px-4 py-4">
           <div className="flex items-center space-x-4">
             <Link 

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { 
   ArrowLeft, 
   Calendar,
@@ -8,31 +9,27 @@ import {
   Save,
   PackageOpen,
   Leaf,
-  Activity
+  Activity,
+  Loader2
 } from 'lucide-react';
-
-interface ProductFormData {
-  name: string;
-  brand: string;
-  category: string;
-  quantity: string;
-  unitType: string;
-  purchaseDate: string;
-  expiryDate: string;
-  purchasePrice: string;
-  storageLocation: string;
-  notes: string;
-  nutriscore: string;
-  ecoscore: string;
-  carbohydrates: string;
-  proteins: string;
-  fats: string;
-  salt: string;
-}
+import { 
+  AddManualProductSchema, 
+  AddManualProductInput,
+  UnitType,
+  NutriScore,
+  EcoScore 
+} from '@/schemas/inventorySchema';
+import { useAddManualProduct } from '@/hooks/useInventory';
+import { 
+  useInventoryFormState, 
+  useInventoryActions, 
+  useInventoryRecentValues,
+  useSaveRecentValues,
+} from '@/stores/inventory-store';
 
 const CATEGORIES = [
   { value: '', label: 'Sélectionner une catégorie' },
-  { value: 'fruits-legumes', label: 'Fruits & Légumes' },
+  { value: 'fruits-et-legumes', label: 'Fruits & Légumes' },
   { value: 'viandes-poissons', label: 'Viandes & Poissons' },
   { value: 'produits-laitiers', label: 'Produits laitiers' },
   { value: 'epicerie-salee', label: 'Épicerie salée' },
@@ -43,11 +40,11 @@ const CATEGORIES = [
 ];
 
 const UNIT_TYPES = [
-  { value: 'UNIT', label: 'Unité(s)' },
-  { value: 'KG', label: 'Kilogramme(s)' },
-  { value: 'G', label: 'Gramme(s)' },
-  { value: 'L', label: 'Litre(s)' },
-  { value: 'ML', label: 'Millilitre(s)' },
+  { value: 'UNIT' as UnitType, label: 'Unité(s)' },
+  { value: 'KG' as UnitType, label: 'Kilogramme(s)' },
+  { value: 'G' as UnitType, label: 'Gramme(s)' },
+  { value: 'L' as UnitType, label: 'Litre(s)' },
+  { value: 'ML' as UnitType, label: 'Millilitre(s)' },
 ];
 
 const STORAGE_LOCATIONS = [
@@ -61,93 +58,112 @@ const STORAGE_LOCATIONS = [
 
 const NUTRISCORE_OPTIONS = [
   { value: '', label: 'Non défini' },
-  { value: 'A', label: 'A - Très bonne qualité nutritionnelle' },
-  { value: 'B', label: 'B - Bonne qualité nutritionnelle' },
-  { value: 'C', label: 'C - Qualité nutritionnelle correcte' },
-  { value: 'D', label: 'D - Qualité nutritionnelle faible' },
-  { value: 'E', label: 'E - Qualité nutritionnelle très faible' },
+  { value: 'A' as NutriScore, label: 'A - Très bonne qualité nutritionnelle' },
+  { value: 'B' as NutriScore, label: 'B - Bonne qualité nutritionnelle' },
+  { value: 'C' as NutriScore, label: 'C - Qualité nutritionnelle correcte' },
+  { value: 'D' as NutriScore, label: 'D - Qualité nutritionnelle faible' },
+  { value: 'E' as NutriScore, label: 'E - Qualité nutritionnelle très faible' },
 ];
 
 const ECOSCORE_OPTIONS = [
   { value: '', label: 'Non défini' },
-  { value: 'A', label: 'A - Très faible impact environnemental' },
-  { value: 'B', label: 'B - Faible impact environnemental' },
-  { value: 'C', label: 'C - Impact environnemental modéré' },
-  { value: 'D', label: 'D - Impact environnemental élevé' },
-  { value: 'E', label: 'E - Impact environnemental très élevé' },
+  { value: 'A' as EcoScore, label: 'A - Très faible impact environnemental' },
+  { value: 'B' as EcoScore, label: 'B - Faible impact environnemental' },
+  { value: 'C' as EcoScore, label: 'C - Impact environnemental modéré' },
+  { value: 'D' as EcoScore, label: 'D - Impact environnemental élevé' },
+  { value: 'E' as EcoScore, label: 'E - Impact environnemental très élevé' },
 ];
 
 export function AddManualProductPage() {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: '',
-    brand: '',
-    category: '',
-    quantity: '',
-    unitType: 'UNIT',
-    purchaseDate: new Date().toISOString().split('T')[0],
-    expiryDate: '',
-    purchasePrice: '',
-    storageLocation: '',
-    notes: '',
-    nutriscore: '',
-    ecoscore: '',
-    carbohydrates: '',
-    proteins: '', 
-    fats: '',
-    salt: '',
+  
+  // Hooks pour l'état et les actions
+  const draftProduct = useInventoryFormState();
+  const { clearDraftProduct } = useInventoryActions();
+  const recentValues = useInventoryRecentValues();
+  const saveRecentValues = useSaveRecentValues();
+  
+  // Hook pour la mutation d'ajout de produit
+  const addProductMutation = useAddManualProduct();
+  
+  // Configuration du formulaire avec React Hook Form et Zod
+  const form = useForm<AddManualProductInput>({
+    resolver: zodResolver(AddManualProductSchema),
+    defaultValues: {
+      name: draftProduct.name || '',
+      brand: draftProduct.brand || '',
+      category: draftProduct.category || '',
+      quantity: draftProduct.quantity || 1,
+      unitType: draftProduct.unitType || 'UNIT',
+      purchaseDate: draftProduct.purchaseDate || new Date().toISOString().split('T')[0],
+      expiryDate: draftProduct.expiryDate || '',
+      purchasePrice: draftProduct.purchasePrice,
+      storageLocation: draftProduct.storageLocation || '',
+      notes: draftProduct.notes || '',
+      nutriscore: draftProduct.nutriscore,
+      ecoscore: draftProduct.ecoscore,
+      nutritionalInfo: draftProduct.nutritionalInfo || {
+        carbohydrates: undefined,
+        proteins: undefined,
+        fats: undefined,
+        salt: undefined,
+      },
+    },
   });
 
-  const handleInputChange = (field: keyof ProductFormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  const { handleSubmit, formState: { errors, isValid } } = form;
+  
+  // Soumission du formulaire
+  const onSubmit = async (data: AddManualProductInput) => {
     try {
-      // TODO: Appeler l'API pour sauvegarder le produit
-      console.log('Données du produit à sauvegarder:', formData);
+      const result = await addProductMutation.mutateAsync(data);
+      console.log('Produit ajouté avec succès:', result);
       
-      // Simulation d'un appel API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Sauvegarder les valeurs récentes pour faciliter la prochaine saisie
+      saveRecentValues(data);
       
-      // Redirection vers l'inventaire après succès
+      // Nettoyer le formulaire
+      clearDraftProduct();
+      
+      // Redirection vers l'inventaire
       navigate({ to: '/app/inventory' });
+      
     } catch (error) {
+      // L'erreur est déjà gérée par le hook useAddManualProduct
       console.error('Erreur lors de l\'ajout du produit:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const isFormValid = formData.name.trim() && formData.category && formData.quantity;
+  // Gestion de l'annulation
+  const handleCancel = () => {
+    clearDraftProduct();
+    navigate({ to: '/app/inventory/add-product' });
+  };
+
+  // État de chargement
+  const isLoading = addProductMutation.isPending;
 
   return (
     <div className="min-h-screen bg-primary-50">
       {/* Header */}
       <div className="bg-neutral-50 border-b border-t border-neutral-200 sticky top-0 z-10">
         <div className="flex items-center justify-between p-4">
-          <Link 
-            to="/app/inventory/add-product" 
+          <button
+            onClick={handleCancel}
             className="p-2 -ml-2 text-neutral-600 hover:text-neutral-900 transition-colors"
+            disabled={isLoading}
           >
             <ArrowLeft className="size-6" />
-          </Link>
+          </button>
           <h1 className="text-lg font-semibold text-neutral-900">
             Ajouter manuellement un produit
           </h1>
-          <div className="size-9" /> {/* Espaceur pour centrer le titre */}
+          <div className="size-9" />
         </div>
       </div>
 
       {/* Formulaire */}
-      <form onSubmit={handleSubmit} className="p-4 space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-6">
         {/* Informations de base */}
         <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-4">
           <h2 className="text-xl font-medium text-neutral-900 mb-4 flex items-center gap-2">
@@ -162,29 +178,41 @@ export function AddManualProductPage() {
                 Nom du produit *
               </label>
               <input
+                {...form.register('name')}
                 type="text"
                 id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
                 placeholder="Ex: Pommes Golden"
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
-                required
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
+                  errors.name ? 'border-error-50' : 'border-neutral-300'
+                }`}
+                disabled={isLoading}
               />
+              {errors.name && (
+                <p className="text-sm text-error-50 mt-1">{errors.name.message}</p>
+              )}
             </div>
 
-            {/* Marque */}
+            {/* Marque avec suggestions */}
             <div>
               <label htmlFor="brand" className="block text-sm font-medium text-neutral-700 mb-2">
                 Marque
               </label>
-              <input
-                type="text"
-                id="brand"
-                value={formData.brand}
-                onChange={(e) => handleInputChange('brand', e.target.value)}
-                placeholder="Ex: Leclerc"
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
-              />
+              <div className="relative">
+                <input
+                  {...form.register('brand')}
+                  type="text"
+                  id="brand"
+                  placeholder="Ex: Leclerc"
+                  list="brands-list"
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                  disabled={isLoading}
+                />
+                <datalist id="brands-list">
+                  {recentValues.brands.map((brand: string) => (
+                    <option key={brand} value={brand} />
+                  ))}
+                </datalist>
+              </div>
             </div>
 
             {/* Catégorie */}
@@ -193,11 +221,12 @@ export function AddManualProductPage() {
                 Catégorie *
               </label>
               <select
+                {...form.register('category')}
                 id="category"
-                value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
-                required
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
+                  errors.category ? 'border-error-50' : 'border-neutral-300'
+                }`}
+                disabled={isLoading}
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.value} value={cat.value}>
@@ -205,6 +234,9 @@ export function AddManualProductPage() {
                   </option>
                 ))}
               </select>
+              {errors.category && (
+                <p className="text-sm text-error-50 mt-1">{errors.category.message}</p>
+              )}
             </div>
           </div>
         </div>
@@ -224,26 +256,31 @@ export function AddManualProductPage() {
                   Quantité *
                 </label>
                 <input
+                  {...form.register('quantity', { valueAsNumber: true })}
                   type="number"
                   id="quantity"
-                  value={formData.quantity}
-                  onChange={(e) => handleInputChange('quantity', e.target.value)}
                   placeholder="1"
-                  min="0"
-                  step="0.1"
-                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
-                  required
+                  min="1"
+                  step="1"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
+                    errors.quantity ? 'border-error-50' : 'border-neutral-300'
+                  }`}
+                  disabled={isLoading}
                 />
+                {errors.quantity && (
+                  <p className="text-sm text-error-50 mt-1">{errors.quantity.message}</p>
+                )}
               </div>
+              
               <div>
                 <label htmlFor="unitType" className="block text-sm font-medium text-neutral-700 mb-2">
                   Unité
                 </label>
                 <select
+                  {...form.register('unitType')}
                   id="unitType"
-                  value={formData.unitType}
-                  onChange={(e) => handleInputChange('unitType', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                  disabled={isLoading}
                 >
                   {UNIT_TYPES.map((unit) => (
                     <option key={unit.value} value={unit.value}>
@@ -254,16 +291,16 @@ export function AddManualProductPage() {
               </div>
             </div>
 
-            {/* Lieu de stockage */}
+            {/* Lieu de stockage avec suggestions */}
             <div>
               <label htmlFor="storageLocation" className="block text-sm font-medium text-neutral-700 mb-2">
                 Lieu de stockage
               </label>
               <select
+                {...form.register('storageLocation')}
                 id="storageLocation"
-                value={formData.storageLocation}
-                onChange={(e) => handleInputChange('storageLocation', e.target.value)}
                 className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                disabled={isLoading}
               >
                 {STORAGE_LOCATIONS.map((location) => (
                   <option key={location.value} value={location.value}>
@@ -289,12 +326,17 @@ export function AddManualProductPage() {
                 Date d'achat
               </label>
               <input
+                {...form.register('purchaseDate')}
                 type="date"
                 id="purchaseDate"
-                value={formData.purchaseDate}
-                onChange={(e) => handleInputChange('purchaseDate', e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
+                  errors.purchaseDate ? 'border-error-50' : 'border-neutral-300'
+                }`}
+                disabled={isLoading}
               />
+              {errors.purchaseDate && (
+                <p className="text-sm text-error-50 mt-1">{errors.purchaseDate.message}</p>
+              )}
             </div>
 
             {/* Date de péremption */}
@@ -303,12 +345,17 @@ export function AddManualProductPage() {
                 Date de péremption
               </label>
               <input
+                {...form.register('expiryDate')}
                 type="date"
                 id="expiryDate"
-                value={formData.expiryDate}
-                onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
+                  errors.expiryDate ? 'border-error-50' : 'border-neutral-300'
+                }`}
+                disabled={isLoading}
               />
+              {errors.expiryDate && (
+                <p className="text-sm text-error-50 mt-1">{errors.expiryDate.message}</p>
+              )}
             </div>
 
             {/* Prix d'achat */}
@@ -318,23 +365,28 @@ export function AddManualProductPage() {
               </label>
               <div className="relative">
                 <input
+                  {...form.register('purchasePrice', { valueAsNumber: true })}
                   type="number"
                   id="purchasePrice"
-                  value={formData.purchasePrice}
-                  onChange={(e) => handleInputChange('purchasePrice', e.target.value)}
                   placeholder="0.00"
                   min="0"
                   step="0.01"
-                  className="w-full pl-8 pr-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                  className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
+                    errors.purchasePrice ? 'border-error-50' : 'border-neutral-300'
+                  }`}
+                  disabled={isLoading}
                 />
                 <Euro className="absolute left-2.5 top-1/2 transform -translate-y-1/2 size-4 text-neutral-400" />
               </div>
+              {errors.purchasePrice && (
+                <p className="text-sm text-error-50 mt-1">{errors.purchasePrice.message}</p>
+              )}
             </div>
           </div>
         </div>
 
-         {/* Informations nutritionnelles */}
-         <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-4">
+        {/* Informations nutritionnelles */}
+        <div className="bg-neutral-50 rounded-xl border border-neutral-200 p-4">
           <h2 className="text-xl font-medium text-neutral-900 mb-4 flex items-center gap-2">
             <Activity className="size-5 text-success-50" />
             Informations nutritionnelles
@@ -348,10 +400,10 @@ export function AddManualProductPage() {
                   Nutri-Score
                 </label>
                 <select
+                  {...form.register('nutriscore')}
                   id="nutriscore"
-                  value={formData.nutriscore}
-                  onChange={(e) => handleInputChange('nutriscore', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                  disabled={isLoading}
                 >
                   {NUTRISCORE_OPTIONS.map((score) => (
                     <option key={score.value} value={score.value}>
@@ -366,10 +418,10 @@ export function AddManualProductPage() {
                   Eco-Score
                 </label>
                 <select
+                  {...form.register('ecoscore')}
                   id="ecoscore"
-                  value={formData.ecoscore}
-                  onChange={(e) => handleInputChange('ecoscore', e.target.value)}
                   className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                  disabled={isLoading}
                 >
                   {ECOSCORE_OPTIONS.map((score) => (
                     <option key={score.value} value={score.value}>
@@ -393,14 +445,14 @@ export function AddManualProductPage() {
                     Glucides (g)
                   </label>
                   <input
+                    {...form.register('nutritionalInfo.carbohydrates', { valueAsNumber: true })}
                     type="number"
                     id="carbohydrates"
-                    value={formData.carbohydrates}
-                    onChange={(e) => handleInputChange('carbohydrates', e.target.value)}
                     placeholder="0.0"
                     min="0"
                     step="0.1"
                     className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -409,14 +461,14 @@ export function AddManualProductPage() {
                     Protéines (g)
                   </label>
                   <input
+                    {...form.register('nutritionalInfo.proteins', { valueAsNumber: true })}
                     type="number"
                     id="proteins"
-                    value={formData.proteins}
-                    onChange={(e) => handleInputChange('proteins', e.target.value)}
                     placeholder="0.0"
                     min="0"
                     step="0.1"
                     className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -425,14 +477,14 @@ export function AddManualProductPage() {
                     Lipides (g)
                   </label>
                   <input
+                    {...form.register('nutritionalInfo.fats', { valueAsNumber: true })}
                     type="number"
                     id="fats"
-                    value={formData.fats}
-                    onChange={(e) => handleInputChange('fats', e.target.value)}
                     placeholder="0.0"
                     min="0"
                     step="0.1"
                     className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -441,14 +493,14 @@ export function AddManualProductPage() {
                     Sel (g)
                   </label>
                   <input
+                    {...form.register('nutritionalInfo.salt', { valueAsNumber: true })}
                     type="number"
                     id="salt"
-                    value={formData.salt}
-                    onChange={(e) => handleInputChange('salt', e.target.value)}
                     placeholder="0.0"
                     min="0"
                     step="0.01"
                     className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -462,31 +514,36 @@ export function AddManualProductPage() {
             Notes (optionnel)
           </h2>
           <textarea
+            {...form.register('notes')}
             id="notes"
-            value={formData.notes}
-            onChange={(e) => handleInputChange('notes', e.target.value)}
             placeholder="Ajouter des notes sur le produit..."
             rows={3}
             className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors resize-none"
+            disabled={isLoading}
           />
+          {errors.notes && (
+            <p className="text-sm text-error-50 mt-1">{errors.notes.message}</p>
+          )}
         </div>
 
         {/* Boutons d'action */}
         <div className="flex gap-3 pt-4">
-          <Link
-            to="/app/inventory/add-product"
-            className="flex-1 px-4 py-3 bg-neutral-100 text-neutral-700 font-medium rounded-lg text-center hover:bg-neutral-200 transition-colors"
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className="flex-1 px-4 py-3 bg-neutral-100 text-neutral-700 font-medium rounded-lg text-center hover:bg-neutral-200 transition-colors disabled:opacity-50"
           >
             Annuler
-          </Link>
+          </button>
           <button
             type="submit"
-            disabled={!isFormValid || isLoading}
+            disabled={!isValid || isLoading}
             className="flex-1 px-4 py-3 bg-success-50 text-neutral-50 font-medium rounded-lg hover:bg-success-50/80 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (
               <>
-                <div className="size-4 border-2 border-neutral-50 border-t-transparent rounded-full animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
                 Ajout en cours...
               </>
             ) : (

@@ -1,6 +1,6 @@
 // Dashboard
 import { FC } from 'react';
-import { InventoryWidget } from '@/features/inventory/InventoryWidget';
+import { InventoryWidget } from '@/features/inventory/components/InventoryWidget';
 import NutriscoreWidget from '@/features/nutriscore/NutriscoreWidget';
 import { BudgetWidget } from '@/features/budget/BudgetWidget';
 import { RecentProductsWidget } from '@/features/product/RecentProductsWidget';
