@@ -15,7 +15,6 @@ import {
 	useInventoryFilters,
 	useInventoryActions,
 	InventoryFilters,
-	InventoryItem,
 	formatExpiryDate,
 	getExpiryStatus,
 	formatQuantity,
@@ -25,6 +24,7 @@ import {
 	INVENTORY_CATEGORIES,
 	INVENTORY_STORAGE_LOCATIONS,
 } from '@/features/inventory';
+import { InventoryItemResponse } from '@/services/inventoryService';
 
 /**
  * Composant principal pour afficher la liste de l'inventaire
@@ -335,7 +335,7 @@ export function InventoryListPage() {
  * Composant pour afficher un élément d'inventaire
  */
 interface InventoryItemCardProps {
-	item: InventoryItem;
+	item: InventoryItemResponse;
 	onRemove: () => void;
 	isRemoving: boolean;
 }
@@ -360,9 +360,17 @@ function InventoryItemCard({
 			<div className='flex items-start justify-between'>
 				<div className='flex-1'>
 					<div className='flex items-start gap-3'>
-						{/* Image placeholder */}
-						<div className='size-12 bg-neutral-100 rounded-lg flex items-center justify-center'>
-							<Package2 className='size-6 text-neutral-400' />
+						{/* Image du produit */}
+						<div className='size-12 bg-neutral-100 rounded-lg flex items-center justify-center overflow-hidden'>
+							{item.product.imageUrl ? (
+								<img
+									src={item.product.imageUrl}
+									alt={item.product.name}
+									className='size-full object-cover'
+								/>
+							) : (
+								<Package2 className='size-6 text-neutral-400' />
+							)}
 						</div>
 
 						<div className='flex-1'>
@@ -393,6 +401,20 @@ function InventoryItemCard({
 											item.storageLocation
 										)}
 									</p>
+								)}
+							</div>
+
+							{/* Scores nutritionnels */}
+							<div className='flex gap-2 mt-2'>
+								{item.product.nutriscore && (
+									<span className='text-xs px-2 py-1 bg-nutriscore-a text-white rounded'>
+										Nutriscore {item.product.nutriscore}
+									</span>
+								)}
+								{item.product.ecoScore && (
+									<span className='text-xs px-2 py-1 bg-success-50 text-white rounded'>
+										Eco {item.product.ecoScore}
+									</span>
 								)}
 							</div>
 						</div>
@@ -426,8 +448,8 @@ function InventoryItemCard({
 				{/* Actions */}
 				<div className='flex items-center gap-2 ml-4'>
 					<Link
-						to='/app/inventory/$itemId'
-						params={{ itemId: item.id }}
+						to='/app/inventory/$productId'
+						params={{ productId: item.id }}
 						className='text-neutral-600 hover:text-neutral-900 transition-colors p-2'>
 						Détails
 					</Link>

@@ -1,26 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { inventoryApi, handleInventoryError } from '@/services/inventoryService';
+import {
+	inventoryService,
+	InventoryItemResponse,
+	ProductCreatedResponse,
+	UpdateInventoryItemInput,
+} from '@/services/inventoryService';
 import {
 	AddManualProductInput,
-	ProductCreatedResponse,
-	InventoryItem,
 	InventoryFilters,
 } from '@/schemas/inventorySchema';
-
-// Type pour les données de mise à jour d'un item d'inventaire
-type UpdateInventoryItemData = {
-	quantity?: number;
-	expiryDate?: string;
-	storageLocation?: string;
-	notes?: string;
-	purchasePrice?: number;
-};
 
 // Type pour les paramètres de la mutation updateInventoryItem
 type UpdateInventoryItemParams = {
 	inventoryItemId: string;
-	updateData: UpdateInventoryItemData;
+	updateData: UpdateInventoryItemInput;
 };
 
 // Clés de cache pour les requêtes
@@ -50,7 +44,7 @@ export function useInventory(
 ) {
 	return useQuery({
 		queryKey: inventoryKeys.list(filters),
-		queryFn: () => inventoryApi.getUserInventory(filters),
+		queryFn: () => inventoryService.getInventory(filters),
 		staleTime: 1000 * 60 * 5, // 5 minutes
 		gcTime: 1000 * 60 * 10, // 10 minutes (anciennement cacheTime)
 		refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
@@ -67,37 +61,11 @@ export function useInventory(
 export function useInventoryStats() {
 	return useQuery({
 		queryKey: inventoryKeys.stats(),
-		queryFn: () => inventoryApi.getInventoryStats(),
+		queryFn: () => inventoryService.getInventoryStats(),
 		staleTime: 1000 * 60 * 10, // 10 minutes
 		gcTime: 1000 * 60 * 30, // 30 minutes
 		meta: {
 			errorMessage: 'Impossible de charger les statistiques',
-		},
-	});
-}
-
-/**
- * Hook pour rechercher des produits (autocomplete)
- * @param query Terme de recherche
- * @param options Options de la requête
- */
-export function useProductSearch(
-	query: string,
-	options?: {
-		enabled?: boolean;
-		minQueryLength?: number;
-	}
-) {
-	const minLength = options?.minQueryLength ?? 2;
-
-	return useQuery({
-		queryKey: inventoryKeys.searchQuery(query),
-		queryFn: () => inventoryApi.searchProducts(query),
-		enabled: (options?.enabled ?? true) && query.length >= minLength,
-		staleTime: 1000 * 60 * 15, // 15 minutes
-		gcTime: 1000 * 60 * 30, // 30 minutes
-		meta: {
-			errorMessage: 'Erreur lors de la recherche',
 		},
 	});
 }
@@ -110,34 +78,26 @@ export function useAddManualProduct() {
 
 	return useMutation({
 		mutationFn: (productData: AddManualProductInput) =>
-			inventoryApi.addManualProduct(productData),
+			inventoryService.addManualProduct(productData),
 
 		onSuccess: (data: ProductCreatedResponse) => {
 			// Invalider et refetch l'inventaire pour afficher le nouveau produit
 			queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() });
 			queryClient.invalidateQueries({ queryKey: inventoryKeys.stats() });
 
-			// Optionnel : ajouter optimistiquement le produit au cache
-			// queryClient.setQueryData(inventoryKeys.list(), (oldData: InventoryItem[] | undefined) => {
-			//   if (!oldData) return oldData;
-			//   return [transformToInventoryItem(data), ...oldData];
-			// });
-
 			toast.success('Produit ajouté avec succès à votre inventaire !', {
-				description: `${data.name} (${
-					data.quantity
-				} ${data.unitType.toLowerCase()})`,
+				description: `${data.name} (${data.quantity} ${data.unitType.toLowerCase()})`,
 			});
 		},
 
 		onError: (error: unknown) => {
-			const inventoryError = handleInventoryError(error);
+			const errorMessage = error instanceof Error ? error.message : "Erreur lors de l'ajout du produit";
 
 			toast.error("Erreur lors de l'ajout du produit", {
-				description: inventoryError.message,
+				description: errorMessage,
 			});
 
-			console.error('Erreur mutation addManualProduct:', inventoryError);
+			console.error('Erreur mutation addManualProduct:', error);
 		},
 
 		meta: {
@@ -152,29 +112,22 @@ export function useAddManualProduct() {
 export function useUpdateInventoryItem() {
 	const queryClient = useQueryClient();
 
-	return useMutation<InventoryItem, unknown, UpdateInventoryItemParams>({
+	return useMutation<
+		InventoryItemResponse,
+		unknown,
+		UpdateInventoryItemParams
+	>({
 		mutationFn: async ({
 			inventoryItemId,
 			updateData,
-		}: UpdateInventoryItemParams): Promise<InventoryItem> => {
-			const response = await inventoryApi.updateInventoryItem(inventoryItemId, updateData);
-			
-			// Normaliser la réponse pour s'assurer que tous les champs requis sont présents
-			return {
-				...response,
-				createdAt: response.createdAt || new Date().toISOString(),
-				updatedAt: response.updatedAt || new Date().toISOString(),
-				product: {
-					...response.product,
-					category: {
-						...response.product.category,
-						icon: response.product.category.icon || undefined,
-					},
-				},
-			};
+		}: UpdateInventoryItemParams): Promise<InventoryItemResponse> => {
+			return await inventoryService.updateInventoryItem(
+				inventoryItemId,
+				updateData
+			);
 		},
 
-		onSuccess: (updatedItem: InventoryItem, variables) => {
+		onSuccess: (updatedItem: InventoryItemResponse, variables) => {
 			// Mettre à jour le cache optimistiquement
 			queryClient.setQueryData(
 				inventoryKeys.detail(variables.inventoryItemId),
@@ -189,10 +142,13 @@ export function useUpdateInventoryItem() {
 		},
 
 		onError: (error: unknown) => {
-			const inventoryError = handleInventoryError(error);
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Erreur lors de la mise à jour';
 
 			toast.error('Erreur lors de la mise à jour', {
-				description: inventoryError.message,
+				description: errorMessage,
 			});
 		},
 	});
@@ -206,7 +162,7 @@ export function useRemoveInventoryItem() {
 
 	return useMutation({
 		mutationFn: (inventoryItemId: string) =>
-			inventoryApi.removeInventoryItem(inventoryItemId),
+			inventoryService.removeInventoryItem(inventoryItemId),
 
 		onSuccess: (_, inventoryItemId) => {
 			// Supprimer l'élément du cache optimistiquement
@@ -215,9 +171,9 @@ export function useRemoveInventoryItem() {
 			});
 
 			// Mettre à jour les listes
-			queryClient.setQueriesData(
+			queryClient.setQueriesData<InventoryItemResponse[]>(
 				{ queryKey: inventoryKeys.lists() },
-				(oldData: InventoryItem[] | undefined) => {
+				(oldData) => {
 					if (!oldData) return oldData;
 					return oldData.filter(
 						(item) => item.id !== inventoryItemId
@@ -232,10 +188,13 @@ export function useRemoveInventoryItem() {
 		},
 
 		onError: (error: unknown) => {
-			const inventoryError = handleInventoryError(error);
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Erreur lors de la suppression';
 
 			toast.error('Erreur lors de la suppression', {
-				description: inventoryError.message,
+				description: errorMessage,
 			});
 		},
 	});
@@ -277,7 +236,7 @@ export function usePrefetchInventory() {
 	const prefetchInventory = (filters?: InventoryFilters) => {
 		queryClient.prefetchQuery({
 			queryKey: inventoryKeys.list(filters),
-			queryFn: () => inventoryApi.getUserInventory(filters),
+			queryFn: () => inventoryService.getInventory(filters),
 			staleTime: 1000 * 60 * 5,
 		});
 	};
@@ -285,7 +244,7 @@ export function usePrefetchInventory() {
 	const prefetchStats = () => {
 		queryClient.prefetchQuery({
 			queryKey: inventoryKeys.stats(),
-			queryFn: () => inventoryApi.getInventoryStats(),
+			queryFn: () => inventoryService.getInventoryStats(),
 			staleTime: 1000 * 60 * 10,
 		});
 	};
@@ -297,12 +256,12 @@ export function usePrefetchInventory() {
 }
 
 /**
- * Utilitaire pour transformer une ProductCreatedResponse en InventoryItem
+ * Utilitaire pour transformer une ProductCreatedResponse en InventoryItem partiel
  * (si nécessaire pour la mise en cache optimiste)
  */
 export function transformToInventoryItem(
 	response: ProductCreatedResponse
-): Partial<InventoryItem> {
+): Partial<InventoryItemResponse> {
 	return {
 		id: response.id,
 		quantity: response.quantity,
@@ -311,9 +270,7 @@ export function transformToInventoryItem(
 		purchasePrice: response.purchasePrice,
 		storageLocation: response.storageLocation,
 		notes: response.notes,
-		createdAt: response.createdAt,
-		updatedAt: response.updatedAt,
-		// Les données du produit devraient être récupérées via une nouvelle requête
-		// ou transformées si on a suffisamment d'informations
+		// Note: Les données complètes du produit ne sont pas disponibles dans cette réponse
+		// Elles seront récupérées lors du prochain fetch de l'inventaire
 	};
 }

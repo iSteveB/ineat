@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   // Options HTTPS
@@ -22,6 +23,16 @@ async function bootstrap() {
     httpsOptions,
   });
   const configService = app.get(ConfigService);
+
+  // Utilisation de Swagger pour la documentation API
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Inventory API')
+    .setDescription('API pour la gestion d\'un inventaire')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('docs', app, document);
 
   // Récupérer la clé secrète pour signer les cookies
   const cookieSecret =

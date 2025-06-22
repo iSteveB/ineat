@@ -33,7 +33,6 @@ import { Route as AppInventoryImportProductRouteImport } from './routes/app/inve
 import { Route as AppInventoryAddProductRouteImport } from './routes/app/inventory/add-product'
 import { Route as AppInventoryAddManualRouteImport } from './routes/app/inventory/add-manual'
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
-import { Route as AppInventoryItemIdRouteImport } from './routes/app/inventory/$itemId'
 import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
 import { Route as AppSettingsDietRestrictionsIndexRouteImport } from './routes/app/settings/diet-restrictions/index'
@@ -157,11 +156,6 @@ const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
   path: '/inventory/$productId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppInventoryItemIdRoute = AppInventoryItemIdRouteImport.update({
-  id: '/inventory/$itemId',
-  path: '/inventory/$itemId',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppSettingsSecurityIndexRoute =
   AppSettingsSecurityIndexRouteImport.update({
     id: '/settings/security/',
@@ -191,7 +185,6 @@ export interface FileRoutesByFullPath {
   '/error': typeof ErrorErrorRoute
   '/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
-  '/app/inventory/$itemId': typeof AppInventoryItemIdRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
@@ -218,7 +211,6 @@ export interface FileRoutesByTo {
   '/error': typeof ErrorErrorRoute
   '/notFound': typeof ErrorNotFoundRoute
   '/app': typeof AppIndexRoute
-  '/app/inventory/$itemId': typeof AppInventoryItemIdRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
@@ -249,7 +241,6 @@ export interface FileRoutesById {
   '/_error/error': typeof ErrorErrorRoute
   '/_error/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
-  '/app/inventory/$itemId': typeof AppInventoryItemIdRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add-product': typeof AppInventoryAddProductRoute
@@ -279,7 +270,6 @@ export interface FileRouteTypes {
     | '/error'
     | '/notFound'
     | '/app/'
-    | '/app/inventory/$itemId'
     | '/app/inventory/$productId'
     | '/app/inventory/add-manual'
     | '/app/inventory/add-product'
@@ -306,7 +296,6 @@ export interface FileRouteTypes {
     | '/error'
     | '/notFound'
     | '/app'
-    | '/app/inventory/$itemId'
     | '/app/inventory/$productId'
     | '/app/inventory/add-manual'
     | '/app/inventory/add-product'
@@ -336,7 +325,6 @@ export interface FileRouteTypes {
     | '/_error/error'
     | '/_error/notFound'
     | '/app/'
-    | '/app/inventory/$itemId'
     | '/app/inventory/$productId'
     | '/app/inventory/add-manual'
     | '/app/inventory/add-product'
@@ -532,13 +520,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryProductIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/inventory/$itemId': {
-      id: '/app/inventory/$itemId'
-      path: '/inventory/$itemId'
-      fullPath: '/app/inventory/$itemId'
-      preLoaderRoute: typeof AppInventoryItemIdRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/app/settings/security/': {
       id: '/app/settings/security/'
       path: '/settings/security'
@@ -597,7 +578,6 @@ const ErrorRouteRouteWithChildren = ErrorRouteRoute._addFileChildren(
 
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
-  AppInventoryItemIdRoute: typeof AppInventoryItemIdRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
   AppInventoryAddManualRoute: typeof AppInventoryAddManualRoute
   AppInventoryAddProductRoute: typeof AppInventoryAddProductRoute
@@ -618,7 +598,6 @@ interface AppRouteRouteChildren {
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
-  AppInventoryItemIdRoute: AppInventoryItemIdRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
   AppInventoryAddManualRoute: AppInventoryAddManualRoute,
   AppInventoryAddProductRoute: AppInventoryAddProductRoute,
