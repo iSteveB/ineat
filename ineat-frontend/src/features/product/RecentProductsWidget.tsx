@@ -1,4 +1,3 @@
-import { Product } from '@/types';
 import { FC } from 'react';
 import ProductItem from '@/components/common/ProductItem';
 import {
@@ -8,14 +7,45 @@ import {
 	CardContent,
 	CardItemList,
 } from '@/components/ui/card';
+import { InventoryItemResponse } from '@/services/inventoryService';
+import { ExpiryStatus, calculateExpiryStatus } from '@/utils/dateHelpers';
+
+// Type étendu avec le statut d'expiration
+interface InventoryItemWithStatus extends InventoryItemResponse {
+	expiryStatus: ExpiryStatus;
+}
 
 interface RecentProductsWidgetProps {
-	products: Product[];
+	products: InventoryItemResponse[];
 }
 
 export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({
 	products,
-}) => {
+}) => {;
+	// Vérification de sécurité et filtrage des produits valides
+	const validProducts = products.filter(
+		(product) =>
+			product && product.id && product.product && product.product.name
+	);
+
+	// Transformer les produits valides pour ajouter le statut d'expiration
+	// Les données sont déjà triées et limitées à 5 par le backend
+	const productsWithStatus: InventoryItemWithStatus[] = validProducts.map(
+		(product) => ({
+			...product,
+			expiryStatus: calculateExpiryStatus(product.expiryDate),
+		})
+	);
+
+	// Log pour debug si certains produits sont invalides
+	if (products.length !== validProducts.length) {
+		console.warn(
+			`RecentProductsWidget: ${
+				products.length - validProducts.length
+			} produits invalides filtrés`
+		);
+	}
+
 	return (
 		<Card>
 			<CardHeader>
@@ -24,11 +54,11 @@ export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({
 
 			<CardContent>
 				<CardItemList>
-					{products.length > 0 ? (
-						products.map((product) => (
+					{productsWithStatus.length > 0 ? (
+						productsWithStatus.map((item) => (
 							<ProductItem
-								key={product.id}
-								product={product}
+								key={item.id}
+								item={item}
 								showNutriscore={true}
 								showEcoscore={true}
 								showStorage={true}

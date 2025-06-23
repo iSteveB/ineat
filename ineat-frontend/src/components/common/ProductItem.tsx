@@ -1,11 +1,13 @@
 import { FC } from 'react';
+import { Link } from '@tanstack/react-router';
 import { InventoryItemResponse } from '@/services/inventoryService';
 import {
 	formatRelativeDate,
 	ExpiryStatus,
+	getExpiryStatusBgColor
 } from '@/utils/dateHelpers';
-import { getNutriscoreColor } from '@/utils/utils';
-import { Link } from '@tanstack/react-router';
+import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
+import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
 
 interface InventoryItemWithStatus extends InventoryItemResponse {
 	expiryStatus: ExpiryStatus;
@@ -24,35 +26,54 @@ const ProductItem: FC<ProductItemProps> = ({
 	showEcoscore = true,
 	showStorage = true,
 }) => {
-	// Obtenir la couleur de fond en fonction du statut d'expiration
-	const getExpiryStatusBgColor = () => {
-		switch (item.expiryStatus) {
-			case 'expired':
-				return 'bg-error-100';
-			case 'urgent':
-				return 'bg-error-50';
-			case 'warning':
-				return 'bg-warning-50';
-			case 'safe':
-				return 'bg-success-50';
-			case 'no-date':
-				return 'bg-neutral-100';
-			default:
-				return 'bg-neutral-100';
-		}
-	};
+	// Vérification de sécurité complète pour éviter les erreurs
+	if (!item) {
+		console.error('ProductItem: item is undefined or null');
+		return (
+			<div className='p-3 text-error-50 text-center'>
+				Erreur: Données du produit manquantes
+			</div>
+		);
+	}
 
-	// Obtenir la couleur du texte en fonction du statut d'expiration
-	const getExpiryStatusTextColor = () => {
-		switch (item.expiryStatus) {
+	if (!item.id) {
+		console.error('ProductItem: item.id is undefined', item);
+		return (
+			<div className='p-3 text-error-50 text-center'>
+				Erreur: ID du produit manquant
+			</div>
+		);
+	}
+
+	if (!item.product) {
+		console.error('ProductItem: item.product is undefined', item);
+		return (
+			<div className='p-3 text-error-50 text-center'>
+				Erreur: Informations produit manquantes
+			</div>
+		);
+	}
+
+	if (!item.product.name) {
+		console.error('ProductItem: item.product.name is undefined', item);
+		return (
+			<div className='p-3 text-error-50 text-center'>
+				Erreur: Nom du produit manquant
+			</div>
+		);
+	}
+
+	// Obtenir la couleur du texte adaptée au fond coloré
+	const getTextColorForStatus = (status: ExpiryStatus): string => {
+		switch (status) {
 			case 'expired':
 			case 'urgent':
 			case 'warning':
 			case 'safe':
-				return 'text-neutral-50';
+				return 'text-white'; // Texte blanc sur fond coloré
 			case 'no-date':
 			default:
-				return 'text-neutral-200';
+				return 'text-neutral-200'; // Texte gris sur fond neutre
 		}
 	};
 
@@ -121,24 +142,20 @@ const ProductItem: FC<ProductItemProps> = ({
 						)}
 					</div>
 
-					{/* Scores nutritionnels */}
+					{/* Scores nutritionnels avec les nouveaux composants badge */}
 					{(showNutriscore || showEcoscore) && (
 						<div className='flex gap-2 mt-2'>
 							{showNutriscore && item.product.nutriscore && (
-								<div
-									className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${getNutriscoreColor(
-										item.product.nutriscore
-									)}`}>
-									{item.product.nutriscore}
-								</div>
+								<NutriScoreBadge 
+									score={item.product.nutriscore}
+									size="md"
+								/>
 							)}
 							{showEcoscore && item.product.ecoScore && (
-								<div
-									className={`size-6 rounded-full flex items-center justify-center text-xs font-bold ${getNutriscoreColor(
-										item.product.ecoScore
-									)}`}>
-									Eco {item.product.ecoScore}
-								</div>
+								<EcoScoreBadge 
+									score={item.product.ecoScore}
+									size="md"
+								/>
 							)}
 						</div>
 					)}
@@ -146,7 +163,7 @@ const ProductItem: FC<ProductItemProps> = ({
 
 				{/* Date d'expiration */}
 				<div
-					className={`px-3 py-2 rounded-lg font-medium ${getExpiryStatusBgColor()} ${getExpiryStatusTextColor()}`}>
+					className={`px-3 py-2 rounded-lg font-medium ${getExpiryStatusBgColor(item.expiryStatus)} ${getTextColorForStatus(item.expiryStatus)}`}>
 					{formatRelativeDate(item.expiryDate)}
 				</div>
 			</div>
