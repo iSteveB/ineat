@@ -1,5 +1,18 @@
-import { Controller, Post, Get, Put, Delete, Body, Param,
-  Query, UseGuards, Req, HttpStatus, HttpCode, ParseUUIDPipe, ValidationPipe,
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Req,
+  HttpStatus,
+  HttpCode,
+  ParseUUIDPipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -14,7 +27,8 @@ import { InventoryService } from '../services/inventory.service';
 import {
   AddManualProductDto,
   ProductCreatedResponseDto,
-} from '../dto/add-manual-product.dto';
+  QuickAddProductDto,
+} from '../../DTOs';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 
@@ -91,7 +105,6 @@ export class InventoryController {
       },
     },
   })
-  
   async addManualProduct(
     @Req() req: AuthenticatedRequest,
     @Body(new ValidationPipe({ transform: true, whitelist: true }))
@@ -100,6 +113,85 @@ export class InventoryController {
     return await this.inventoryService.addManualProduct(
       req.user.id,
       addProductDto,
+    );
+  }
+
+  /**
+   * Récupère les produits récemment ajoutés à l'inventaire
+   */
+  @Get('recent')
+  @ApiOperation({
+    summary: 'Récupérer les produits récents',
+    description:
+      "Récupère les produits récemment ajoutés à l'inventaire de l'utilisateur, triés par date d'ajout décroissante",
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Nombre maximum de produits à retourner',
+    example: 5,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Produits récents récupérés avec succès',
+    schema: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          quantity: { type: 'number' },
+          expiryDate: { type: 'string', format: 'date-time', nullable: true },
+          purchaseDate: { type: 'string', format: 'date-time' },
+          purchasePrice: { type: 'number', nullable: true },
+          storageLocation: { type: 'string', nullable: true },
+          notes: { type: 'string', nullable: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
+          product: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              brand: { type: 'string', nullable: true },
+              nutriscore: {
+                type: 'string',
+                enum: ['A', 'B', 'C', 'D', 'E'],
+                nullable: true,
+              },
+              ecoScore: {
+                type: 'string',
+                enum: ['A', 'B', 'C', 'D', 'E'],
+                nullable: true,
+              },
+              unitType: {
+                type: 'string',
+                enum: ['KG', 'G', 'L', 'ML', 'UNIT'],
+              },
+              imageUrl: { type: 'string', nullable: true },
+              category: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'string' },
+                  slug: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async getRecentProducts(
+    @Req() req: AuthenticatedRequest,
+    @Query('limit') limit?: number,
+  ) {
+    const limitValue = limit && limit > 0 ? Math.min(limit, 50) : 5; // Max 50, défaut 5
+    return await this.inventoryService.getRecentProducts(
+      req.user.id,
+      limitValue,
     );
   }
 

@@ -4,10 +4,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from '../auth.service';
 import { BadRequestException } from '@nestjs/common';
 import { Request, Response } from 'express';
-import * as authDtos from '../dto/register.dto';
-import * as loginDtos from '../dto/login.dto';
-import { RegisterDto } from '../dto/register.dto';
-import { LoginDto } from '../dto/login.dto';
+import * as authDtos from '../dto/auth.dto';
+import { RegisterDto, LoginDto } from '../dto/auth.dto';
 import { ProfileType, User } from '@prisma/client';
 
 // Type pour l'utilisateur sans le mot de passe
@@ -161,7 +159,7 @@ describe('AuthController', () => {
         user: mockUser,
       } as Request;
 
-      (loginDtos.validateLoginDto as jest.Mock).mockReturnValue(mockLoginDto);
+      (authDtos.validateLoginDto as jest.Mock).mockReturnValue(mockLoginDto);
 
       // Act
       const result = await controller.login(
@@ -171,7 +169,7 @@ describe('AuthController', () => {
       );
 
       // Assert
-      expect(loginDtos.validateLoginDto).toHaveBeenCalledWith(mockLoginDto);
+      expect(authDtos.validateLoginDto).toHaveBeenCalledWith(mockLoginDto);
       expect(authService.login).toHaveBeenCalledWith(mockUser, mockResponse);
       expect(result).toEqual(mockAuthResponse);
     });
@@ -183,7 +181,7 @@ describe('AuthController', () => {
       } as Request;
 
       const validationError = new Error('Validation failed');
-      (loginDtos.validateLoginDto as jest.Mock).mockImplementation(() => {
+      (authDtos.validateLoginDto as jest.Mock).mockImplementation(() => {
         throw validationError;
       });
 
@@ -191,7 +189,7 @@ describe('AuthController', () => {
       await expect(
         controller.login(req as RequestWithUser, mockLoginDto, mockResponse),
       ).rejects.toThrow(BadRequestException);
-      expect(loginDtos.validateLoginDto).toHaveBeenCalledWith(mockLoginDto);
+      expect(authDtos.validateLoginDto).toHaveBeenCalledWith(mockLoginDto);
       expect(authService.login).not.toHaveBeenCalled();
     });
   });

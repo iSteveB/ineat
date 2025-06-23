@@ -12,8 +12,12 @@ import {
 import { AuthService } from '../auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { validateRegisterDto, RegisterDto } from '../dto/register.dto';
-import { validateLoginDto, LoginDto } from '../dto/login.dto';
+import {
+  validateRegisterDto,
+  RegisterDto,
+  validateLoginDto,
+  LoginDto,
+} from '../dto/auth.dto';
 import { Request as ExpressRequest } from 'express';
 import { Response as ExpressResponse } from 'express';
 import { User } from '@prisma/client';

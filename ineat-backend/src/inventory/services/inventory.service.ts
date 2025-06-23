@@ -5,10 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  AddManualProductDto,
-  ProductCreatedResponseDto,
-} from '../dto';
+import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
 
 @Injectable()
 export class InventoryService {
@@ -50,6 +47,31 @@ export class InventoryService {
 
       // 4. Retourner la réponse formatée
       return this.formatResponse(inventoryItem, product);
+    });
+  }
+
+  /**
+   * Récupère les produits récemment ajoutés à l'inventaire d'un utilisateur
+   * @param userId ID de l'utilisateur
+   * @param limit Nombre maximum de produits à retourner (défaut: 5)
+   * @returns Liste des produits récents triés par date d'ajout décroissante
+   */
+  async getRecentProducts(userId: string, limit: number = 5) {
+    return await this.prisma.inventoryItem.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        product: {
+          include: {
+            category: true,
+          },
+        },
+      },
+      orderBy: [
+        { createdAt: 'desc' }, // Plus récents en premier
+      ],
+      take: limit, // Limiter le nombre de résultats
     });
   }
 
