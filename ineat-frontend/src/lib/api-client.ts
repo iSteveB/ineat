@@ -8,7 +8,7 @@ export class ApiRequestError extends Error {
 	}
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://acf7-2001-861-36c2-6b80-64d7-478b-3452-5911.ngrok-free.app/api';
 
 interface FetchOptions extends RequestInit {
 	skipAuth?: boolean;

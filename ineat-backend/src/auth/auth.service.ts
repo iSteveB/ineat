@@ -57,7 +57,7 @@ export class AuthService {
     response.cookie('auth_token', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: isProd ? 'strict' : 'lax', // Protection CSRF
+      sameSite: isProd ? 'strict' : 'none', // Protection CSRF
       maxAge: 24 * 60 * 60 * 1000, // 24 heures (ou utiliser la valeur de JWT_EXPIRES_IN)
       path: '/', // Disponible sur toutes les routes
     });

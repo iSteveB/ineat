@@ -46,7 +46,7 @@ async function bootstrap() {
 
   // Configuration CORS pour permettre les cookies dans les requêtes cross-origin
   app.enableCors({
-    origin: configService.get<string>('CLIENT_URL'),
+    origin: ['https://192.168.1.28:5173', 'https://localhost:5173'],
     credentials: true, // IMPORTANT: Permet l'envoi de cookies dans les requêtes CORS
   });
 
@@ -64,7 +64,7 @@ async function bootstrap() {
 
   // Démarrage du serveur
   const port = configService.get<number>('PORT', 3000);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log(`Application démarrée sur: ${await app.getUrl()}`);
   console.log(`Mode: ${configService.get<string>('NODE_ENV')}`);
