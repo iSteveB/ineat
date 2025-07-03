@@ -13,6 +13,7 @@ import {
   HttpCode,
   ParseUUIDPipe,
   ValidationPipe,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -69,13 +70,14 @@ export class InventoryController {
   @ApiResponse({
     status: 400,
     description:
-      'Données invalides (validation échouée, dates incohérentes, etc.)',
+      'Données invalides (validation échouée, dates incohérentes, format de code-barres invalide, etc.)',
     schema: {
       example: {
         statusCode: 400,
         message: [
           'Le nom du produit est obligatoire',
           'La quantité doit être supérieure à 0',
+          'Format de code-barres invalide: 123',
         ],
         error: 'Bad Request',
       },
@@ -95,12 +97,11 @@ export class InventoryController {
   @ApiResponse({
     status: 409,
     description:
-      "Produit déjà présent dans l'inventaire avec les mêmes caractéristiques",
+      "Produit déjà présent dans l'inventaire avec les mêmes caractéristiques ou code-barres déjà utilisé",
     schema: {
       example: {
         statusCode: 409,
-        message:
-          'Ce produit existe déjà dans votre inventaire avec les mêmes caractéristiques',
+        message: 'Un produit avec le code-barres 3263859672014 existe déjà',
         error: 'Conflict',
       },
     },
@@ -114,6 +115,93 @@ export class InventoryController {
       req.user.id,
       addProductDto,
     );
+  }
+
+  /**
+   * Vérifie l'existence d'un produit par son code-barres
+   */
+  @Get('barcode/:barcode')
+  @ApiOperation({
+    summary: 'Vérifier un code-barres',
+    description:
+      'Vérifie si un produit avec ce code-barres existe déjà dans la base de données',
+  })
+  @ApiParam({
+    name: 'barcode',
+    description: 'Code-barres du produit à vérifier',
+    type: 'string',
+    example: '3263859672014',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Vérification effectuée avec succès',
+    schema: {
+      type: 'object',
+      properties: {
+        exists: {
+          type: 'boolean',
+          description: 'Indique si le produit existe',
+        },
+        product: {
+          type: 'object',
+          nullable: true,
+          description: 'Informations du produit si il existe',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+            name: { type: 'string' },
+            brand: { type: 'string', nullable: true },
+            barcode: { type: 'string' },
+            nutriscore: {
+              type: 'string',
+              enum: ['A', 'B', 'C', 'D', 'E'],
+              nullable: true,
+            },
+            ecoScore: {
+              type: 'string',
+              enum: ['A', 'B', 'C', 'D', 'E'],
+              nullable: true,
+            },
+            unitType: {
+              type: 'string',
+              enum: ['KG', 'G', 'L', 'ML', 'UNIT'],
+            },
+            imageUrl: { type: 'string', nullable: true },
+            category: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', format: 'uuid' },
+                name: { type: 'string' },
+                slug: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Code-barres invalide',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Format de code-barres invalide',
+        error: 'Bad Request',
+      },
+    },
+  })
+  async checkBarcode(@Param('barcode') barcode: string) {
+    // Validation basique du format
+    if (!this.isValidBarcodeFormat(barcode)) {
+      throw new BadRequestException('Format de code-barres invalide');
+    }
+
+    const product = await this.inventoryService.findProductByBarcode(barcode);
+
+    return {
+      exists: !!product,
+      product: product || null,
+    };
   }
 
   /**
@@ -155,6 +243,7 @@ export class InventoryController {
               id: { type: 'string', format: 'uuid' },
               name: { type: 'string' },
               brand: { type: 'string', nullable: true },
+              barcode: { type: 'string', nullable: true }, // 🆕 Ajout du barcode
               nutriscore: {
                 type: 'string',
                 enum: ['A', 'B', 'C', 'D', 'E'],
@@ -244,6 +333,7 @@ export class InventoryController {
               id: { type: 'string', format: 'uuid' },
               name: { type: 'string' },
               brand: { type: 'string', nullable: true },
+              barcode: { type: 'string', nullable: true }, // 🆕 Ajout du barcode
               nutriscore: {
                 type: 'string',
                 enum: ['A', 'B', 'C', 'D', 'E'],
@@ -449,8 +539,22 @@ export class InventoryController {
       totalItems,
       totalValue: Math.round(totalValue * 100) / 100, // Arrondi à 2 décimales
       expiringInWeek,
-      categoriesBreakdown: [], // À implémenter plus tard si nécessaire
-      storageBreakdown: {}, // À implémenter plus tard si nécessaire
+      categoriesBreakdown: [], // TODO: À implémenter plus tard
+      storageBreakdown: {}, // TODO: À implémenter plus tard
     };
+  }
+
+  // --- MÉTHODES PRIVÉES ---
+
+  /**
+   * Valide le format du code-barres
+   * @param barcode Code-barres à valider
+   * @returns true si le format est valide
+   */
+  private isValidBarcodeFormat(barcode: string): boolean {
+    // Validation basique pour codes-barres courants
+    // EAN-8 (8 chiffres), EAN-13 (13 chiffres), UPC-A (12 chiffres), etc.
+    const barcodeRegex = /^(\d{8}|\d{12,14})$/;
+    return barcodeRegex.test(barcode.trim());
   }
 }

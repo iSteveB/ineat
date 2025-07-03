@@ -51,7 +51,7 @@ export const AddProductPage: React.FC = () => {
             icon={<Scan className="size-6 text-neutral-300" />}
             title="Scanner un code-barre"
             description="Scanner directement le code-barre d'un produit."
-            to="/app/inventory/scan-product"
+            to="/app/inventory/add/scan"
           />
 
           {/* Scanner un ticket de caisse */}
@@ -59,7 +59,7 @@ export const AddProductPage: React.FC = () => {
             icon={<Receipt className="size-6 text-neutral-300" />}
             title="Scanner un ticket de caisse"
             description="Scanner un ticket de caisse pour ajouter des articles."
-            to={isPremiumUser ? "/app/inventory/scan-receipt" : "/app/upgrade"}
+            to={isPremiumUser ? "/app/inventory/add/receipt" : "/app/upgrade"}
             isPremium={true}
             isDisabled={!isPremiumUser}
           />
@@ -69,7 +69,7 @@ export const AddProductPage: React.FC = () => {
             icon={<Car className="size-6 text-neutral-300" />}
             title="Importer une facture Drive"
             description="Importer vos achats depuis une facture Drive."
-            to={isPremiumUser ? "/app/inventory/import-drive" : "/app/upgrade"}
+            to={isPremiumUser ? "/app/inventory/add/drive" : "/app/upgrade"}
             isPremium={true}
             isDisabled={!isPremiumUser}
           />
@@ -79,7 +79,7 @@ export const AddProductPage: React.FC = () => {
             icon={<ShoppingCart className="size-6 text-neutral-300" />}
             title="Ajout manuel"
             description="Entrer manuellement les détails du produit."
-            to="/app/inventory/add-manual"
+            to="/app/inventory/add/search"
           />
         </div>
       </div>

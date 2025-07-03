@@ -17,7 +17,7 @@ const NavigationItem: FC<NavigationItemProps> = ({ icon, to, label, isActive }) 
   return (
     <Link
       to={to}
-      className={`flex items-center justify-center p-6 flex-col transition-colors ${isActive ? 'pointer-events-none' : 'hover:text-primary-100'}`}
+      className={`flex items-center justify-center p-2 flex-col transition-colors ${isActive ? 'pointer-events-none' : 'hover:text-success-50'}`} 
     >
       <div className={textClass}>
         {icon}

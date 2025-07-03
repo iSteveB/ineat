@@ -1,644 +1,301 @@
-import { useNavigate } from '@tanstack/react-router';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState } from 'react';
+import { useNavigate, Link } from '@tanstack/react-router';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { Package, Plus, Search, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Composants de recherche et ajout
+import { ProductSearchBar } from '@/features/product/ProductSearchBar';
+import { ProductSearchResults } from '@/features/product/ProductSearchResult';
+import { QuickAddForm } from '@/features/inventory/components/QuickAddForm';
+import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
+
+// Services et types - utilisation du service corrigé
 import {
-	ArrowLeft,
-	Calendar,
-	Package,
-	Euro,
-	Save,
-	PackageOpen,
-	Leaf,
-	Activity,
-	Loader2,
-} from 'lucide-react';
-import {
-	AddManualProductSchema,
-	AddManualProductInput,
-	UnitType,
-	NutriScore,
-	EcoScore,
-} from '@/schemas/inventorySchema';
-import { useAddManualProduct } from '@/hooks/useInventory';
-import {
-	useInventoryFormState,
-	useInventoryActions,
-	useInventoryRecentValues,
-	useSaveRecentValues,
-} from '@/stores/inventoryStore';
+	inventoryService,
+	ProductSearchResult,
+	QuickAddFormData,
+} from '@/services/inventoryService';
+import { AddManualProductInput } from '@/schemas/inventorySchema';
 
-const CATEGORIES = [
-	{ value: '', label: 'Sélectionner une catégorie' },
-	{ value: 'fruits-et-legumes', label: 'Fruits & Légumes' },
-	{ value: 'viandes-et-poissons', label: 'Viandes & Poissons' },
-	{ value: 'produits-laitiers', label: 'Produits laitiers' },
-	{ value: 'epicerie-salee', label: 'Épicerie salée' },
-	{ value: 'epicerie-sucree', label: 'Épicerie sucrée' },
-	{ value: 'surgeles', label: 'Surgelés' },
-	{ value: 'boissons', label: 'Boissons' },
-	{ value: 'autres', label: 'Autres' },
-];
+// États de la page
+type PageState = 'search' | 'quick-add' | 'manual-add';
 
-const UNIT_TYPES = [
-	{ value: 'UNIT' as UnitType, label: 'Unité(s)' },
-	{ value: 'KG' as UnitType, label: 'Kilogramme(s)' },
-	{ value: 'G' as UnitType, label: 'Gramme(s)' },
-	{ value: 'L' as UnitType, label: 'Litre(s)' },
-	{ value: 'ML' as UnitType, label: 'Millilitre(s)' },
-];
-
-const STORAGE_LOCATIONS = [
-	{ value: '', label: 'Sélectionner un lieu' },
-	{ value: 'refrigerateur', label: 'Réfrigérateur' },
-	{ value: 'congelateur', label: 'Congélateur' },
-	{ value: 'placard', label: 'Placard' },
-	{ value: 'cave', label: 'Cave' },
-	{ value: 'autres', label: 'Autres' },
-];
-
-const NUTRISCORE_OPTIONS = [
-	{ value: '', label: 'Non défini' },
-	{
-		value: 'A' as NutriScore,
-		label: 'A - Très bonne qualité nutritionnelle',
-	},
-	{ value: 'B' as NutriScore, label: 'B - Bonne qualité nutritionnelle' },
-	{ value: 'C' as NutriScore, label: 'C - Qualité nutritionnelle correcte' },
-	{ value: 'D' as NutriScore, label: 'D - Qualité nutritionnelle faible' },
-	{
-		value: 'E' as NutriScore,
-		label: 'E - Qualité nutritionnelle très faible',
-	},
-];
-
-const ECOSCORE_OPTIONS = [
-	{ value: '', label: 'Non défini' },
-	{ value: 'A' as EcoScore, label: 'A - Très faible impact environnemental' },
-	{ value: 'B' as EcoScore, label: 'B - Faible impact environnemental' },
-	{ value: 'C' as EcoScore, label: 'C - Impact environnemental modéré' },
-	{ value: 'D' as EcoScore, label: 'D - Impact environnemental élevé' },
-	{ value: 'E' as EcoScore, label: 'E - Impact environnemental très élevé' },
-];
-
-export function AddManualProductPage() {
+export const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
 
-	// Hooks pour l'état et les actions
-	const draftProduct = useInventoryFormState();
-	const { clearDraftProduct } = useInventoryActions();
-	const recentValues = useInventoryRecentValues();
-	const saveRecentValues = useSaveRecentValues();
+	// États
+	const [pageState, setPageState] = useState<PageState>('search');
+	const [searchQuery, setSearchQuery] = useState('');
+	const [searchResults, setSearchResults] = useState<ProductSearchResult[]>(
+		[]
+	);
+	const [selectedProduct, setSelectedProduct] =
+		useState<ProductSearchResult | null>(null);
+	const [isSearching, setIsSearching] = useState(false);
 
-	// Hook pour la mutation d'ajout de produit
-	const addProductMutation = useAddManualProduct();
+	// Query pour récupérer les catégories
+	const { data: categories = [] } = useQuery({
+		queryKey: ['categories'],
+		queryFn: inventoryService.getCategories,
+		staleTime: 1000 * 60 * 60, // 1 heure
+	});
 
-	// Configuration du formulaire avec React Hook Form et Zod
-	const form = useForm<AddManualProductInput>({
-		resolver: zodResolver(AddManualProductSchema),
-		defaultValues: {
-			name: draftProduct.name || '',
-			brand: draftProduct.brand || '',
-			category: draftProduct.category || '',
-			quantity: draftProduct.quantity || 1,
-			unitType: draftProduct.unitType || 'UNIT',
-			purchaseDate:
-				draftProduct.purchaseDate ||
-				new Date().toISOString().split('T')[0],
-			expiryDate: draftProduct.expiryDate || '',
-			purchasePrice: draftProduct.purchasePrice,
-			storageLocation: draftProduct.storageLocation || '',
-			notes: draftProduct.notes || '',
-			nutriscore: draftProduct.nutriscore,
-			ecoscore: draftProduct.ecoscore,
-			nutritionalInfo: draftProduct.nutritionalInfo || {
-				carbohydrates: undefined,
-				proteins: undefined,
-				fats: undefined,
-				salt: undefined,
-			},
+	// Mutation pour l'ajout rapide
+	const quickAddMutation = useMutation({
+		mutationFn: inventoryService.addExistingProductToInventory,
+		onSuccess: () => {
+			toast.success('Produit ajouté à votre inventaire');
+			navigate({ to: '/app/inventory' });
+		},
+		onError: (error: Error) => {
+			toast.error(error.message || "Erreur lors de l'ajout du produit");
 		},
 	});
 
-	const {
-		handleSubmit,
-		formState: { errors, isValid },
-	} = form;
-
-	// Soumission du formulaire
-	const onSubmit = async (data: AddManualProductInput) => {
-		try {
-			const result = await addProductMutation.mutateAsync(data);
-			console.log('Produit ajouté avec succès:', result);
-
-			// Sauvegarder les valeurs récentes pour faciliter la prochaine saisie
-			saveRecentValues(data);
-
-			// Nettoyer le formulaire
-			clearDraftProduct();
-
-			// Redirection vers l'inventaire
+	// Mutation pour l'ajout manuel
+	const manualAddMutation = useMutation({
+		mutationFn: inventoryService.addManualProduct,
+		onSuccess: () => {
+			toast.success('Produit créé et ajouté à votre inventaire');
 			navigate({ to: '/app/inventory' });
+		},
+		onError: (error: Error) => {
+			toast.error(
+				error.message || 'Erreur lors de la création du produit'
+			);
+		},
+	});
+
+	// Gestion de la recherche
+	const handleSearch = async (query: string) => {
+		if (!query || query.length < 2) {
+			setSearchResults([]);
+			return;
+		}
+
+		setIsSearching(true);
+		setSearchQuery(query);
+
+		try {
+			const results = await inventoryService.searchProducts(query);
+			setSearchResults(results);
 		} catch (error) {
-			// L'erreur est déjà gérée par le hook useAddManualProduct
-			console.error("Erreur lors de l'ajout du produit:", error);
+			console.error('Erreur de recherche:', error);
+			toast.error('Erreur lors de la recherche');
+			setSearchResults([]);
+		} finally {
+			setIsSearching(false);
 		}
 	};
 
-	// Gestion de l'annulation
-	const handleCancel = () => {
-		clearDraftProduct();
-		navigate({ to: '/app/inventory/add-product' });
+	// Gestion de la sélection d'un produit
+	const handleSelectProduct = (product: ProductSearchResult) => {
+		setSelectedProduct(product);
+		setPageState('quick-add');
 	};
 
-	// État de chargement
-	const isLoading = addProductMutation.isPending;
+	// Gestion de l'ajout rapide
+	const handleQuickAdd = async (data: QuickAddFormData) => {
+		await quickAddMutation.mutateAsync(data);
+	};
+
+	// Gestion de l'ajout manuel
+	const handleManualAdd = async (data: AddManualProductInput) => {
+		await manualAddMutation.mutateAsync(data as never);
+	};
+
+	// Réinitialisation de la recherche
+	const handleClearSearch = () => {
+		setSearchQuery('');
+		setSearchResults([]);
+		setSelectedProduct(null);
+		setPageState('search');
+	};
+
+	// Passer au formulaire complet
+	const handleSwitchToManualAdd = () => {
+		setPageState('manual-add');
+	};
+
+	// Retour à la recherche
+	const handleBackToSearch = () => {
+		setSelectedProduct(null);
+		setPageState('search');
+	};
 
 	return (
-		<div className='min-h-screen bg-primary-50'>
+		<div className='min-h-screen bg-neutral-50'>
 			{/* Header */}
-			<div className='bg-neutral-50 border-b border-t border-neutral-200 sticky top-0 z-10'>
-				<div className='flex items-center justify-between p-4'>
-					<button
-						onClick={handleCancel}
-						className='p-2 -ml-2 text-neutral-600 hover:text-neutral-900 transition-colors'
-						disabled={isLoading}>
-						<ArrowLeft className='size-6' />
-					</button>
-					<h1 className='text-lg font-semibold text-neutral-900'>
-						Ajouter manuellement un produit
-					</h1>
-					<div className='size-9' />
+			<div className='bg-neutral-50 border-b border-neutral-100'>
+				<div className='max-w-4xl mx-auto px-4 py-4'>
+					<div className='flex items-center space-x-4'>
+						<Link
+							to='/app/inventory/add'
+							className='p-2 hover:bg-neutral-100 rounded-full transition-colors'>
+							<ArrowLeft className='size-5 text-neutral-300' />
+						</Link>
+
+						<div>
+							<h1 className="text-xl font-semibold text-neutral-300 font-['Fredoka']">
+								Recherche et ajout manuel
+							</h1>
+							<p className='text-sm text-neutral-200 mt-1'>
+								Recherchez un produit existant ou créez-en un
+								nouveau
+							</p>
+						</div>
+					</div>
 				</div>
 			</div>
 
-			{/* Formulaire */}
-			<form onSubmit={handleSubmit(onSubmit)} className='p-4 space-y-6'>
-				{/* Informations de base */}
-				<div className='bg-neutral-50 rounded-xl border border-neutral-200 p-4'>
-					<h2 className='text-xl font-medium text-neutral-900 mb-4 flex items-center gap-2'>
-						<Package className='size-5 text-success-50' />
-						Informations du produit
-					</h2>
-
-					<div className='space-y-4'>
-						{/* Nom du produit */}
-						<div>
-							<label
-								htmlFor='name'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Nom du produit *
-							</label>
-							<input
-								{...form.register('name')}
-								type='text'
-								id='name'
-								placeholder='Ex: Pommes Golden'
-								className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
-									errors.name
-										? 'border-error-50'
-										: 'border-neutral-300'
-								}`}
-								disabled={isLoading}
-							/>
-							{errors.name && (
-								<p className='text-sm text-error-50 mt-1'>
-									{errors.name.message}
-								</p>
+			{/* Content */}
+			<div className='max-w-4xl mx-auto px-4 py-6'>
+				<div className='flex items-start justify-between mb-6'>
+					<div className='flex-1'>
+						{pageState === 'search' &&
+							searchResults.length === 0 &&
+							searchQuery && (
+								<Button
+									onClick={handleSwitchToManualAdd}
+									variant='outline'
+									size='sm'
+									className='ml-auto'>
+									<Plus className='size-4 mr-2' />
+									Créer un nouveau produit
+								</Button>
 							)}
-						</div>
-
-						{/* Marque avec suggestions */}
-						<div>
-							<label
-								htmlFor='brand'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Marque
-							</label>
-							<div className='relative'>
-								<input
-									{...form.register('brand')}
-									type='text'
-									id='brand'
-									placeholder='Ex: Leclerc'
-									list='brands-list'
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-									disabled={isLoading}
-								/>
-								<datalist id='brands-list'>
-									{recentValues.brands.map(
-										(brand: string) => (
-											<option key={brand} value={brand} />
-										)
-									)}
-								</datalist>
-							</div>
-						</div>
-
-						{/* Catégorie */}
-						<div>
-							<label
-								htmlFor='category'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Catégorie *
-							</label>
-							<select
-								{...form.register('category')}
-								id='category'
-								className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
-									errors.category
-										? 'border-error-50'
-										: 'border-neutral-300'
-								}`}
-								disabled={isLoading}>
-								{CATEGORIES.map((cat) => (
-									<option key={cat.value} value={cat.value}>
-										{cat.label}
-									</option>
-								))}
-							</select>
-							{errors.category && (
-								<p className='text-sm text-error-50 mt-1'>
-									{errors.category.message}
-								</p>
-							)}
-						</div>
 					</div>
 				</div>
 
-				{/* Quantité et stockage */}
-				<div className='bg-neutral-50 rounded-xl border border-neutral-200 p-4'>
-					<h2 className='text-xl font-medium text-neutral-900 mb-4 flex items-center gap-2'>
-						<PackageOpen className='size-5 text-success-50' />
-						Quantité et stockage
-					</h2>
-
-					<div className='space-y-4'>
-						{/* Quantité */}
-						<div className='grid grid-cols-2 gap-3'>
-							<div>
-								<label
-									htmlFor='quantity'
-									className='block text-sm font-medium text-neutral-700 mb-2'>
-									Quantité *
-								</label>
-								<input
-									{...form.register('quantity', {
-										valueAsNumber: true,
-									})}
-									type='number'
-									id='quantity'
-									placeholder='1'
-									min='1'
-									step='1'
-									className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
-										errors.quantity
-											? 'border-error-50'
-											: 'border-neutral-300'
-									}`}
-									disabled={isLoading}
-								/>
-								{errors.quantity && (
-									<p className='text-sm text-error-50 mt-1'>
-										{errors.quantity.message}
+				{/* Contenu principal selon l'état */}
+				{pageState === 'search' && (
+					<div className='space-y-6'>
+						{/* Barre de recherche */}
+						<Card className='p-6'>
+							<div className='flex items-start space-x-4'>
+								<div className='size-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0'>
+									<Search className='size-5 text-accent' />
+								</div>
+								<div className='flex-1 space-y-3'>
+									<h2 className='text-lg font-semibold text-neutral-300'>
+										Rechercher un produit existant
+									</h2>
+									<p className='text-sm text-neutral-200'>
+										Commencez par rechercher si le produit
+										existe déjà dans notre base de données
 									</p>
-								)}
+									<ProductSearchBar
+										onSearch={handleSearch}
+										onClear={handleClearSearch}
+										isLoading={isSearching}
+										autoFocus
+									/>
+								</div>
 							</div>
+						</Card>
 
-							<div>
-								<label
-									htmlFor='unitType'
-									className='block text-sm font-medium text-neutral-700 mb-2'>
-									Unité
-								</label>
-								<select
-									{...form.register('unitType')}
-									id='unitType'
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-									disabled={isLoading}>
-									{UNIT_TYPES.map((unit) => (
-										<option
-											key={unit.value}
-											value={unit.value}>
-											{unit.label}
-										</option>
-									))}
-								</select>
-							</div>
-						</div>
-
-						{/* Lieu de stockage avec suggestions */}
-						<div>
-							<label
-								htmlFor='storageLocation'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Lieu de stockage
-							</label>
-							<select
-								{...form.register('storageLocation')}
-								id='storageLocation'
-								className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-								disabled={isLoading}>
-								{STORAGE_LOCATIONS.map((location) => (
-									<option
-										key={location.value}
-										value={location.value}>
-										{location.label}
-									</option>
-								))}
-							</select>
-						</div>
-					</div>
-				</div>
-
-				{/* Dates et prix */}
-				<div className='bg-neutral-50 rounded-xl border border-neutral-200 p-4'>
-					<h2 className='text-xl font-medium text-neutral-900 mb-4 flex items-center gap-2'>
-						<Calendar className='size-5 text-success-50' />
-						Dates et prix
-					</h2>
-
-					<div className='space-y-4'>
-						{/* Date d'achat */}
-						<div>
-							<label
-								htmlFor='purchaseDate'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Date d'achat
-							</label>
-							<input
-								{...form.register('purchaseDate')}
-								type='date'
-								id='purchaseDate'
-								className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
-									errors.purchaseDate
-										? 'border-error-50'
-										: 'border-neutral-300'
-								}`}
-								disabled={isLoading}
+						{/* Résultats de recherche */}
+						{(searchResults.length > 0 ||
+							(searchQuery && !isSearching)) && (
+							<ProductSearchResults
+								results={searchResults}
+								onSelectProduct={handleSelectProduct}
+								isLoading={isSearching}
+								searchQuery={searchQuery}
 							/>
-							{errors.purchaseDate && (
-								<p className='text-sm text-error-50 mt-1'>
-									{errors.purchaseDate.message}
-								</p>
-							)}
-						</div>
-
-						{/* Date de péremption */}
-						<div>
-							<label
-								htmlFor='expiryDate'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Date de péremption
-							</label>
-							<input
-								{...form.register('expiryDate')}
-								type='date'
-								id='expiryDate'
-								className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
-									errors.expiryDate
-										? 'border-error-50'
-										: 'border-neutral-300'
-								}`}
-								disabled={isLoading}
-							/>
-							{errors.expiryDate && (
-								<p className='text-sm text-error-50 mt-1'>
-									{errors.expiryDate.message}
-								</p>
-							)}
-						</div>
-
-						{/* Prix d'achat */}
-						<div>
-							<label
-								htmlFor='purchasePrice'
-								className='block text-sm font-medium text-neutral-700 mb-2'>
-								Prix d'achat
-							</label>
-							<div className='relative'>
-								<input
-									{...form.register('purchasePrice', {
-										valueAsNumber: true,
-									})}
-									type='number'
-									id='purchasePrice'
-									placeholder='0.00'
-									min='0'
-									step='0.01'
-									className={`w-full pl-8 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors ${
-										errors.purchasePrice
-											? 'border-error-50'
-											: 'border-neutral-300'
-									}`}
-									disabled={isLoading}
-								/>
-								<Euro className='absolute left-2.5 top-1/2 transform -translate-y-1/2 size-4 text-neutral-400' />
-							</div>
-							{errors.purchasePrice && (
-								<p className='text-sm text-error-50 mt-1'>
-									{errors.purchasePrice.message}
-								</p>
-							)}
-						</div>
-					</div>
-				</div>
-
-				{/* Informations nutritionnelles */}
-				<div className='bg-neutral-50 rounded-xl border border-neutral-200 p-4'>
-					<h2 className='text-xl font-medium text-neutral-900 mb-4 flex items-center gap-2'>
-						<Activity className='size-5 text-success-50' />
-						Informations nutritionnelles
-					</h2>
-
-					<div className='space-y-4'>
-						{/* Nutriscore et Ecoscore */}
-						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-							<div>
-								<label
-									htmlFor='nutriscore'
-									className='block text-sm font-medium text-neutral-700 mb-2'>
-									Nutri-Score
-								</label>
-								<select
-									{...form.register('nutriscore')}
-									id='nutriscore'
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-									disabled={isLoading}>
-									{NUTRISCORE_OPTIONS.map((score) => (
-										<option
-											key={score.value}
-											value={score.value}>
-											{score.label}
-										</option>
-									))}
-								</select>
-							</div>
-
-							<div>
-								<label
-									htmlFor='ecoscore'
-									className='block text-sm font-medium text-neutral-700 mb-2'>
-									Eco-Score
-								</label>
-								<select
-									{...form.register('ecoscore')}
-									id='ecoscore'
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-									disabled={isLoading}>
-									{ECOSCORE_OPTIONS.map((score) => (
-										<option
-											key={score.value}
-											value={score.value}>
-											{score.label}
-										</option>
-									))}
-								</select>
-							</div>
-						</div>
-
-						{/* Valeurs nutritionnelles */}
-						<div>
-							<h3 className='text-base font-medium text-neutral-800 mb-3 flex items-center gap-2'>
-								<Leaf className='size-4 text-success-50' />
-								Valeurs nutritionnelles (pour 100g/100ml)
-							</h3>
-
-							<div className='grid grid-cols-2 gap-3'>
-								<div>
-									<label
-										htmlFor='carbohydrates'
-										className='block text-xs font-medium text-neutral-600 mb-1'>
-										Glucides (g)
-									</label>
-									<input
-										{...form.register(
-											'nutritionalInfo.carbohydrates',
-											{ valueAsNumber: true }
-										)}
-										type='number'
-										id='carbohydrates'
-										placeholder='0.0'
-										min='0'
-										step='0.1'
-										className='w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-										disabled={isLoading}
-									/>
-								</div>
-
-								<div>
-									<label
-										htmlFor='proteins'
-										className='block text-xs font-medium text-neutral-600 mb-1'>
-										Protéines (g)
-									</label>
-									<input
-										{...form.register(
-											'nutritionalInfo.proteins',
-											{ valueAsNumber: true }
-										)}
-										type='number'
-										id='proteins'
-										placeholder='0.0'
-										min='0'
-										step='0.1'
-										className='w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-										disabled={isLoading}
-									/>
-								</div>
-
-								<div>
-									<label
-										htmlFor='fats'
-										className='block text-xs font-medium text-neutral-600 mb-1'>
-										Lipides (g)
-									</label>
-									<input
-										{...form.register(
-											'nutritionalInfo.fats',
-											{ valueAsNumber: true }
-										)}
-										type='number'
-										id='fats'
-										placeholder='0.0'
-										min='0'
-										step='0.1'
-										className='w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-										disabled={isLoading}
-									/>
-								</div>
-
-								<div>
-									<label
-										htmlFor='salt'
-										className='block text-xs font-medium text-neutral-600 mb-1'>
-										Sel (g)
-									</label>
-									<input
-										{...form.register(
-											'nutritionalInfo.salt',
-											{ valueAsNumber: true }
-										)}
-										type='number'
-										id='salt'
-										placeholder='0.0'
-										min='0'
-										step='0.01'
-										className='w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors'
-										disabled={isLoading}
-									/>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{/* Notes */}
-				<div className='bg-neutral-50 rounded-xl border border-neutral-200 p-4'>
-					<h2 className='text-xl font-medium text-neutral-900 mb-4'>
-						Notes (optionnel)
-					</h2>
-					<textarea
-						{...form.register('notes')}
-						id='notes'
-						placeholder='Ajouter des notes sur le produit...'
-						rows={3}
-						className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent transition-colors resize-none'
-						disabled={isLoading}
-					/>
-					{errors.notes && (
-						<p className='text-sm text-error-50 mt-1'>
-							{errors.notes.message}
-						</p>
-					)}
-				</div>
-
-				{/* Boutons d'action */}
-				<div className='flex gap-3 pt-4'>
-					<button
-						type='button'
-						onClick={handleCancel}
-						disabled={isLoading}
-						className='flex-1 px-4 py-3 bg-neutral-100 text-neutral-700 font-medium rounded-lg text-center hover:bg-neutral-200 transition-colors disabled:opacity-50'>
-						Annuler
-					</button>
-					<button
-						type='submit'
-						disabled={!isValid || isLoading}
-						className='flex-1 px-4 py-3 bg-success-50 text-neutral-50 font-medium rounded-lg hover:bg-success-50/80 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2'>
-						{isLoading ? (
-							<>
-								<Loader2 className='size-4 animate-spin' />
-								Ajout en cours...
-							</>
-						) : (
-							<>
-								<Save className='size-4' />
-								Ajouter le produit
-							</>
 						)}
-					</button>
-				</div>
-			</form>
+
+						{/* Message si aucun résultat */}
+						{searchResults.length === 0 &&
+							searchQuery &&
+							!isSearching && (
+								<Alert className='border-warning-50/20 bg-warning-50/10'>
+									<AlertCircle className='size-4 text-warning-50' />
+									<AlertDescription className='text-neutral-300'>
+										Aucun produit trouvé pour "{searchQuery}
+										".{' '}
+										<Button
+											variant='link'
+											className='px-1 h-auto font-medium'
+											onClick={handleSwitchToManualAdd}>
+											Créer ce produit
+										</Button>
+									</AlertDescription>
+								</Alert>
+							)}
+
+						{/* Aide initiale */}
+						{!searchQuery && (
+							<Card className='p-8 text-center border-dashed'>
+								<div className='flex flex-col items-center space-y-4'>
+									<div className='size-16 rounded-full bg-neutral-100 flex items-center justify-center'>
+										<Package className='size-8 text-neutral-200' />
+									</div>
+									<div className='space-y-2'>
+										<h3 className='text-lg font-medium text-neutral-300'>
+											Commencez par rechercher
+										</h3>
+										<p className='text-sm text-neutral-200 max-w-md mx-auto'>
+											Tapez le nom, la marque ou le
+											code-barres du produit que vous
+											souhaitez ajouter. Si le produit
+											n'existe pas, vous pourrez le créer.
+										</p>
+									</div>
+									<div className='flex items-center space-x-4 text-sm text-neutral-200'>
+										<span>ou</span>
+										<Button
+											variant='link'
+											className='text-accent'
+											onClick={handleSwitchToManualAdd}>
+											Créer directement un nouveau produit
+										</Button>
+									</div>
+								</div>
+							</Card>
+						)}
+					</div>
+				)}
+
+				{/* État ajout rapide */}
+				{pageState === 'quick-add' && selectedProduct && (
+					<Card className='p-6'>
+						<QuickAddForm
+							product={selectedProduct}
+							onSubmit={handleQuickAdd}
+							onCancel={handleBackToSearch}
+							isSubmitting={quickAddMutation.isPending}
+						/>
+					</Card>
+				)}
+
+				{/* État ajout manuel */}
+				{pageState === 'manual-add' && (
+					<Card className='p-6'>
+						<div className='space-y-6'>
+							{searchQuery && (
+								<Alert className='border-primary-100 bg-primary-50/50'>
+									<AlertDescription className='text-neutral-300'>
+										Vous créez un nouveau produit :{' '}
+										<strong>"{searchQuery}"</strong>
+									</AlertDescription>
+								</Alert>
+							)}
+							<AddManualProductForm
+								categories={categories}
+								onSubmit={handleManualAdd}
+								onCancel={handleBackToSearch}
+								isSubmitting={manualAddMutation.isPending}
+								defaultProductName={searchQuery}
+							/>
+						</div>
+					</Card>
+				)}
+			</div>
 		</div>
 	);
-}
+};

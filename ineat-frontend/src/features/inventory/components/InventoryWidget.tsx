@@ -8,6 +8,7 @@ import {
 	CardStatValue,
 	CardStatLabel,
 } from '@/components/ui/card';
+import { Link } from '@tanstack/react-router';
 
 // Widget d'inventaire qui affiche le nombre total de produits et ceux qui expirent bientôt
 interface InventoryWidgetProps {
@@ -24,6 +25,7 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 	expiredCount,
 }) => {
 	return (
+		<Link to='/app/inventory'>
 		<Card>
 			<CardHeader>
 				<CardTitle>Produit{totalProducts > 1 ? 's' : ''}</CardTitle>
@@ -74,6 +76,7 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 					)}
 				</div>
 			</CardContent>
-		</Card>
+			</Card>
+		</Link>
 	);
 };

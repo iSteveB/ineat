@@ -3,14 +3,12 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react-swc';
 import fs from 'fs';
-import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 import os from 'os';
 
 const homedir = os.homedir()
 
 export default defineConfig({
 	plugins: [
-		TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
 		react(),
 		tailwindcss(),
 	],
@@ -24,10 +22,10 @@ export default defineConfig({
 		port: 5173,
 		https: {
 			key: fs.readFileSync(
-				path.resolve(homedir, '.cert/localhost+2-key.pem')
+				path.resolve(homedir, './localhost+3-key.pem')
 			),
 			cert: fs.readFileSync(
-				path.resolve(homedir, '.cert/localhost+2.pem')
+				path.resolve(homedir, './localhost+3.pem')
 			),
 		},
 		watch: {

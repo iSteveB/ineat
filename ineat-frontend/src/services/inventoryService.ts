@@ -1,10 +1,13 @@
 import { apiClient } from '@/lib/api-client';
 import {
 	AddManualProductInput,
-	Category,
+	AddManualProductFormInput,
+	AddManualProductFormInputActual,
+	mapFormToApiData,
+	ProductCreatedResponse,
 	InventoryFilters,
-	UnitType,
-} from '@/schemas/productSchema';
+	InventoryStats,
+} from '@/schemas/inventorySchema';
 
 // Types pour les réponses de l'API d'inventaire
 export interface InventoryItemResponse {
@@ -15,8 +18,8 @@ export interface InventoryItemResponse {
 	purchasePrice: number | null;
 	storageLocation: string | null;
 	notes: string | null;
-	createdAt: string; // Date d'ajout à l'inventaire
-	updatedAt: string; // Date de dernière modification
+	createdAt: string;
+	updatedAt: string;
 	product: {
 		id: string;
 		name: string;
@@ -42,42 +45,23 @@ export interface InventoryItemResponse {
 	};
 }
 
-export interface ProductCreatedResponse {
-	id: string;
-	name: string;
-	brand: string | null;
-	category: string;
-	quantity: number;
-	unitType: 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
-	purchaseDate: string;
-	expiryDate: string | null;
-	purchasePrice: number | null;
-	storageLocation: string | null;
-	notes: string | null;
-	nutriscore: 'A' | 'B' | 'C' | 'D' | 'E' | null;
-	ecoscore: 'A' | 'B' | 'C' | 'D' | 'E' | null;
-	createdAt: string;
-	updatedAt: string;
-}
-
-export interface InventoryStatsResponse {
-	totalItems: number;
-	totalValue: number;
-	expiringInWeek: number;
-	categoriesBreakdown: Array<{
-		categoryName: string;
-		count: number;
-		percentage: number;
-	}>;
-	storageBreakdown: Record<string, number>;
-}
-
 export interface UpdateInventoryItemInput {
 	quantity?: number;
 	expiryDate?: string | null;
 	storageLocation?: string | null;
 	notes?: string | null;
 	purchasePrice?: number | null;
+}
+
+// Types pour les catégories
+export interface Category {
+	id: string;
+	name: string;
+	slug: string;
+	icon?: string;
+	parentId?: string;
+	parent?: Category;
+	children?: Category[];
 }
 
 // Types pour la recherche de produits
@@ -88,7 +72,7 @@ export interface ProductSearchResult {
 	nutriscore: 'A' | 'B' | 'C' | 'D' | 'E' | null;
 	ecoScore: 'A' | 'B' | 'C' | 'D' | 'E' | null;
 	imageUrl: string | null;
-	unitType: UnitType;
+	unitType: 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
 	barcode?: string | null;
 	category: {
 		id: string;
@@ -144,8 +128,61 @@ export const inventoryService = {
 
 	/**
 	 * Ajoute un produit manuellement à l'inventaire
+	 * Cette fonction gère automatiquement le mapping des données du formulaire vers l'API
+	 * Accepte les données soit avec categoryId soit avec category (auto-détection)
 	 */
 	async addManualProduct(
+		formData: AddManualProductFormInput | AddManualProductFormInputActual,
+		categories?: Category[]
+	): Promise<ProductCreatedResponse> {
+		// Validation basique des données reçues
+		if (!formData) {
+			throw new Error('Les données du formulaire sont manquantes');
+		}
+
+		// Vérifier que nous avons soit categoryId soit category
+		const hasCategoryId =
+			'categoryId' in formData && Boolean(formData.categoryId);
+		const hasCategory =
+			'category' in formData && Boolean(formData.category);
+
+		if (!hasCategoryId && !hasCategory) {
+			throw new Error(
+				'L\'ID de catégorie est requis. Le formulaire doit contenir soit "categoryId" soit "category".'
+			);
+		}
+
+		// Si les catégories ne sont pas fournies, les récupérer
+		let categoriesList = categories;
+		if (!categoriesList) {
+			categoriesList = await inventoryService.getCategories();
+		}
+
+		if (!categoriesList || categoriesList.length === 0) {
+			throw new Error(
+				'Aucune catégorie disponible. Impossible de mapper les données.'
+			);
+		}
+
+		// Mapper les données du formulaire vers le format attendu par l'API
+		const apiData: AddManualProductInput = mapFormToApiData(
+			formData,
+			categoriesList
+		);
+
+		// Appel à l'API avec les données correctement formatées
+		const response = await apiClient.post<ProductCreatedResponse>(
+			'/inventory/products',
+			apiData
+		);
+
+		return response;
+	},
+
+	/**
+	 * Version alternative pour les cas où on a déjà les données au bon format
+	 */
+	async addManualProductDirect(
 		productData: AddManualProductInput
 	): Promise<ProductCreatedResponse> {
 		return await apiClient.post<ProductCreatedResponse>(
@@ -184,22 +221,13 @@ export const inventoryService = {
 		query: string,
 		limit: number = 10
 	): Promise<ProductSearchResult[]> {
-		try {
-			// Construction manuelle de l'URL avec les paramètres de requête
-			const searchParams = new URLSearchParams();
-			searchParams.append('q', query);
-			searchParams.append('limit', limit.toString());
+		const searchParams = new URLSearchParams();
+		searchParams.append('q', query);
+		searchParams.append('limit', limit.toString());
 
-			const endpoint = `/products/search?${searchParams.toString()}`;
+		const endpoint = `/products/search?${searchParams.toString()}`;
 
-			const response = await apiClient.get<ProductSearchResult[]>(
-				endpoint
-			);
-			return response;
-		} catch (error) {
-			console.error('Erreur lors de la recherche de produits:', error);
-			throw error;
-		}
+		return await apiClient.get<ProductSearchResult[]>(endpoint);
 	},
 
 	/**
@@ -208,15 +236,9 @@ export const inventoryService = {
 	 * @returns Détails du produit
 	 */
 	async getProductById(productId: string): Promise<ProductSearchResult> {
-		try {
-			const response = await apiClient.get<ProductSearchResult>(
-				`/products/${productId}`
-			);
-			return response;
-		} catch (error) {
-			console.error('Erreur lors de la récupération du produit:', error);
-			throw error;
-		}
+		return await apiClient.get<ProductSearchResult>(
+			`/products/${productId}`
+		);
 	},
 
 	/**
@@ -227,16 +249,10 @@ export const inventoryService = {
 	async addExistingProductToInventory(
 		data: QuickAddFormData
 	): Promise<ProductCreatedResponse> {
-		try {
-			const response = await apiClient.post<ProductCreatedResponse>(
-				'/inventory/products/quick-add',
-				data
-			);
-			return response;
-		} catch (error) {
-			console.error("Erreur lors de l'ajout rapide du produit:", error);
-			throw error;
-		}
+		return await apiClient.post<ProductCreatedResponse>(
+			'/inventory/products/quick-add',
+			data
+		);
 	},
 
 	/**
@@ -244,25 +260,14 @@ export const inventoryService = {
 	 * @returns Liste des catégories
 	 */
 	async getCategories(): Promise<Category[]> {
-		try {
-			const response = await apiClient.get<Category[]>(
-				'/products/categories'
-			);
-			return response;
-		} catch (error) {
-			console.error(
-				'Erreur lors de la récupération des catégories:',
-				error
-			);
-			throw error;
-		}
+		return await apiClient.get<Category[]>('/products/categories');
 	},
 
 	/**
 	 * Récupère les statistiques de l'inventaire
 	 */
-	async getInventoryStats(): Promise<InventoryStatsResponse> {
-		return await apiClient.get<InventoryStatsResponse>('/inventory/stats');
+	async getInventoryStats(): Promise<InventoryStats> {
+		return await apiClient.get<InventoryStats>('/inventory/stats');
 	},
 
 	/**
@@ -273,19 +278,11 @@ export const inventoryService = {
 	async getRecentProducts(
 		limit: number = 5
 	): Promise<InventoryItemResponse[]> {
-		try {
-			const searchParams = new URLSearchParams();
-			searchParams.append('limit', limit.toString());
+		const searchParams = new URLSearchParams();
+		searchParams.append('limit', limit.toString());
 
-			const endpoint = `/inventory/recent?${searchParams.toString()}`;
+		const endpoint = `/inventory/recent?${searchParams.toString()}`;
 
-			return await apiClient.get<InventoryItemResponse[]>(endpoint);
-		} catch (error) {
-			console.error(
-				'Erreur lors de la récupération des produits récents:',
-				error
-			);
-			throw error;
-		}
+		return await apiClient.get<InventoryItemResponse[]>(endpoint);
 	},
 };

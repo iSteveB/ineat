@@ -51,6 +51,24 @@ export class InventoryService {
   }
 
   /**
+   * Recherche un produit par son code-barres
+   * @param barcode Code-barres du produit
+   * @returns Le produit trouvé ou null
+   */
+  async findProductByBarcode(barcode: string) {
+    if (!barcode) {
+      return null;
+    }
+
+    return await this.prisma.product.findUnique({
+      where: { barcode },
+      include: {
+        category: true,
+      },
+    });
+  }
+
+  /**
    * Récupère les produits récemment ajoutés à l'inventaire d'un utilisateur
    * @param userId ID de l'utilisateur
    * @param limit Nombre maximum de produits à retourner (défaut: 5)
@@ -247,6 +265,15 @@ export class InventoryService {
       );
     }
 
+    // Validation du format du code-barres si fourni
+    if (addProductDto.barcode) {
+      if (!this.isValidBarcodeFormat(addProductDto.barcode)) {
+        throw new BadRequestException(
+          `Format de code-barres invalide: ${addProductDto.barcode}`,
+        );
+      }
+    }
+
     // Vérifier la cohérence des dates
     if (addProductDto.expiryDate && addProductDto.purchaseDate) {
       const purchaseDate = new Date(addProductDto.purchaseDate);
@@ -261,18 +288,44 @@ export class InventoryService {
   }
 
   /**
+   * Valide le format du code-barres
+   * @param barcode Code-barres à valider
+   * @returns true si le format est valide
+   */
+  private isValidBarcodeFormat(barcode: string): boolean {
+    // Validation basique pour codes-barres courants
+    // EAN-8 (8 chiffres), EAN-13 (13 chiffres), UPC-A (12 chiffres), etc.
+    const barcodeRegex = /^(\d{8}|\d{12,14})$/;
+    return barcodeRegex.test(barcode.trim());
+  }
+
+  /**
    * Trouve un produit existant ou en crée un nouveau
    */
   private async findOrCreateProduct(
     tx: any, // Type générique pour la transaction Prisma
     addProductDto: AddManualProductDto,
   ) {
-    // Récupérer la catégorie
+    // 1. Si un code-barres est fourni, chercher d'abord par code-barres
+    if (addProductDto.barcode) {
+      const existingProductByBarcode = await tx.product.findUnique({
+        where: { barcode: addProductDto.barcode },
+        include: { category: true },
+      });
+
+      if (existingProductByBarcode) {
+        // Le produit existe déjà avec ce code-barres
+        return existingProductByBarcode;
+      }
+    }
+
+    // 2. Récupérer la catégorie pour la recherche/création
     const category = await tx.category.findFirst({
       where: { slug: addProductDto.category },
     });
 
-    // Chercher un produit existant avec le même nom, marque et catégorie
+    // 3. Chercher un produit existant avec le même nom, marque et catégorie
+    // (seulement si pas de code-barres ou si le code-barres n'a rien donné)
     const existingProduct = await tx.product.findFirst({
       where: {
         name: {
@@ -281,14 +334,29 @@ export class InventoryService {
         },
         brand: addProductDto.brand || null,
         categoryId: category!.id,
+        // Si un code-barres est fourni, on ne veut pas matcher un produit
+        // qui aurait un code-barres différent ou null
+        ...(addProductDto.barcode
+          ? { barcode: null } // Chercher seulement parmi les produits sans code-barres
+          : {}),
       },
     });
 
     if (existingProduct) {
+      // Si on a trouvé un produit similaire ET qu'on a un code-barres à ajouter
+      if (addProductDto.barcode && !existingProduct.barcode) {
+        // Mettre à jour le produit existant avec le code-barres
+        return await tx.product.update({
+          where: { id: existingProduct.id },
+          data: { barcode: addProductDto.barcode },
+          include: { category: true },
+        });
+      }
+
       return existingProduct;
     }
 
-    // Créer un nouveau produit
+    // 4. Créer un nouveau produit
     const nutritionalData = addProductDto.nutritionalInfo
       ? {
           carbohydrates: addProductDto.nutritionalInfo.carbohydrates,
@@ -298,17 +366,29 @@ export class InventoryService {
         }
       : null;
 
-    return await tx.product.create({
-      data: {
-        name: addProductDto.name,
-        brand: addProductDto.brand,
-        categoryId: category!.id,
-        unitType: addProductDto.unitType,
-        nutriscore: addProductDto.nutriscore,
-        ecoScore: addProductDto.ecoscore,
-        nutrients: nutritionalData,
-      },
-    });
+    try {
+      return await tx.product.create({
+        data: {
+          name: addProductDto.name,
+          brand: addProductDto.brand,
+          barcode: addProductDto.barcode, // Inclure le code-barres
+          categoryId: category!.id,
+          unitType: addProductDto.unitType,
+          nutriscore: addProductDto.nutriscore,
+          ecoScore: addProductDto.ecoscore,
+          nutrients: nutritionalData,
+        },
+        include: { category: true },
+      });
+    } catch (error) {
+      // Gestion des erreurs de contrainte unique sur le code-barres
+      if (error.code === 'P2002' && error.meta?.target?.includes('barcode')) {
+        throw new ConflictException(
+          `Un produit avec le code-barres ${addProductDto.barcode} existe déjà`,
+        );
+      }
+      throw error;
+    }
   }
 
   /**
@@ -381,6 +461,7 @@ export class InventoryService {
       id: inventoryItem.id,
       name: product.name,
       brand: product.brand,
+      barcode: product.barcode, // Inclure le code-barres dans la réponse
       category: inventoryItem.product.category.slug,
       quantity: inventoryItem.quantity,
       unitType: product.unitType,

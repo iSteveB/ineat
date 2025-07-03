@@ -8,7 +8,7 @@ export class ApiRequestError extends Error {
 	}
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://acf7-2001-861-36c2-6b80-64d7-478b-3452-5911.ngrok-free.app/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://localhost:3000/api';
 
 interface FetchOptions extends RequestInit {
 	skipAuth?: boolean;
@@ -24,6 +24,7 @@ export const apiClient = {
 		// Préparation des en-têtes
 		const headers = new Headers(fetchOptions.headers);
 		headers.set('Content-Type', 'application/json');
+		headers.set('Accept', 'application/json');
 
 		// Construction de l'URL complète
 		const url = `${API_URL}${
@@ -32,7 +33,7 @@ export const apiClient = {
 
 		// Création du contrôleur d'annulation pour gérer les timeouts
 		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 secondes timeout
+		const timeoutId = setTimeout(() => controller.abort(), 30000);
 
 		try {
 			// Exécution de la requête

@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Query,
+  Param,
   UseGuards,
   HttpStatus,
   ValidationPipe,
@@ -12,13 +13,11 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiParam,
 } from '@nestjs/swagger';
 import { ProductsService } from '../services/products.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import {
-  SearchProductsDto,
-  ProductSearchResultDto,
-} from '../../DTOs';
+import { SearchProductsDto, ProductSearchResultDto } from '../../DTOs';
 
 @ApiTags('Products')
 @ApiBearerAuth()
@@ -75,37 +74,8 @@ export class ProductsController {
   }
 
   /**
-   * Récupère un produit spécifique par son ID
-   */
-  @Get(':id')
-  @ApiOperation({
-    summary: 'Récupérer un produit par ID',
-    description: "Récupère les informations détaillées d'un produit spécifique",
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Produit trouvé',
-    type: ProductSearchResultDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'Produit non trouvé',
-    schema: {
-      example: {
-        statusCode: 404,
-        message: 'Produit non trouvé',
-        error: 'Not Found',
-      },
-    },
-  })
-  async getProductById(
-    @Query('id') productId: string,
-  ): Promise<ProductSearchResultDto> {
-    return await this.productsService.getProductById(productId);
-  }
-
-  /**
    * Récupère les catégories disponibles
+   * IMPORTANT: Cette route doit être définie AVANT la route :id
    */
   @Get('categories')
   @ApiOperation({
@@ -132,5 +102,41 @@ export class ProductsController {
   })
   async getCategories() {
     return await this.productsService.getCategories();
+  }
+
+  /**
+   * Récupère un produit spécifique par son ID
+   * IMPORTANT: Cette route doit être définie APRÈS les routes statiques
+   */
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Récupérer un produit par ID',
+    description: "Récupère les informations détaillées d'un produit spécifique",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID du produit',
+    example: 'uuid-exemple',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Produit trouvé',
+    type: ProductSearchResultDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Produit non trouvé',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Produit non trouvé',
+        error: 'Not Found',
+      },
+    },
+  })
+  async getProductById(
+    @Param('id') productId: string,
+  ): Promise<ProductSearchResultDto> {
+    return await this.productsService.getProductById(productId);
   }
 }
