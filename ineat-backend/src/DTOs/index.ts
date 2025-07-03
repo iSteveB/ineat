@@ -1,3 +1,4 @@
+import { QuickAddProductDto } from '../inventory/dto/quick-add-product.dto';
 // DTOs pour l'authentification
 export {
   LoginDto,
@@ -19,5 +20,6 @@ export {
   SearchProductsDto,
   ProductSearchResultDto,
   CategoryInfoDto,
-  QuickAddProductDto,
 } from '../product/dto/search-product.dto';
+
+export { QuickAddProductDto } from '../inventory/dto/quick-add-product.dto';

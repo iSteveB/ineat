@@ -118,6 +118,76 @@ export class InventoryController {
   }
 
   /**
+   * Ajoute rapidement un produit existant à l'inventaire
+   */
+  @Post('products/quick-add')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Ajouter rapidement un produit existant',
+    description:
+      "Permet d'ajouter rapidement un produit déjà présent dans la base de données à l'inventaire de l'utilisateur",
+  })
+  @ApiBody({
+    type: QuickAddProductDto,
+    description: 'Informations pour ajouter le produit existant à l\'inventaire',
+  })
+  @ApiResponse({
+    status: 201,
+    description: "Produit ajouté avec succès à l'inventaire",
+    type: ProductCreatedResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Données invalides (validation échouée, dates incohérentes, etc.)',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: [
+          'L\'ID du produit est obligatoire',
+          'La quantité doit être supérieure à 0',
+          'La date de péremption doit être postérieure à la date d\'achat',
+        ],
+        error: 'Bad Request',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Produit non trouvé',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Le produit avec l\'ID f47ac10b-58cc-4372-a567-0e02b2c3d479 n\'existe pas',
+        error: 'Not Found',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description:
+      "Produit déjà présent dans l'inventaire avec les mêmes caractéristiques",
+    schema: {
+      example: {
+        statusCode: 409,
+        message:
+          'Ce produit existe déjà dans votre inventaire avec les mêmes caractéristiques (lieu de stockage et date de péremption). Vous pouvez modifier la quantité existante.',
+        error: 'Conflict',
+      },
+    },
+  })
+  async addExistingProductToInventory(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    quickAddDto: QuickAddProductDto,
+  ): Promise<ProductCreatedResponseDto> {
+    return await this.inventoryService.addExistingProductToInventory(
+      req.user.id,
+      quickAddDto,
+    );
+  }
+
+  /**
    * Vérifie l'existence d'un produit par son code-barres
    */
   @Get('barcode/:barcode')

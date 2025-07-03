@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
+import { QuickAddProductDto } from 'src/DTOs';
 
 @Injectable()
 export class InventoryService {
@@ -47,6 +48,154 @@ export class InventoryService {
 
       // 4. Retourner la réponse formatée
       return this.formatResponse(inventoryItem, product);
+    });
+  }
+
+  /**
+   * Ajoute un produit existant à l'inventaire d'un utilisateur (ajout rapide)
+   * @param userId ID de l'utilisateur connecté
+   * @param quickAddDto Données d'ajout rapide du produit existant
+   * @returns L'élément d'inventaire créé avec les informations du produit
+   */
+  async addExistingProductToInventory(
+    userId: string,
+    quickAddDto: QuickAddProductDto,
+  ): Promise<ProductCreatedResponseDto> {
+    // Validation des données métier
+    await this.validateQuickAddData(quickAddDto);
+
+    // Utilisation d'une transaction pour assurer la cohérence
+    return await this.prisma.$transaction(async (tx: any) => {
+      // 1. Vérifier que le produit existe
+      const product = await this.findProductById(tx, quickAddDto.productId);
+
+      // 2. Vérifier s'il y a un doublon dans l'inventaire
+      await this.checkDuplicateInventoryItemForQuickAdd(
+        tx,
+        userId,
+        quickAddDto.productId,
+        quickAddDto,
+      );
+
+      // 3. Créer l'élément d'inventaire
+      const inventoryItem = await this.createInventoryItemFromQuickAdd(
+        tx,
+        userId,
+        quickAddDto,
+      );
+
+      // 4. Retourner la réponse formatée
+      return this.formatResponse(inventoryItem, product);
+    });
+  }
+
+  // --- MÉTHODES PRIVÉES POUR L'AJOUT RAPIDE ---
+
+  /**
+   * Valide les données métier pour l'ajout rapide
+   */
+  private async validateQuickAddData(
+    quickAddDto: QuickAddProductDto,
+  ): Promise<void> {
+    // Vérifier la cohérence des dates
+    if (quickAddDto.expiryDate && quickAddDto.purchaseDate) {
+      const purchaseDate = new Date(quickAddDto.purchaseDate);
+      const expiryDate = new Date(quickAddDto.expiryDate);
+
+      if (expiryDate <= purchaseDate) {
+        throw new BadRequestException(
+          "La date de péremption doit être postérieure à la date d'achat",
+        );
+      }
+    }
+
+    // Vérifier que la date d'achat n'est pas dans le futur
+    const purchaseDate = new Date(quickAddDto.purchaseDate);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Fin de journée pour permettre les achats du jour
+
+    if (purchaseDate > today) {
+      throw new BadRequestException(
+        "La date d'achat ne peut pas être dans le futur",
+      );
+    }
+  }
+
+  /**
+   * Recherche un produit par son ID et vérifie qu'il existe
+   */
+  private async findProductById(tx: any, productId: string) {
+    const product = await tx.product.findUnique({
+      where: { id: productId },
+      include: {
+        category: true,
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException(
+        `Le produit avec l'ID ${productId} n'existe pas`,
+      );
+    }
+
+    return product;
+  }
+
+  /**
+   * Vérifie s'il y a un doublon dans l'inventaire pour l'ajout rapide
+   */
+  private async checkDuplicateInventoryItemForQuickAdd(
+    tx: any,
+    userId: string,
+    productId: string,
+    quickAddDto: QuickAddProductDto,
+  ): Promise<void> {
+    const existingInventoryItem = await tx.inventoryItem.findFirst({
+      where: {
+        userId,
+        productId,
+        storageLocation: quickAddDto.storageLocation || null,
+        expiryDate: quickAddDto.expiryDate
+          ? new Date(quickAddDto.expiryDate)
+          : null,
+      },
+    });
+
+    if (existingInventoryItem) {
+      throw new ConflictException(
+        'Ce produit existe déjà dans votre inventaire avec les mêmes caractéristiques (lieu de stockage et date de péremption). Vous pouvez modifier la quantité existante.',
+      );
+    }
+  }
+
+  /**
+   * Crée l'élément d'inventaire à partir des données d'ajout rapide
+   */
+  private async createInventoryItemFromQuickAdd(
+    tx: any,
+    userId: string,
+    quickAddDto: QuickAddProductDto,
+  ) {
+    return await tx.inventoryItem.create({
+      data: {
+        userId,
+        productId: quickAddDto.productId,
+        quantity: quickAddDto.quantity,
+        purchaseDate: new Date(quickAddDto.purchaseDate),
+        expiryDate: quickAddDto.expiryDate
+          ? new Date(quickAddDto.expiryDate)
+          : null,
+        purchasePrice: quickAddDto.purchasePrice || null,
+        storageLocation: quickAddDto.storageLocation || null,
+        notes: quickAddDto.notes || null,
+      },
+      include: {
+        product: {
+          include: {
+            category: true,
+          },
+        },
+      },
     });
   }
 
