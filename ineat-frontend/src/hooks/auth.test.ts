@@ -5,7 +5,7 @@ import {
 	usePrefetchUser,
 	useHasRole,
 	authKeys,
-} from '../hooks/auth';
+} from './auth';
 import { authService } from '@/services/authService';
 import { useAuthStore } from '../stores/authStore';
 import * as reactQuery from '@tanstack/react-query';
