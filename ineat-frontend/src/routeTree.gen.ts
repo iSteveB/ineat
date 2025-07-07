@@ -8,384 +8,522 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteRouteImport } from './routes/app/route'
+import { Route as ErrorRouteRouteImport } from './routes/_error/route'
+import { Route as AuthRouteRouteImport } from './routes/_auth/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as ErrorNotFoundRouteImport } from './routes/_error/notFound'
+import { Route as ErrorErrorRouteImport } from './routes/_error/error'
+import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
+import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AuthCallbackRouteImport } from './routes/_auth/callback'
+import { Route as AppSettingsIndexRouteImport } from './routes/app/settings/index'
+import { Route as AppRecipesIndexRouteImport } from './routes/app/recipes/index'
+import { Route as AppProfileIndexRouteImport } from './routes/app/profile/index'
+import { Route as AppNotificationsIndexRouteImport } from './routes/app/notifications/index'
+import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/index'
+import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
+import { Route as AppRecipesSuggestionsRouteImport } from './routes/app/recipes/suggestions'
+import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$recipeId'
+import { Route as AppInventoryScanProductRouteImport } from './routes/app/inventory/scan-product'
+import { Route as AppInventoryImportProductRouteImport } from './routes/app/inventory/import-product'
+import { Route as AppInventoryAddProductRouteImport } from './routes/app/inventory/add-product'
+import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
+import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
+import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
+import { Route as AppSettingsDietRestrictionsIndexRouteImport } from './routes/app/settings/diet-restrictions/index'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AppRouteImport } from './routes/app/route'
-import { Route as ErrorRouteImport } from './routes/_error/route'
-import { Route as AuthRouteImport } from './routes/_auth/route'
-import { Route as IndexImport } from './routes/index'
-import { Route as AppIndexImport } from './routes/app/index'
-import { Route as ErrorNotFoundImport } from './routes/_error/notFound'
-import { Route as ErrorErrorImport } from './routes/_error/error'
-import { Route as AuthRegisterImport } from './routes/_auth/register'
-import { Route as AuthLoginImport } from './routes/_auth/login'
-import { Route as AuthForgotPasswordImport } from './routes/_auth/forgot-password'
-import { Route as AuthCallbackImport } from './routes/_auth/callback'
-import { Route as AppSettingsIndexImport } from './routes/app/settings/index'
-import { Route as AppRecipesIndexImport } from './routes/app/recipes/index'
-import { Route as AppProfileIndexImport } from './routes/app/profile/index'
-import { Route as AppNotificationsIndexImport } from './routes/app/notifications/index'
-import { Route as AppInventoryIndexImport } from './routes/app/inventory/index'
-import { Route as AppBudgetIndexImport } from './routes/app/budget/index'
-import { Route as AppRecipesSuggestionsImport } from './routes/app/recipes/suggestions'
-import { Route as AppRecipesRecipeIdImport } from './routes/app/recipes/$recipeId'
-import { Route as AppInventoryScanProductImport } from './routes/app/inventory/scan-product'
-import { Route as AppInventoryImportProductImport } from './routes/app/inventory/import-product'
-import { Route as AppInventoryAddProductImport } from './routes/app/inventory/add-product'
-import { Route as AppInventoryProductIdImport } from './routes/app/inventory/$productId'
-import { Route as AppSettingsSecurityIndexImport } from './routes/app/settings/security/index'
-import { Route as AppSettingsPersonalInfoIndexImport } from './routes/app/settings/personal-info/index'
-import { Route as AppSettingsDietRestrictionsIndexImport } from './routes/app/settings/diet-restrictions/index'
-
-// Create/Update Routes
-
-const AppRouteRoute = AppRouteImport.update({
+const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
   path: '/app',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const ErrorRouteRoute = ErrorRouteImport.update({
+const ErrorRouteRoute = ErrorRouteRouteImport.update({
   id: '/_error',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AuthRouteRoute = AuthRouteImport.update({
+const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AppIndexRoute = AppIndexImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const ErrorNotFoundRoute = ErrorNotFoundImport.update({
+const ErrorNotFoundRoute = ErrorNotFoundRouteImport.update({
   id: '/notFound',
   path: '/notFound',
   getParentRoute: () => ErrorRouteRoute,
 } as any)
-
-const ErrorErrorRoute = ErrorErrorImport.update({
+const ErrorErrorRoute = ErrorErrorRouteImport.update({
   id: '/error',
   path: '/error',
   getParentRoute: () => ErrorRouteRoute,
 } as any)
-
-const AuthRegisterRoute = AuthRegisterImport.update({
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
   path: '/register',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-
-const AuthLoginRoute = AuthLoginImport.update({
+const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-
-const AuthForgotPasswordRoute = AuthForgotPasswordImport.update({
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-
-const AuthCallbackRoute = AuthCallbackImport.update({
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-
-const AppSettingsIndexRoute = AppSettingsIndexImport.update({
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppRecipesIndexRoute = AppRecipesIndexImport.update({
+const AppRecipesIndexRoute = AppRecipesIndexRouteImport.update({
   id: '/recipes/',
   path: '/recipes/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppProfileIndexRoute = AppProfileIndexImport.update({
+const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppNotificationsIndexRoute = AppNotificationsIndexImport.update({
+const AppNotificationsIndexRoute = AppNotificationsIndexRouteImport.update({
   id: '/notifications/',
   path: '/notifications/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppInventoryIndexRoute = AppInventoryIndexImport.update({
+const AppInventoryIndexRoute = AppInventoryIndexRouteImport.update({
   id: '/inventory/',
   path: '/inventory/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppBudgetIndexRoute = AppBudgetIndexImport.update({
+const AppBudgetIndexRoute = AppBudgetIndexRouteImport.update({
   id: '/budget/',
   path: '/budget/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppRecipesSuggestionsRoute = AppRecipesSuggestionsImport.update({
+const AppRecipesSuggestionsRoute = AppRecipesSuggestionsRouteImport.update({
   id: '/recipes/suggestions',
   path: '/recipes/suggestions',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppRecipesRecipeIdRoute = AppRecipesRecipeIdImport.update({
+const AppRecipesRecipeIdRoute = AppRecipesRecipeIdRouteImport.update({
   id: '/recipes/$recipeId',
   path: '/recipes/$recipeId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppInventoryScanProductRoute = AppInventoryScanProductImport.update({
+const AppInventoryScanProductRoute = AppInventoryScanProductRouteImport.update({
   id: '/inventory/scan-product',
   path: '/inventory/scan-product',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppInventoryImportProductRoute = AppInventoryImportProductImport.update({
-  id: '/inventory/import-product',
-  path: '/inventory/import-product',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-
-const AppInventoryAddProductRoute = AppInventoryAddProductImport.update({
+const AppInventoryImportProductRoute =
+  AppInventoryImportProductRouteImport.update({
+    id: '/inventory/import-product',
+    path: '/inventory/import-product',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
+const AppInventoryAddProductRoute = AppInventoryAddProductRouteImport.update({
   id: '/inventory/add-product',
   path: '/inventory/add-product',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppInventoryProductIdRoute = AppInventoryProductIdImport.update({
+const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
   id: '/inventory/$productId',
   path: '/inventory/$productId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-
-const AppSettingsSecurityIndexRoute = AppSettingsSecurityIndexImport.update({
-  id: '/settings/security/',
-  path: '/settings/security/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-
+const AppSettingsSecurityIndexRoute =
+  AppSettingsSecurityIndexRouteImport.update({
+    id: '/settings/security/',
+    path: '/settings/security/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppSettingsPersonalInfoIndexRoute =
-  AppSettingsPersonalInfoIndexImport.update({
+  AppSettingsPersonalInfoIndexRouteImport.update({
     id: '/settings/personal-info/',
     path: '/settings/personal-info/',
     getParentRoute: () => AppRouteRoute,
   } as any)
-
 const AppSettingsDietRestrictionsIndexRoute =
-  AppSettingsDietRestrictionsIndexImport.update({
+  AppSettingsDietRestrictionsIndexRouteImport.update({
     id: '/settings/diet-restrictions/',
     path: '/settings/diet-restrictions/',
     getParentRoute: () => AppRouteRoute,
   } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/app': typeof AppRouteRouteWithChildren
+  '/callback': typeof AuthCallbackRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/error': typeof ErrorErrorRoute
+  '/notFound': typeof ErrorNotFoundRoute
+  '/app/': typeof AppIndexRoute
+  '/app/inventory/$productId': typeof AppInventoryProductIdRoute
+  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
+  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
+  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
+  '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
+  '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
+  '/app/budget': typeof AppBudgetIndexRoute
+  '/app/inventory': typeof AppInventoryIndexRoute
+  '/app/notifications': typeof AppNotificationsIndexRoute
+  '/app/profile': typeof AppProfileIndexRoute
+  '/app/recipes': typeof AppRecipesIndexRoute
+  '/app/settings': typeof AppSettingsIndexRoute
+  '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
+  '/app/settings/security': typeof AppSettingsSecurityIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/callback': typeof AuthCallbackRoute
+  '/forgot-password': typeof AuthForgotPasswordRoute
+  '/login': typeof AuthLoginRoute
+  '/register': typeof AuthRegisterRoute
+  '/error': typeof ErrorErrorRoute
+  '/notFound': typeof ErrorNotFoundRoute
+  '/app': typeof AppIndexRoute
+  '/app/inventory/$productId': typeof AppInventoryProductIdRoute
+  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
+  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
+  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
+  '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
+  '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
+  '/app/budget': typeof AppBudgetIndexRoute
+  '/app/inventory': typeof AppInventoryIndexRoute
+  '/app/notifications': typeof AppNotificationsIndexRoute
+  '/app/profile': typeof AppProfileIndexRoute
+  '/app/recipes': typeof AppRecipesIndexRoute
+  '/app/settings': typeof AppSettingsIndexRoute
+  '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
+  '/app/settings/security': typeof AppSettingsSecurityIndexRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteRouteWithChildren
+  '/_error': typeof ErrorRouteRouteWithChildren
+  '/app': typeof AppRouteRouteWithChildren
+  '/_auth/callback': typeof AuthCallbackRoute
+  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/_auth/login': typeof AuthLoginRoute
+  '/_auth/register': typeof AuthRegisterRoute
+  '/_error/error': typeof ErrorErrorRoute
+  '/_error/notFound': typeof ErrorNotFoundRoute
+  '/app/': typeof AppIndexRoute
+  '/app/inventory/$productId': typeof AppInventoryProductIdRoute
+  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
+  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
+  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
+  '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
+  '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
+  '/app/budget/': typeof AppBudgetIndexRoute
+  '/app/inventory/': typeof AppInventoryIndexRoute
+  '/app/notifications/': typeof AppNotificationsIndexRoute
+  '/app/profile/': typeof AppProfileIndexRoute
+  '/app/recipes/': typeof AppRecipesIndexRoute
+  '/app/settings/': typeof AppSettingsIndexRoute
+  '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/personal-info/': typeof AppSettingsPersonalInfoIndexRoute
+  '/app/settings/security/': typeof AppSettingsSecurityIndexRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/callback'
+    | '/forgot-password'
+    | '/login'
+    | '/register'
+    | '/error'
+    | '/notFound'
+    | '/app/'
+    | '/app/inventory/$productId'
+    | '/app/inventory/add-product'
+    | '/app/inventory/import-product'
+    | '/app/inventory/scan-product'
+    | '/app/recipes/$recipeId'
+    | '/app/recipes/suggestions'
+    | '/app/budget'
+    | '/app/inventory'
+    | '/app/notifications'
+    | '/app/profile'
+    | '/app/recipes'
+    | '/app/settings'
+    | '/app/settings/diet-restrictions'
+    | '/app/settings/personal-info'
+    | '/app/settings/security'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/callback'
+    | '/forgot-password'
+    | '/login'
+    | '/register'
+    | '/error'
+    | '/notFound'
+    | '/app'
+    | '/app/inventory/$productId'
+    | '/app/inventory/add-product'
+    | '/app/inventory/import-product'
+    | '/app/inventory/scan-product'
+    | '/app/recipes/$recipeId'
+    | '/app/recipes/suggestions'
+    | '/app/budget'
+    | '/app/inventory'
+    | '/app/notifications'
+    | '/app/profile'
+    | '/app/recipes'
+    | '/app/settings'
+    | '/app/settings/diet-restrictions'
+    | '/app/settings/personal-info'
+    | '/app/settings/security'
+  id:
+    | '__root__'
+    | '/'
+    | '/_auth'
+    | '/_error'
+    | '/app'
+    | '/_auth/callback'
+    | '/_auth/forgot-password'
+    | '/_auth/login'
+    | '/_auth/register'
+    | '/_error/error'
+    | '/_error/notFound'
+    | '/app/'
+    | '/app/inventory/$productId'
+    | '/app/inventory/add-product'
+    | '/app/inventory/import-product'
+    | '/app/inventory/scan-product'
+    | '/app/recipes/$recipeId'
+    | '/app/recipes/suggestions'
+    | '/app/budget/'
+    | '/app/inventory/'
+    | '/app/notifications/'
+    | '/app/profile/'
+    | '/app/recipes/'
+    | '/app/settings/'
+    | '/app/settings/diet-restrictions/'
+    | '/app/settings/personal-info/'
+    | '/app/settings/security/'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  ErrorRouteRoute: typeof ErrorRouteRouteWithChildren
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/_auth': {
-      id: '/_auth'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRoute
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_error': {
       id: '/_error'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof ErrorRouteImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof ErrorRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/app': {
-      id: '/app'
-      path: '/app'
-      fullPath: '/app'
-      preLoaderRoute: typeof AppRouteImport
-      parentRoute: typeof rootRoute
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_auth/callback': {
-      id: '/_auth/callback'
-      path: '/callback'
-      fullPath: '/callback'
-      preLoaderRoute: typeof AuthCallbackImport
-      parentRoute: typeof AuthRouteImport
-    }
-    '/_auth/forgot-password': {
-      id: '/_auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof AuthForgotPasswordImport
-      parentRoute: typeof AuthRouteImport
-    }
-    '/_auth/login': {
-      id: '/_auth/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof AuthLoginImport
-      parentRoute: typeof AuthRouteImport
-    }
-    '/_auth/register': {
-      id: '/_auth/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof AuthRegisterImport
-      parentRoute: typeof AuthRouteImport
-    }
-    '/_error/error': {
-      id: '/_error/error'
-      path: '/error'
-      fullPath: '/error'
-      preLoaderRoute: typeof ErrorErrorImport
-      parentRoute: typeof ErrorRouteImport
-    }
-    '/_error/notFound': {
-      id: '/_error/notFound'
-      path: '/notFound'
-      fullPath: '/notFound'
-      preLoaderRoute: typeof ErrorNotFoundImport
-      parentRoute: typeof ErrorRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/app/': {
       id: '/app/'
       path: '/'
       fullPath: '/app/'
-      preLoaderRoute: typeof AppIndexImport
-      parentRoute: typeof AppRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
     }
-    '/app/inventory/$productId': {
-      id: '/app/inventory/$productId'
-      path: '/inventory/$productId'
-      fullPath: '/app/inventory/$productId'
-      preLoaderRoute: typeof AppInventoryProductIdImport
-      parentRoute: typeof AppRouteImport
+    '/_error/notFound': {
+      id: '/_error/notFound'
+      path: '/notFound'
+      fullPath: '/notFound'
+      preLoaderRoute: typeof ErrorNotFoundRouteImport
+      parentRoute: typeof ErrorRouteRoute
     }
-    '/app/inventory/add-product': {
-      id: '/app/inventory/add-product'
-      path: '/inventory/add-product'
-      fullPath: '/app/inventory/add-product'
-      preLoaderRoute: typeof AppInventoryAddProductImport
-      parentRoute: typeof AppRouteImport
+    '/_error/error': {
+      id: '/_error/error'
+      path: '/error'
+      fullPath: '/error'
+      preLoaderRoute: typeof ErrorErrorRouteImport
+      parentRoute: typeof ErrorRouteRoute
     }
-    '/app/inventory/import-product': {
-      id: '/app/inventory/import-product'
-      path: '/inventory/import-product'
-      fullPath: '/app/inventory/import-product'
-      preLoaderRoute: typeof AppInventoryImportProductImport
-      parentRoute: typeof AppRouteImport
+    '/_auth/register': {
+      id: '/_auth/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
-    '/app/inventory/scan-product': {
-      id: '/app/inventory/scan-product'
-      path: '/inventory/scan-product'
-      fullPath: '/app/inventory/scan-product'
-      preLoaderRoute: typeof AppInventoryScanProductImport
-      parentRoute: typeof AppRouteImport
+    '/_auth/login': {
+      id: '/_auth/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
-    '/app/recipes/$recipeId': {
-      id: '/app/recipes/$recipeId'
-      path: '/recipes/$recipeId'
-      fullPath: '/app/recipes/$recipeId'
-      preLoaderRoute: typeof AppRecipesRecipeIdImport
-      parentRoute: typeof AppRouteImport
+    '/_auth/forgot-password': {
+      id: '/_auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
-    '/app/recipes/suggestions': {
-      id: '/app/recipes/suggestions'
-      path: '/recipes/suggestions'
-      fullPath: '/app/recipes/suggestions'
-      preLoaderRoute: typeof AppRecipesSuggestionsImport
-      parentRoute: typeof AppRouteImport
-    }
-    '/app/budget/': {
-      id: '/app/budget/'
-      path: '/budget'
-      fullPath: '/app/budget'
-      preLoaderRoute: typeof AppBudgetIndexImport
-      parentRoute: typeof AppRouteImport
-    }
-    '/app/inventory/': {
-      id: '/app/inventory/'
-      path: '/inventory'
-      fullPath: '/app/inventory'
-      preLoaderRoute: typeof AppInventoryIndexImport
-      parentRoute: typeof AppRouteImport
-    }
-    '/app/notifications/': {
-      id: '/app/notifications/'
-      path: '/notifications'
-      fullPath: '/app/notifications'
-      preLoaderRoute: typeof AppNotificationsIndexImport
-      parentRoute: typeof AppRouteImport
-    }
-    '/app/profile/': {
-      id: '/app/profile/'
-      path: '/profile'
-      fullPath: '/app/profile'
-      preLoaderRoute: typeof AppProfileIndexImport
-      parentRoute: typeof AppRouteImport
-    }
-    '/app/recipes/': {
-      id: '/app/recipes/'
-      path: '/recipes'
-      fullPath: '/app/recipes'
-      preLoaderRoute: typeof AppRecipesIndexImport
-      parentRoute: typeof AppRouteImport
+    '/_auth/callback': {
+      id: '/_auth/callback'
+      path: '/callback'
+      fullPath: '/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRouteRoute
     }
     '/app/settings/': {
       id: '/app/settings/'
       path: '/settings'
       fullPath: '/app/settings'
-      preLoaderRoute: typeof AppSettingsIndexImport
-      parentRoute: typeof AppRouteImport
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
     }
-    '/app/settings/diet-restrictions/': {
-      id: '/app/settings/diet-restrictions/'
-      path: '/settings/diet-restrictions'
-      fullPath: '/app/settings/diet-restrictions'
-      preLoaderRoute: typeof AppSettingsDietRestrictionsIndexImport
-      parentRoute: typeof AppRouteImport
+    '/app/recipes/': {
+      id: '/app/recipes/'
+      path: '/recipes'
+      fullPath: '/app/recipes'
+      preLoaderRoute: typeof AppRecipesIndexRouteImport
+      parentRoute: typeof AppRouteRoute
     }
-    '/app/settings/personal-info/': {
-      id: '/app/settings/personal-info/'
-      path: '/settings/personal-info'
-      fullPath: '/app/settings/personal-info'
-      preLoaderRoute: typeof AppSettingsPersonalInfoIndexImport
-      parentRoute: typeof AppRouteImport
+    '/app/profile/': {
+      id: '/app/profile/'
+      path: '/profile'
+      fullPath: '/app/profile'
+      preLoaderRoute: typeof AppProfileIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/notifications/': {
+      id: '/app/notifications/'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AppNotificationsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/': {
+      id: '/app/inventory/'
+      path: '/inventory'
+      fullPath: '/app/inventory'
+      preLoaderRoute: typeof AppInventoryIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/budget/': {
+      id: '/app/budget/'
+      path: '/budget'
+      fullPath: '/app/budget'
+      preLoaderRoute: typeof AppBudgetIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/recipes/suggestions': {
+      id: '/app/recipes/suggestions'
+      path: '/recipes/suggestions'
+      fullPath: '/app/recipes/suggestions'
+      preLoaderRoute: typeof AppRecipesSuggestionsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/recipes/$recipeId': {
+      id: '/app/recipes/$recipeId'
+      path: '/recipes/$recipeId'
+      fullPath: '/app/recipes/$recipeId'
+      preLoaderRoute: typeof AppRecipesRecipeIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/scan-product': {
+      id: '/app/inventory/scan-product'
+      path: '/inventory/scan-product'
+      fullPath: '/app/inventory/scan-product'
+      preLoaderRoute: typeof AppInventoryScanProductRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/import-product': {
+      id: '/app/inventory/import-product'
+      path: '/inventory/import-product'
+      fullPath: '/app/inventory/import-product'
+      preLoaderRoute: typeof AppInventoryImportProductRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/add-product': {
+      id: '/app/inventory/add-product'
+      path: '/inventory/add-product'
+      fullPath: '/app/inventory/add-product'
+      preLoaderRoute: typeof AppInventoryAddProductRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/$productId': {
+      id: '/app/inventory/$productId'
+      path: '/inventory/$productId'
+      fullPath: '/app/inventory/$productId'
+      preLoaderRoute: typeof AppInventoryProductIdRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/app/settings/security/': {
       id: '/app/settings/security/'
       path: '/settings/security'
       fullPath: '/app/settings/security'
-      preLoaderRoute: typeof AppSettingsSecurityIndexImport
-      parentRoute: typeof AppRouteImport
+      preLoaderRoute: typeof AppSettingsSecurityIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/settings/personal-info/': {
+      id: '/app/settings/personal-info/'
+      path: '/settings/personal-info'
+      fullPath: '/app/settings/personal-info'
+      preLoaderRoute: typeof AppSettingsPersonalInfoIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/settings/diet-restrictions/': {
+      id: '/app/settings/diet-restrictions/'
+      path: '/settings/diet-restrictions'
+      fullPath: '/app/settings/diet-restrictions'
+      preLoaderRoute: typeof AppSettingsDietRestrictionsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface AuthRouteRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -461,334 +599,12 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
   AppRouteRouteChildren,
 )
 
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '': typeof ErrorRouteRouteWithChildren
-  '/app': typeof AppRouteRouteWithChildren
-  '/callback': typeof AuthCallbackRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
-  '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
-  '/error': typeof ErrorErrorRoute
-  '/notFound': typeof ErrorNotFoundRoute
-  '/app/': typeof AppIndexRoute
-  '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
-  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
-  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
-  '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
-  '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
-  '/app/budget': typeof AppBudgetIndexRoute
-  '/app/inventory': typeof AppInventoryIndexRoute
-  '/app/notifications': typeof AppNotificationsIndexRoute
-  '/app/profile': typeof AppProfileIndexRoute
-  '/app/recipes': typeof AppRecipesIndexRoute
-  '/app/settings': typeof AppSettingsIndexRoute
-  '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
-  '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
-  '/app/settings/security': typeof AppSettingsSecurityIndexRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof ErrorRouteRouteWithChildren
-  '/callback': typeof AuthCallbackRoute
-  '/forgot-password': typeof AuthForgotPasswordRoute
-  '/login': typeof AuthLoginRoute
-  '/register': typeof AuthRegisterRoute
-  '/error': typeof ErrorErrorRoute
-  '/notFound': typeof ErrorNotFoundRoute
-  '/app': typeof AppIndexRoute
-  '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
-  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
-  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
-  '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
-  '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
-  '/app/budget': typeof AppBudgetIndexRoute
-  '/app/inventory': typeof AppInventoryIndexRoute
-  '/app/notifications': typeof AppNotificationsIndexRoute
-  '/app/profile': typeof AppProfileIndexRoute
-  '/app/recipes': typeof AppRecipesIndexRoute
-  '/app/settings': typeof AppSettingsIndexRoute
-  '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
-  '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
-  '/app/settings/security': typeof AppSettingsSecurityIndexRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/_auth': typeof AuthRouteRouteWithChildren
-  '/_error': typeof ErrorRouteRouteWithChildren
-  '/app': typeof AppRouteRouteWithChildren
-  '/_auth/callback': typeof AuthCallbackRoute
-  '/_auth/forgot-password': typeof AuthForgotPasswordRoute
-  '/_auth/login': typeof AuthLoginRoute
-  '/_auth/register': typeof AuthRegisterRoute
-  '/_error/error': typeof ErrorErrorRoute
-  '/_error/notFound': typeof ErrorNotFoundRoute
-  '/app/': typeof AppIndexRoute
-  '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
-  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
-  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
-  '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
-  '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
-  '/app/budget/': typeof AppBudgetIndexRoute
-  '/app/inventory/': typeof AppInventoryIndexRoute
-  '/app/notifications/': typeof AppNotificationsIndexRoute
-  '/app/profile/': typeof AppProfileIndexRoute
-  '/app/recipes/': typeof AppRecipesIndexRoute
-  '/app/settings/': typeof AppSettingsIndexRoute
-  '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
-  '/app/settings/personal-info/': typeof AppSettingsPersonalInfoIndexRoute
-  '/app/settings/security/': typeof AppSettingsSecurityIndexRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | ''
-    | '/app'
-    | '/callback'
-    | '/forgot-password'
-    | '/login'
-    | '/register'
-    | '/error'
-    | '/notFound'
-    | '/app/'
-    | '/app/inventory/$productId'
-    | '/app/inventory/add-product'
-    | '/app/inventory/import-product'
-    | '/app/inventory/scan-product'
-    | '/app/recipes/$recipeId'
-    | '/app/recipes/suggestions'
-    | '/app/budget'
-    | '/app/inventory'
-    | '/app/notifications'
-    | '/app/profile'
-    | '/app/recipes'
-    | '/app/settings'
-    | '/app/settings/diet-restrictions'
-    | '/app/settings/personal-info'
-    | '/app/settings/security'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | ''
-    | '/callback'
-    | '/forgot-password'
-    | '/login'
-    | '/register'
-    | '/error'
-    | '/notFound'
-    | '/app'
-    | '/app/inventory/$productId'
-    | '/app/inventory/add-product'
-    | '/app/inventory/import-product'
-    | '/app/inventory/scan-product'
-    | '/app/recipes/$recipeId'
-    | '/app/recipes/suggestions'
-    | '/app/budget'
-    | '/app/inventory'
-    | '/app/notifications'
-    | '/app/profile'
-    | '/app/recipes'
-    | '/app/settings'
-    | '/app/settings/diet-restrictions'
-    | '/app/settings/personal-info'
-    | '/app/settings/security'
-  id:
-    | '__root__'
-    | '/'
-    | '/_auth'
-    | '/_error'
-    | '/app'
-    | '/_auth/callback'
-    | '/_auth/forgot-password'
-    | '/_auth/login'
-    | '/_auth/register'
-    | '/_error/error'
-    | '/_error/notFound'
-    | '/app/'
-    | '/app/inventory/$productId'
-    | '/app/inventory/add-product'
-    | '/app/inventory/import-product'
-    | '/app/inventory/scan-product'
-    | '/app/recipes/$recipeId'
-    | '/app/recipes/suggestions'
-    | '/app/budget/'
-    | '/app/inventory/'
-    | '/app/notifications/'
-    | '/app/profile/'
-    | '/app/recipes/'
-    | '/app/settings/'
-    | '/app/settings/diet-restrictions/'
-    | '/app/settings/personal-info/'
-    | '/app/settings/security/'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthRouteRoute: typeof AuthRouteRouteWithChildren
-  ErrorRouteRoute: typeof ErrorRouteRouteWithChildren
-  AppRouteRoute: typeof AppRouteRouteWithChildren
-}
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
   ErrorRouteRoute: ErrorRouteRouteWithChildren,
   AppRouteRoute: AppRouteRouteWithChildren,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/_auth",
-        "/_error",
-        "/app"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/_auth": {
-      "filePath": "_auth/route.tsx",
-      "children": [
-        "/_auth/callback",
-        "/_auth/forgot-password",
-        "/_auth/login",
-        "/_auth/register"
-      ]
-    },
-    "/_error": {
-      "filePath": "_error/route.tsx",
-      "children": [
-        "/_error/error",
-        "/_error/notFound"
-      ]
-    },
-    "/app": {
-      "filePath": "app/route.tsx",
-      "children": [
-        "/app/",
-        "/app/inventory/$productId",
-        "/app/inventory/add-product",
-        "/app/inventory/import-product",
-        "/app/inventory/scan-product",
-        "/app/recipes/$recipeId",
-        "/app/recipes/suggestions",
-        "/app/budget/",
-        "/app/inventory/",
-        "/app/notifications/",
-        "/app/profile/",
-        "/app/recipes/",
-        "/app/settings/",
-        "/app/settings/diet-restrictions/",
-        "/app/settings/personal-info/",
-        "/app/settings/security/"
-      ]
-    },
-    "/_auth/callback": {
-      "filePath": "_auth/callback.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/forgot-password": {
-      "filePath": "_auth/forgot-password.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/login": {
-      "filePath": "_auth/login.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/register": {
-      "filePath": "_auth/register.tsx",
-      "parent": "/_auth"
-    },
-    "/_error/error": {
-      "filePath": "_error/error.tsx",
-      "parent": "/_error"
-    },
-    "/_error/notFound": {
-      "filePath": "_error/notFound.tsx",
-      "parent": "/_error"
-    },
-    "/app/": {
-      "filePath": "app/index.tsx",
-      "parent": "/app"
-    },
-    "/app/inventory/$productId": {
-      "filePath": "app/inventory/$productId.tsx",
-      "parent": "/app"
-    },
-    "/app/inventory/add-product": {
-      "filePath": "app/inventory/add-product.tsx",
-      "parent": "/app"
-    },
-    "/app/inventory/import-product": {
-      "filePath": "app/inventory/import-product.tsx",
-      "parent": "/app"
-    },
-    "/app/inventory/scan-product": {
-      "filePath": "app/inventory/scan-product.tsx",
-      "parent": "/app"
-    },
-    "/app/recipes/$recipeId": {
-      "filePath": "app/recipes/$recipeId.tsx",
-      "parent": "/app"
-    },
-    "/app/recipes/suggestions": {
-      "filePath": "app/recipes/suggestions.tsx",
-      "parent": "/app"
-    },
-    "/app/budget/": {
-      "filePath": "app/budget/index.tsx",
-      "parent": "/app"
-    },
-    "/app/inventory/": {
-      "filePath": "app/inventory/index.tsx",
-      "parent": "/app"
-    },
-    "/app/notifications/": {
-      "filePath": "app/notifications/index.tsx",
-      "parent": "/app"
-    },
-    "/app/profile/": {
-      "filePath": "app/profile/index.tsx",
-      "parent": "/app"
-    },
-    "/app/recipes/": {
-      "filePath": "app/recipes/index.tsx",
-      "parent": "/app"
-    },
-    "/app/settings/": {
-      "filePath": "app/settings/index.tsx",
-      "parent": "/app"
-    },
-    "/app/settings/diet-restrictions/": {
-      "filePath": "app/settings/diet-restrictions/index.tsx",
-      "parent": "/app"
-    },
-    "/app/settings/personal-info/": {
-      "filePath": "app/settings/personal-info/index.tsx",
-      "parent": "/app"
-    },
-    "/app/settings/security/": {
-      "filePath": "app/settings/security/index.tsx",
-      "parent": "/app"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
