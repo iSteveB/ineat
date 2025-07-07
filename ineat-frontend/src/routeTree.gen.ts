@@ -28,13 +28,16 @@ import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/in
 import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
 import { Route as AppRecipesSuggestionsRouteImport } from './routes/app/recipes/suggestions'
 import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$recipeId'
-import { Route as AppInventoryScanProductRouteImport } from './routes/app/inventory/scan-product'
-import { Route as AppInventoryImportProductRouteImport } from './routes/app/inventory/import-product'
-import { Route as AppInventoryAddProductRouteImport } from './routes/app/inventory/add-product'
+import { Route as AppInventoryAddManualRouteImport } from './routes/app/inventory/add-manual'
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
 import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
 import { Route as AppSettingsDietRestrictionsIndexRouteImport } from './routes/app/settings/diet-restrictions/index'
+import { Route as AppInventoryAddIndexRouteImport } from './routes/app/inventory/add/index'
+import { Route as AppInventoryAddSearchRouteImport } from './routes/app/inventory/add/search'
+import { Route as AppInventoryAddScanRouteImport } from './routes/app/inventory/add/scan'
+import { Route as AppInventoryAddReceiptRouteImport } from './routes/app/inventory/add/receipt'
+import { Route as AppInventoryAddDriveRouteImport } from './routes/app/inventory/add/drive'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
@@ -129,20 +132,9 @@ const AppRecipesRecipeIdRoute = AppRecipesRecipeIdRouteImport.update({
   path: '/recipes/$recipeId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppInventoryScanProductRoute = AppInventoryScanProductRouteImport.update({
-  id: '/inventory/scan-product',
-  path: '/inventory/scan-product',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppInventoryImportProductRoute =
-  AppInventoryImportProductRouteImport.update({
-    id: '/inventory/import-product',
-    path: '/inventory/import-product',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
-const AppInventoryAddProductRoute = AppInventoryAddProductRouteImport.update({
-  id: '/inventory/add-product',
-  path: '/inventory/add-product',
+const AppInventoryAddManualRoute = AppInventoryAddManualRouteImport.update({
+  id: '/inventory/add-manual',
+  path: '/inventory/add-manual',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
@@ -168,6 +160,31 @@ const AppSettingsDietRestrictionsIndexRoute =
     path: '/settings/diet-restrictions/',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const AppInventoryAddIndexRoute = AppInventoryAddIndexRouteImport.update({
+  id: '/inventory/add/',
+  path: '/inventory/add/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppInventoryAddSearchRoute = AppInventoryAddSearchRouteImport.update({
+  id: '/inventory/add/search',
+  path: '/inventory/add/search',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppInventoryAddScanRoute = AppInventoryAddScanRouteImport.update({
+  id: '/inventory/add/scan',
+  path: '/inventory/add/scan',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppInventoryAddReceiptRoute = AppInventoryAddReceiptRouteImport.update({
+  id: '/inventory/add/receipt',
+  path: '/inventory/add/receipt',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppInventoryAddDriveRoute = AppInventoryAddDriveRouteImport.update({
+  id: '/inventory/add/drive',
+  path: '/inventory/add/drive',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -180,9 +197,7 @@ export interface FileRoutesByFullPath {
   '/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
-  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
-  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
+  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -191,6 +206,11 @@ export interface FileRoutesByFullPath {
   '/app/profile': typeof AppProfileIndexRoute
   '/app/recipes': typeof AppRecipesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/app/inventory/add/drive': typeof AppInventoryAddDriveRoute
+  '/app/inventory/add/receipt': typeof AppInventoryAddReceiptRoute
+  '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
+  '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
+  '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
   '/app/settings/security': typeof AppSettingsSecurityIndexRoute
@@ -205,9 +225,7 @@ export interface FileRoutesByTo {
   '/notFound': typeof ErrorNotFoundRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
-  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
-  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
+  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -216,6 +234,11 @@ export interface FileRoutesByTo {
   '/app/profile': typeof AppProfileIndexRoute
   '/app/recipes': typeof AppRecipesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
+  '/app/inventory/add/drive': typeof AppInventoryAddDriveRoute
+  '/app/inventory/add/receipt': typeof AppInventoryAddReceiptRoute
+  '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
+  '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
+  '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
   '/app/settings/security': typeof AppSettingsSecurityIndexRoute
@@ -234,9 +257,7 @@ export interface FileRoutesById {
   '/_error/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-product': typeof AppInventoryAddProductRoute
-  '/app/inventory/import-product': typeof AppInventoryImportProductRoute
-  '/app/inventory/scan-product': typeof AppInventoryScanProductRoute
+  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget/': typeof AppBudgetIndexRoute
@@ -245,6 +266,11 @@ export interface FileRoutesById {
   '/app/profile/': typeof AppProfileIndexRoute
   '/app/recipes/': typeof AppRecipesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
+  '/app/inventory/add/drive': typeof AppInventoryAddDriveRoute
+  '/app/inventory/add/receipt': typeof AppInventoryAddReceiptRoute
+  '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
+  '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
+  '/app/inventory/add/': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/personal-info/': typeof AppSettingsPersonalInfoIndexRoute
   '/app/settings/security/': typeof AppSettingsSecurityIndexRoute
@@ -262,9 +288,7 @@ export interface FileRouteTypes {
     | '/notFound'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/inventory/add-product'
-    | '/app/inventory/import-product'
-    | '/app/inventory/scan-product'
+    | '/app/inventory/add-manual'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -273,6 +297,11 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/recipes'
     | '/app/settings'
+    | '/app/inventory/add/drive'
+    | '/app/inventory/add/receipt'
+    | '/app/inventory/add/scan'
+    | '/app/inventory/add/search'
+    | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
     | '/app/settings/personal-info'
     | '/app/settings/security'
@@ -287,9 +316,7 @@ export interface FileRouteTypes {
     | '/notFound'
     | '/app'
     | '/app/inventory/$productId'
-    | '/app/inventory/add-product'
-    | '/app/inventory/import-product'
-    | '/app/inventory/scan-product'
+    | '/app/inventory/add-manual'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -298,6 +325,11 @@ export interface FileRouteTypes {
     | '/app/profile'
     | '/app/recipes'
     | '/app/settings'
+    | '/app/inventory/add/drive'
+    | '/app/inventory/add/receipt'
+    | '/app/inventory/add/scan'
+    | '/app/inventory/add/search'
+    | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
     | '/app/settings/personal-info'
     | '/app/settings/security'
@@ -315,9 +347,7 @@ export interface FileRouteTypes {
     | '/_error/notFound'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/inventory/add-product'
-    | '/app/inventory/import-product'
-    | '/app/inventory/scan-product'
+    | '/app/inventory/add-manual'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget/'
@@ -326,6 +356,11 @@ export interface FileRouteTypes {
     | '/app/profile/'
     | '/app/recipes/'
     | '/app/settings/'
+    | '/app/inventory/add/drive'
+    | '/app/inventory/add/receipt'
+    | '/app/inventory/add/scan'
+    | '/app/inventory/add/search'
+    | '/app/inventory/add/'
     | '/app/settings/diet-restrictions/'
     | '/app/settings/personal-info/'
     | '/app/settings/security/'
@@ -473,25 +508,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRecipesRecipeIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/inventory/scan-product': {
-      id: '/app/inventory/scan-product'
-      path: '/inventory/scan-product'
-      fullPath: '/app/inventory/scan-product'
-      preLoaderRoute: typeof AppInventoryScanProductRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/inventory/import-product': {
-      id: '/app/inventory/import-product'
-      path: '/inventory/import-product'
-      fullPath: '/app/inventory/import-product'
-      preLoaderRoute: typeof AppInventoryImportProductRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/app/inventory/add-product': {
-      id: '/app/inventory/add-product'
-      path: '/inventory/add-product'
-      fullPath: '/app/inventory/add-product'
-      preLoaderRoute: typeof AppInventoryAddProductRouteImport
+    '/app/inventory/add-manual': {
+      id: '/app/inventory/add-manual'
+      path: '/inventory/add-manual'
+      fullPath: '/app/inventory/add-manual'
+      preLoaderRoute: typeof AppInventoryAddManualRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/app/inventory/$productId': {
@@ -520,6 +541,41 @@ declare module '@tanstack/react-router' {
       path: '/settings/diet-restrictions'
       fullPath: '/app/settings/diet-restrictions'
       preLoaderRoute: typeof AppSettingsDietRestrictionsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/add/': {
+      id: '/app/inventory/add/'
+      path: '/inventory/add'
+      fullPath: '/app/inventory/add'
+      preLoaderRoute: typeof AppInventoryAddIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/add/search': {
+      id: '/app/inventory/add/search'
+      path: '/inventory/add/search'
+      fullPath: '/app/inventory/add/search'
+      preLoaderRoute: typeof AppInventoryAddSearchRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/add/scan': {
+      id: '/app/inventory/add/scan'
+      path: '/inventory/add/scan'
+      fullPath: '/app/inventory/add/scan'
+      preLoaderRoute: typeof AppInventoryAddScanRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/add/receipt': {
+      id: '/app/inventory/add/receipt'
+      path: '/inventory/add/receipt'
+      fullPath: '/app/inventory/add/receipt'
+      preLoaderRoute: typeof AppInventoryAddReceiptRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/inventory/add/drive': {
+      id: '/app/inventory/add/drive'
+      path: '/inventory/add/drive'
+      fullPath: '/app/inventory/add/drive'
+      preLoaderRoute: typeof AppInventoryAddDriveRouteImport
       parentRoute: typeof AppRouteRoute
     }
   }
@@ -560,9 +616,7 @@ const ErrorRouteRouteWithChildren = ErrorRouteRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
-  AppInventoryAddProductRoute: typeof AppInventoryAddProductRoute
-  AppInventoryImportProductRoute: typeof AppInventoryImportProductRoute
-  AppInventoryScanProductRoute: typeof AppInventoryScanProductRoute
+  AppInventoryAddManualRoute: typeof AppInventoryAddManualRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesSuggestionsRoute: typeof AppRecipesSuggestionsRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
@@ -571,6 +625,11 @@ interface AppRouteRouteChildren {
   AppProfileIndexRoute: typeof AppProfileIndexRoute
   AppRecipesIndexRoute: typeof AppRecipesIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+  AppInventoryAddDriveRoute: typeof AppInventoryAddDriveRoute
+  AppInventoryAddReceiptRoute: typeof AppInventoryAddReceiptRoute
+  AppInventoryAddScanRoute: typeof AppInventoryAddScanRoute
+  AppInventoryAddSearchRoute: typeof AppInventoryAddSearchRoute
+  AppInventoryAddIndexRoute: typeof AppInventoryAddIndexRoute
   AppSettingsDietRestrictionsIndexRoute: typeof AppSettingsDietRestrictionsIndexRoute
   AppSettingsPersonalInfoIndexRoute: typeof AppSettingsPersonalInfoIndexRoute
   AppSettingsSecurityIndexRoute: typeof AppSettingsSecurityIndexRoute
@@ -579,9 +638,7 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
-  AppInventoryAddProductRoute: AppInventoryAddProductRoute,
-  AppInventoryImportProductRoute: AppInventoryImportProductRoute,
-  AppInventoryScanProductRoute: AppInventoryScanProductRoute,
+  AppInventoryAddManualRoute: AppInventoryAddManualRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesSuggestionsRoute: AppRecipesSuggestionsRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
@@ -590,6 +647,11 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppProfileIndexRoute: AppProfileIndexRoute,
   AppRecipesIndexRoute: AppRecipesIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
+  AppInventoryAddDriveRoute: AppInventoryAddDriveRoute,
+  AppInventoryAddReceiptRoute: AppInventoryAddReceiptRoute,
+  AppInventoryAddScanRoute: AppInventoryAddScanRoute,
+  AppInventoryAddSearchRoute: AppInventoryAddSearchRoute,
+  AppInventoryAddIndexRoute: AppInventoryAddIndexRoute,
   AppSettingsDietRestrictionsIndexRoute: AppSettingsDietRestrictionsIndexRoute,
   AppSettingsPersonalInfoIndexRoute: AppSettingsPersonalInfoIndexRoute,
   AppSettingsSecurityIndexRoute: AppSettingsSecurityIndexRoute,

@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto, SafeUserDto } from './dto/register.dto';
+import { RegisterDto, SafeUserDto } from './dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
 import { User } from '@prisma/client';
@@ -57,7 +57,7 @@ export class AuthService {
     response.cookie('auth_token', accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: isProd ? 'strict' : 'lax', // Protection CSRF
+      sameSite: isProd ? 'strict' : 'none', // Protection CSRF
       maxAge: 24 * 60 * 60 * 1000, // 24 heures (ou utiliser la valeur de JWT_EXPIRES_IN)
       path: '/', // Disponible sur toutes les routes
     });

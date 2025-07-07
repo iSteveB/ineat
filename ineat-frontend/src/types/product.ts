@@ -1,78 +1,38 @@
-import { z } from 'zod';
+// Type pour les emplacements de stockage (catégories de filtrage)
+export type StorageLocation = 'ALL' | 'FRESH' | 'FREEZER' | 'PANTRY';
 
-// Énumérations
-export const NutriScoreSchema = z.enum(['A', 'B', 'C', 'D', 'E']).nullable().optional();
-export type NutriScore = z.infer<typeof NutriScoreSchema>;
+// Type pour le statut d'expiration
+export type ExpiryStatusType = 'EXPIRED' | 'CRITICAL' | 'WARNING' | 'GOOD';
 
-export const EcoScoreSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
-export type EcoScore = z.infer<typeof EcoScoreSchema>;
+// Type pour le Nutriscore
+export type NutriScore = 'A' | 'B' | 'C' | 'D' | 'E';
 
-export const UnitTypeSchema = z.enum(['KG', 'G', 'L', 'ML', 'UNIT']);
-export type UnitType = z.infer<typeof UnitTypeSchema>;
+// Interface pour un produit
+export interface Product {
+	id: string;
+	name: string;
+	brand: string;
+	category: string;
+	barcode?: string;
+	nutriscore?: NutriScore;
+	ecoscore?: string;
+	novascore?: string;
+	imageUrl?: string;
+}
 
-export const StorageLocationSchema = z.enum(['FRESH', 'FREEZER', 'PANTRY', 'ALL']);
-export type StorageLocation = z.infer<typeof StorageLocationSchema>;
+// Interface pour un produit avec statut d'expiration
+export interface ProductWithExpiryStatus extends Product {
+	expiryStatus: ExpiryStatusType;
+	quantity: number;
+	expiryDate: Date;
+	storageLocation: StorageLocation;
+}
 
-export const ProductCategorySchema = z.enum([
-  'ALL',
-  'FRUIT',
-  'VEGETABLE',
-  'MEAT',
-  'FISH',
-  'DAIRY',
-  'SNACK',
-  'BEVERAGE',
-  'LEGUME',
-  'EGGS',
-  'CEREAL',
-  'STARCHE',
-  'SPICE',
-  'SWEET',
-  'FAT',
-  'SUGAR',
-  'READY_MEAL',
-  'OTHER'
-]);
-export type ProductCategory = z.infer<typeof ProductCategorySchema>;
+// Interface pour les statistiques d'inventaire
+export interface InventoryStats {
+	totalItems: number;
+	expiringInWeek: number;
+	totalValue: number;
+}
 
-// Schéma pour les produits
-export const ProductSchema = z.object({
-  id: z.string(),
-  barcode: z.string().optional(),
-  name: z.string(),
-  brand: z.string(),
-  category: ProductCategorySchema.optional(),
-  description: z.string().optional(),
-  quantity: z.number().optional(),
-  unitType: UnitTypeSchema.optional(),
-  unit: z.string().optional(),
-  nutriscore: NutriScoreSchema.optional() || z.string().optional(),
-  ecoScore: EcoScoreSchema.optional() || z.string().optional(),
-  nutrients: z.record(z.unknown()).optional(), // Informations nutritionnelles en JSON
-  imageUrl: z.string().optional(),
-  externalId: z.string().optional(), // ID dans OpenFoodFacts
-  storageLocation: StorageLocationSchema.optional(),
-  isOpen: z.boolean().optional(),
-  purchaseDate: z.date().optional(),
-  expiryDate: z.date().optional(),
-  price: z.number().optional(),
-  ingredients: z.array(z.string()).optional(), // Liste d'ingrédients
-  allergens: z.array(z.string()).optional(), // Liste d'allergènes
-});
-export type Product = z.infer<typeof ProductSchema>;
-
-// Ajout du statut d'expiration au produit
-import { ExpiryStatusType } from './common';
-export const ProductWithExpiryStatusSchema = ProductSchema.extend({
-  expiryStatus: z.custom<ExpiryStatusType>(),
-});
-export type ProductWithExpiryStatus = z.infer<typeof ProductWithExpiryStatusSchema>;
-
-// Schéma pour les catégories de produits
-export const ProductCategoryEntitySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  parentId: z.string().optional(),
-  icon: z.string().optional(),
-});
-export type ProductCategoryEntity = z.infer<typeof ProductCategoryEntitySchema>;
+// Autres types existants si nécessaires...

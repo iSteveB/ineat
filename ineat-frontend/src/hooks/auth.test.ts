@@ -45,8 +45,8 @@ vi.mock('@tanstack/react-query', () => ({
 describe("Hooks d'authentification", () => {
 	let mockUser: User;
 	let mockSetUser: ReturnType<typeof vi.fn>;
-	let mockQueryClient: { 
-		invalidateQueries: ReturnType<typeof vi.fn>; 
+	let mockQueryClient: {
+		invalidateQueries: ReturnType<typeof vi.fn>;
 		prefetchQuery: ReturnType<typeof vi.fn>;
 	};
 
@@ -80,7 +80,7 @@ describe("Hooks d'authentification", () => {
 		});
 
 		vi.mocked(authService.getProfile).mockResolvedValue(mockUser as never);
-		
+
 		vi.mocked(reactQuery.useQueryClient).mockReturnValue(
 			mockQueryClient as unknown as reactQuery.QueryClient
 		);
@@ -111,15 +111,21 @@ describe("Hooks d'authentification", () => {
 			expect(result.data).toEqual(mockUser);
 
 			// Vérification des paramètres de useQuery
-			expect(reactQuery.useQuery).toHaveBeenCalledWith(expect.objectContaining({
-				queryKey: authKeys.user,
-				queryFn: expect.any(Function),
-				enabled: true,
-			}));
+			expect(reactQuery.useQuery).toHaveBeenCalledWith(
+				expect.objectContaining({
+					queryKey: authKeys.user,
+					queryFn: expect.any(Function),
+					enabled: true,
+				})
+			);
 
 			// Récupération et exécution de la fonction queryFn
 			const queryFnArg = vi.mocked(reactQuery.useQuery).mock.calls[0][0];
-			if (queryFnArg && typeof queryFnArg === 'object' && 'queryFn' in queryFnArg) {
+			if (
+				queryFnArg &&
+				typeof queryFnArg === 'object' &&
+				'queryFn' in queryFnArg
+			) {
 				const queryFn = queryFnArg.queryFn as () => Promise<User>;
 				await queryFn();
 				expect(authService.getProfile).toHaveBeenCalled();
@@ -154,9 +160,11 @@ describe("Hooks d'authentification", () => {
 
 			// Vérification
 			expect(result.isLoading).toBe(false);
-			expect(reactQuery.useQuery).toHaveBeenCalledWith(expect.objectContaining({
-				enabled: false,
-			}));
+			expect(reactQuery.useQuery).toHaveBeenCalledWith(
+				expect.objectContaining({
+					enabled: false,
+				})
+			);
 		});
 
 		it('devrait utiliser les données du store si elles existent déjà', () => {
@@ -189,8 +197,14 @@ describe("Hooks d'authentification", () => {
 
 			// Vérification de initialData
 			const queryFnArg = vi.mocked(reactQuery.useQuery).mock.calls[0][0];
-			if (queryFnArg && typeof queryFnArg === 'object' && 'initialData' in queryFnArg) {
-				const initialDataFn = queryFnArg.initialData as () => User | undefined;
+			if (
+				queryFnArg &&
+				typeof queryFnArg === 'object' &&
+				'initialData' in queryFnArg
+			) {
+				const initialDataFn = queryFnArg.initialData as () =>
+					| User
+					| undefined;
 				const initialData = initialDataFn();
 				expect(initialData).toEqual(mockUser);
 			}

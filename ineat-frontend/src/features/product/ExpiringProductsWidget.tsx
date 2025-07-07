@@ -1,4 +1,3 @@
-import { ProductWithExpiryStatus } from '@/types';
 import { FC } from 'react';
 import ProductItem from '@/components/common/ProductItem';
 import {
@@ -8,14 +7,35 @@ import {
 	CardContent,
 	CardItemList,
 } from '@/components/ui/card';
+import { InventoryItemResponse } from '@/services/inventoryService';
+import { ExpiryStatus, calculateExpiryStatus } from '@/utils/dateHelpers';
+
+// Type étendu avec le statut d'expiration
+interface InventoryItemWithStatus extends InventoryItemResponse {
+	expiryStatus: ExpiryStatus;
+}
 
 interface ExpiringProductsWidgetProps {
-	products: ProductWithExpiryStatus[];
+	products: InventoryItemResponse[];
 }
 
 export const ExpiringProductsWidget: FC<ExpiringProductsWidgetProps> = ({
 	products,
 }) => {
+	// Vérification de sécurité et filtrage des produits valides
+	const validProducts = products.filter(
+		(product) =>
+			product && product.id && product.product && product.product.name
+	);
+
+	// Transformer les produits valides pour ajouter le statut d'expiration
+	const productsWithStatus: InventoryItemWithStatus[] = validProducts.map(
+		(product) => ({
+			...product,
+			expiryStatus: calculateExpiryStatus(product.expiryDate),
+		})
+	);
+
 	return (
 		<Card className='bg-neutral-50'>
 			<CardHeader>
@@ -24,11 +44,11 @@ export const ExpiringProductsWidget: FC<ExpiringProductsWidgetProps> = ({
 
 			<CardContent>
 				<CardItemList>
-					{products.length > 0 ? (
-						products.map((product) => (
+					{productsWithStatus.length > 0 ? (
+						productsWithStatus.map((item) => (
 							<ProductItem
-								key={product.id}
-								product={product}
+								key={item.id}
+								item={item}
 								showNutriscore={false}
 								showEcoscore={false}
 								showStorage={false}

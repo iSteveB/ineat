@@ -7,7 +7,7 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
 import { User } from '@prisma/client';
-import { SafeUserDto } from './dto/register.dto';
+import { SafeUserDto } from './dto/auth.dto';
 
 // Mock des modules externes
 jest.mock('bcryptjs');
