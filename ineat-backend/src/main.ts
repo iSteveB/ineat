@@ -94,7 +94,9 @@ async function bootstrap() {
   console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
 
   // Préfixe global pour les API
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: ['health'],
+  });
 
   // Validation des requêtes
   app.useGlobalPipes(
@@ -111,7 +113,7 @@ async function bootstrap() {
 
   console.log(`🚀 Application started on port ${port}`);
   console.log(`📍 Environment: ${nodeEnv}`);
-  console.log(`🔗 Health check: /api/health`);
+  console.log(`🔗 Health check: /health`);
 
   if (!isProduction) {
     console.log(`📖 API Documentation: ${await app.getUrl()}/docs`);
