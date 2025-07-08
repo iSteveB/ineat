@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
 import { AppService } from './app.service';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
@@ -11,7 +12,12 @@ export class AppController {
   }
 
   @Get('health')
-  healthCheck(): { status: string; timestamp: string } {
-    return { status: 'ok', timestamp: new Date().toISOString() };
+  healthCheck(@Res() res: Response): void {
+    res.status(HttpStatus.OK).json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      service: 'ineat-backend',
+      version: '1.0.0',
+    });
   }
 }
