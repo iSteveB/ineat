@@ -14,7 +14,7 @@ import {
 import { Alert, AlertDescription } from '../ui/alert';
 import { z } from 'zod';
 import { apiClient } from '@/lib/api-client';
-import { emailSchema } from '@/types/user';
+import { EmailSchema } from '@/schemas';
 
 const ForgotPasswordForm = () => {
 	// États locaux du formulaire
@@ -29,7 +29,7 @@ const ForgotPasswordForm = () => {
 	// Validation du formulaire
 	const validateForm = (): boolean => {
 		try {
-			emailSchema.parse({ email });
+			EmailSchema.parse({ email });
 			setFormError(null);
 			return true;
 		} catch (error) {

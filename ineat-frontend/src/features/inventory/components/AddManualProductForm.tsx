@@ -13,25 +13,24 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Category } from '@/services/inventoryService';
-import { AddManualProductInput } from '@/schemas/inventorySchema';
+import { Category, AddInventoryItemData, UnitType } from '@/schemas';
 
 // Props du composant
 interface AddManualProductFormProps {
 	categories: Category[];
-	onSubmit: (data: AddManualProductInput) => Promise<void>;
+	onSubmit: (data: AddInventoryItemData) => Promise<void>;
 	onCancel: () => void;
 	isSubmitting: boolean;
 	defaultProductName?: string;
 }
 
 interface FormData {
-	name: string;
+	productName: string;
 	brand: string;
 	barcode: string;
 	category: string;
 	quantity: string;
-	unitType: 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
+	unitType: UnitType;
 	purchaseDate: string;
 	expiryDate: string;
 	purchasePrice: string;
@@ -68,7 +67,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 }) => {
 	// État du formulaire
 	const [formData, setFormData] = useState<FormData>({
-		name: defaultProductName,
+		productName: defaultProductName,
 		brand: '',
 		barcode: '',
 		category: '',
@@ -88,18 +87,21 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 	// Mettre à jour le nom du produit si defaultProductName change
 	useEffect(() => {
-		if (defaultProductName && !formData.name) {
-			setFormData((prev) => ({ ...prev, name: defaultProductName }));
+		if (defaultProductName && !formData.productName) {
+			setFormData((prev) => ({
+				...prev,
+				productName: defaultProductName,
+			}));
 		}
-	}, [defaultProductName, formData.name]);
+	}, [defaultProductName, formData.productName]);
 
 	// Fonction de validation
 	const validateForm = (): boolean => {
 		const newErrors: Partial<Record<keyof FormData, string>> = {};
 
 		// Validation des champs requis
-		if (!formData.name.trim()) {
-			newErrors.name = 'Le nom du produit est requis';
+		if (!formData.productName.trim()) {
+			newErrors.productName = 'Le nom du produit est requis';
 		}
 
 		if (!formData.category) {
@@ -163,8 +165,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		}
 
 		// Préparer les données pour l'API
-		const submitData: AddManualProductInput = {
-			name: formData.name.trim(),
+		const submitData: AddInventoryItemData = {
+			productName: formData.productName.trim(),
 			category: formData.category,
 			quantity: parseFloat(formData.quantity),
 			unitType: formData.unitType,
@@ -214,20 +216,22 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 				{/* Nom du produit */}
 				<div className='space-y-2'>
-					<Label htmlFor='name'>
+					<Label htmlFor='productName'>
 						Nom du produit <span className='text-error-100'>*</span>
 					</Label>
 					<Input
-						id='name'
-						value={formData.name}
+						id='productName'
+						value={formData.productName}
 						onChange={(e) =>
-							handleInputChange('name', e.target.value)
+							handleInputChange('productName', e.target.value)
 						}
 						placeholder='Ex: Pommes Golden'
-						className={errors.name ? 'border-error-100' : ''}
+						className={errors.productName ? 'border-error-100' : ''}
 					/>
-					{errors.name && (
-						<p className='text-sm text-error-100'>{errors.name}</p>
+					{errors.productName && (
+						<p className='text-sm text-error-100'>
+							{errors.productName}
+						</p>
 					)}
 				</div>
 
@@ -404,9 +408,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 					{/* Date de péremption */}
 					<div className='space-y-2'>
-						<Label htmlFor='expiryDate'>
-							Date de péremption
-						</Label>
+						<Label htmlFor='expiryDate'>Date de péremption</Label>
 						<Input
 							id='expiryDate'
 							type='date'

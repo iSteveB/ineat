@@ -1,15 +1,14 @@
 import { FC } from 'react';
 import { Link } from '@tanstack/react-router';
-import { InventoryItemResponse } from '@/services/inventoryService';
+import { InventoryItem, ExpiryStatus } from '@/schemas';
 import {
 	formatRelativeDate,
-	ExpiryStatus,
-	getExpiryStatusBgColor
+	getExpiryStatusBgColor,
 } from '@/utils/dateHelpers';
 import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
 import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
 
-interface InventoryItemWithStatus extends InventoryItemResponse {
+interface InventoryItemWithStatus extends InventoryItem {
 	expiryStatus: ExpiryStatus;
 }
 
@@ -66,12 +65,12 @@ const ProductItem: FC<ProductItemProps> = ({
 	// Obtenir la couleur du texte adaptée au fond coloré
 	const getTextColorForStatus = (status: ExpiryStatus): string => {
 		switch (status) {
-			case 'expired':
-			case 'urgent':
-			case 'warning':
-			case 'safe':
+			case 'EXPIRED':
+			case 'CRITICAL':
+			case 'WARNING':
+			case 'GOOD':
 				return 'text-white'; // Texte blanc sur fond coloré
-			case 'no-date':
+			case 'UNKNOWN':
 			default:
 				return 'text-neutral-200'; // Texte gris sur fond neutre
 		}
@@ -146,15 +145,15 @@ const ProductItem: FC<ProductItemProps> = ({
 					{(showNutriscore || showEcoscore) && (
 						<div className='flex gap-2 mt-2'>
 							{showNutriscore && item.product.nutriscore && (
-								<NutriScoreBadge 
+								<NutriScoreBadge
 									score={item.product.nutriscore}
-									size="md"
+									size='md'
 								/>
 							)}
 							{showEcoscore && item.product.ecoScore && (
-								<EcoScoreBadge 
+								<EcoScoreBadge
 									score={item.product.ecoScore}
-									size="md"
+									size='md'
 								/>
 							)}
 						</div>
@@ -163,8 +162,10 @@ const ProductItem: FC<ProductItemProps> = ({
 
 				{/* Date d'expiration */}
 				<div
-					className={`px-3 py-2 rounded-lg font-medium ${getExpiryStatusBgColor(item.expiryStatus)} ${getTextColorForStatus(item.expiryStatus)}`}>
-					{formatRelativeDate(item.expiryDate)}
+					className={`px-3 py-2 rounded-lg font-medium ${getExpiryStatusBgColor(
+						item.expiryStatus
+					)} ${getTextColorForStatus(item.expiryStatus)}`}>
+					{formatRelativeDate(item.expiryDate || "Date d'expiration inconnue")}
 				</div>
 			</div>
 		</Link>

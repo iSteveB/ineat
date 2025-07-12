@@ -3,7 +3,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import RegisterForm from './RegisterForm';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
-import { RegisterDataSchema } from '@/schemas/authSchema';
+import { RegisterDataSchema } from '@/schemas';
 import userEvent from '@testing-library/user-event';
 import { z } from 'zod';
 

@@ -1,8 +1,9 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { EcoScore } from '@/schemas';
 
 interface EcoScoreBadgeProps {
-	score: 'A' | 'B' | 'C' | 'D' | 'E';
+	score: EcoScore;
 	size?: 'sm' | 'md' | 'lg';
 	className?: string;
 }
@@ -12,50 +13,50 @@ const ECOSCORE_STYLES = {
 	A: {
 		bg: 'bg-[#2E7D32]', // Vert foncé
 		text: 'text-neutral-50',
-		border: 'border-[#2E7D32]'
+		border: 'border-[#2E7D32]',
 	},
 	B: {
 		bg: 'bg-[#689F38]', // Vert moyen
 		text: 'text-neutral-50',
-		border: 'border-[#689F38]'
+		border: 'border-[#689F38]',
 	},
 	C: {
 		bg: 'bg-[#FBC02D]', // Jaune
 		text: 'text-black',
-		border: 'border-[#FBC02D]'
+		border: 'border-[#FBC02D]',
 	},
 	D: {
 		bg: 'bg-[#F57C00]', // Orange
 		text: 'text-black',
-		border: 'border-[#F57C00]'
+		border: 'border-[#F57C00]',
 	},
 	E: {
 		bg: 'bg-[#D32F2F]', // Rouge
 		text: 'text-neutral-50',
-		border: 'border-[#D32F2F]'
-	}
+		border: 'border-[#D32F2F]',
+	},
 } as const;
 
 // Configuration des tailles
 const SIZE_STYLES = {
 	sm: {
 		container: 'size-5',
-		text: 'text-xs'
+		text: 'text-xs',
 	},
 	md: {
 		container: 'size-6', // 1.5rem selon le design system
-		text: 'text-sm'
+		text: 'text-sm',
 	},
 	lg: {
 		container: 'size-8',
-		text: 'text-base'
-	}
+		text: 'text-base',
+	},
 } as const;
 
 export const EcoScoreBadge: React.FC<EcoScoreBadgeProps> = ({
 	score,
 	size = 'md',
-	className
+	className,
 }) => {
 	const colorStyle = ECOSCORE_STYLES[score];
 	const sizeStyle = SIZE_STYLES[size];
@@ -76,8 +77,7 @@ export const EcoScoreBadge: React.FC<EcoScoreBadgeProps> = ({
 				className
 			)}
 			title={`Eco-Score ${score}`}
-			aria-label={`Eco-Score ${score}`}
-		>
+			aria-label={`Eco-Score ${score}`}>
 			{score}
 		</div>
 	);

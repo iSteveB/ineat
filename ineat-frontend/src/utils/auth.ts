@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/authStore';
-import { User } from '@/types/user';
+import { User } from '@/schemas';
 
 /**
  * Vérifie si l'utilisateur est authentifié, d'abord localement puis auprès du serveur si nécessaire

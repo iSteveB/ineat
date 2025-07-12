@@ -1,22 +1,38 @@
 // Dashboard
 import { FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+
+// ===== IMPORTS SCHÉMAS ZOD =====
+import {
+	BudgetStats,
+	InventoryStats,
+	calculateBudgetStats,
+	Budget,
+	Expense,
+} from '@/schemas';
+
+// ===== IMPORTS COMPOSANTS =====
 import { InventoryWidget } from '@/features/inventory/components/InventoryWidget';
 import NutriscoreWidget from '@/features/nutriscore/NutriscoreWidget';
 import { BudgetWidget } from '@/features/budget/BudgetWidget';
 import { RecentProductsWidget } from '@/features/product/RecentProductsWidget';
 import { ExpiringProductsWidget } from '@/features/product/ExpiringProductsWidget';
+
+// ===== IMPORTS SERVICES ET STORES =====
 import { inventoryService } from '@/services/inventoryService';
-import { createFileRoute } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 
+// ===== DÉFINITION DE LA ROUTE =====
 export const Route = createFileRoute('/app/')({
 	component: () => <Dashboard />,
 });
 
+// ===== COMPOSANT DASHBOARD =====
 const Dashboard: FC = () => {
-
 	const { user } = useAuthStore();
+
+	// ===== RÉCUPÉRATION DES DONNÉES =====
 
 	// Récupération des produits récents (5 derniers)
 	const {
@@ -58,66 +74,215 @@ const Dashboard: FC = () => {
 		queryFn: () => inventoryService.getInventory(),
 	});
 
-	// Calcul des données dérivées
-	const isLoading =
-		isLoadingRecent ||
-		isLoadingExpiring ||
-		isLoadingStats ||
-		isLoadingInventory;
-	const error = recentError || expiringError || statsError || inventoryError;
+	// ===== DONNÉES MOCKÉES CONFORMES AUX SCHÉMAS ZOD =====
 
-	// Calcul des statistiques Nutriscore
+	// Budget et dépenses mockés (conformes aux schémas Zod)
+	const mockBudget: Budget = {
+		id: 'mock-budget-id',
+		userId: user?.id || 'mock-user-id',
+		amount: 400, // Budget total du mois
+		periodStart: new Date(
+			new Date().getFullYear(),
+			new Date().getMonth(),
+			1
+		).toISOString(), // 1er du mois
+		periodEnd: new Date(
+			new Date().getFullYear(),
+			new Date().getMonth() + 1,
+			0
+		).toISOString(), // Dernier jour du mois
+		isActive: true,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	};
+
+	const mockExpenses: Expense[] = [
+		{
+			id: 'expense-1',
+			userId: user?.id || 'mock-user-id',
+			budgetId: 'mock-budget-id',
+			amount: 45.5,
+			date: new Date('2025-07-15').toISOString(),
+			source: 'Supermarché',
+			receiptId: 'receipt-1',
+			category: 'Alimentation',
+			notes: 'Courses hebdomadaires',
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		},
+		{
+			id: 'expense-2',
+			userId: user?.id || 'mock-user-id',
+			budgetId: 'mock-budget-id',
+			amount: 120.3,
+			date: new Date('2025-07-10').toISOString(),
+			source: 'Marché',
+			category: 'Fruits et légumes',
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		},
+		{
+			id: 'expense-3',
+			userId: user?.id || 'mock-user-id',
+			budgetId: 'mock-budget-id',
+			amount: 84.2,
+			date: new Date('2025-07-05').toISOString(),
+			source: 'Épicerie',
+			category: 'Produits de base',
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		},
+	];
+
+	// Calcul des statistiques de budget (conforme au schéma BudgetStatsSchema)
+	const budgetStats: BudgetStats = calculateBudgetStats(
+		mockBudget,
+		mockExpenses
+	);
+
+	// Données Nutriscore mockées
 	const nutriscoreData = {
 		averageScore: 2.8, // Score numérique (A=5, B=4, C=3, D=2, E=1)
 		variation: 2.5, // Variation en pourcentage depuis le mois dernier
 	};
 
-	// Données de budget mockées temporairement (à remplacer par un service budget)
-	const budget = {
-		id: 'mock-budget-id',
-		userId: 'mock-user-id',
-		amount: 400, // Budget total du mois
-		spent: 250, // Montant déjà dépensé (calculé depuis expenses)
-		periodStart: new Date(
-			new Date().getFullYear(),
-			new Date().getMonth(),
-			1
-		), // 1er du mois
-		periodEnd: new Date(
-			new Date().getFullYear(),
-			new Date().getMonth() + 1,
-			0
-		), // Dernier jour du mois
-		expenses: [
-			{
-				id: 'expense-1',
-				userId: 'mock-user-id',
-				amount: 45.5,
-				budgetId: 'mock-budget-id',
-				date: new Date('2025-06-15'),
-				source: 'Supermarché',
-				receiptId: 'receipt-1',
-			},
-			{
-				id: 'expense-2',
-				userId: 'mock-user-id',
-				amount: 120.3,
-				budgetId: 'mock-budget-id',
-				date: new Date('2025-06-10'),
-				source: 'Marché',
-			},
-			{
-				id: 'expense-3',
-				userId: 'mock-user-id',
-				amount: 84.2,
-				budgetId: 'mock-budget-id',
-				date: new Date('2025-06-05'),
-				source: 'Épicerie',
-			},
-		],
+	// ===== CALCULS DÉRIVÉS =====
+
+	// État de chargement global
+	const isLoading =
+		isLoadingRecent ||
+		isLoadingExpiring ||
+		isLoadingStats ||
+		isLoadingInventory;
+
+	// Gestion des erreurs
+	const error = recentError || expiringError || statsError || inventoryError;
+
+	// Calcul des statistiques d'inventaire par défaut si non disponibles
+	const defaultInventoryStats: InventoryStats = {
+		totalItems: fullInventory.length,
+		totalValue: 0,
+		totalQuantity: 0,
+		averageItemValue: 0,
+		expiryBreakdown: {
+			good: 0,
+			warning: 0,
+			critical: 0,
+			expired: 0,
+			unknown: 0,
+		},
+		categoryBreakdown: [],
+		storageBreakdown: {},
+		recentActivity: {
+			itemsAddedThisWeek: 0,
+			itemsConsumedThisWeek: 0,
+		},
 	};
 
-	// Données utilisateur mockées temporairement (à remplacer par un service user)
+	// Fonction utilitaire pour s'assurer que les stats d'inventaire sont conformes
+	const ensureValidInventoryStats = (stats: unknown): InventoryStats => {
+		if (!stats || typeof stats !== 'object') {
+			return defaultInventoryStats;
+		}
+
+		const statsObj = stats as Record<string, unknown>;
+
+		// Validation type-safe de l'expiryBreakdown
+		const validateExpiryBreakdown = (breakdown: unknown) => {
+			if (!breakdown || typeof breakdown !== 'object') {
+				return defaultInventoryStats.expiryBreakdown;
+			}
+
+			const breakdownObj = breakdown as Record<string, unknown>;
+			return {
+				good:
+					typeof breakdownObj.good === 'number'
+						? breakdownObj.good
+						: 0,
+				warning:
+					typeof breakdownObj.warning === 'number'
+						? breakdownObj.warning
+						: 0,
+				critical:
+					typeof breakdownObj.critical === 'number'
+						? breakdownObj.critical
+						: 0,
+				expired:
+					typeof breakdownObj.expired === 'number'
+						? breakdownObj.expired
+						: 0,
+				unknown:
+					typeof breakdownObj.unknown === 'number'
+						? breakdownObj.unknown
+						: 0,
+			};
+		};
+
+		// Validation type-safe de recentActivity
+		const validateRecentActivity = (activity: unknown) => {
+			if (!activity || typeof activity !== 'object') {
+				return defaultInventoryStats.recentActivity;
+			}
+
+			const activityObj = activity as Record<string, unknown>;
+			return {
+				itemsAddedThisWeek:
+					typeof activityObj.itemsAddedThisWeek === 'number'
+						? activityObj.itemsAddedThisWeek
+						: 0,
+				itemsConsumedThisWeek:
+					typeof activityObj.itemsConsumedThisWeek === 'number'
+						? activityObj.itemsConsumedThisWeek
+						: 0,
+				averageDaysToConsumption:
+					typeof activityObj.averageDaysToConsumption === 'number'
+						? activityObj.averageDaysToConsumption
+						: undefined,
+			};
+		};
+
+		return {
+			totalItems:
+				typeof statsObj.totalItems === 'number'
+					? statsObj.totalItems
+					: defaultInventoryStats.totalItems,
+			totalValue:
+				typeof statsObj.totalValue === 'number'
+					? statsObj.totalValue
+					: defaultInventoryStats.totalValue,
+			totalQuantity:
+				typeof statsObj.totalQuantity === 'number'
+					? statsObj.totalQuantity
+					: defaultInventoryStats.totalQuantity,
+			averageItemValue:
+				typeof statsObj.averageItemValue === 'number'
+					? statsObj.averageItemValue
+					: defaultInventoryStats.averageItemValue,
+			expiryBreakdown: validateExpiryBreakdown(statsObj.expiryBreakdown),
+			categoryBreakdown: Array.isArray(statsObj.categoryBreakdown)
+				? statsObj.categoryBreakdown
+				: defaultInventoryStats.categoryBreakdown,
+			storageBreakdown:
+				statsObj.storageBreakdown &&
+				typeof statsObj.storageBreakdown === 'object'
+					? (statsObj.storageBreakdown as Record<
+							string,
+							{ count: number; percentage: number }
+					  >)
+					: defaultInventoryStats.storageBreakdown,
+			recentActivity: validateRecentActivity(statsObj.recentActivity),
+		};
+	};
+
+	const currentInventoryStats = ensureValidInventoryStats(inventoryStats);
+
+	// Calcul des produits qui expirent bientôt (utilise les nouveaux schémas)
+	const criticalCount = currentInventoryStats.expiryBreakdown.critical;
+	const warningCount = currentInventoryStats.expiryBreakdown.warning;
+	const expiredCount = currentInventoryStats.expiryBreakdown.expired;
+	const soonExpiringCount = criticalCount + warningCount;
+
+	// ===== GESTION DES ÉTATS =====
 
 	if (isLoading) {
 		return (
@@ -145,8 +310,11 @@ const Dashboard: FC = () => {
 		);
 	}
 
+	// ===== RENDU DU DASHBOARD =====
+
 	return (
 		<div className='p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto'>
+			{/* ===== HEADER ===== */}
 			<header className='mb-8'>
 				<h1 className='text-3xl font-bold text-neutral-300'>
 					Bonjour {user?.firstName || 'Utilisateur'},
@@ -156,19 +324,13 @@ const Dashboard: FC = () => {
 				</p>
 			</header>
 
+			{/* ===== PREMIÈRE RANGÉE DE WIDGETS ===== */}
 			<div className='grid grid-cols-2 gap-6 mb-8'>
-				{/* Première rangée de widgets */}
 				<InventoryWidget
-					totalProducts={
-						inventoryStats?.totalItems || fullInventory.length
-					}
-					soonExpiringCount={Math.max(
-						0,
-						expiringProducts.length -
-							(inventoryStats?.expiringInWeek ?? 0)
-					)}
-					criticalCount={inventoryStats?.expiringInWeek || 0}
-					expiredCount={0} // À calculer depuis fullInventory
+					totalProducts={currentInventoryStats.totalItems}
+					soonExpiringCount={soonExpiringCount}
+					criticalCount={criticalCount}
+					expiredCount={expiredCount}
 				/>
 
 				<NutriscoreWidget
@@ -177,12 +339,13 @@ const Dashboard: FC = () => {
 				/>
 			</div>
 
+			{/* ===== WIDGET BUDGET ===== */}
 			<div className='mb-8'>
-				<BudgetWidget budget={budget} />
+				<BudgetWidget budgetStats={budgetStats} />
 			</div>
 
+			{/* ===== DEUXIÈME RANGÉE DE WIDGETS ===== */}
 			<div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-				{/* Deuxième rangée de widgets */}
 				<RecentProductsWidget products={recentProducts} />
 				<ExpiringProductsWidget products={expiringProducts} />
 			</div>

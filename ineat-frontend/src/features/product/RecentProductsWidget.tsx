@@ -7,21 +7,21 @@ import {
 	CardContent,
 	CardItemList,
 } from '@/components/ui/card';
-import { InventoryItemResponse } from '@/services/inventoryService';
-import { ExpiryStatus, calculateExpiryStatus } from '@/utils/dateHelpers';
+import { InventoryItem, ExpiryStatus } from '@/schemas';
+import { calculateExpiryStatus } from '@/utils/dateHelpers';
 
 // Type étendu avec le statut d'expiration
-interface InventoryItemWithStatus extends InventoryItemResponse {
+interface InventoryItemWithStatus extends InventoryItem {
 	expiryStatus: ExpiryStatus;
 }
 
 interface RecentProductsWidgetProps {
-	products: InventoryItemResponse[];
+	products: InventoryItem[];
 }
 
 export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({
 	products,
-}) => {;
+}) => {
 	// Vérification de sécurité et filtrage des produits valides
 	const validProducts = products.filter(
 		(product) =>
@@ -33,7 +33,7 @@ export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({
 	const productsWithStatus: InventoryItemWithStatus[] = validProducts.map(
 		(product) => ({
 			...product,
-			expiryStatus: calculateExpiryStatus(product.expiryDate),
+			expiryStatus: calculateExpiryStatus(product.expiryDate || '?'),
 		})
 	);
 

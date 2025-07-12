@@ -1,13 +1,13 @@
 import React from 'react';
-import { StorageLocation } from '@/types/product';
+import { StorageLocationFilter } from '@/schemas';
 
 // Type pour les propriétés du composant
 interface CategoryFilterProps {
-	activeCategory: StorageLocation;
-	onCategoryChange: (category: StorageLocation) => void;
+	activeCategory: StorageLocationFilter;
+	onCategoryChange: (category: StorageLocationFilter) => void;
 }
 
-const categories: { id: StorageLocation; label: string }[] = [
+const categories: { id: StorageLocationFilter; label: string }[] = [
 	{ id: 'ALL', label: 'Tout' },
 	{ id: 'FRESH', label: 'Frais' },
 	{ id: 'FREEZER', label: 'Surgelé' },

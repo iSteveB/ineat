@@ -16,7 +16,7 @@ import {
 import { Alert, AlertDescription } from '../ui/alert';
 import { Separator } from '../ui/separator';
 import { z } from 'zod';
-import { LoginCredentialsSchema } from '@/schemas/authSchema';
+import { LoginCredentialsSchema } from '@/schemas';
 
 interface SearchParams {
 	redirect?: string;

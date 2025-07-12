@@ -13,13 +13,13 @@ import { ProductSearchResults } from '@/features/product/ProductSearchResult';
 import { QuickAddForm } from '@/features/inventory/components/QuickAddForm';
 import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
 
-// Services et types - utilisation du service corrigé
+// Services et types - utilisation du nouveau système de schémas
 import {
 	inventoryService,
 	ProductSearchResult,
 	QuickAddFormData,
 } from '@/services/inventoryService';
-import { AddManualProductInput } from '@/schemas/inventorySchema';
+import { AddInventoryItemData } from '@/schemas';
 
 // États de la page
 type PageState = 'search' | 'quick-add' | 'manual-add';
@@ -104,7 +104,7 @@ export const AddManualProductPage: React.FC = () => {
 	};
 
 	// Gestion de l'ajout manuel
-	const handleManualAdd = async (data: AddManualProductInput) => {
+	const handleManualAdd = async (data: AddInventoryItemData) => {
 		await manualAddMutation.mutateAsync(data as never);
 	};
 

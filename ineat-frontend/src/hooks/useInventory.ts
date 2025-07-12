@@ -2,14 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
 	inventoryService,
-	InventoryItemResponse,
-	ProductCreatedResponse,
 	UpdateInventoryItemInput,
+	InventoryItemResponse,
 } from '@/services/inventoryService';
 import {
-	AddManualProductInput,
+	AddInventoryItemData,
 	InventoryFilters,
-} from '@/schemas/inventorySchema';
+	ProductCreatedResponse,
+} from '@/schemas';
 
 // Type pour les paramètres de la mutation updateInventoryItem
 type UpdateInventoryItemParams = {
@@ -77,7 +77,7 @@ export function useAddManualProduct() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (productData: AddManualProductInput) =>
+		mutationFn: (productData: AddInventoryItemData) =>
 			inventoryService.addManualProduct(productData),
 
 		onSuccess: (data: ProductCreatedResponse) => {
@@ -86,12 +86,15 @@ export function useAddManualProduct() {
 			queryClient.invalidateQueries({ queryKey: inventoryKeys.stats() });
 
 			toast.success('Produit ajouté avec succès à votre inventaire !', {
-				description: `${data.name} (${data.quantity} ${data.unitType.toLowerCase()})`,
+				description: `${data.data.name}`,
 			});
 		},
 
 		onError: (error: unknown) => {
-			const errorMessage = error instanceof Error ? error.message : "Erreur lors de l'ajout du produit";
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Erreur lors de l'ajout du produit";
 
 			toast.error("Erreur lors de l'ajout du produit", {
 				description: errorMessage,
@@ -256,21 +259,36 @@ export function usePrefetchInventory() {
 }
 
 /**
- * Utilitaire pour transformer une ProductCreatedResponse en InventoryItem partiel
- * (si nécessaire pour la mise en cache optimiste)
+ * Utilitaire pour transformer une ProductCreatedResponse en InventoryItemResponse partiel
+ * Note: Cette fonction est limitée car ProductCreatedResponse ne contient que les données produit
+ * Pour un InventoryItem complet, il faut refetch depuis le serveur
  */
 export function transformToInventoryItem(
-	response: ProductCreatedResponse
+	response: ProductCreatedResponse,
+	inventoryData?: {
+		inventoryItemId: string;
+		quantity: number;
+		purchaseDate: string;
+		expiryDate?: string;
+		purchasePrice?: number;
+		storageLocation?: string;
+		notes?: string;
+	}
 ): Partial<InventoryItemResponse> {
-	return {
-		id: response.id,
-		quantity: response.quantity,
-		expiryDate: response.expiryDate,
-		purchaseDate: response.purchaseDate,
-		purchasePrice: response.purchasePrice,
-		storageLocation: response.storageLocation,
-		notes: response.notes,
-		// Note: Les données complètes du produit ne sont pas disponibles dans cette réponse
-		// Elles seront récupérées lors du prochain fetch de l'inventaire
+	const baseItem: Partial<InventoryItemResponse> = {
+		product: response.data,
 	};
+
+	// Ajouter les données d'inventaire si disponibles
+	if (inventoryData) {
+		baseItem.id = inventoryData.inventoryItemId;
+		baseItem.quantity = inventoryData.quantity;
+		baseItem.purchaseDate = inventoryData.purchaseDate;
+		baseItem.expiryDate = inventoryData.expiryDate;
+		baseItem.purchasePrice = inventoryData.purchasePrice;
+		baseItem.storageLocation = inventoryData.storageLocation;
+		baseItem.notes = inventoryData.notes;
+	}
+
+	return baseItem;
 }

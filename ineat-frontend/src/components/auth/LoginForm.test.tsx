@@ -4,7 +4,7 @@ import LoginForm from './LoginForm';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import userEvent from '@testing-library/user-event';
-import { LoginCredentialsSchema } from '@/schemas/authSchema';
+import { LoginCredentialsSchema } from '@/schemas';
 import { z } from 'zod';
 
 // Mocks pour les dépendances

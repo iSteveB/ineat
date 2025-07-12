@@ -13,7 +13,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { User } from '@/types/user';
+import { User } from '@/schemas';
 
 export const Route = createFileRoute('/app/settings/')({
 	component: ProfilePage,
@@ -26,7 +26,7 @@ interface ProfileMenuItem {
 
 const isUserPremium = (user: User) => {
 	// TODO : Implémentation réelle à ajouter
-	return user?.role === 'PREMIUM';
+	return user?.subscription === 'PREMIUM';
 };
 
 function ProfilePage() {

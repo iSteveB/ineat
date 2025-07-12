@@ -1,27 +1,28 @@
-// Types pour le statut d'expiration
-export type ExpiryStatus = 'expired' | 'urgent' | 'warning' | 'safe' | 'no-date';
+import { ExpiryStatus } from '@/schemas';
 
 /**
  * Calcule le statut d'expiration d'un produit
  * @param expiryDate - Date d'expiration au format string ISO ou null
  * @returns Le statut d'expiration
  */
-export const calculateExpiryStatus = (expiryDate: string | null): ExpiryStatus => {
-	if (!expiryDate) return 'no-date';
+export const calculateExpiryStatus = (
+	expiryDate: string | undefined
+): ExpiryStatus => {
+	if (!expiryDate) return 'UNKNOWN';
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	
+
 	const expiry = new Date(expiryDate);
 	expiry.setHours(0, 0, 0, 0);
-	
+
 	const diffTime = expiry.getTime() - today.getTime();
 	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-	if (diffDays < 0) return 'expired';
-	if (diffDays <= 2) return 'urgent';
-	if (diffDays <= 5) return 'warning';
-	return 'safe';
+	if (diffDays < 0) return 'EXPIRED';
+	if (diffDays <= 2) return 'CRITICAL';
+	if (diffDays <= 5) return 'WARNING';
+	return 'GOOD';
 };
 
 /**
@@ -31,16 +32,16 @@ export const calculateExpiryStatus = (expiryDate: string | null): ExpiryStatus =
  */
 export const formatRelativeDate = (date: string | null): string => {
 	if (!date) return 'Pas de date';
-	
+
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	
+
 	const targetDate = new Date(date);
 	targetDate.setHours(0, 0, 0, 0);
-	
+
 	const diffTime = targetDate.getTime() - today.getTime();
 	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-	
+
 	if (diffDays < 0) {
 		return 'Expiré';
 	} else if (diffDays === 0) {
@@ -62,7 +63,7 @@ export const formatDate = (date: string | Date): string => {
 	return new Intl.DateTimeFormat('fr-FR', {
 		day: '2-digit',
 		month: '2-digit',
-		year: 'numeric'
+		year: 'numeric',
 	}).format(dateObj);
 };
 
@@ -73,15 +74,15 @@ export const formatDate = (date: string | Date): string => {
  */
 export const getExpiryStatusColor = (status: ExpiryStatus): string => {
 	switch (status) {
-		case 'expired':
+		case 'EXPIRED':
 			return 'text-error-100';
-		case 'urgent':
+		case 'CRITICAL':
 			return 'text-error-50';
-		case 'warning':
+		case 'WARNING':
 			return 'text-warning-50';
-		case 'safe':
+		case 'GOOD':
 			return 'text-success-50';
-		case 'no-date':
+		case 'UNKNOWN':
 			return 'text-neutral-200';
 		default:
 			return 'text-neutral-200';
@@ -95,15 +96,15 @@ export const getExpiryStatusColor = (status: ExpiryStatus): string => {
  */
 export const getExpiryStatusBgColor = (status: ExpiryStatus): string => {
 	switch (status) {
-		case 'expired':
+		case 'EXPIRED':
 			return 'bg-error-100';
-		case 'urgent':
+		case 'CRITICAL':
 			return 'bg-error-50';
-		case 'warning':
+		case 'WARNING':
 			return 'bg-warning-50';
-		case 'safe':
+		case 'GOOD':
 			return 'bg-success-50';
-		case 'no-date':
+		case 'UNKNOWN':
 			return 'bg-neutral-100';
 		default:
 			return 'bg-neutral-100';

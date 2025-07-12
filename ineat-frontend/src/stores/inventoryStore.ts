@@ -1,21 +1,30 @@
 import { create } from 'zustand';
 import { persist, subscribeWithSelector } from 'zustand/middleware';
+import { useCallback } from 'react';
+
+// ===== IMPORTS SCHÉMAS ZOD =====
 import {
-	AddManualProductInput,
+	AddInventoryItemData,
 	UnitType,
 	InventoryFilters,
-} from '@/schemas/inventorySchema';
-import { useCallback } from 'react';
-import {
-	inventoryService,
-	InventoryItemResponse,
-	UpdateInventoryItemInput,
-} from '@/services/inventoryService';
+	InventoryItem,
+	InventoryItemWithStatus,
+	UpdateInventoryItemData,
+	validateSchema,
+	AddInventoryItemSchema,
+	InventoryFiltersSchema,
+	addExpiryStatusToItem,
+} from '@/schemas';
 
-// Types pour l'état du store
+// ===== IMPORTS SERVICES =====
+import { inventoryService } from '@/services/inventoryService';
+
+// ===== INTERFACES DU STORE =====
+
+// Types pour l'état du formulaire d'inventaire
 interface InventoryFormState {
 	// État du formulaire d'ajout manuel
-	draftProduct: Partial<AddManualProductInput>;
+	draftProduct: Partial<AddInventoryItemData>;
 
 	// Préférences utilisateur pour les valeurs par défaut
 	defaultValues: {
@@ -34,10 +43,11 @@ interface InventoryFormState {
 	// Filtres de l'inventaire
 	inventoryFilters: InventoryFilters;
 
-	// Actions
-	updateDraftProduct: (updates: Partial<AddManualProductInput>) => void;
+	// Actions du formulaire
+	updateDraftProduct: (updates: Partial<AddInventoryItemData>) => void;
 	clearDraftProduct: () => void;
-	saveDraftProduct: (product: Partial<AddManualProductInput>) => void;
+	saveDraftProduct: (product: Partial<AddInventoryItemData>) => void;
+	validateDraftProduct: () => { isValid: boolean; errors: string[] };
 
 	updateDefaultValues: (
 		defaults: Partial<InventoryFormState['defaultValues']>
@@ -54,16 +64,16 @@ interface InventoryFormState {
 // État pour la gestion des items d'inventaire
 interface InventoryDataState {
 	// Données
-	items: InventoryItemResponse[];
+	items: InventoryItemWithStatus[];
 	isLoading: boolean;
 	error: string | null;
 
-	// Actions
+	// Actions des données
 	fetchInventoryItems: (filters?: InventoryFilters) => Promise<void>;
-	addInventoryItem: (productData: AddManualProductInput) => Promise<void>;
+	addInventoryItem: (productData: AddInventoryItemData) => Promise<void>;
 	updateInventoryItem: (
 		id: string,
-		updates: UpdateInventoryItemInput
+		updates: UpdateInventoryItemData
 	) => Promise<void>;
 	removeInventoryItem: (id: string) => Promise<void>;
 	clearError: () => void;
@@ -92,6 +102,7 @@ type InventoryActions = Pick<
 	| 'updateDraftProduct'
 	| 'clearDraftProduct'
 	| 'saveDraftProduct'
+	| 'validateDraftProduct'
 	| 'updateDefaultValues'
 	| 'addRecentValue'
 	| 'setInventoryFilters'
@@ -103,9 +114,11 @@ type InventoryActions = Pick<
 	| 'clearError'
 >;
 
-// État initial du formulaire
-const initialFormState: Partial<AddManualProductInput> = {
-	name: '',
+// ===== ÉTAT INITIAL =====
+
+// État initial du formulaire (conforme au schéma AddInventoryItemData)
+const initialFormState: Partial<AddInventoryItemData> = {
+	productName: '',
 	brand: '',
 	category: '',
 	quantity: 1,
@@ -115,22 +128,49 @@ const initialFormState: Partial<AddManualProductInput> = {
 	purchasePrice: undefined,
 	storageLocation: '',
 	notes: '',
-	nutriscore: undefined,
-	ecoscore: undefined,
-	nutritionalInfo: {
-		carbohydrates: undefined,
-		proteins: undefined,
-		fats: undefined,
-		salt: undefined,
-	},
+	barcode: '',
 };
 
-// Store principal pour l'inventaire
+// ===== UTILITAIRES DE VALIDATION =====
+
+/**
+ * Valide les données du produit avec le schéma Zod
+ */
+const validateProductData = (
+	data: Partial<AddInventoryItemData>
+): { isValid: boolean; errors: string[] } => {
+	const validation = validateSchema(AddInventoryItemSchema, data);
+	if (validation.success) {
+		return { isValid: true, errors: [] };
+	}
+	return { isValid: false, errors: [validation.error] };
+};
+
+/**
+ * Valide les filtres d'inventaire
+ */
+const validateInventoryFilters = (
+	filters: unknown
+): filters is InventoryFilters => {
+	const validation = validateSchema(InventoryFiltersSchema, filters);
+	return validation.success;
+};
+
+/**
+ * Nettoie et valide une valeur récente
+ */
+const sanitizeRecentValue = (value: string): string | null => {
+	const trimmed = value.trim();
+	return trimmed.length > 0 && trimmed.length <= 100 ? trimmed : null;
+};
+
+// ===== STORE PRINCIPAL =====
+
 export const useInventoryStore = create<InventoryState>()(
 	subscribeWithSelector(
 		persist(
 			(set, get) => ({
-				// État initial - Formulaire
+				// ===== ÉTAT INITIAL - FORMULAIRE =====
 				draftProduct: { ...initialFormState },
 
 				defaultValues: {
@@ -147,54 +187,84 @@ export const useInventoryStore = create<InventoryState>()(
 
 				inventoryFilters: {},
 
-				// État initial - Données
+				// ===== ÉTAT INITIAL - DONNÉES =====
 				items: [],
 				isLoading: false,
 				error: null,
 
-				// Actions pour le formulaire
-				updateDraftProduct: (updates) =>
+				// ===== ACTIONS POUR LE FORMULAIRE =====
+
+				/**
+				 * Met à jour le produit en cours d'édition
+				 */
+				updateDraftProduct: (updates) => {
 					set((state) => ({
 						draftProduct: { ...state.draftProduct, ...updates },
-					})),
+					}));
+				},
 
-				clearDraftProduct: () =>
+				/**
+				 * Réinitialise le formulaire
+				 */
+				clearDraftProduct: () => {
 					set(() => ({
 						draftProduct: {
 							...initialFormState,
 							purchaseDate: new Date()
 								.toISOString()
-								.split('T')[0], // Toujours la date actuelle
+								.split('T')[0],
 						},
-					})),
+					}));
+				},
 
-				saveDraftProduct: (product) =>
+				/**
+				 * Sauvegarde le brouillon
+				 */
+				saveDraftProduct: (product) => {
 					set(() => ({
 						draftProduct: product,
-					})),
+					}));
+				},
 
-				// Actions pour les valeurs par défaut
-				updateDefaultValues: (defaults) =>
+				/**
+				 * Valide le produit en cours d'édition
+				 */
+				validateDraftProduct: () => {
+					const { draftProduct } = get();
+					return validateProductData(draftProduct);
+				},
+
+				// ===== ACTIONS POUR LES VALEURS PAR DÉFAUT =====
+
+				/**
+				 * Met à jour les valeurs par défaut
+				 */
+				updateDefaultValues: (defaults) => {
 					set((state) => ({
 						defaultValues: { ...state.defaultValues, ...defaults },
-					})),
+					}));
+				},
 
-				// Actions pour les valeurs récentes
-				addRecentValue: (type, value) =>
+				// ===== ACTIONS POUR LES VALEURS RÉCENTES =====
+
+				/**
+				 * Ajoute une valeur récente (marque, catégorie, lieu de stockage)
+				 */
+				addRecentValue: (type, value) => {
+					const sanitizedValue = sanitizeRecentValue(value);
+					if (!sanitizedValue) return;
+
 					set((state) => {
 						const currentValues = state.recentValues[type];
-						const trimmedValue = value.trim();
 
-						if (
-							!trimmedValue ||
-							currentValues.includes(trimmedValue)
-						) {
+						// Éviter les doublons
+						if (currentValues.includes(sanitizedValue)) {
 							return state;
 						}
 
 						// Garder seulement les 10 dernières valeurs
 						const newValues = [
-							trimmedValue,
+							sanitizedValue,
 							...currentValues,
 						].slice(0, 10);
 
@@ -204,23 +274,59 @@ export const useInventoryStore = create<InventoryState>()(
 								[type]: newValues,
 							},
 						};
-					}),
+					});
+				},
 
-				// Actions pour les filtres
-				setInventoryFilters: (filters) =>
-					set(() => ({ inventoryFilters: filters })),
+				// ===== ACTIONS POUR LES FILTRES =====
 
-				clearInventoryFilters: () =>
-					set(() => ({ inventoryFilters: {} })),
+				/**
+				 * Définit les filtres d'inventaire
+				 */
+				setInventoryFilters: (filters) => {
+					// Validation des filtres avant sauvegarde
+					if (validateInventoryFilters(filters)) {
+						set(() => ({ inventoryFilters: filters }));
+					} else {
+						console.warn(
+							"Filtres d'inventaire invalides:",
+							filters
+						);
+					}
+				},
 
-				// Actions pour les données d'inventaire
+				/**
+				 * Efface tous les filtres
+				 */
+				clearInventoryFilters: () => {
+					set(() => ({ inventoryFilters: {} }));
+				},
+
+				// ===== ACTIONS POUR LES DONNÉES D'INVENTAIRE =====
+
+				/**
+				 * Récupère les items d'inventaire
+				 */
 				fetchInventoryItems: async (filters) => {
 					set({ isLoading: true, error: null });
 					try {
-						const items = await inventoryService.getInventory(
-							filters || get().inventoryFilters
+						const appliedFilters =
+							filters || get().inventoryFilters;
+						const rawItems = await inventoryService.getInventory(
+							appliedFilters
 						);
-						set({ items, isLoading: false });
+
+						// Validation que les items sont bien conformes
+						if (Array.isArray(rawItems)) {
+							// Enrichir chaque item avec le statut d'expiration
+							const enrichedItems: InventoryItemWithStatus[] =
+								rawItems.map((item: InventoryItem) =>
+									addExpiryStatusToItem(item)
+								);
+
+							set({ items: enrichedItems, isLoading: false });
+						} else {
+							throw new Error('Format de réponse invalide');
+						}
 					} catch (error) {
 						set({
 							error:
@@ -232,52 +338,82 @@ export const useInventoryStore = create<InventoryState>()(
 					}
 				},
 
+				/**
+				 * Ajoute un nouveau produit à l'inventaire
+				 */
 				addInventoryItem: async (productData) => {
+					// Validation des données avant envoi
+					const validation = validateProductData(productData);
+					if (!validation.isValid) {
+						const errorMessage = `Données invalides: ${validation.errors.join(
+							', '
+						)}`;
+						set({ error: errorMessage });
+						throw new Error(errorMessage);
+					}
+
 					set({ isLoading: true, error: null });
 					try {
 						const response =
 							await inventoryService.addManualProduct(
 								productData
 							);
-						console.log(response);
+						console.log('Produit ajouté:', response);
+
 						// Ajouter les valeurs récentes
 						const { addRecentValue } = get();
-						if (productData.brand)
+						if (productData.brand) {
 							addRecentValue('brands', productData.brand);
-						if (productData.category)
+						}
+						if (productData.category) {
 							addRecentValue('categories', productData.category);
-						if (productData.storageLocation)
+						}
+						if (productData.storageLocation) {
 							addRecentValue(
 								'storageLocations',
 								productData.storageLocation
 							);
+						}
 
 						// Recharger l'inventaire pour avoir la structure complète
-						// Car la réponse de création ne contient pas toutes les infos du produit
 						await get().fetchInventoryItems();
 
 						// Réinitialiser le formulaire
 						get().clearDraftProduct();
 					} catch (error) {
+						const errorMessage =
+							error instanceof Error
+								? error.message
+								: "Erreur lors de l'ajout du produit";
+
 						set({
-							error:
-								error instanceof Error
-									? error.message
-									: "Erreur lors de l'ajout du produit",
+							error: errorMessage,
 							isLoading: false,
 						});
-						throw error; // Re-throw pour que le composant puisse gérer l'erreur
+						throw new Error(errorMessage);
 					}
 				},
 
+				/**
+				 * Met à jour un item d'inventaire
+				 */
 				updateInventoryItem: async (id, updates) => {
+					if (!id || typeof id !== 'string') {
+						throw new Error("ID d'item invalide");
+					}
+
 					set({ isLoading: true, error: null });
 					try {
-						const updatedItem =
+						const updatedRawItem =
 							await inventoryService.updateInventoryItem(
 								id,
 								updates
 							);
+
+						// Enrichir l'item mis à jour avec le statut d'expiration
+						const updatedItem =
+							addExpiryStatusToItem(updatedRawItem);
+
 						set((state) => ({
 							items: state.items.map((item) =>
 								item.id === id ? updatedItem : item
@@ -285,37 +421,52 @@ export const useInventoryStore = create<InventoryState>()(
 							isLoading: false,
 						}));
 					} catch (error) {
+						const errorMessage =
+							error instanceof Error
+								? error.message
+								: 'Erreur lors de la mise à jour du produit';
+
 						set({
-							error:
-								error instanceof Error
-									? error.message
-									: 'Erreur lors de la mise à jour du produit',
+							error: errorMessage,
 							isLoading: false,
 						});
-						throw error;
+						throw new Error(errorMessage);
 					}
 				},
 
+				/**
+				 * Supprime un item d'inventaire
+				 */
 				removeInventoryItem: async (id) => {
+					if (!id || typeof id !== 'string') {
+						throw new Error("ID d'item invalide");
+					}
+
 					set({ isLoading: true, error: null });
 					try {
 						await inventoryService.removeInventoryItem(id);
+
 						set((state) => ({
 							items: state.items.filter((item) => item.id !== id),
 							isLoading: false,
 						}));
 					} catch (error) {
+						const errorMessage =
+							error instanceof Error
+								? error.message
+								: 'Erreur lors de la suppression du produit';
+
 						set({
-							error:
-								error instanceof Error
-									? error.message
-									: 'Erreur lors de la suppression du produit',
+							error: errorMessage,
 							isLoading: false,
 						});
-						throw error;
+						throw new Error(errorMessage);
 					}
 				},
 
+				/**
+				 * Efface l'erreur actuelle
+				 */
 				clearError: () => set({ error: null }),
 			}),
 			{
@@ -325,21 +476,16 @@ export const useInventoryStore = create<InventoryState>()(
 					defaultValues: state.defaultValues,
 					recentValues: state.recentValues,
 					inventoryFilters: state.inventoryFilters,
-					// Ne pas persister le draftProduct, les items ou les états de chargement
 				}),
-				version: 1,
+				version: 2, // Incrémenté pour la migration Zod
 				migrate: (
 					persistedState: unknown,
 					version: number
 				): PersistedInventoryState => {
 					// Vérifier que l'état persisté est un objet valide
-					const state = persistedState as LegacyPersistedState | null;
-
-					// Migration des données si nécessaire lors des mises à jour
-					if (version === 0) {
-						// Migration depuis la version 0 vers 1
+					if (!persistedState || typeof persistedState !== 'object') {
 						return {
-							defaultValues: state?.defaultValues || {
+							defaultValues: {
 								unitType: 'UNIT',
 								storageLocation: '',
 								purchaseDate: new Date()
@@ -347,17 +493,65 @@ export const useInventoryStore = create<InventoryState>()(
 									.split('T')[0],
 							},
 							recentValues: {
-								brands: state?.recentValues?.brands || [],
-								categories:
-									state?.recentValues?.categories || [],
-								storageLocations:
-									state?.recentValues?.storageLocations || [],
+								brands: [],
+								categories: [],
+								storageLocations: [],
 							},
-							inventoryFilters: state?.inventoryFilters || {},
+							inventoryFilters: {},
 						};
 					}
 
-					// Pour les versions futures, retourner l'état tel quel (en le castant au bon type)
+					const state = persistedState as LegacyPersistedState;
+
+					// Migration vers la version 2 (schémas Zod)
+					if (version < 2) {
+						console.log(
+							'Migration du store inventaire vers les schémas Zod...'
+						);
+
+						return {
+							defaultValues: {
+								unitType:
+									(state.defaultValues
+										?.unitType as UnitType) || 'UNIT',
+								storageLocation:
+									state.defaultValues?.storageLocation || '',
+								purchaseDate:
+									state.defaultValues?.purchaseDate ||
+									new Date().toISOString().split('T')[0],
+							},
+							recentValues: {
+								brands: Array.isArray(
+									state.recentValues?.brands
+								)
+									? state.recentValues.brands.filter(
+											(v) => typeof v === 'string'
+									  )
+									: [],
+								categories: Array.isArray(
+									state.recentValues?.categories
+								)
+									? state.recentValues.categories.filter(
+											(v) => typeof v === 'string'
+									  )
+									: [],
+								storageLocations: Array.isArray(
+									state.recentValues?.storageLocations
+								)
+									? state.recentValues.storageLocations.filter(
+											(v) => typeof v === 'string'
+									  )
+									: [],
+							},
+							inventoryFilters: validateInventoryFilters(
+								state.inventoryFilters
+							)
+								? state.inventoryFilters
+								: {},
+						};
+					}
+
+					// Pour les versions futures, retourner l'état tel quel
 					return state as PersistedInventoryState;
 				},
 			}
@@ -365,7 +559,8 @@ export const useInventoryStore = create<InventoryState>()(
 	)
 );
 
-// Sélecteurs stables pour les données d'inventaire
+// ===== SÉLECTEURS STABLES =====
+
 export const useInventoryItems = () =>
 	useInventoryStore(useCallback((state) => state.items, []));
 
@@ -375,79 +570,52 @@ export const useInventoryLoading = () =>
 export const useInventoryError = () =>
 	useInventoryStore(useCallback((state) => state.error, []));
 
-// Sélecteur pour l'état du formulaire - STABLE
 export const useInventoryFormState = () =>
 	useInventoryStore(useCallback((state) => state.draftProduct, []));
 
-// Sélecteur pour les valeurs par défaut - STABLE
 export const useInventoryDefaultValues = () =>
 	useInventoryStore(useCallback((state) => state.defaultValues, []));
 
-// Sélecteur pour les valeurs récentes - STABLE
 export const useInventoryRecentValues = () =>
 	useInventoryStore(useCallback((state) => state.recentValues, []));
 
-// Sélecteur pour les filtres - STABLE
 export const useInventoryFilters = () =>
 	useInventoryStore(useCallback((state) => state.inventoryFilters, []));
 
-// Actions stables avec des références fixes
-const stableActions: InventoryActions = {
-	updateDraftProduct: null as unknown as (
-		updates: Partial<AddManualProductInput>
-	) => void,
-	clearDraftProduct: null as unknown as () => void,
-	saveDraftProduct: null as unknown as (
-		product: Partial<AddManualProductInput>
-	) => void,
-	updateDefaultValues: null as unknown as (
-		defaults: Partial<InventoryFormState['defaultValues']>
-	) => void,
-	addRecentValue: null as unknown as (
-		type: keyof InventoryFormState['recentValues'],
-		value: string
-	) => void,
-	setInventoryFilters: null as unknown as (filters: InventoryFilters) => void,
-	clearInventoryFilters: null as unknown as () => void,
-	fetchInventoryItems: null as unknown as (
-		filters?: InventoryFilters
-	) => Promise<void>,
-	addInventoryItem: null as unknown as (
-		productData: AddManualProductInput
-	) => Promise<void>,
-	updateInventoryItem: null as unknown as (
-		id: string,
-		updates: UpdateInventoryItemInput
-	) => Promise<void>,
-	removeInventoryItem: null as unknown as (id: string) => Promise<void>,
-	clearError: null as unknown as () => void,
-};
+// ===== ACTIONS STABLES =====
 
-// Initialiser les actions stables une seule fois
+const stableActions: InventoryActions = {} as InventoryActions;
 let actionsInitialized = false;
 
 export const useInventoryActions = () => {
 	if (!actionsInitialized) {
 		const store = useInventoryStore.getState();
-		stableActions.updateDraftProduct = store.updateDraftProduct;
-		stableActions.clearDraftProduct = store.clearDraftProduct;
-		stableActions.saveDraftProduct = store.saveDraftProduct;
-		stableActions.updateDefaultValues = store.updateDefaultValues;
-		stableActions.addRecentValue = store.addRecentValue;
-		stableActions.setInventoryFilters = store.setInventoryFilters;
-		stableActions.clearInventoryFilters = store.clearInventoryFilters;
-		stableActions.fetchInventoryItems = store.fetchInventoryItems;
-		stableActions.addInventoryItem = store.addInventoryItem;
-		stableActions.updateInventoryItem = store.updateInventoryItem;
-		stableActions.removeInventoryItem = store.removeInventoryItem;
-		stableActions.clearError = store.clearError;
+		Object.assign(stableActions, {
+			updateDraftProduct: store.updateDraftProduct,
+			clearDraftProduct: store.clearDraftProduct,
+			saveDraftProduct: store.saveDraftProduct,
+			validateDraftProduct: store.validateDraftProduct,
+			updateDefaultValues: store.updateDefaultValues,
+			addRecentValue: store.addRecentValue,
+			setInventoryFilters: store.setInventoryFilters,
+			clearInventoryFilters: store.clearInventoryFilters,
+			fetchInventoryItems: store.fetchInventoryItems,
+			addInventoryItem: store.addInventoryItem,
+			updateInventoryItem: store.updateInventoryItem,
+			removeInventoryItem: store.removeInventoryItem,
+			clearError: store.clearError,
+		});
 		actionsInitialized = true;
 	}
 
 	return stableActions;
 };
 
-// Hook utilitaire pour réinitialiser le formulaire avec les valeurs par défaut
+// ===== HOOKS UTILITAIRES =====
+
+/**
+ * Hook pour réinitialiser le formulaire avec les valeurs par défaut
+ */
 export const useResetFormWithDefaults = () => {
 	const defaultValues = useInventoryDefaultValues();
 	const { clearDraftProduct, updateDraftProduct } = useInventoryActions();
@@ -457,7 +625,7 @@ export const useResetFormWithDefaults = () => {
 		updateDraftProduct({
 			unitType: defaultValues.unitType,
 			storageLocation: defaultValues.storageLocation,
-			purchaseDate: new Date().toISOString().split('T')[0], // Toujours aujourd'hui
+			purchaseDate: new Date().toISOString().split('T')[0],
 		});
 	}, [
 		defaultValues.unitType,
@@ -467,12 +635,14 @@ export const useResetFormWithDefaults = () => {
 	]);
 };
 
-// Hook pour sauvegarder automatiquement les valeurs récentes après une saisie réussie
+/**
+ * Hook pour sauvegarder automatiquement les valeurs récentes
+ */
 export const useSaveRecentValues = () => {
 	const { addRecentValue } = useInventoryActions();
 
 	return useCallback(
-		(product: AddManualProductInput) => {
+		(product: AddInventoryItemData) => {
 			if (product.brand) {
 				addRecentValue('brands', product.brand);
 			}
@@ -487,7 +657,16 @@ export const useSaveRecentValues = () => {
 	);
 };
 
-// Store séparé pour l'état de l'interface utilisateur (non persisté)
+/**
+ * Hook pour valider le formulaire en temps réel
+ */
+export const useValidateForm = () => {
+	const { validateDraftProduct } = useInventoryActions();
+	return validateDraftProduct;
+};
+
+// ===== STORE UI (NON PERSISTÉ) =====
+
 interface InventoryUIState {
 	// État de l'interface
 	isFormExpanded: boolean;
@@ -498,17 +677,42 @@ interface InventoryUIState {
 	setFormExpanded: (expanded: boolean) => void;
 	setActiveSection: (section: InventoryUIState['activeSection']) => void;
 	toggleAdvancedOptions: () => void;
+	resetUI: () => void;
 }
 
 export const useInventoryUIStore = create<InventoryUIState>((set) => ({
+	// État initial
 	isFormExpanded: false,
 	activeSection: 'basic',
 	showAdvancedOptions: false,
 
+	// Actions
 	setFormExpanded: (expanded) => set({ isFormExpanded: expanded }),
+
 	setActiveSection: (section) => set({ activeSection: section }),
+
 	toggleAdvancedOptions: () =>
 		set((state) => ({
 			showAdvancedOptions: !state.showAdvancedOptions,
 		})),
+
+	resetUI: () =>
+		set({
+			isFormExpanded: false,
+			activeSection: 'basic',
+			showAdvancedOptions: false,
+		}),
 }));
+
+// ===== HOOKS UI =====
+
+export const useInventoryUI = () => useInventoryUIStore();
+
+export const useInventoryFormExpanded = () =>
+	useInventoryUIStore((state) => state.isFormExpanded);
+
+export const useInventoryActiveSection = () =>
+	useInventoryUIStore((state) => state.activeSection);
+
+export const useInventoryAdvancedOptions = () =>
+	useInventoryUIStore((state) => state.showAdvancedOptions);

@@ -1,46 +1,36 @@
 import React from 'react';
-import { InventoryItemResponse } from '@/services/inventoryService';
-import {
-	ExpiryStatus,
-	formatRelativeDate,
-	getExpiryStatusColor,
-} from '@/utils/dateHelpers';
 import { Link } from '@tanstack/react-router';
 
-// Type pour un item avec statut d'expiration
-interface InventoryItemWithStatus extends InventoryItemResponse {
-	expiryStatus: ExpiryStatus;
-}
+// ===== IMPORTS SCHÉMAS ZOD =====
+import { InventoryItemWithStatus, NutriScore } from '@/schemas';
 
+// ===== IMPORTS UTILITAIRES UI =====
+import {
+	formatRelativeDate,
+	getExpiryStatusTextColor,
+	getNutriscoreBackgroundColor,
+	formatQuantity,
+} from '@/utils/ui-utils';
+
+// ===== INTERFACE PROPS =====
 interface ProductCardProps {
 	item: InventoryItemWithStatus;
 }
 
+// ===== COMPOSANT PRODUCT CARD =====
 const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 	// Obtenir la couleur selon le statut d'expiration
-	const expiryColorClass = getExpiryStatusColor(item.expiryStatus);
-
-	// Formatter l'unité d'affichage
-	const formatUnit = (quantity: number, unitType: string): string => {
-		if (unitType === 'UNIT') {
-			return quantity === 1 ? 'unité' : 'unités';
-		}
-		return unitType.toLowerCase();
-	};
+	const expiryColorClass = getExpiryStatusTextColor(item.expiryStatus);
 
 	// Obtenir la classe CSS pour le Nutriscore
-	const getNutriscoreClass = (score: string | null): string => {
-		if (!score) return 'bg-neutral-200 text-neutral-50';
+	const getNutriscoreClass = (score: NutriScore): string => {
+		const bgColor = getNutriscoreBackgroundColor(score);
 
-		const classes: Record<string, string> = {
-			A: 'bg-nutriscore-a text-neutral-50',
-			B: 'bg-nutriscore-b text-neutral-50',
-			C: 'bg-nutriscore-c text-neutral-300',
-			D: 'bg-nutriscore-d text-neutral-50',
-			E: 'bg-nutriscore-e text-neutral-50',
-		};
+		// Déterminer la couleur du texte selon le score pour un bon contraste
+		const textColor =
+			score === 'C' ? 'text-neutral-300' : 'text-neutral-50';
 
-		return classes[score] || 'bg-neutral-200 text-neutral-50';
+		return `${bgColor} ${textColor}`;
 	};
 
 	return (
@@ -50,7 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 			className='block'>
 			<div className='bg-neutral-50 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer'>
 				<div className='flex items-start gap-4'>
-					{/* Image du produit */}
+					{/* ===== IMAGE DU PRODUIT ===== */}
 					<div className='size-20 rounded-xl overflow-hidden bg-neutral-100 flex-shrink-0'>
 						{item.product.imageUrl ? (
 							<img
@@ -65,7 +55,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 						)}
 					</div>
 
-					{/* Informations du produit */}
+					{/* ===== INFORMATIONS DU PRODUIT ===== */}
 					<div className='flex-1 min-w-0'>
 						<div className='flex items-start justify-between gap-2'>
 							<div className='flex-1'>
@@ -79,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 								)}
 							</div>
 
-							{/* Nutriscore */}
+							{/* ===== NUTRISCORE ===== */}
 							{item.product.nutriscore && (
 								<div
 									className={`size-8 rounded-full flex items-center justify-center font-bold text-sm ${getNutriscoreClass(
@@ -90,11 +80,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 							)}
 						</div>
 
-						{/* Quantité et date d'expiration */}
+						{/* ===== QUANTITÉ ET DATE D'EXPIRATION ===== */}
 						<div className='mt-2 flex items-center justify-between'>
 							<span className='text-sm text-neutral-200'>
-								{item.quantity}{' '}
-								{formatUnit(
+								{formatQuantity(
 									item.quantity,
 									item.product.unitType
 								)}
@@ -108,7 +97,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 							)}
 						</div>
 
-						{/* Lieu de stockage */}
+						{/* ===== LIEU DE STOCKAGE ===== */}
 						{item.storageLocation && (
 							<div className='mt-1'>
 								<span className='text-xs text-neutral-200'>
@@ -116,8 +105,45 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 								</span>
 							</div>
 						)}
+
+						{/* ===== INFORMATIONS SUPPLÉMENTAIRES ===== */}
+						{item.notes && (
+							<div className='mt-1'>
+								<span className='text-xs text-neutral-200 italic'>
+									{item.notes}
+								</span>
+							</div>
+						)}
 					</div>
 				</div>
+
+				{/* ===== BARRE DE STATUT D'EXPIRATION ===== */}
+				{item.expiryDate && (
+					<div className='mt-3 h-1 w-full rounded-full bg-neutral-100'>
+						<div
+							className={`h-full rounded-full transition-all duration-300 ${
+								item.expiryStatus === 'EXPIRED'
+									? 'bg-error-100'
+									: item.expiryStatus === 'CRITICAL'
+									? 'bg-error-50'
+									: item.expiryStatus === 'WARNING'
+									? 'bg-warning-50'
+									: 'bg-success-50'
+							}`}
+							style={{
+								width: `${
+									item.expiryStatus === 'EXPIRED'
+										? 100
+										: item.expiryStatus === 'CRITICAL'
+										? 85
+										: item.expiryStatus === 'WARNING'
+										? 60
+										: 30
+								}%`,
+							}}
+						/>
+					</div>
+				)}
 			</div>
 		</Link>
 	);

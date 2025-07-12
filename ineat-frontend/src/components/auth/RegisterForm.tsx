@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
-import { RegisterDataSchema } from '@/schemas/authSchema';
+import { RegisterDataSchema } from '@/schemas';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';

@@ -85,7 +85,7 @@ function ProductDetailPage() {
 	};
 
 	// Obtenir la classe CSS pour le Nutriscore
-	const getNutriscoreClass = (score: string | null): string => {
+	const getNutriscoreClass = (score: string | undefined): string => {
 		if (!score) return 'bg-neutral-200 text-neutral-300';
 
 		const classes: Record<string, string> = {
@@ -100,7 +100,7 @@ function ProductDetailPage() {
 	};
 
 	// Obtenir le texte descriptif du Nutriscore
-	const getNutriscoreText = (score: string | null): string => {
+	const getNutriscoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
 			A: 'Excellentes qualités nutritionnelles',
 			B: 'Bonnes qualités nutritionnelles',
@@ -116,7 +116,7 @@ function ProductDetailPage() {
 	};
 
 	// Obtenir le texte descriptif de l'Eco-score
-	const getEcoScoreText = (score: string | null): string => {
+	const getEcoScoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
 			A: 'Impact environnemental faible',
 			B: 'Impact environnemental limité',
@@ -298,13 +298,13 @@ function ProductDetailPage() {
 								</h3>
 								<div className='space-y-2 text-sm'>
 									{inventoryItem.product.nutrients
-										.calories !== undefined && (
+										.energy !== undefined && (
 										<div className='flex justify-between'>
 											<span>Énergie</span>
 											<span className='font-medium'>
 												{
 													inventoryItem.product
-														.nutrients.calories
+														.nutrients.energy
 												}{' '}
 												kcal
 											</span>
