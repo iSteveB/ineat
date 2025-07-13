@@ -1,0 +1,23 @@
+# Variables d'environnement pour optimiser le build
+[variables]
+NPM_CONFIG_UPDATE_NOTIFIER = 'false'
+NPM_CONFIG_FUND = 'false'
+
+# Phase de build
+[phases.build]
+cmds = ['npm run build']
+
+# Installation de Caddy depuis Nix
+[phases.caddy]
+dependsOn = ['setup']
+nixpkgsArchive = 'ba913eda2df8eb72147259189d55932012df6301'
+nixPkgs = ['caddy']
+
+# Formatage du Caddyfile
+[phases.fmt]
+dependsOn = ['caddy']
+cmds = ['caddy fmt --overwrite Caddyfile']
+
+# Commande de démarrage
+[start]
+cmd = 'exec caddy run --config Caddyfile --adapter caddyfile'

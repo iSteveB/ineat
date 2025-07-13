@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+nixpacksConfigPath = "nixpacks.toml"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "caddy run --config Caddyfile --adapter caddyfile"
