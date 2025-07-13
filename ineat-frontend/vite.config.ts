@@ -83,6 +83,7 @@ export default defineConfig(({ mode }) => {
 				},
 			},
 		},
+		appType: 'spa',
 
 		// Variables d'environnement
 		define: {
