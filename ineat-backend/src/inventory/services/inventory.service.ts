@@ -8,6 +8,42 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
 import { QuickAddProductDto } from 'src/DTOs';
 
+// Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
+export interface InventoryStats {
+  totalItems: number;
+  totalValue: number;
+  totalQuantity: number;
+  averageItemValue: number;
+  expiryBreakdown: {
+    good: number;
+    warning: number;
+    critical: number;
+    expired: number;
+    unknown: number;
+  };
+  categoryBreakdown: Array<{
+    categoryId: string;
+    categoryName: string;
+    count: number;
+    percentage: number;
+    totalValue: number;
+  }>;
+  storageBreakdown: Record<
+    string,
+    {
+      count: number;
+      percentage: number;
+    }
+  >;
+  recentActivity: {
+    itemsAddedThisWeek: number;
+    itemsConsumedThisWeek: number;
+    averageDaysToConsumption?: number;
+  };
+}
+
+type ExpiryStatus = 'GOOD' | 'WARNING' | 'CRITICAL' | 'EXPIRED' | 'UNKNOWN';
+
 @Injectable()
 export class InventoryService {
   constructor(private readonly prisma: PrismaService) {}
@@ -87,6 +123,357 @@ export class InventoryService {
       // 4. Retourner la réponse formatée
       return this.formatResponse(inventoryItem, product);
     });
+  }
+
+  /**
+   * Recherche un produit par son code-barres
+   * @param barcode Code-barres du produit
+   * @returns Le produit trouvé ou null
+   */
+  async findProductByBarcode(barcode: string) {
+    if (!barcode) {
+      return null;
+    }
+
+    return await this.prisma.product.findUnique({
+      where: { barcode },
+      include: {
+        category: true,
+      },
+    });
+  }
+
+  /**
+   * Récupère les produits récemment ajoutés à l'inventaire d'un utilisateur
+   * @param userId ID de l'utilisateur
+   * @param limit Nombre maximum de produits à retourner (défaut: 5)
+   * @returns Liste des produits récents triés par date d'ajout décroissante
+   */
+  async getRecentProducts(userId: string, limit: number = 5) {
+    return await this.prisma.inventoryItem.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        product: {
+          include: {
+            category: true,
+          },
+        },
+      },
+      orderBy: [
+        { createdAt: 'desc' }, // Plus récents en premier
+      ],
+      take: limit, // Limiter le nombre de résultats
+    });
+  }
+
+  /**
+   * Récupère l'inventaire complet d'un utilisateur avec filtres optionnels
+   * @param userId ID de l'utilisateur
+   * @param filters Filtres optionnels (catégorie, lieu de stockage, etc.)
+   * @returns Liste des éléments d'inventaire
+   */
+  async getUserInventory(
+    userId: string,
+    filters?: {
+      category?: string;
+      storageLocation?: string;
+      expiringWithinDays?: number;
+    },
+  ) {
+    const where: any = {
+      userId,
+    };
+
+    // Application des filtres
+    if (filters) {
+      if (filters.category) {
+        where.product = {
+          category: {
+            slug: filters.category,
+          },
+        };
+      }
+
+      if (filters.storageLocation) {
+        where.storageLocation = filters.storageLocation;
+      }
+
+      if (filters.expiringWithinDays) {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + filters.expiringWithinDays);
+
+        where.expiryDate = {
+          lte: futureDate,
+          gte: new Date(),
+        };
+      }
+    }
+
+    return await this.prisma.inventoryItem.findMany({
+      where,
+      include: {
+        product: {
+          include: {
+            category: true,
+          },
+        },
+      },
+      orderBy: [
+        { expiryDate: 'asc' }, // Produits qui périment en premier
+        { createdAt: 'desc' }, // Plus récents en premier pour ceux sans date
+      ],
+    });
+  }
+
+  /**
+   * Calcule les statistiques complètes de l'inventaire d'un utilisateur
+   * @param userId ID de l'utilisateur
+   * @returns Statistiques détaillées conformes au schéma InventoryStats
+   */
+  async getInventoryStats(userId: string): Promise<InventoryStats> {
+    // Récupérer tout l'inventaire avec les relations nécessaires
+    const inventory = await this.prisma.inventoryItem.findMany({
+      where: { userId },
+      include: {
+        product: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+
+    // Calculer les statistiques de base
+    const totalItems = inventory.length;
+    const totalValue = inventory.reduce((sum, item) => {
+      return (
+        sum + (item.purchasePrice ? item.purchasePrice * item.quantity : 0)
+      );
+    }, 0);
+    const totalQuantity = inventory.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+    const averageItemValue = totalItems > 0 ? totalValue / totalItems : 0;
+
+    // Calculer la répartition par statut d'expiration
+    const expiryBreakdown = {
+      good: 0,
+      warning: 0,
+      critical: 0,
+      expired: 0,
+      unknown: 0,
+    };
+
+    inventory.forEach((item) => {
+      const status = this.calculateExpiryStatus(item.expiryDate);
+      expiryBreakdown[status.toLowerCase() as keyof typeof expiryBreakdown]++;
+    });
+
+    // Calculer la répartition par catégorie
+    const categoryMap = new Map<
+      string,
+      {
+        categoryId: string;
+        categoryName: string;
+        count: number;
+        totalValue: number;
+      }
+    >();
+
+    inventory.forEach((item) => {
+      const categoryId = item.product.category.id;
+      const categoryName = item.product.category.name;
+      const itemValue = (item.purchasePrice || 0) * item.quantity;
+
+      if (categoryMap.has(categoryId)) {
+        const category = categoryMap.get(categoryId)!;
+        category.count++;
+        category.totalValue += itemValue;
+      } else {
+        categoryMap.set(categoryId, {
+          categoryId,
+          categoryName,
+          count: 1,
+          totalValue: itemValue,
+        });
+      }
+    });
+
+    const categoryBreakdown = Array.from(categoryMap.values()).map(
+      (category) => ({
+        ...category,
+        percentage: totalItems > 0 ? (category.count / totalItems) * 100 : 0,
+      }),
+    );
+
+    // Calculer la répartition par lieu de stockage
+    const storageMap = new Map<string, number>();
+
+    inventory.forEach((item) => {
+      const location = item.storageLocation || 'Non spécifié';
+      storageMap.set(location, (storageMap.get(location) || 0) + 1);
+    });
+
+    const storageBreakdown: Record<
+      string,
+      { count: number; percentage: number }
+    > = {};
+    storageMap.forEach((count, location) => {
+      storageBreakdown[location] = {
+        count,
+        percentage: totalItems > 0 ? (count / totalItems) * 100 : 0,
+      };
+    });
+
+    // Calculer l'activité récente
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const itemsAddedThisWeek = inventory.filter(
+      (item) => new Date(item.createdAt) >= oneWeekAgo,
+    ).length;
+
+    // Pour itemsConsumedThisWeek, on aurait besoin d'un historique des consommations
+    // Pour l'instant, on met 0 car ce n'est pas encore implémenté
+    const itemsConsumedThisWeek = 0;
+
+    const recentActivity = {
+      itemsAddedThisWeek,
+      itemsConsumedThisWeek,
+      // averageDaysToConsumption serait calculé avec l'historique des consommations
+    };
+
+    return {
+      totalItems,
+      totalValue: Math.round(totalValue * 100) / 100, // Arrondi à 2 décimales
+      totalQuantity,
+      averageItemValue: Math.round(averageItemValue * 100) / 100,
+      expiryBreakdown,
+      categoryBreakdown,
+      storageBreakdown,
+      recentActivity,
+    };
+  }
+
+  /**
+   * Met à jour un élément d'inventaire
+   * @param userId ID de l'utilisateur
+   * @param inventoryItemId ID de l'élément d'inventaire
+   * @param updateData Données à mettre à jour
+   */
+  async updateInventoryItem(
+    userId: string,
+    inventoryItemId: string,
+    updateData: Partial<
+      Pick<
+        AddManualProductDto,
+        | 'quantity'
+        | 'expiryDate'
+        | 'storageLocation'
+        | 'notes'
+        | 'purchasePrice'
+      >
+    >,
+  ) {
+    // Vérifier que l'élément appartient à l'utilisateur
+    const existingItem = await this.prisma.inventoryItem.findFirst({
+      where: {
+        id: inventoryItemId,
+        userId,
+      },
+    });
+
+    if (!existingItem) {
+      throw new NotFoundException("Élément d'inventaire non trouvé");
+    }
+
+    // Préparer les données de mise à jour
+    const updatePayload: any = {};
+
+    if (updateData.quantity !== undefined) {
+      updatePayload.quantity = updateData.quantity;
+    }
+
+    if (updateData.expiryDate !== undefined) {
+      updatePayload.expiryDate = updateData.expiryDate
+        ? new Date(updateData.expiryDate)
+        : null;
+    }
+
+    if (updateData.storageLocation !== undefined) {
+      updatePayload.storageLocation = updateData.storageLocation;
+    }
+
+    if (updateData.notes !== undefined) {
+      updatePayload.notes = updateData.notes;
+    }
+
+    if (updateData.purchasePrice !== undefined) {
+      updatePayload.purchasePrice = updateData.purchasePrice;
+    }
+
+    return await this.prisma.inventoryItem.update({
+      where: { id: inventoryItemId },
+      data: updatePayload,
+      include: {
+        product: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    });
+  }
+
+  /**
+   * Supprime un élément d'inventaire
+   * @param userId ID de l'utilisateur
+   * @param inventoryItemId ID de l'élément à supprimer
+   */
+  async removeInventoryItem(userId: string, inventoryItemId: string) {
+    const existingItem = await this.prisma.inventoryItem.findFirst({
+      where: {
+        id: inventoryItemId,
+        userId,
+      },
+    });
+
+    if (!existingItem) {
+      throw new NotFoundException("Élément d'inventaire non trouvé");
+    }
+
+    await this.prisma.inventoryItem.delete({
+      where: { id: inventoryItemId },
+    });
+
+    return { success: true, message: "Produit supprimé de l'inventaire" };
+  }
+
+  // --- MÉTHODES PRIVÉES ---
+
+  /**
+   * Calcule le statut d'expiration d'un produit (conforme à la logique dans base.ts)
+   * @param expiryDate Date de péremption (peut être null)
+   * @returns Statut d'expiration
+   */
+  private calculateExpiryStatus(
+    expiryDate?: Date | string | null,
+  ): ExpiryStatus {
+    if (!expiryDate) return 'UNKNOWN';
+
+    const expiry =
+      typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate;
+    const today = new Date();
+    const diffInMs = expiry.getTime() - today.getTime();
+    const daysRemaining = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (daysRemaining < 0) return 'EXPIRED';
+    if (daysRemaining <= 2) return 'CRITICAL';
+    if (daysRemaining <= 5) return 'WARNING';
+    return 'GOOD';
   }
 
   // --- MÉTHODES PRIVÉES POUR L'AJOUT RAPIDE ---
@@ -198,204 +585,6 @@ export class InventoryService {
       },
     });
   }
-
-  /**
-   * Recherche un produit par son code-barres
-   * @param barcode Code-barres du produit
-   * @returns Le produit trouvé ou null
-   */
-  async findProductByBarcode(barcode: string) {
-    if (!barcode) {
-      return null;
-    }
-
-    return await this.prisma.product.findUnique({
-      where: { barcode },
-      include: {
-        category: true,
-      },
-    });
-  }
-
-  /**
-   * Récupère les produits récemment ajoutés à l'inventaire d'un utilisateur
-   * @param userId ID de l'utilisateur
-   * @param limit Nombre maximum de produits à retourner (défaut: 5)
-   * @returns Liste des produits récents triés par date d'ajout décroissante
-   */
-  async getRecentProducts(userId: string, limit: number = 5) {
-    return await this.prisma.inventoryItem.findMany({
-      where: {
-        userId,
-      },
-      include: {
-        product: {
-          include: {
-            category: true,
-          },
-        },
-      },
-      orderBy: [
-        { createdAt: 'desc' }, // Plus récents en premier
-      ],
-      take: limit, // Limiter le nombre de résultats
-    });
-  }
-
-  /**
-   * Récupère l'inventaire complet d'un utilisateur avec filtres optionnels
-   * @param userId ID de l'utilisateur
-   * @param filters Filtres optionnels (catégorie, lieu de stockage, etc.)
-   * @returns Liste des éléments d'inventaire
-   */
-  async getUserInventory(
-    userId: string,
-    filters?: {
-      category?: string;
-      storageLocation?: string;
-      expiringWithinDays?: number;
-    },
-  ) {
-    const where: any = {
-      userId,
-    };
-
-    // Application des filtres
-    if (filters) {
-      if (filters.category) {
-        where.product = {
-          category: {
-            slug: filters.category,
-          },
-        };
-      }
-
-      if (filters.storageLocation) {
-        where.storageLocation = filters.storageLocation;
-      }
-
-      if (filters.expiringWithinDays) {
-        const futureDate = new Date();
-        futureDate.setDate(futureDate.getDate() + filters.expiringWithinDays);
-
-        where.expiryDate = {
-          lte: futureDate,
-          gte: new Date(),
-        };
-      }
-    }
-
-    return await this.prisma.inventoryItem.findMany({
-      where,
-      include: {
-        product: {
-          include: {
-            category: true,
-          },
-        },
-      },
-      orderBy: [
-        { expiryDate: 'asc' }, // Produits qui périment en premier
-        { createdAt: 'desc' }, // Plus récents en premier pour ceux sans date
-      ],
-    });
-  }
-
-  /**
-   * Met à jour un élément d'inventaire
-   * @param userId ID de l'utilisateur
-   * @param inventoryItemId ID de l'élément d'inventaire
-   * @param updateData Données à mettre à jour
-   */
-  async updateInventoryItem(
-    userId: string,
-    inventoryItemId: string,
-    updateData: Partial<
-      Pick<
-        AddManualProductDto,
-        | 'quantity'
-        | 'expiryDate'
-        | 'storageLocation'
-        | 'notes'
-        | 'purchasePrice'
-      >
-    >,
-  ) {
-    // Vérifier que l'élément appartient à l'utilisateur
-    const existingItem = await this.prisma.inventoryItem.findFirst({
-      where: {
-        id: inventoryItemId,
-        userId,
-      },
-    });
-
-    if (!existingItem) {
-      throw new NotFoundException("Élément d'inventaire non trouvé");
-    }
-
-    // Préparer les données de mise à jour
-    const updatePayload: any = {};
-
-    if (updateData.quantity !== undefined) {
-      updatePayload.quantity = updateData.quantity;
-    }
-
-    if (updateData.expiryDate !== undefined) {
-      updatePayload.expiryDate = updateData.expiryDate
-        ? new Date(updateData.expiryDate)
-        : null;
-    }
-
-    if (updateData.storageLocation !== undefined) {
-      updatePayload.storageLocation = updateData.storageLocation;
-    }
-
-    if (updateData.notes !== undefined) {
-      updatePayload.notes = updateData.notes;
-    }
-
-    if (updateData.purchasePrice !== undefined) {
-      updatePayload.purchasePrice = updateData.purchasePrice;
-    }
-
-    return await this.prisma.inventoryItem.update({
-      where: { id: inventoryItemId },
-      data: updatePayload,
-      include: {
-        product: {
-          include: {
-            category: true,
-          },
-        },
-      },
-    });
-  }
-
-  /**
-   * Supprime un élément d'inventaire
-   * @param userId ID de l'utilisateur
-   * @param inventoryItemId ID de l'élément à supprimer
-   */
-  async removeInventoryItem(userId: string, inventoryItemId: string) {
-    const existingItem = await this.prisma.inventoryItem.findFirst({
-      where: {
-        id: inventoryItemId,
-        userId,
-      },
-    });
-
-    if (!existingItem) {
-      throw new NotFoundException("Élément d'inventaire non trouvé");
-    }
-
-    await this.prisma.inventoryItem.delete({
-      where: { id: inventoryItemId },
-    });
-
-    return { success: true, message: "Produit supprimé de l'inventaire" };
-  }
-
-  // --- MÉTHODES PRIVÉES ---
 
   /**
    * Valide les données métier du produit
@@ -610,7 +799,7 @@ export class InventoryService {
       id: inventoryItem.id,
       name: product.name,
       brand: product.brand,
-      barcode: product.barcode, // Inclure le code-barres dans la réponse
+      barcode: product.barcode,
       category: inventoryItem.product.category.slug,
       quantity: inventoryItem.quantity,
       unitType: product.unitType,

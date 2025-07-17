@@ -353,6 +353,86 @@ export class InventoryController {
       limitValue,
     );
   }
+/**
+ * Récupère les statistiques de l'inventaire
+ */
+@Get('stats')
+@ApiOperation({
+  summary: "Statistiques de l'inventaire",
+  description:
+    "Récupère des statistiques sur l'inventaire de l'utilisateur (nombre de produits, répartition par catégorie, etc.)",
+})
+@ApiResponse({
+  status: 200,
+  description: 'Statistiques récupérées avec succès',
+  schema: {
+    type: 'object',
+    properties: {
+      totalItems: {
+        type: 'number',
+        description: "Nombre total d'éléments dans l'inventaire",
+      },
+      totalValue: {
+        type: 'number',
+        description: "Valeur totale de l'inventaire",
+      },
+      totalQuantity: {
+        type: 'number',
+        description: "Quantité totale de produits",
+      },
+      averageItemValue: {
+        type: 'number',
+        description: "Valeur moyenne par élément",
+      },
+      expiryBreakdown: {
+        type: 'object',
+        description: 'Répartition par statut d\'expiration',
+        properties: {
+          good: { type: 'number', description: 'Produits en bon état' },
+          warning: { type: 'number', description: 'Produits à consommer bientôt (3-5 jours)' },
+          critical: { type: 'number', description: 'Produits critiques (0-2 jours)' },
+          expired: { type: 'number', description: 'Produits expirés' },
+          unknown: { type: 'number', description: 'Produits sans date d\'expiration' },
+        },
+      },
+      categoryBreakdown: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            categoryId: { type: 'string', format: 'uuid' },
+            categoryName: { type: 'string' },
+            count: { type: 'number' },
+            percentage: { type: 'number' },
+            totalValue: { type: 'number' },
+          },
+        },
+      },
+      storageBreakdown: {
+        type: 'object',
+        additionalProperties: {
+          type: 'object',
+          properties: {
+            count: { type: 'number' },
+            percentage: { type: 'number' },
+          },
+        },
+      },
+      recentActivity: {
+        type: 'object',
+        properties: {
+          itemsAddedThisWeek: { type: 'number' },
+          itemsConsumedThisWeek: { type: 'number' },
+          averageDaysToConsumption: { type: 'number', nullable: true },
+        },
+      },
+    },
+  },
+})
+async getInventoryStats(@Req() req: AuthenticatedRequest) {
+  // Appeler la méthode du service qui calcule correctement toutes les statistiques
+  return await this.inventoryService.getInventoryStats(req.user.id);
+}
 
   /**
    * Récupère l'inventaire complet de l'utilisateur avec filtres optionnels
@@ -539,79 +619,6 @@ export class InventoryController {
       req.user.id,
       inventoryItemId,
     );
-  }
-
-  /**
-   * Récupère les statistiques de l'inventaire
-   */
-  @Get('stats')
-  @ApiOperation({
-    summary: "Statistiques de l'inventaire",
-    description:
-      "Récupère des statistiques sur l'inventaire de l'utilisateur (nombre de produits, répartition par catégorie, etc.)",
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Statistiques récupérées avec succès',
-    schema: {
-      type: 'object',
-      properties: {
-        totalItems: {
-          type: 'number',
-          description: "Nombre total d'éléments dans l'inventaire",
-        },
-        totalValue: {
-          type: 'number',
-          description: "Valeur totale de l'inventaire (si prix renseignés)",
-        },
-        expiringInWeek: {
-          type: 'number',
-          description: 'Nombre de produits périment dans la semaine',
-        },
-        categoriesBreakdown: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              categoryName: { type: 'string' },
-              count: { type: 'number' },
-              percentage: { type: 'number' },
-            },
-          },
-        },
-        storageBreakdown: {
-          type: 'object',
-          additionalProperties: { type: 'number' },
-        },
-      },
-    },
-  })
-  async getInventoryStats(@Req() req: AuthenticatedRequest) {
-    // Cette méthode pourrait être implémentée dans le service plus tard
-    // Pour l'instant, on retourne une structure basique
-    const inventory = await this.inventoryService.getUserInventory(req.user.id);
-
-    const totalItems = inventory.length;
-    const totalValue = inventory.reduce((sum, item) => {
-      return (
-        sum + (item.purchasePrice ? item.purchasePrice * item.quantity : 0)
-      );
-    }, 0);
-
-    const expiringInWeek = inventory.filter((item) => {
-      if (!item.expiryDate) return false;
-      const weekFromNow = new Date();
-      weekFromNow.setDate(weekFromNow.getDate() + 7);
-      return new Date(item.expiryDate) <= weekFromNow;
-    }).length;
-
-    return {
-      totalItems,
-      totalValue: Math.round(totalValue * 100) / 100, // Arrondi à 2 décimales
-      expiringInWeek,
-      categoriesBreakdown: [], // TODO: À implémenter plus tard
-      storageBreakdown: {}, // TODO: À implémenter plus tard
-    };
   }
 
   // --- MÉTHODES PRIVÉES ---

@@ -276,11 +276,13 @@ const Dashboard: FC = () => {
 
 	const currentInventoryStats = ensureValidInventoryStats(inventoryStats);
 
-	// Calcul des produits qui expirent bientôt (utilise les nouveaux schémas)
-	const criticalCount = currentInventoryStats.expiryBreakdown.critical;
-	const warningCount = currentInventoryStats.expiryBreakdown.warning;
-	const expiredCount = currentInventoryStats.expiryBreakdown.expired;
-	const soonExpiringCount = criticalCount + warningCount;
+	// ===== CALCULS DÉRIVÉS =====
+
+// Utiliser directement les statistiques de l'API
+const criticalCount = currentInventoryStats.expiryBreakdown.critical;
+const warningCount = currentInventoryStats.expiryBreakdown.warning;
+const expiredCount = currentInventoryStats.expiryBreakdown.expired;
+const soonExpiringCount = criticalCount + warningCount;
 
 	// ===== GESTION DES ÉTATS =====
 

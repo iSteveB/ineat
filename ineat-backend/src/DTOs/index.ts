@@ -22,4 +22,12 @@ export {
   CategoryInfoDto,
 } from '../product/dto/search-product.dto';
 
+export { 
+  InventoryStatsDto,
+  ExpiryBreakdownDto,
+  CategoryBreakdownDto,
+  StorageLocationDto,
+  RecentActivityDto 
+} from '../inventory/dto/inventory-stats.dto';
+
 export { QuickAddProductDto } from '../inventory/dto/quick-add-product.dto';

@@ -52,7 +52,9 @@ export const inventoryService = {
 	/**
 	 * Récupère l'inventaire complet de l'utilisateur avec filtres optionnels
 	 */
-	async getInventory(filters?: InventoryFilters): Promise<InventoryItem[]> {
+	async getInventory(
+		filters?: InventoryFilters
+	): Promise<InventoryItem[]> {
 		const searchParams = new URLSearchParams();
 
 		if (filters?.categoryId) {
@@ -190,7 +192,9 @@ export const inventoryService = {
 	 * @param limit Nombre de produits à récupérer (défaut: 5)
 	 * @returns Liste des produits récents triés par date d'ajout
 	 */
-	async getRecentProducts(limit: number = 5): Promise<InventoryItem[]> {
+	async getRecentProducts(
+		limit: number = 5
+	): Promise<InventoryItem[]> {
 		const searchParams = new URLSearchParams();
 		searchParams.append('limit', limit.toString());
 
