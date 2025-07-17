@@ -1,4 +1,3 @@
-// src/auth/services/auth.service.ts
 import {
   Injectable,
   ConflictException,
@@ -62,17 +61,25 @@ export class AuthService {
       path: '/', // Disponible sur toutes les routes
     });
 
-    // Retourner les informations utilisateur pour la réponse API
+    // Retourner les informations utilisateur dans le format d'API response standardisé
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileType: user.profileType,
+      success: true,
+      message: 'Authentification réussie',
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileType: user.profileType,
+          subscription: user.subscription || 'FREE',
+          preferences: user.preferences,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: user.updatedAt.toISOString(),
+        },
+        accessToken, // Pour compatibilité avec les clients mobiles
       },
-      // Inclus quand même le token dans la réponse pour les clients mobiles
-      accessToken,
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -119,6 +126,7 @@ export class AuthService {
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         profileType: registerDto.profileType,
+        subscription: 'FREE', // Valeur par défaut
         preferences: registerDto.preferences || {},
       },
     });
@@ -148,6 +156,7 @@ export class AuthService {
           lastName,
           passwordHash: '', // Pas de mot de passe pour les utilisateurs OAuth
           profileType: 'SINGLE', // Valeur par défaut, à personnaliser plus tard
+          subscription: 'FREE', // Valeur par défaut
           preferences: {
             profilePicture: photo,
             oauth: 'google',
@@ -175,6 +184,21 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...result } = user;
-    return result;
+    
+    // Retourner dans le format d'API response standardisé
+    return {
+      success: true,
+      data: {
+        id: result.id,
+        email: result.email,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        profileType: result.profileType,
+        subscription: result.subscription || 'FREE',
+        preferences: result.preferences,
+        createdAt: result.createdAt.toISOString(),
+        updatedAt: result.updatedAt.toISOString(),
+      },
+    };
   }
 }

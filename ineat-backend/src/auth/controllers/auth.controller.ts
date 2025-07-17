@@ -26,7 +26,13 @@ interface RequestWithUser extends ExpressRequest {
   user: {
     id: string;
     email: string;
-    // Autres propriétés de l'utilisateur présentes dans le token JWT
+    firstName: string;
+    lastName: string;
+    profileType: string;
+    subscription?: string;
+    preferences?: any;
+    createdAt: Date;
+    updatedAt: Date;
   };
 }
 
@@ -77,15 +83,28 @@ export class AuthController {
     // Si cette route est atteinte, cela signifie que l'utilisateur est authentifié
     // car JwtAuthGuard aurait rejeté la requête sinon
     return {
-      authenticated: true,
-      userId: req.user.id,
+      success: true,
+      data: {
+        isAuthenticated: true,
+        user: {
+          id: req.user.id,
+          email: req.user.email,
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          profileType: req.user.profileType,
+          subscription: req.user.subscription || 'FREE',
+          preferences: req.user.preferences,
+          createdAt: req.user.createdAt.toISOString(),
+          updatedAt: req.user.updatedAt.toISOString(),
+        },
+      },
     };
   }
 
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(
-    req: RequestWithUser,
+    @Request() req: RequestWithUser,
     @Response({ passthrough: true })
     response: ExpressResponse,
   ) {

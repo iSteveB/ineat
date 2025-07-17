@@ -5,6 +5,7 @@ import {
 	AuthResponse,
 	User,
 	AuthCheckResponse,
+	ApiSuccessResponse,
 	validateSchema,
 	LoginCredentialsSchema,
 	RegisterDataSchema,
@@ -36,16 +37,28 @@ export const authService: AuthServiceMethods = {
 		// Validation des données d'entrée
 		const validation = validateSchema(LoginCredentialsSchema, credentials);
 		if (!validation.success) {
-			throw new Error(`Données de connexion invalides: ${validation.error}`);
+			throw new Error(
+				`Données de connexion invalides: ${validation.error}`
+			);
 		}
 
 		try {
-			const response = await apiClient.post<AuthResponse>('/auth/login', credentials);
-			
+			const response = await apiClient.post<AuthResponse>(
+				'/auth/login',
+				credentials
+			);
+
 			// Validation de la réponse
-			const responseValidation = validateSchema(AuthResponseSchema, response);
+			const responseValidation = validateSchema(
+				AuthResponseSchema,
+				response
+			);
 			if (!responseValidation.success) {
-				console.warn('Réponse de connexion invalide:', responseValidation.error);
+				console.warn(
+					'Réponse de connexion invalide:',
+					responseValidation.error
+				);
+				console.warn('Réponse reçue:', response);
 			}
 
 			return response;
@@ -62,21 +75,33 @@ export const authService: AuthServiceMethods = {
 		// Validation des données d'entrée
 		const validation = validateSchema(RegisterDataSchema, data);
 		if (!validation.success) {
-			throw new Error(`Données d'inscription invalides: ${validation.error}`);
+			throw new Error(
+				`Données d'inscription invalides: ${validation.error}`
+			);
 		}
 
 		try {
-			const response = await apiClient.post<AuthResponse>('/auth/register', data);
-			
+			const response = await apiClient.post<AuthResponse>(
+				'/auth/register',
+				data
+			);
+
 			// Validation de la réponse
-			const responseValidation = validateSchema(AuthResponseSchema, response);
+			const responseValidation = validateSchema(
+				AuthResponseSchema,
+				response
+			);
 			if (!responseValidation.success) {
-				console.warn('Réponse d\'inscription invalide:', responseValidation.error);
+				console.warn(
+					"Réponse d'inscription invalide:",
+					responseValidation.error
+				);
+				console.warn('Réponse reçue:', response);
 			}
 
 			return response;
 		} catch (error) {
-			console.error('Erreur lors de l\'inscription:', error);
+			console.error("Erreur lors de l'inscription:", error);
 			throw error;
 		}
 	},
@@ -86,15 +111,22 @@ export const authService: AuthServiceMethods = {
 	 */
 	async getProfile(): Promise<User> {
 		try {
-			const response = await apiClient.get<User>('/auth/profile');
-			
+			// Le backend retourne maintenant une structure { success: true, data: User }
+			const response = await apiClient.get<ApiSuccessResponse<User>>(
+				'/auth/profile'
+			);
+
 			// Validation de la réponse
-			const validation = validateSchema(UserSchema, response);
+			const validation = validateSchema(UserSchema, response.data);
 			if (!validation.success) {
-				console.warn('Données utilisateur invalides:', validation.error);
+				console.warn(
+					'Données utilisateur invalides:',
+					validation.error
+				);
+				console.warn('Données reçues:', response.data);
 			}
 
-			return response;
+			return response.data;
 		} catch (error) {
 			console.error('Erreur lors de la récupération du profil:', error);
 			throw error;
@@ -106,9 +138,10 @@ export const authService: AuthServiceMethods = {
 	 */
 	async logout(): Promise<{ success: boolean; message: string }> {
 		try {
-			const response = await apiClient.post<{ success: boolean; message: string }>(
-				'/auth/logout'
-			);
+			const response = await apiClient.post<{
+				success: boolean;
+				message: string;
+			}>('/auth/logout');
 
 			// Validation basique de la réponse
 			if (typeof response.success !== 'boolean') {
@@ -140,12 +173,21 @@ export const authService: AuthServiceMethods = {
 	 */
 	async checkAuthentication(): Promise<AuthCheckResponse> {
 		try {
-			const response = await apiClient.get<AuthCheckResponse>('/auth/check');
-			
+			const response = await apiClient.get<AuthCheckResponse>(
+				'/auth/check'
+			);
+
 			// Validation de la réponse
-			const validation = validateSchema(AuthCheckResponseSchema, response);
+			const validation = validateSchema(
+				AuthCheckResponseSchema,
+				response
+			);
 			if (!validation.success) {
-				console.warn('Réponse de vérification d\'authentification invalide:', validation.error);
+				console.warn(
+					"Réponse de vérification d'authentification invalide:",
+					validation.error
+				);
+				console.warn('Réponse reçue:', response);
 				// Retourner une réponse par défaut en cas d'erreur de validation
 				return {
 					success: true,
@@ -158,11 +200,14 @@ export const authService: AuthServiceMethods = {
 
 			return response;
 		} catch (error) {
-			console.error('Erreur lors de la vérification d\'authentification:', error);
+			console.error(
+				"Erreur lors de la vérification d'authentification:",
+				error
+			);
 			// Retourner une réponse par défaut en cas d'erreur
 			return {
 				success: true,
-				message: 'Erreur de vérification d\'authentification',
+				message: "Erreur de vérification d'authentification",
 				data: {
 					isAuthenticated: false,
 					user: undefined,
@@ -175,7 +220,8 @@ export const authService: AuthServiceMethods = {
 	 * Redirection vers l'authentification Google
 	 */
 	loginWithGoogle(): void {
-		const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+		const apiUrl =
+			import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 		window.location.href = `${apiUrl}/auth/google`;
 	},
 };
@@ -193,7 +239,9 @@ export const isValidUser = (user: unknown): user is User => {
 /**
  * Extrait les données utilisateur d'une réponse d'authentification
  */
-export const extractUserFromAuthResponse = (response: AuthResponse): User | null => {
+export const extractUserFromAuthResponse = (
+	response: AuthResponse
+): User | null => {
 	try {
 		if (response.success && response.data.user) {
 			return isValidUser(response.data.user) ? response.data.user : null;
@@ -207,7 +255,9 @@ export const extractUserFromAuthResponse = (response: AuthResponse): User | null
 /**
  * Vérifie si les credentials de connexion sont valides
  */
-export const validateLoginCredentials = (credentials: unknown): credentials is LoginCredentials => {
+export const validateLoginCredentials = (
+	credentials: unknown
+): credentials is LoginCredentials => {
 	const validation = validateSchema(LoginCredentialsSchema, credentials);
 	return validation.success;
 };

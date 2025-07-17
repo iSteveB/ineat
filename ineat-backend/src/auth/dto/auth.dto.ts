@@ -39,17 +39,20 @@ export const validateRegisterDto = (data: unknown): RegisterDto => {
   }
 };
 
+// Schéma pour l'utilisateur sécurisé (sans mot de passe)
 export const SafeUserSchema = z.object({
   id: z.string(),
   email: z.string(),
   firstName: z.string(),
   lastName: z.string(),
   profileType: z.enum(['FAMILY', 'STUDENT', 'SINGLE']),
+  subscription: z.enum(['FREE', 'PREMIUM', 'ADMIN']).optional(),
   preferences: z.object({}).passthrough().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export type SafeUserDto = z.infer<typeof SafeUserSchema>;
-
 
 // Login
 export const LoginSchema = z.object({
