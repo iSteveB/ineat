@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -15,6 +16,7 @@ import { LogOut, Settings, User } from 'lucide-react';
 export function UserMenu() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Si l'utilisateur n'est pas défini, ne rien afficher
   if (!user) {
@@ -44,9 +46,28 @@ export function UserMenu() {
   };
 
   // Handler pour la déconnexion
-  const handleLogout = () => {
-    logout();
-    navigate({ to: '/login' });
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      
+      // Attendre que la déconnexion soit terminée
+      await logout();
+      
+      // Naviguer vers la page de connexion après la déconnexion
+      navigate({ 
+        to: '/login',
+        replace: true // Remplacer l'entrée de l'historique pour éviter de revenir en arrière
+      });
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // En cas d'erreur, naviguer quand même vers la page de connexion
+      navigate({ 
+        to: '/login',
+        replace: true
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   // Handlers pour la navigation
@@ -91,9 +112,14 @@ export function UserMenu() {
           <span>Paramètres</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-error-100" data-testid="logout-menu-item">
+        <DropdownMenuItem 
+          onClick={handleLogout} 
+          className="cursor-pointer text-error-100" 
+          data-testid="logout-menu-item"
+          disabled={isLoggingOut}
+        >
           <LogOut className="mr-2 size-4" />
-          <span>Se déconnecter</span>
+          <span>{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
