@@ -7,6 +7,8 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
 import { QuickAddProductDto } from 'src/DTOs';
+import { BudgetService } from 'src/budget/services/budget.service';
+import { ExpenseService } from 'src/budget/services/expense.service'; // ← Nouvelle injection
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
 export interface InventoryStats {
@@ -42,22 +44,36 @@ export interface InventoryStats {
   };
 }
 
+// Interface pour les réponses avec impact budgétaire
+export interface ProductCreatedWithBudgetDto extends ProductCreatedResponseDto {
+  budgetImpact: {
+    expenseCreated: boolean;
+    message: string;
+    budgetId?: string;
+    remainingBudget?: number;
+  };
+}
+
 type ExpiryStatus = 'GOOD' | 'WARNING' | 'CRITICAL' | 'EXPIRED' | 'UNKNOWN';
 
 @Injectable()
 export class InventoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly budgetService: BudgetService,
+    private readonly expenseService: ExpenseService, // ← Nouvelle injection
+  ) {}
 
   /**
    * Ajoute un produit manuellement à l'inventaire d'un utilisateur
    * @param userId ID de l'utilisateur connecté
    * @param addProductDto Données du formulaire d'ajout de produit
-   * @returns L'élément d'inventaire créé avec les informations du produit
+   * @returns L'élément d'inventaire créé avec les informations du produit et l'impact budgétaire
    */
   async addManualProduct(
     userId: string,
     addProductDto: AddManualProductDto,
-  ): Promise<ProductCreatedResponseDto> {
+  ): Promise<ProductCreatedWithBudgetDto> {
     // Validation des données métier
     await this.validateProductData(addProductDto);
 
@@ -82,8 +98,26 @@ export class InventoryService {
         addProductDto,
       );
 
-      // 4. Retourner la réponse formatée
-      return this.formatResponse(inventoryItem, product);
+      // 4. Formater la réponse de base
+      const baseResponse = this.formatResponse(inventoryItem, product);
+
+      // 5. Gérer l'impact budgétaire
+      const budgetImpact = await this.handleBudgetImpact(
+        userId,
+        addProductDto.purchasePrice,
+        {
+          productName: addProductDto.name,
+          purchaseDate: addProductDto.purchaseDate,
+          inventoryItemId: inventoryItem.id,
+          source: 'Ajout manuel',
+          notes: addProductDto.notes,
+        },
+      );
+
+      return {
+        ...baseResponse,
+        budgetImpact,
+      };
     });
   }
 
@@ -91,12 +125,12 @@ export class InventoryService {
    * Ajoute un produit existant à l'inventaire d'un utilisateur (ajout rapide)
    * @param userId ID de l'utilisateur connecté
    * @param quickAddDto Données d'ajout rapide du produit existant
-   * @returns L'élément d'inventaire créé avec les informations du produit
+   * @returns L'élément d'inventaire créé avec les informations du produit et l'impact budgétaire
    */
   async addExistingProductToInventory(
     userId: string,
     quickAddDto: QuickAddProductDto,
-  ): Promise<ProductCreatedResponseDto> {
+  ): Promise<ProductCreatedWithBudgetDto> {
     // Validation des données métier
     await this.validateQuickAddData(quickAddDto);
 
@@ -120,9 +154,107 @@ export class InventoryService {
         quickAddDto,
       );
 
-      // 4. Retourner la réponse formatée
-      return this.formatResponse(inventoryItem, product);
+      // 4. Formater la réponse de base
+      const baseResponse = this.formatResponse(inventoryItem, product);
+
+      // 5. Gérer l'impact budgétaire
+      const budgetImpact = await this.handleBudgetImpact(
+        userId,
+        quickAddDto.purchasePrice,
+        {
+          productName: product.name,
+          purchaseDate: quickAddDto.purchaseDate,
+          inventoryItemId: inventoryItem.id,
+          source: 'Ajout produit existant',
+          notes: quickAddDto.notes,
+        },
+      );
+
+      return {
+        ...baseResponse,
+        budgetImpact,
+      };
     });
+  }
+
+  /**
+   * Gère l'impact budgétaire lors de l'ajout d'un produit
+   * @param userId ID de l'utilisateur
+   * @param purchasePrice Prix d'achat (peut être undefined)
+   * @param productInfo Informations sur le produit pour créer la dépense
+   * @returns Informations sur l'impact budgétaire
+   */
+  private async handleBudgetImpact(
+    userId: string,
+    purchasePrice: number | undefined,
+    productInfo: {
+      productName: string;
+      purchaseDate: string;
+      inventoryItemId: string;
+      source: string;
+      notes?: string;
+    },
+  ): Promise<{
+    expenseCreated: boolean;
+    message: string;
+    budgetId?: string;
+    remainingBudget?: number;
+  }> {
+    // Si pas de prix, pas d'impact budgétaire
+    if (!purchasePrice || purchasePrice === 0) {
+      return {
+        expenseCreated: false,
+        message:
+          'Produit ajouté sans impact sur le budget (prix non renseigné)',
+      };
+    }
+
+    try {
+      // Créer la dépense via le service Expense
+      const expenseResult = await this.expenseService.createExpenseFromProduct(
+        userId,
+        {
+          productName: productInfo.productName,
+          amount: purchasePrice,
+          purchaseDate: productInfo.purchaseDate,
+          source: productInfo.source,
+          notes: productInfo.notes,
+          inventoryItemId: productInfo.inventoryItemId,
+        },
+        {
+          findOrCreateBudget: true,
+          defaultBudgetAmount: 300, // Budget par défaut si aucun n'existe
+          autoDetectCategory: true,
+        },
+      );
+
+      if (expenseResult.expense && expenseResult.budgetId) {
+        // Récupérer les statistiques du budget pour connaître le montant restant
+        const budgetStats = await this.budgetService.getBudgetStats(
+          expenseResult.budgetId,
+          userId,
+        );
+
+        return {
+          expenseCreated: true,
+          message: `Dépense de ${purchasePrice.toFixed(2)}€ ajoutée au budget`,
+          budgetId: expenseResult.budgetId,
+          remainingBudget: budgetStats.remaining,
+        };
+      } else {
+        return {
+          expenseCreated: false,
+          message: expenseResult.message,
+        };
+      }
+    } catch (error) {
+      // Si erreur lors de la création de la dépense, on log mais on continue
+      console.error('Erreur lors de la création de la dépense:', error);
+      return {
+        expenseCreated: false,
+        message: 'Produit ajouté mais erreur lors de la mise à jour du budget',
+      };
+    }
   }
 
   /**

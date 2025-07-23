@@ -186,6 +186,7 @@ model Expense {
   amount    Float
   date      DateTime
   source    String?
+  category  String?
   receiptId String?
   notes     String?
   createdAt DateTime @default(now())
@@ -194,6 +195,7 @@ model Expense {
   @@index([userId])
   @@index([budgetId])
   @@index([date])
+  @@index([category])
 }
 
 model Notification {

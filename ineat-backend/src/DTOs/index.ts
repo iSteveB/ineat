@@ -1,4 +1,3 @@
-import { QuickAddProductDto } from '../inventory/dto/quick-add-product.dto';
 // DTOs pour l'authentification
 export {
   LoginDto,

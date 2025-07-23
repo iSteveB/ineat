@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { InventoryController } from './controllers/inventory.controller';
 import { InventoryService } from './services/inventory.service';
 import { PrismaModule } from '../prisma/prisma.module';
+import { BudgetModule } from '../budget/budget.module';
 
 @Module({
   imports: [
     PrismaModule, // Module Prisma pour l'accès à la base de données
+    BudgetModule, // Module Budget pour la gestion des budgets
   ],
   controllers: [
     InventoryController, // Controller gérant les requêtes HTTP pour l'inventaire
