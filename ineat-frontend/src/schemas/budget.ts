@@ -290,6 +290,96 @@ export const BudgetAlertsResponseSchema = ApiSuccessResponseSchema(
 );
 export type BudgetAlertsResponse = z.infer<typeof BudgetAlertsResponseSchema>;
 
+// ===== NOUVELLES RÉPONSES API POUR L'INTÉGRATION FRONTEND =====
+
+// Réponse de vérification d'existence de budget
+export const BudgetExistsResponseSchema = ApiSuccessResponseSchema(
+	z.object({
+		exists: z.boolean(),
+		currentBudget: BudgetSchema.optional(),
+	})
+);
+export type BudgetExistsResponse = z.infer<typeof BudgetExistsResponseSchema>;
+
+// Réponse du budget actuel avec stats et alertes
+export const CurrentBudgetResponseSchema = ApiSuccessResponseSchema(
+	z.object({
+		budget: BudgetSchema,
+		stats: BudgetStatsSchema,
+		alerts: z.array(BudgetAlertSchema),
+	})
+);
+export type CurrentBudgetResponse = z.infer<typeof CurrentBudgetResponseSchema>;
+
+// Réponse enrichie d'ajout de produit avec impact budget
+export const ProductWithBudgetImpactSchema = z.object({
+	item: z.object({
+		id: UuidSchema,
+		name: z.string(),
+		quantity: z.number(),
+		purchasePrice: z.number().optional(),
+		purchaseDate: z.string(),
+		// Autres propriétés du produit selon le besoin
+	}),
+	budget: z.object({
+		expenseCreated: z.boolean(),
+		message: z.string(),
+		budgetId: UuidSchema.optional(),
+		remainingBudget: z.number().optional(),
+	}),
+});
+export type ProductWithBudgetImpact = z.infer<typeof ProductWithBudgetImpactSchema>;
+
+// Réponse API pour l'ajout de produit avec impact budget
+export const ProductWithBudgetImpactResponseSchema = ApiSuccessResponseSchema(
+	ProductWithBudgetImpactSchema
+);
+export type ProductWithBudgetImpactResponse = z.infer<typeof ProductWithBudgetImpactResponseSchema>;
+
+// ===== INTERFACES POUR LES STORES ZUSTAND =====
+
+// État principal du budget pour le store global
+export interface BudgetState {
+	currentBudget: Budget | null;
+	budgetStats: BudgetStats | null;
+	alerts: BudgetAlert[];
+	isLoading: boolean;
+	error: string | null;
+}
+
+// État pour la page budget détaillée
+export interface BudgetPageState {
+	selectedBudget: Budget | null;
+	expenses: Expense[];
+	budgetHistory: Budget[];
+	selectedMonth: string; // Format: "2024-12"
+	isLoadingExpenses: boolean;
+	isLoadingHistory: boolean;
+	expensesError: string | null;
+}
+
+// État pour les actions du store budget
+export interface BudgetActions {
+	// Actions budget
+	fetchCurrentBudget: () => Promise<void>;
+	checkBudgetExists: () => Promise<boolean>;
+	createMonthlyBudget: (amount: number) => Promise<Budget>;
+	updateBudget: (budgetId: string, data: UpdateBudgetData) => Promise<Budget>;
+	
+	// Actions page budget
+	fetchBudgetByMonth: (month: string) => Promise<void>;
+	fetchBudgetHistory: () => Promise<void>;
+	fetchExpensesByBudget: (budgetId: string) => Promise<void>;
+	setSelectedMonth: (month: string) => void;
+	
+	// Actions utilitaires
+	clearError: () => void;
+	markAlertAsRead: (alertId: string) => void;
+}
+
+// État complet du store budget
+export interface BudgetStore extends BudgetState, BudgetPageState, BudgetActions {}
+
 // ===== UTILITAIRES =====
 
 /**
@@ -437,4 +527,43 @@ export const validateExpenseForBudget = (
 	}
 
 	return { isValid: true };
+};
+
+/**
+ * Formate un montant en euros
+ */
+export const formatCurrency = (amount: number): string => {
+	return new Intl.NumberFormat('fr-FR', {
+		style: 'currency',
+		currency: 'EUR',
+	}).format(amount);
+};
+
+/**
+ * Formate une période de budget
+ */
+export const formatBudgetPeriod = (budget: Budget): string => {
+	const start = new Date(budget.periodStart);
+	
+	return new Intl.DateTimeFormat('fr-FR', {
+		year: 'numeric',
+		month: 'long',
+	}).format(start);
+};
+
+/**
+ * Obtient l'année et le mois au format string (ex: "2024-12")
+ */
+export const getMonthString = (date: Date = new Date()): string => {
+	const year = date.getFullYear();
+	const month = (date.getMonth() + 1).toString().padStart(2, '0');
+	return `${year}-${month}`;
+};
+
+/**
+ * Parse un string de mois vers une date (premier jour du mois)
+ */
+export const parseMonthString = (monthString: string): Date => {
+	const [year, month] = monthString.split('-');
+	return new Date(parseInt(year), parseInt(month) - 1, 1);
 };
