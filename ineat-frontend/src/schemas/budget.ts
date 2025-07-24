@@ -295,19 +295,19 @@ export type BudgetAlertsResponse = z.infer<typeof BudgetAlertsResponseSchema>;
 // Réponse de vérification d'existence de budget
 export const BudgetExistsResponseSchema = ApiSuccessResponseSchema(
 	z.object({
-		exists: z.boolean(),
-		currentBudget: BudgetSchema.optional(),
+		hasAnyBudget: z.boolean(),
 	})
 );
 export type BudgetExistsResponse = z.infer<typeof BudgetExistsResponseSchema>;
 
 // Réponse du budget actuel avec stats et alertes
 export const CurrentBudgetResponseSchema = ApiSuccessResponseSchema(
-	z.object({
-		budget: BudgetSchema,
-		stats: BudgetStatsSchema,
-		alerts: z.array(BudgetAlertSchema),
-	})
+	z
+		.object({
+			budget: BudgetSchema,
+			stats: BudgetStatsSchema,
+		})
+		.nullable()
 );
 export type CurrentBudgetResponse = z.infer<typeof CurrentBudgetResponseSchema>;
 
@@ -328,13 +328,17 @@ export const ProductWithBudgetImpactSchema = z.object({
 		remainingBudget: z.number().optional(),
 	}),
 });
-export type ProductWithBudgetImpact = z.infer<typeof ProductWithBudgetImpactSchema>;
+export type ProductWithBudgetImpact = z.infer<
+	typeof ProductWithBudgetImpactSchema
+>;
 
 // Réponse API pour l'ajout de produit avec impact budget
 export const ProductWithBudgetImpactResponseSchema = ApiSuccessResponseSchema(
 	ProductWithBudgetImpactSchema
 );
-export type ProductWithBudgetImpactResponse = z.infer<typeof ProductWithBudgetImpactResponseSchema>;
+export type ProductWithBudgetImpactResponse = z.infer<
+	typeof ProductWithBudgetImpactResponseSchema
+>;
 
 // ===== INTERFACES POUR LES STORES ZUSTAND =====
 
@@ -365,20 +369,23 @@ export interface BudgetActions {
 	checkBudgetExists: () => Promise<boolean>;
 	createMonthlyBudget: (amount: number) => Promise<Budget>;
 	updateBudget: (budgetId: string, data: UpdateBudgetData) => Promise<Budget>;
-	
+
 	// Actions page budget
 	fetchBudgetByMonth: (month: string) => Promise<void>;
 	fetchBudgetHistory: () => Promise<void>;
 	fetchExpensesByBudget: (budgetId: string) => Promise<void>;
 	setSelectedMonth: (month: string) => void;
-	
+
 	// Actions utilitaires
 	clearError: () => void;
 	markAlertAsRead: (alertId: string) => void;
 }
 
 // État complet du store budget
-export interface BudgetStore extends BudgetState, BudgetPageState, BudgetActions {}
+export interface BudgetStore
+	extends BudgetState,
+		BudgetPageState,
+		BudgetActions {}
 
 // ===== UTILITAIRES =====
 
@@ -544,7 +551,7 @@ export const formatCurrency = (amount: number): string => {
  */
 export const formatBudgetPeriod = (budget: Budget): string => {
 	const start = new Date(budget.periodStart);
-	
+
 	return new Intl.DateTimeFormat('fr-FR', {
 		year: 'numeric',
 		month: 'long',
