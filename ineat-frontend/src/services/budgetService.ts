@@ -39,6 +39,44 @@ export interface CreateMonthlyBudgetData {
 	isActive: boolean;
 }
 
+// Interface pour les réponses de création/modification de budget
+interface CreateBudgetApiResponse {
+	success: boolean;
+	data: Budget | RawBudgetApiData;
+	message: string;
+}
+
+// Fonction utilitaire pour traiter les réponses de budget avec wrapper
+function processBudgetResponse(response: CreateBudgetApiResponse): Budget {
+	// Vérifier le succès de l'opération
+	if (!response.success) {
+		throw new Error(response.message || "Échec de l'opération budget");
+	}
+
+	// Extraire les données du budget depuis le wrapper
+	const budgetFromApi = response.data;
+
+	if (!budgetFromApi) {
+		throw new Error('Aucune donnée de budget reçue');
+	}
+
+	// Essayer d'abord de traiter comme un Budget valide
+	if (isValidBudget(budgetFromApi as Budget)) {
+		return budgetFromApi as Budget;
+	}
+
+	// Si ce n'est pas un Budget valide, tenter la transformation depuis RawBudgetApiData
+	const transformedBudget = transformBudgetFromApi(
+		budgetFromApi as RawBudgetApiData
+	);
+	if (transformedBudget) {
+		return transformedBudget;
+	}
+
+	// En cas d'échec de toutes les tentatives
+	throw new Error('Impossible de transformer le budget créé');
+}
+
 export const budgetService = {
 	async getCurrentBudget(): Promise<BudgetWithStats> {
 		try {
@@ -116,6 +154,7 @@ export const budgetService = {
 		}
 	},
 
+	// Fonction corrigée pour créer un budget mensuel
 	async createMonthlyBudget(amount: number): Promise<Budget> {
 		const today = new Date();
 		const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -132,19 +171,11 @@ export const budgetService = {
 			isActive: true,
 		};
 
-		const newBudget = await apiClient.post<Budget>('/budget', budgetData);
-
-		if (newBudget && !isValidBudget(newBudget)) {
-			const transformedBudget = transformBudgetFromApi(
-				newBudget as RawBudgetApiData
-			);
-			if (!transformedBudget) {
-				throw new Error('Impossible de transformer le budget créé');
-			}
-			return transformedBudget;
-		}
-
-		return newBudget;
+		const response = await apiClient.post<CreateBudgetApiResponse>(
+			'/budget',
+			budgetData
+		);
+		return processBudgetResponse(response);
 	},
 
 	async getBudgetByMonth(month: string): Promise<Budget | null> {
@@ -187,32 +218,25 @@ export const budgetService = {
 		}
 	},
 
+	// Fonction corrigée pour créer un budget générique
 	async createBudget(budgetData: CreateBudgetData): Promise<Budget> {
-		const newBudget = await apiClient.post<Budget>('/budget', budgetData);
-
-		if (newBudget && !isValidBudget(newBudget)) {
-			const transformedBudget = transformBudgetFromApi(
-				newBudget as RawBudgetApiData
-			);
-			if (!transformedBudget) {
-				throw new Error('Impossible de transformer le budget créé');
-			}
-			return transformedBudget;
-		}
-
-		return newBudget;
+		const response = await apiClient.post<CreateBudgetApiResponse>(
+			'/budget',
+			budgetData
+		);
+		return processBudgetResponse(response);
 	},
 
+	// Fonction corrigée pour mettre à jour un budget
 	async updateBudget(
 		budgetId: string,
 		updateData: UpdateBudgetData
 	): Promise<Budget> {
-		const updatedBudget = await apiClient.put<Budget>(
+		const response = await apiClient.put<CreateBudgetApiResponse>(
 			`/budget/${budgetId}`,
 			updateData
 		);
-
-		return updatedBudget;
+		return processBudgetResponse(response);
 	},
 
 	async deleteBudget(budgetId: string): Promise<void> {
