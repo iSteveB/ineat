@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Package, Plus, Search, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -13,11 +13,12 @@ import { ProductSearchResults } from '@/features/product/ProductSearchResult';
 import { QuickAddForm } from '@/features/inventory/components/QuickAddForm';
 import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
 
-// Services et types - utilisation du nouveau système de schémas
+// Services et types - utilisation du nouveau système avec budget
 import {
 	inventoryService,
 	ProductSearchResult,
 	QuickAddFormData,
+	ProductAddedWithBudgetResult,
 } from '@/services/inventoryService';
 import { AddInventoryItemData } from '@/schemas';
 
@@ -26,6 +27,7 @@ type PageState = 'search' | 'quick-add' | 'manual-add';
 
 export const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	// États
 	const [pageState, setPageState] = useState<PageState>('search');
@@ -44,29 +46,75 @@ export const AddManualProductPage: React.FC = () => {
 		staleTime: 1000 * 60 * 60, // 1 heure
 	});
 
-	// Mutation pour l'ajout rapide
+	// Fonction pour gérer le succès avec feedback budgétaire
+	const handleProductAddedSuccess = (
+		result: ProductAddedWithBudgetResult
+	) => {
+		// Affichage de la notification selon le type
+		switch (result.type) {
+			case 'success':
+				toast.success(result.message);
+				break;
+			case 'info':
+				toast.info(result.message);
+				break;
+			case 'warning':
+				toast.warning(result.message);
+				break;
+		}
+
+		// Si une dépense a été créée, rafraîchir les données budget
+		if (result.shouldRefreshBudget) {
+			// Invalider les queries budget pour forcer le rechargement
+			queryClient.invalidateQueries({ queryKey: ['budget', 'current'] });
+			queryClient.invalidateQueries({ queryKey: ['budget', 'stats'] });
+
+			// Optionnel : afficher des informations budget supplémentaires
+			if (result.budgetInfo.remainingBudget !== undefined) {
+				console.log(
+					`Budget restant: ${result.budgetInfo.remainingBudget.toFixed(
+						2
+					)}€`
+				);
+			}
+		}
+
+		// Invalider l'inventaire pour afficher le nouveau produit
+		queryClient.invalidateQueries({ queryKey: ['inventory'] });
+
+		// Redirection vers l'inventaire
+		navigate({ to: '/app/inventory' });
+	};
+
+	// Fonction pour gérer les erreurs
+	const handleProductAddedError = (error: Error, productName?: string) => {
+		console.error("Erreur lors de l'ajout du produit:", error);
+		toast.error(
+			error.message ||
+				`Erreur lors de l'ajout${
+					productName ? ` de ${productName}` : ' du produit'
+				}`
+		);
+	};
+
+	// Mutation pour l'ajout rapide avec feedback budgétaire
 	const quickAddMutation = useMutation({
 		mutationFn: inventoryService.addExistingProductToInventory,
-		onSuccess: () => {
-			toast.success('Produit ajouté à votre inventaire');
-			navigate({ to: '/app/inventory' });
-		},
+		onSuccess: handleProductAddedSuccess,
 		onError: (error: Error) => {
-			toast.error(error.message || "Erreur lors de l'ajout du produit");
+			const productName = selectedProduct?.name;
+			handleProductAddedError(error, productName);
 		},
 	});
 
-	// Mutation pour l'ajout manuel
+	// Mutation pour l'ajout manuel avec feedback budgétaire
 	const manualAddMutation = useMutation({
 		mutationFn: inventoryService.addManualProduct,
-		onSuccess: () => {
-			toast.success('Produit créé et ajouté à votre inventaire');
-			navigate({ to: '/app/inventory' });
-		},
-		onError: (error: Error) => {
-			toast.error(
-				error.message || 'Erreur lors de la création du produit'
-			);
+		onSuccess: handleProductAddedSuccess,
+		onError: (error: Error, variables: AddInventoryItemData) => {
+			// CORRECTION : Utiliser 'name' au lieu de 'productName'
+			const productName = variables.name;
+			handleProductAddedError(error, productName);
 		},
 	});
 
@@ -105,7 +153,8 @@ export const AddManualProductPage: React.FC = () => {
 
 	// Gestion de l'ajout manuel
 	const handleManualAdd = async (data: AddInventoryItemData) => {
-		await manualAddMutation.mutateAsync(data as never);
+		// CORRECTION : Supprimer le cast 'as never' qui masque les erreurs de type
+		await manualAddMutation.mutateAsync(data);
 	};
 
 	// Réinitialisation de la recherche

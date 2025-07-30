@@ -62,6 +62,20 @@ export const ExpenseSchema = z
 
 export type Expense = z.infer<typeof ExpenseSchema>;
 
+// ===== SCHÉMAS D'IMPACT BUDGÉTAIRE =====
+
+/**
+ * Informations d'impact budgétaire lors de l'ajout d'un produit
+ */
+export const BudgetImpactSchema = z.object({
+	expenseCreated: z.boolean(),
+	message: z.string(),
+	budgetId: UuidSchema.optional(),
+	remainingBudget: PriceSchema.optional(),
+});
+
+export type BudgetImpact = z.infer<typeof BudgetImpactSchema>;
+
 // ===== SCHÉMAS DE CRÉATION =====
 
 // Schéma de base pour les budgets (sans validation croisée)
@@ -311,35 +325,6 @@ export const CurrentBudgetResponseSchema = ApiSuccessResponseSchema(
 );
 export type CurrentBudgetResponse = z.infer<typeof CurrentBudgetResponseSchema>;
 
-// Réponse enrichie d'ajout de produit avec impact budget
-export const ProductWithBudgetImpactSchema = z.object({
-	item: z.object({
-		id: UuidSchema,
-		name: z.string(),
-		quantity: z.number(),
-		purchasePrice: z.number().optional(),
-		purchaseDate: z.string(),
-		// Autres propriétés du produit selon le besoin
-	}),
-	budget: z.object({
-		expenseCreated: z.boolean(),
-		message: z.string(),
-		budgetId: UuidSchema.optional(),
-		remainingBudget: z.number().optional(),
-	}),
-});
-export type ProductWithBudgetImpact = z.infer<
-	typeof ProductWithBudgetImpactSchema
->;
-
-// Réponse API pour l'ajout de produit avec impact budget
-export const ProductWithBudgetImpactResponseSchema = ApiSuccessResponseSchema(
-	ProductWithBudgetImpactSchema
-);
-export type ProductWithBudgetImpactResponse = z.infer<
-	typeof ProductWithBudgetImpactResponseSchema
->;
-
 // ===== INTERFACES POUR LES STORES ZUSTAND =====
 
 // État principal du budget pour le store global
@@ -386,6 +371,225 @@ export interface BudgetStore
 	extends BudgetState,
 		BudgetPageState,
 		BudgetActions {}
+
+// ===== UTILITAIRES D'IMPACT BUDGÉTAIRE =====
+
+/**
+ * Vérifie si une dépense a été créée
+ */
+export const wasExpenseCreated = (budgetImpact: BudgetImpact): boolean => {
+	return budgetImpact.expenseCreated;
+};
+
+/**
+ * Vérifie si le budget est disponible
+ */
+export const hasBudgetInfo = (budgetImpact: BudgetImpact): boolean => {
+	return (
+		budgetImpact.budgetId !== undefined &&
+		budgetImpact.remainingBudget !== undefined
+	);
+};
+
+/**
+ * Formate le message budgétaire pour l'affichage
+ */
+export const formatBudgetMessage = (
+	budgetImpact: BudgetImpact,
+	productName: string
+): string => {
+	if (!budgetImpact.expenseCreated) {
+		return `${productName} ajouté à l'inventaire (prix non renseigné)`;
+	}
+
+	return (
+		budgetImpact.message || `${productName} ajouté avec impact budgétaire`
+	);
+};
+
+/**
+ * Détermine le type de notification à afficher
+ */
+export const getBudgetNotificationType = (
+	budgetImpact: BudgetImpact
+): 'success' | 'info' | 'warning' => {
+	if (!budgetImpact.expenseCreated) {
+		return 'info';
+	}
+
+	// Si le budget restant est faible (moins de 20€), avertissement
+	if (
+		budgetImpact.remainingBudget !== undefined &&
+		budgetImpact.remainingBudget < 20
+	) {
+		return 'warning';
+	}
+
+	return 'success';
+};
+
+// ===== UTILITAIRES DE VALIDATION ET TRANSFORMATION =====
+
+/**
+ * Fonction utilitaire pour valider une date
+ */
+export const isValidDate = (dateString: string | undefined | null): boolean => {
+	if (!dateString) return false;
+	const date = new Date(dateString);
+	return !isNaN(date.getTime());
+};
+
+/**
+ * Fonction utilitaire pour valider un budget complet
+ */
+export const isValidBudget = (
+	budget: Budget | null | undefined
+): budget is Budget => {
+	if (!budget) return false;
+
+	return !!(
+		budget.id &&
+		budget.amount &&
+		isValidDate(budget.periodStart) &&
+		isValidDate(budget.periodEnd)
+	);
+};
+
+// ===== TYPES POUR LA TRANSFORMATION DES DONNÉES API =====
+
+/**
+ * Type pour les données budget brutes reçues de l'API
+ */
+export interface RawBudgetApiData {
+	id?: string;
+	userId?: string;
+	user_id?: string;
+	amount?: number | string;
+	periodStart?: string;
+	period_start?: string;
+	periodEnd?: string;
+	period_end?: string;
+	isActive?: boolean;
+	is_active?: boolean;
+	createdAt?: string;
+	created_at?: string;
+	updatedAt?: string;
+	updated_at?: string;
+}
+
+/**
+ * Transforme et valide les données budget reçues de l'API
+ */
+export const transformBudgetFromApi = (
+	budgetData: RawBudgetApiData
+): Budget | null => {
+	try {
+		// Vérification des champs requis
+		if (!budgetData || !budgetData.id || budgetData.amount === undefined) {
+			console.error('Données budget incomplètes:', budgetData);
+			return null;
+		}
+
+		// Validation userId
+		const userId = budgetData.userId || budgetData.user_id;
+		if (!userId) {
+			console.error(
+				'userId manquant dans les données budget:',
+				budgetData
+			);
+			return null;
+		}
+
+		// Validation et transformation du montant
+		const amount =
+			typeof budgetData.amount === 'string'
+				? parseFloat(budgetData.amount)
+				: budgetData.amount;
+
+		if (isNaN(amount)) {
+			console.error(
+				'Montant invalide dans les données budget:',
+				budgetData.amount
+			);
+			return null;
+		}
+
+		// Validation et transformation des dates
+		const periodStart = budgetData.periodStart || budgetData.period_start;
+		const periodEnd = budgetData.periodEnd || budgetData.period_end;
+
+		if (!periodStart || !periodEnd) {
+			console.error('Dates manquantes dans les données budget:', {
+				periodStart,
+				periodEnd,
+				originalData: budgetData,
+			});
+			return null;
+		}
+
+		if (!isValidDate(periodStart) || !isValidDate(periodEnd)) {
+			console.error('Dates invalides dans les données budget:', {
+				periodStart,
+				periodEnd,
+				originalData: budgetData,
+			});
+			return null;
+		}
+
+		// Validation des timestamps
+		const createdAt = budgetData.createdAt || budgetData.created_at;
+		const updatedAt = budgetData.updatedAt || budgetData.updated_at;
+
+		if (!createdAt || !updatedAt) {
+			console.error('Timestamps manquants dans les données budget:', {
+				createdAt,
+				updatedAt,
+				originalData: budgetData,
+			});
+			return null;
+		}
+
+		// Construction de l'objet budget avec validation
+		const budget: Budget = {
+			id: budgetData.id,
+			userId: userId,
+			amount: amount,
+			periodStart: new Date(periodStart).toISOString(),
+			periodEnd: new Date(periodEnd).toISOString(),
+			isActive: budgetData.isActive ?? budgetData.is_active ?? true,
+			createdAt: createdAt,
+			updatedAt: updatedAt,
+		};
+
+		// Validation finale du budget créé
+		if (!isValidBudget(budget)) {
+			console.error('Budget final invalide:', budget);
+			return null;
+		}
+
+		return budget;
+	} catch (error) {
+		console.error(
+			'Erreur lors de la transformation du budget:',
+			error,
+			budgetData
+		);
+		return null;
+	}
+};
+
+/**
+ * Version sécurisée de formatBudgetPeriod
+ */
+export const safeFormatBudgetPeriod = (
+	budget: Budget | null | undefined
+): string => {
+	if (!isValidBudget(budget)) {
+		return 'Budget non disponible';
+	}
+
+	return formatBudgetPeriod(budget);
+};
 
 // ===== UTILITAIRES =====
 
@@ -547,15 +751,36 @@ export const formatCurrency = (amount: number): string => {
 };
 
 /**
- * Formate une période de budget
+ * Formate une période de budget avec vérification de validité
  */
 export const formatBudgetPeriod = (budget: Budget): string => {
+	// Vérification que le budget et periodStart existent
+	if (!budget || !budget.periodStart) {
+		console.warn('Budget ou periodStart manquant:', budget);
+		return 'Période non définie';
+	}
+
+	// Tentative de création de la date
 	const start = new Date(budget.periodStart);
 
-	return new Intl.DateTimeFormat('fr-FR', {
-		year: 'numeric',
-		month: 'long',
-	}).format(start);
+	// Vérification que la date est valide
+	if (isNaN(start.getTime())) {
+		console.error('Date invalide dans formatBudgetPeriod:', {
+			periodStart: budget.periodStart,
+			budget: budget,
+		});
+		return 'Date invalide';
+	}
+
+	try {
+		return new Intl.DateTimeFormat('fr-FR', {
+			year: 'numeric',
+			month: 'long',
+		}).format(start);
+	} catch (error) {
+		console.error('Erreur lors du formatage de la date:', error, budget);
+		return 'Erreur de formatage';
+	}
 };
 
 /**

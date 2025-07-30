@@ -248,13 +248,22 @@ export {
 	InventoryStatsSchema,
 	type InventoryStats,
 
-	// Réponses API
+	// Réponses API classiques
 	InventoryItemResponseSchema,
 	InventoryListResponseSchema,
 	InventoryStatsResponseSchema,
 	type InventoryItemResponse,
 	type InventoryListResponse,
 	type InventoryStatsResponse,
+
+	// Réponses API enrichies avec budget
+	InventoryItemWithBudgetSchema,
+	InventoryItemWithBudgetResponseSchema,
+	type InventoryItemWithBudget,
+	type InventoryItemWithBudgetResponse,
+	type AddProductResponse,
+	hasBudgetImpact,
+	extractNotificationData,
 
 	// Import OCR
 	TicketImportSchema,
@@ -305,6 +314,14 @@ export {
 	// Alertes
 	BudgetAlertSchema,
 	type BudgetAlert,
+
+	// Impact budgétaire
+	BudgetImpactSchema,
+	type BudgetImpact,
+	wasExpenseCreated,
+	hasBudgetInfo,
+	formatBudgetMessage,
+	getBudgetNotificationType,
 
 	// Réponses API
 	BudgetResponseSchema,

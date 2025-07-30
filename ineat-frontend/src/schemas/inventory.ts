@@ -16,6 +16,7 @@ import {
 	SearchFilterSchema,
 } from './common';
 import { ProductSchema, ProductSummarySchema } from './product';
+import { getBudgetNotificationType } from './budget';
 
 // ===== SCHÉMA ÉLÉMENT D'INVENTAIRE =====
 
@@ -53,7 +54,7 @@ export type InventoryItemWithStatus = z.infer<
 export const AddInventoryItemSchema = z
 	.object({
 		// Informations produit (si nouveau produit)
-		productName: z
+		name: z
 			.string()
 			.min(1, 'Le nom du produit est obligatoire')
 			.max(100, 'Le nom ne peut pas dépasser 100 caractères'),
@@ -245,7 +246,7 @@ export const InventoryStatsSchema = z.object({
 });
 export type InventoryStats = z.infer<typeof InventoryStatsSchema>;
 
-// ===== SCHÉMAS DE RÉPONSES API =====
+// ===== SCHÉMAS DE RÉPONSES API CLASSIQUES =====
 
 export const InventoryItemResponseSchema = ApiSuccessResponseSchema(
 	InventoryItemWithStatusSchema
@@ -262,6 +263,84 @@ export const InventoryStatsResponseSchema =
 export type InventoryStatsResponse = z.infer<
 	typeof InventoryStatsResponseSchema
 >;
+
+// ===== SCHÉMAS DE RÉPONSES ENRICHIES AVEC BUDGET =====
+
+/**
+ * Réponse enrichie d'ajout de produit avec feedback budgétaire
+ * Remplace ProductCreatedResponse pour les endpoints modifiés
+ */
+export const InventoryItemWithBudgetSchema = z.object({
+	item: InventoryItemWithStatusSchema,
+	budget: z.object({
+		expenseCreated: z.boolean(),
+		message: z.string(),
+		budgetId: UuidSchema.optional(),
+		remainingBudget: PriceSchema.optional(),
+	}),
+});
+
+export type InventoryItemWithBudget = z.infer<
+	typeof InventoryItemWithBudgetSchema
+>;
+
+/**
+ * Réponse API complète pour l'ajout de produit avec budget
+ */
+export const InventoryItemWithBudgetResponseSchema = ApiSuccessResponseSchema(
+	InventoryItemWithBudgetSchema
+);
+
+export type InventoryItemWithBudgetResponse = z.infer<
+	typeof InventoryItemWithBudgetResponseSchema
+>;
+
+// ===== TYPES D'UNION POUR COMPATIBILITÉ =====
+
+/**
+ * Type union pour les réponses d'ajout de produit (avec ou sans budget)
+ * Permet une transition progressive si nécessaire
+ */
+export type AddProductResponse =
+	| InventoryItemWithBudgetResponse
+	| InventoryItemResponse;
+
+// ===== GUARDS DE TYPE =====
+
+/**
+ * Vérifie si une réponse contient des informations budgétaires
+ */
+export const hasBudgetImpact = (
+	response: AddProductResponse
+): response is InventoryItemWithBudgetResponse => {
+	return 'budget' in response.data;
+};
+
+// ===== UTILITAIRES D'EXTRACTION =====
+
+/**
+ * Extrait les informations de notification depuis une réponse enrichie
+ */
+export const extractNotificationData = (
+	response: InventoryItemWithBudgetResponse,
+	fallbackProductName: string = 'Produit'
+) => {
+	const { item, budget } = response.data;
+	const productName = item.product.name || fallbackProductName;
+
+	return {
+		productName,
+		message: budget.message,
+		type: getBudgetNotificationType(budget),
+		shouldRefreshBudget: budget.expenseCreated,
+		budgetInfo: {
+			expenseCreated: budget.expenseCreated,
+			budgetId: budget.budgetId,
+			remainingBudget: budget.remainingBudget,
+		},
+		item,
+	};
+};
 
 // ===== SCHÉMAS D'IMPORT =====
 

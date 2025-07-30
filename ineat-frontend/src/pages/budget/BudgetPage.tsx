@@ -1,20 +1,18 @@
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
 
-// ===== IMPORTS SCHÉMAS =====
 import {
-	formatCurrency,
-	formatBudgetPeriod,
 	type Expense,
 	type Budget,
 	type BudgetStats,
 	type BudgetAlert,
+	type UpdateBudgetData,
+	isValidBudget,
 } from '@/schemas/budget';
 
-// ===== IMPORTS SERVICES =====
+import { useBudgetStore } from '@/stores/budgetStore';
 import { budgetService } from '@/services/budgetService';
 
-// ===== IMPORTS COMPOSANTS UI =====
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,7 +35,6 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 
-// ===== IMPORTS ICÔNES =====
 import {
 	TrendingUp,
 	TrendingDown,
@@ -50,9 +47,10 @@ import {
 	PieChart,
 	Calendar,
 	Edit,
+	CheckCircle,
+	Info,
 } from 'lucide-react';
 
-// ===== COMPOSANT ÉDITION BUDGET =====
 interface EditBudgetDialogProps {
 	budget: Budget;
 	onBudgetUpdated: () => void;
@@ -66,6 +64,19 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 	const [amount, setAmount] = useState<string>(budget.amount.toString());
 	const [isUpdating, setIsUpdating] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const { updateBudget } = useBudgetStore();
+
+	const safeBudgetPeriod = useMemo(() => {
+		if (!budget || !isValidBudget(budget)) {
+			return 'Période non définie';
+		}
+
+		try {
+			return budgetService.formatBudgetPeriod(budget);
+		} catch {
+			return 'Erreur de formatage';
+		}
+	}, [budget]);
 
 	const handleUpdateBudget = async () => {
 		const budgetAmount = parseFloat(amount);
@@ -75,17 +86,23 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 			return;
 		}
 
+		if (budgetAmount === budget.amount) {
+			setError('Le montant est identique au montant actuel');
+			return;
+		}
+
 		setIsUpdating(true);
 		setError(null);
 
 		try {
-			await budgetService.updateBudget(budget.id, {
+			const updateData: UpdateBudgetData = {
 				amount: budgetAmount,
-			});
+			};
+
+			await updateBudget(budget.id, updateData);
 			setIsOpen(false);
 			onBudgetUpdated();
-		} catch (error) {
-			console.error('Erreur modification budget:', error);
+		} catch {
 			setError('Erreur lors de la modification du budget');
 		} finally {
 			setIsUpdating(false);
@@ -95,7 +112,6 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 	const handleOpenChange = (open: boolean) => {
 		setIsOpen(open);
 		if (!open) {
-			// Reset le formulaire quand on ferme
 			setAmount(budget.amount.toString());
 			setError(null);
 		}
@@ -117,11 +133,25 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 					</DialogTitle>
 					<DialogDescription>
 						Modifiez le montant de votre budget mensuel pour{' '}
-						{formatBudgetPeriod(budget)}.
+						{safeBudgetPeriod}.
+						<br />
+						<span className='text-success-50 text-sm'>
+							✅ Toutes vos dépenses actuelles seront conservées.
+						</span>
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className='space-y-4'>
+					<Alert className='border-success-50/20 bg-success-50/10'>
+						<CheckCircle className='size-4 text-success-50' />
+						<AlertDescription className='text-neutral-300'>
+							<strong>Modification sécurisée :</strong> Cette
+							action modifie uniquement le montant de votre
+							budget. Toutes vos dépenses existantes restent
+							intactes.
+						</AlertDescription>
+					</Alert>
+
 					<div className='space-y-2'>
 						<label
 							htmlFor='edit-budget-amount'
@@ -151,7 +181,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 						<div className='flex justify-between text-sm'>
 							<span>Montant actuel :</span>
 							<span className='font-semibold'>
-								{formatCurrency(budget.amount)}
+								{budgetService.formatCurrency(budget.amount)}
 							</span>
 						</div>
 						{parseFloat(amount) > 0 &&
@@ -159,7 +189,9 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 								<div className='flex justify-between text-sm mt-1'>
 									<span>Nouveau montant :</span>
 									<span className='font-semibold text-accent'>
-										{formatCurrency(parseFloat(amount))}
+										{budgetService.formatCurrency(
+											parseFloat(amount)
+										)}
 									</span>
 								</div>
 							)}
@@ -205,9 +237,43 @@ const CreateBudgetSection: FC<{ onBudgetCreated: () => void }> = ({
 }) => {
 	const [amount, setAmount] = useState<string>('');
 	const [isCreating, setIsCreating] = useState(false);
+	const [isCheckingExisting, setIsCheckingExisting] = useState(false);
+	const [existingBudget, setExistingBudget] = useState<Budget | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const { createMonthlyBudget, updateBudget } = useBudgetStore();
 
-	const handleCreateBudget = async () => {
+	const safeExistingBudgetAmount = useMemo(() => {
+		if (!existingBudget || !isValidBudget(existingBudget)) {
+			return null;
+		}
+
+		try {
+			return budgetService.formatCurrency(existingBudget.amount);
+		} catch {
+			return `${existingBudget.amount}€`;
+		}
+	}, [existingBudget]);
+
+	const checkExistingBudget = async () => {
+		setIsCheckingExisting(true);
+		try {
+			const response = await budgetService.getCurrentBudget();
+			if (response.budget && isValidBudget(response.budget)) {
+				setExistingBudget(response.budget);
+				setAmount(response.budget.amount.toString());
+			}
+		} catch {
+			// Silently fail
+		} finally {
+			setIsCheckingExisting(false);
+		}
+	};
+
+	useEffect(() => {
+		checkExistingBudget();
+	}, []);
+
+	const handleCreateOrUpdateBudget = async () => {
 		const budgetAmount = parseFloat(amount);
 
 		if (!budgetAmount || budgetAmount <= 0) {
@@ -219,47 +285,115 @@ const CreateBudgetSection: FC<{ onBudgetCreated: () => void }> = ({
 		setError(null);
 
 		try {
-			await budgetService.createMonthlyBudget(budgetAmount);
+			if (existingBudget) {
+				await updateBudget(existingBudget.id, { amount: budgetAmount });
+			} else {
+				await createMonthlyBudget(budgetAmount);
+			}
+
 			setAmount('');
 			onBudgetCreated();
-		} catch (error) {
-			console.error('Erreur création budget:', error);
-			setError('Erreur lors de la création du budget');
+		} catch {
+			setError('Erreur lors de la sauvegarde du budget');
 		} finally {
 			setIsCreating(false);
 		}
 	};
 
+	if (isCheckingExisting) {
+		return (
+			<Card>
+				<CardContent className='flex items-center justify-center py-12'>
+					<div className='text-center space-y-2'>
+						<Loader2 className='size-8 animate-spin mx-auto text-accent' />
+						<p className='text-neutral-200'>
+							Vérification d'un budget existant...
+						</p>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Card>
 			<CardHeader>
 				<CardTitle className='flex items-center gap-2'>
-					<Plus className='size-5 text-accent' />
-					Créer votre budget mensuel
+					{existingBudget ? (
+						<>
+							<Edit className='size-5 text-accent' />
+							Modifier votre budget mensuel
+						</>
+					) : (
+						<>
+							<Plus className='size-5 text-accent' />
+							Créer votre budget mensuel
+						</>
+					)}
 				</CardTitle>
 			</CardHeader>
 
 			<CardContent className='space-y-4'>
-				<div className='text-center space-y-2'>
-					<div className='text-4xl'>💰</div>
-					<h3 className='font-semibold'>Aucun budget défini</h3>
-					<p className='text-neutral-200 text-sm'>
-						Créez votre budget mensuel pour suivre vos dépenses
-						alimentaires
-					</p>
-				</div>
+				{existingBudget ? (
+					<Alert className='border-primary-100 bg-primary-50/50'>
+						<Edit className='size-4 text-primary-100' />
+						<AlertDescription className='text-neutral-300'>
+							<strong>
+								Budget existant détecté pour cette période
+							</strong>
+							<br />
+							Montant actuel :{' '}
+							<strong>
+								{safeExistingBudgetAmount ||
+									`${existingBudget.amount}€`}
+							</strong>
+							<br />
+							<span className='text-sm text-neutral-200'>
+								✅ La modification conservera toutes vos
+								dépenses actuelles.
+							</span>
+						</AlertDescription>
+					</Alert>
+				) : (
+					<>
+						<div className='text-center space-y-2'>
+							<div className='text-4xl'>💰</div>
+							<h3 className='font-semibold'>
+								Aucun budget défini
+							</h3>
+							<p className='text-neutral-200 text-sm'>
+								Créez votre budget mensuel pour suivre vos
+								dépenses alimentaires
+							</p>
+						</div>
+
+						<Alert className='border-accent/20 bg-accent/10'>
+							<Info className='size-4 text-accent' />
+							<AlertDescription className='text-neutral-300'>
+								<strong>Nouveau budget</strong> - Aucun budget
+								n'existe pour cette période.
+							</AlertDescription>
+						</Alert>
+					</>
+				)}
 
 				<div className='space-y-3'>
 					<div className='space-y-2'>
 						<label
 							htmlFor='budget-amount'
 							className='text-sm font-medium'>
-							Montant mensuel (€)
+							{existingBudget
+								? 'Nouveau montant (€)'
+								: 'Montant mensuel (€)'}
 						</label>
 						<Input
 							id='budget-amount'
 							type='number'
-							placeholder='Ex: 300'
+							placeholder={
+								existingBudget
+									? `Actuel: ${existingBudget.amount}€`
+									: 'Ex: 300'
+							}
 							value={amount}
 							onChange={(e) => setAmount(e.target.value)}
 							min='1'
@@ -276,27 +410,47 @@ const CreateBudgetSection: FC<{ onBudgetCreated: () => void }> = ({
 					)}
 
 					<Button
-						onClick={handleCreateBudget}
+						onClick={handleCreateOrUpdateBudget}
 						disabled={
-							!amount || parseFloat(amount) <= 0 || isCreating
+							!amount ||
+							parseFloat(amount) <= 0 ||
+							isCreating ||
+							!!(
+								existingBudget &&
+								parseFloat(amount) === existingBudget.amount
+							)
 						}
 						className='w-full'>
 						{isCreating ? (
 							<>
 								<Loader2 className='size-4 mr-2 animate-spin' />
-								Création en cours...
+								{existingBudget
+									? 'Modification...'
+									: 'Création en cours...'}
 							</>
 						) : (
 							<>
-								<Plus className='size-4 mr-2' />
-								Créer mon budget
+								{existingBudget ? (
+									<>
+										<Edit className='size-4 mr-2' />
+										Modifier mon budget
+									</>
+								) : (
+									<>
+										<Plus className='size-4 mr-2' />
+										Créer mon budget
+									</>
+								)}
 							</>
 						)}
 					</Button>
 				</div>
 
 				<div className='text-xs text-neutral-200 text-center'>
-					💡 Votre budget sera automatiquement reconduit chaque mois
+					💡{' '}
+					{existingBudget
+						? 'La modification préservera toutes vos dépenses existantes'
+						: 'Votre budget sera automatiquement reconduit chaque mois'}
 				</div>
 			</CardContent>
 		</Card>
@@ -310,6 +464,30 @@ interface BudgetStatsCardsProps {
 }
 
 const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
+	const safeBudgetAmount = useMemo(() => {
+		try {
+			return budgetService.formatCurrency(budget.amount);
+		} catch {
+			return `${budget.amount}€`;
+		}
+	}, [budget.amount]);
+
+	const safeTotalSpent = useMemo(() => {
+		try {
+			return budgetService.formatCurrency(stats.totalSpent);
+		} catch {
+			return `${stats.totalSpent}€`;
+		}
+	}, [stats.totalSpent]);
+
+	const safeRemaining = useMemo(() => {
+		try {
+			return budgetService.formatCurrency(stats.remaining);
+		} catch {
+			return `${stats.remaining}€`;
+		}
+	}, [stats.remaining]);
+
 	return (
 		<div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
 			<Card>
@@ -320,9 +498,7 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 							Budget total
 						</span>
 					</div>
-					<p className='text-2xl font-bold'>
-						{formatCurrency(budget.amount)}
-					</p>
+					<p className='text-2xl font-bold'>{safeBudgetAmount}</p>
 				</CardContent>
 			</Card>
 
@@ -335,7 +511,7 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 						</span>
 					</div>
 					<p className='text-2xl font-bold text-error-100'>
-						{formatCurrency(stats.totalSpent)}
+						{safeTotalSpent}
 					</p>
 				</CardContent>
 			</Card>
@@ -349,7 +525,7 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 						</span>
 					</div>
 					<p className='text-2xl font-bold text-success-50'>
-						{formatCurrency(stats.remaining)}
+						{safeRemaining}
 					</p>
 				</CardContent>
 			</Card>
@@ -422,8 +598,15 @@ interface ExpenseListProps {
 }
 
 const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
-	// Protection contre expenses undefined
 	const safeExpenses = expenses || [];
+
+	const formatExpenseAmount = useCallback((amount: number) => {
+		try {
+			return budgetService.formatCurrency(amount);
+		} catch {
+			return `${amount}€`;
+		}
+	}, []);
 
 	if (isLoading) {
 		return (
@@ -493,7 +676,9 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 									</TableCell>
 									<TableCell className='text-right font-semibold'>
 										{expense.amount
-											? formatCurrency(expense.amount)
+											? formatExpenseAmount(
+													expense.amount
+											  )
 											: '-'}
 									</TableCell>
 								</TableRow>
@@ -508,84 +693,43 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 
 // ===== COMPOSANT PAGE BUDGET PRINCIPAL =====
 export const BudgetPage: FC = () => {
-	// ===== ÉTATS =====
-	const [budget, setBudget] = useState<Budget | null>(null);
-	const [budgetStats, setBudgetStats] = useState<BudgetStats | null>(null);
-	const [budgetAlerts, setBudgetAlerts] = useState<BudgetAlert[]>([]);
-	const [expenses, setExpenses] = useState<Expense[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [isLoadingExpenses, setIsLoadingExpenses] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const {
+		currentBudget,
+		budgetStats,
+		alerts,
+		expenses,
+		isLoading,
+		isLoadingExpenses,
+		error,
+		fetchCurrentBudget,
+	} = useBudgetStore();
 
-	// ===== FONCTIONS =====
-	const loadCurrentBudget = async () => {
-		try {
-			setIsLoading(true);
-			setError(null);
-
-			// Utiliser directement /budget/current comme dans le BudgetWidget
-			const currentBudgetData = await budgetService.getCurrentBudget();
-
-			// Vérifier si data est null (pas de budget)
-			if (!currentBudgetData || !currentBudgetData.budget) {
-				setBudget(null);
-				setBudgetStats(null);
-				setBudgetAlerts([]);
-				setExpenses([]);
-				return;
-			}
-
-			setBudget(currentBudgetData.budget);
-			setBudgetStats(currentBudgetData.stats);
-
-			// Récupérer les alertes séparément
-			const alerts = await budgetService.getBudgetAlerts(
-				currentBudgetData.budget.id
-			);
-			setBudgetAlerts(alerts);
-
-			// Récupérer les dépenses de ce budget
-			loadExpenses(currentBudgetData.budget.id);
-		} catch (error) {
-			console.error('Erreur lors du chargement du budget:', error);
-			// En cas d'erreur, afficher le formulaire de création
-			setBudget(null);
-			setBudgetStats(null);
-			setBudgetAlerts([]);
-			setExpenses([]);
-		} finally {
-			setIsLoading(false);
+	const safeBudgetPeriod = useMemo(() => {
+		if (!currentBudget) {
+			return null;
 		}
-	};
 
-	const loadExpenses = async (budgetId: string) => {
-		try {
-			setIsLoadingExpenses(true);
-			const expensesData = await budgetService.getExpensesByBudget(
-				budgetId
-			);
-			setExpenses(expensesData.items);
-		} catch (error) {
-			console.error('Erreur lors du chargement des dépenses:', error);
-			setExpenses([]);
-		} finally {
-			setIsLoadingExpenses(false);
+		if (!isValidBudget(currentBudget)) {
+			return 'Budget invalide';
 		}
-	};
 
-	const handleBudgetCreated = () => {
-		loadCurrentBudget();
-	};
+		try {
+			return budgetService.formatBudgetPeriod(currentBudget);
+		} catch {
+			return 'Erreur de formatage';
+		}
+	}, [currentBudget]);
 
-	// ===== EFFECTS =====
+	const handleBudgetCreated = useCallback(() => {
+		fetchCurrentBudget();
+	}, [fetchCurrentBudget]);
+
 	useEffect(() => {
-		loadCurrentBudget();
-	}, []);
+		fetchCurrentBudget();
+	}, [fetchCurrentBudget]);
 
-	// ===== RENDU =====
 	return (
 		<div className='max-w-7xl mx-auto p-6 space-y-6'>
-			{/* ===== HEADER ===== */}
 			<div className='flex items-center justify-between'>
 				<div className='flex items-center gap-4'>
 					<Link to='/app'>
@@ -597,18 +741,22 @@ export const BudgetPage: FC = () => {
 					<h1 className='text-2xl font-bold'>Budget mensuel</h1>
 				</div>
 
-				{budget && (
+				{currentBudget && isValidBudget(currentBudget) && (
 					<div className='flex items-center gap-4'>
 						<div className='flex items-center gap-2 text-neutral-200'>
 							<Calendar className='size-4' />
-							<span>{formatBudgetPeriod(budget)}</span>
+							<span>
+								{safeBudgetPeriod || 'Période non disponible'}
+							</span>
 						</div>
-						<EditBudgetDialog budget={budget} onBudgetUpdated={loadCurrentBudget} />
+						<EditBudgetDialog
+							budget={currentBudget}
+							onBudgetUpdated={handleBudgetCreated}
+						/>
 					</div>
 				)}
 			</div>
 
-			{/* ===== GESTION D'ERREUR ===== */}
 			{error && (
 				<Alert variant='destructive'>
 					<AlertTriangle className='size-4' />
@@ -616,7 +764,6 @@ export const BudgetPage: FC = () => {
 				</Alert>
 			)}
 
-			{/* ===== CONTENU PRINCIPAL ===== */}
 			{isLoading ? (
 				<Card>
 					<CardContent className='flex items-center justify-center py-12'>
@@ -628,19 +775,17 @@ export const BudgetPage: FC = () => {
 						</div>
 					</CardContent>
 				</Card>
-			) : !budget || !budgetStats ? (
-				// Aucun budget - Afficher l'invitation à créer
+			) : !currentBudget ||
+			  !budgetStats ||
+			  !isValidBudget(currentBudget) ? (
 				<CreateBudgetSection onBudgetCreated={handleBudgetCreated} />
 			) : (
-				// Budget existant - Afficher l'interface complète
 				<div className='space-y-6'>
-					{/* Alertes */}
-					<BudgetAlerts alerts={budgetAlerts} />
-
-					{/* Statistiques */}
-					<BudgetStatsCards budget={budget} stats={budgetStats} />
-
-					{/* Liste des dépenses */}
+					<BudgetAlerts alerts={alerts} />
+					<BudgetStatsCards
+						budget={currentBudget}
+						stats={budgetStats}
+					/>
 					<ExpenseList
 						expenses={expenses}
 						isLoading={isLoadingExpenses}

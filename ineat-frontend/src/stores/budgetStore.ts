@@ -2,68 +2,120 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { budgetService } from '@/services/budgetService';
 import {
-	BudgetStore,
+	Budget,
+	BudgetStats,
+	BudgetAlert,
+	Expense,
 	UpdateBudgetData,
 	getMonthString,
 } from '@/schemas/budget';
 
-// ===== ÉTAT INITIAL =====
+interface BudgetState {
+	currentBudget: Budget | null;
+	budgetStats: BudgetStats | null;
+	alerts: BudgetAlert[];
+	isLoading: boolean;
+	error: string | null;
+	isFetching: boolean;
+	lastFetchTime: number | null;
+}
 
-const initialBudgetState = {
+interface BudgetPageState {
+	selectedBudget: Budget | null;
+	expenses: Expense[];
+	budgetHistory: Budget[];
+	selectedMonth: string;
+	isLoadingExpenses: boolean;
+	isLoadingHistory: boolean;
+	expensesError: string | null;
+}
+
+interface BudgetActions {
+	fetchCurrentBudget: (force?: boolean) => Promise<void>;
+	checkBudgetExists: () => Promise<boolean>;
+	createMonthlyBudget: (amount: number) => Promise<Budget>;
+	updateBudget: (budgetId: string, data: UpdateBudgetData) => Promise<Budget>;
+	fetchBudgetByMonth: (month: string) => Promise<void>;
+	fetchBudgetHistory: () => Promise<void>;
+	setSelectedMonth: (month: string) => void;
+	clearError: () => void;
+	markAlertAsRead: (alertId: string) => Promise<void>;
+	refreshBudgetData: () => Promise<void>;
+	resetBudgetStore: () => void;
+	updateBudgetStatsAfterExpense: () => Promise<void>;
+}
+
+export interface BudgetStore
+	extends BudgetState,
+		BudgetPageState,
+		BudgetActions {}
+
+const initialBudgetState: BudgetState = {
 	currentBudget: null,
 	budgetStats: null,
 	alerts: [],
 	isLoading: false,
 	error: null,
+	isFetching: false,
+	lastFetchTime: null,
 };
 
-const initialBudgetPageState = {
+const initialBudgetPageState: BudgetPageState = {
 	selectedBudget: null,
 	expenses: [],
 	budgetHistory: [],
-	selectedMonth: getMonthString(), // Mois courant par défaut
+	selectedMonth: getMonthString(),
 	isLoadingExpenses: false,
 	isLoadingHistory: false,
 	expensesError: null,
 };
 
-// ===== STORE ZUSTAND =====
-
 export const useBudgetStore = create<BudgetStore>()(
 	persist(
 		(set, get) => ({
-			// ===== ÉTAT =====
 			...initialBudgetState,
 			...initialBudgetPageState,
 
-			// ===== ACTIONS BUDGET =====
+			fetchCurrentBudget: async (force = false) => {
+				const state = get();
 
-			/**
-			 * Récupère le budget du mois courant avec stats et alertes
-			 */
-			fetchCurrentBudget: async () => {
-				set({ isLoading: true, error: null });
+				if (state.isFetching && !force) {
+					return;
+				}
+
+				if (
+					!force &&
+					state.lastFetchTime &&
+					Date.now() - state.lastFetchTime < 5000
+				) {
+					return;
+				}
+
+				set({ isLoading: true, isFetching: true, error: null });
 
 				try {
 					const data = await budgetService.getCurrentBudget();
 
 					set({
-						currentBudget: data.budget,
-						budgetStats: data.stats,
-						alerts: data.alerts,
+						currentBudget: data.budget || null,
+						budgetStats: data.stats || null,
+						alerts: data.alerts || [],
+						expenses: data.expenses || [],
 						isLoading: false,
+						isFetching: false,
+						lastFetchTime: Date.now(),
+						error: null,
 					});
-				} catch (error) {
-					console.error(
-						'Erreur lors de la récupération du budget actuel:',
-						error
-					);
+				} catch {
 					set({
 						currentBudget: null,
 						budgetStats: null,
 						alerts: [],
+						expenses: [],
 						isLoading: false,
+						isFetching: false,
 						error: 'Impossible de récupérer le budget actuel',
+						lastFetchTime: Date.now(),
 					});
 				}
 			},
@@ -80,11 +132,7 @@ export const useBudgetStore = create<BudgetStore>()(
 					}
 
 					return data.exists;
-				} catch (error) {
-					console.error(
-						'Erreur lors de la vérification du budget:',
-						error
-					);
+				} catch {
 					return false;
 				}
 			},
@@ -93,27 +141,27 @@ export const useBudgetStore = create<BudgetStore>()(
 			 * Crée un budget mensuel automatique
 			 */
 			createMonthlyBudget: async (amount: number) => {
+				const state = get();
+
+				if (state.isLoading) {
+					throw new Error('Création de budget déjà en cours');
+				}
+
 				set({ isLoading: true, error: null });
 
 				try {
-					const newBudget = await budgetService.createMonthlyBudget(
-						amount
-					);
+					await budgetService.createMonthlyBudget(amount);
+					await get().fetchCurrentBudget(true);
 
-					set({
-						currentBudget: newBudget,
-						isLoading: false,
-					});
+					const { currentBudget } = get();
 
-					// Rafraîchir les stats après création
-					await get().fetchCurrentBudget();
+					if (!currentBudget) {
+						throw new Error('Budget créé mais non récupéré');
+					}
 
-					return newBudget;
+					set({ isLoading: false });
+					return currentBudget;
 				} catch (error) {
-					console.error(
-						'Erreur lors de la création du budget:',
-						error
-					);
 					set({
 						isLoading: false,
 						error: 'Impossible de créer le budget',
@@ -129,34 +177,18 @@ export const useBudgetStore = create<BudgetStore>()(
 				set({ isLoading: true, error: null });
 
 				try {
-					const updatedBudget = await budgetService.updateBudget(
-						budgetId,
-						data
-					);
+					await budgetService.updateBudget(budgetId, data);
+					await get().fetchCurrentBudget(true);
 
-					set((state) => ({
-						currentBudget:
-							state.currentBudget?.id === budgetId
-								? updatedBudget
-								: state.currentBudget,
-						selectedBudget:
-							state.selectedBudget?.id === budgetId
-								? updatedBudget
-								: state.selectedBudget,
-						isLoading: false,
-					}));
+					const { currentBudget } = get();
 
-					// Rafraîchir les stats si c'est le budget courant
-					if (get().currentBudget?.id === budgetId) {
-						await get().fetchCurrentBudget();
+					if (!currentBudget) {
+						throw new Error('Budget mis à jour mais non récupéré');
 					}
 
-					return updatedBudget;
+					set({ isLoading: false });
+					return currentBudget;
 				} catch (error) {
-					console.error(
-						'Erreur lors de la mise à jour du budget:',
-						error
-					);
 					set({
 						isLoading: false,
 						error: 'Impossible de mettre à jour le budget',
@@ -180,19 +212,9 @@ export const useBudgetStore = create<BudgetStore>()(
 						selectedBudget: budget,
 						selectedMonth: month,
 						isLoading: false,
+						expenses: [],
 					});
-
-					// Récupérer les dépenses si un budget existe
-					if (budget) {
-						await get().fetchExpensesByBudget(budget.id);
-					} else {
-						set({ expenses: [] });
-					}
-				} catch (error) {
-					console.error(
-						'Erreur lors de la récupération du budget par mois:',
-						error
-					);
+				} catch {
 					set({
 						selectedBudget: null,
 						expenses: [],
@@ -210,54 +232,12 @@ export const useBudgetStore = create<BudgetStore>()(
 
 				try {
 					const history = await budgetService.getBudgetHistory();
-
-					set({
-						budgetHistory: history,
-						isLoadingHistory: false,
-					});
-				} catch (error) {
-					console.error(
-						"Erreur lors de la récupération de l'historique:",
-						error
-					);
-					set({
-						budgetHistory: [],
-						isLoadingHistory: false,
-					});
+					set({ budgetHistory: history, isLoadingHistory: false });
+				} catch {
+					set({ budgetHistory: [], isLoadingHistory: false });
 				}
 			},
 
-			/**
-			 * Récupère les dépenses d'un budget spécifique
-			 */
-			fetchExpensesByBudget: async (budgetId: string) => {
-				set({ isLoadingExpenses: true, expensesError: null });
-
-				try {
-					const data = await budgetService.getExpensesByBudget(
-						budgetId
-					);
-
-					set({
-						expenses: data.items,
-						isLoadingExpenses: false,
-					});
-				} catch (error) {
-					console.error(
-						'Erreur lors de la récupération des dépenses:',
-						error
-					);
-					set({
-						expenses: [],
-						isLoadingExpenses: false,
-						expensesError: 'Impossible de récupérer les dépenses',
-					});
-				}
-			},
-
-			/**
-			 * Change le mois sélectionné et récupère le budget correspondant
-			 */
 			setSelectedMonth: (month: string) => {
 				set({ selectedMonth: month });
 				get().fetchBudgetByMonth(month);
@@ -278,7 +258,6 @@ export const useBudgetStore = create<BudgetStore>()(
 			markAlertAsRead: async (alertId: string) => {
 				try {
 					await budgetService.markAlertAsRead(alertId);
-
 					set((state) => ({
 						alerts: state.alerts.map((alert) =>
 							alert.id === alertId
@@ -286,11 +265,8 @@ export const useBudgetStore = create<BudgetStore>()(
 								: alert
 						),
 					}));
-				} catch (error) {
-					console.error(
-						"Erreur lors du marquage de l'alerte:",
-						error
-					);
+				} catch {
+					// Silently fail
 				}
 			},
 
@@ -299,25 +275,16 @@ export const useBudgetStore = create<BudgetStore>()(
 			 */
 			refreshBudgetData: async () => {
 				await Promise.all([
-					get().fetchCurrentBudget(),
+					get().fetchCurrentBudget(true),
 					get().fetchBudgetHistory(),
 				]);
-
-				// Rafraîchir les dépenses si un budget est sélectionné
-				const { selectedBudget } = get();
-				if (selectedBudget) {
-					await get().fetchExpensesByBudget(selectedBudget.id);
-				}
 			},
 
-			/**
-			 * Réinitialise l'état du store
-			 */
 			resetBudgetStore: () => {
 				set({
 					...initialBudgetState,
 					...initialBudgetPageState,
-					selectedMonth: getMonthString(), // Garder le mois courant
+					selectedMonth: getMonthString(),
 				});
 			},
 
@@ -338,12 +305,10 @@ export const useBudgetStore = create<BudgetStore>()(
 						set({
 							budgetStats: stats,
 							alerts,
+							lastFetchTime: Date.now(),
 						});
-					} catch (error) {
-						console.error(
-							'Erreur lors de la mise à jour des stats:',
-							error
-						);
+					} catch {
+						// Silently fail
 					}
 				}
 			},
@@ -356,12 +321,13 @@ export const useBudgetStore = create<BudgetStore>()(
 				currentBudget: state.currentBudget,
 				selectedMonth: state.selectedMonth,
 				budgetHistory: state.budgetHistory,
+				lastFetchTime: state.lastFetchTime,
 			}),
 		}
 	)
 );
 
-// ===== SÉLECTEURS UTILES =====
+// ===== SÉLECTEURS =====
 
 /**
  * Sélecteur pour vérifier si l'utilisateur a un budget
@@ -400,5 +366,4 @@ export const useBudgetUsagePercentage = () => {
 	return useBudgetStore((state) => state.budgetStats?.percentageUsed || 0);
 };
 
-// Export par défaut
 export default useBudgetStore;

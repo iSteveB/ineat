@@ -1,251 +1,335 @@
 import { apiClient } from '@/lib/api-client';
 import {
-	// Types Budget
 	Budget,
-	BudgetStats,
-	BudgetAlert,
 	CreateBudgetData,
 	UpdateBudgetData,
-
-	// Types Expense
+	BudgetStats,
+	BudgetFilters,
 	Expense,
 	CreateExpenseData,
+	BudgetAlert,
+} from '@/schemas';
 
-	// Types de réponses API
-	BudgetExistsResponse,
-	CurrentBudgetResponse,
-	BudgetResponse,
-	BudgetStatsResponse,
-	BudgetAlertsResponse,
-	ExpenseResponse,
-	ExpenseListResponse,
+import {
+	RawBudgetApiData,
+	safeFormatBudgetPeriod,
+	formatCurrency,
+	getMonthString,
+	parseMonthString,
+	transformBudgetFromApi,
+	isValidBudget,
 } from '@/schemas/budget';
-import { PaginationParams } from '@/schemas/common';
 
-// ===== SERVICE BUDGET =====
+export interface BudgetWithStats {
+	budget: Budget | null;
+	stats: BudgetStats | null;
+	alerts: BudgetAlert[];
+	expenses: Expense[];
+}
+
+export interface BudgetExistsResponse {
+	exists: boolean;
+	currentBudget?: Budget;
+}
+
+export interface CreateMonthlyBudgetData {
+	amount: number;
+	periodStart: string;
+	periodEnd: string;
+	isActive: boolean;
+}
 
 export const budgetService = {
-	// ===== MÉTHODES BUDGET =====
+	async getCurrentBudget(): Promise<BudgetWithStats> {
+		try {
+			const response = await apiClient.get<BudgetWithStats>(
+				'/budget/current'
+			);
 
-	/**
-	 * GET /budget/current - Récupère le budget du mois courant avec statistiques
-	 */
-	async getCurrentBudget(): Promise<CurrentBudgetResponse['data']> {
-		const response = await apiClient.get<CurrentBudgetResponse>(
-			'/budget/current'
-		);
-		return response.data;
+			let budgetData: Budget | null,
+				statsData: BudgetStats | null,
+				alertsData: BudgetAlert[],
+				expensesData: Expense[] = [];
+
+			if (response && typeof response === 'object') {
+				if ('data' in response && response.data) {
+					const responseData = response.data as BudgetWithStats;
+					budgetData = responseData.budget;
+					statsData = responseData.stats;
+					alertsData = responseData.alerts;
+					expensesData = responseData.expenses || [];
+				} else {
+					budgetData = (response as BudgetWithStats).budget;
+					statsData = (response as BudgetWithStats).stats;
+					alertsData = (response as BudgetWithStats).alerts;
+					expensesData = (response as BudgetWithStats).expenses || [];
+				}
+			} else {
+				budgetData = null;
+				statsData = null;
+				alertsData = [];
+				expensesData = [];
+			}
+
+			if (budgetData && !isValidBudget(budgetData)) {
+				budgetData = transformBudgetFromApi(
+					budgetData as RawBudgetApiData
+				);
+			}
+
+			return {
+				budget: budgetData || null,
+				stats: statsData || null,
+				alerts: alertsData || [],
+				expenses: expensesData || [],
+			};
+		} catch (error: unknown) {
+			const err = error as { status?: number; message?: string };
+
+			if (err.status === 404 || err.message?.includes('budget')) {
+				return {
+					budget: null,
+					stats: null,
+					alerts: [],
+					expenses: [],
+				};
+			}
+
+			throw error;
+		}
 	},
 
-	/**
-	 * GET /budget/exists - Vérifie si l'utilisateur a un budget existant
-	 */
-	async checkBudgetExists(): Promise<boolean> {
-		const response = await apiClient.get<BudgetExistsResponse>(
-			'/budget/exists'
-		);
-		return response.data.hasAnyBudget;
+	async checkBudgetExists(): Promise<BudgetExistsResponse> {
+		try {
+			const response = await apiClient.get<BudgetExistsResponse>(
+				'/budget/exists'
+			);
+			return response;
+		} catch (error: unknown) {
+			const err = error as { status?: number };
+
+			if (err.status === 404) {
+				return { exists: false };
+			}
+
+			return { exists: false };
+		}
 	},
 
-	/**
-	 * POST /budget/monthly - Crée un budget mensuel automatique
-	 */
 	async createMonthlyBudget(amount: number): Promise<Budget> {
-		const response = await apiClient.post<BudgetResponse>(
-			'/budget/monthly',
-			{ amount }
+		const today = new Date();
+		const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+		const endOfMonth = new Date(
+			today.getFullYear(),
+			today.getMonth() + 1,
+			0
 		);
-		return response.data;
+
+		const budgetData: CreateMonthlyBudgetData = {
+			amount,
+			periodStart: startOfMonth.toISOString().split('T')[0],
+			periodEnd: endOfMonth.toISOString().split('T')[0],
+			isActive: true,
+		};
+
+		const newBudget = await apiClient.post<Budget>('/budget', budgetData);
+
+		if (newBudget && !isValidBudget(newBudget)) {
+			const transformedBudget = transformBudgetFromApi(
+				newBudget as RawBudgetApiData
+			);
+			if (!transformedBudget) {
+				throw new Error('Impossible de transformer le budget créé');
+			}
+			return transformedBudget;
+		}
+
+		return newBudget;
 	},
 
-	/**
-	 * POST /budget - Crée un budget manuel avec période personnalisée
-	 */
+	async getBudgetByMonth(month: string): Promise<Budget | null> {
+		try {
+			const budget = await apiClient.get<Budget>(
+				`/budget/month/${month}`
+			);
+
+			if (budget && !isValidBudget(budget)) {
+				return transformBudgetFromApi(budget as RawBudgetApiData);
+			}
+
+			return budget;
+		} catch (error: unknown) {
+			const err = error as { status?: number };
+			if (err.status === 404) {
+				return null;
+			}
+			return null;
+		}
+	},
+
+	async getBudgetHistory(): Promise<Budget[]> {
+		try {
+			const history = await apiClient.get<Budget[]>('/budget/history');
+
+			return history
+				.map((budget) => {
+					if (!isValidBudget(budget)) {
+						const transformed = transformBudgetFromApi(
+							budget as RawBudgetApiData
+						);
+						return transformed;
+					}
+					return budget;
+				})
+				.filter((budget): budget is Budget => budget !== null);
+		} catch {
+			return [];
+		}
+	},
+
 	async createBudget(budgetData: CreateBudgetData): Promise<Budget> {
-		const response = await apiClient.post<BudgetResponse>(
-			'/budget',
-			budgetData
-		);
-		return response.data;
+		const newBudget = await apiClient.post<Budget>('/budget', budgetData);
+
+		if (newBudget && !isValidBudget(newBudget)) {
+			const transformedBudget = transformBudgetFromApi(
+				newBudget as RawBudgetApiData
+			);
+			if (!transformedBudget) {
+				throw new Error('Impossible de transformer le budget créé');
+			}
+			return transformedBudget;
+		}
+
+		return newBudget;
 	},
 
-	/**
-	 * PUT /budget/:id - Met à jour un budget existant
-	 */
 	async updateBudget(
 		budgetId: string,
 		updateData: UpdateBudgetData
 	): Promise<Budget> {
-		const response = await apiClient.put<BudgetResponse>(
+		const updatedBudget = await apiClient.put<Budget>(
 			`/budget/${budgetId}`,
 			updateData
 		);
-		return response.data;
+
+		return updatedBudget;
 	},
 
-	/**
-	 * GET /budget/:id/stats - Récupère les statistiques détaillées d'un budget
-	 */
-	async getBudgetStats(budgetId: string): Promise<BudgetStats> {
-		const response = await apiClient.get<BudgetStatsResponse>(
-			`/budget/${budgetId}/stats`
-		);
-		return response.data;
-	},
-
-	/**
-	 * GET /budget/:id/alerts - Récupère les alertes d'un budget
-	 */
-	async getBudgetAlerts(budgetId: string): Promise<BudgetAlert[]> {
-		const response = await apiClient.get<BudgetAlertsResponse>(
-			`/budget/${budgetId}/alerts`
-		);
-		return response.data;
-	},
-
-	/**
-	 * DELETE /budget/:id - Supprime un budget
-	 */
 	async deleteBudget(budgetId: string): Promise<void> {
-		await apiClient.delete(`/budget/${budgetId}`);
+		return await apiClient.delete<void>(`/budget/${budgetId}`);
 	},
 
-	// ===== MÉTHODES EXPENSE =====
-
-	/**
-	 * GET /expense - Récupère la liste des dépenses avec filtres et pagination
-	 */
-	async getExpenses(params?: {
-		budgetId?: string;
-		page?: number;
-		pageSize?: number;
-		sortBy?: string;
-		sortOrder?: 'asc' | 'desc';
-	}): Promise<ExpenseListResponse['data']> {
-		const searchParams = new URLSearchParams();
-
-		if (params?.budgetId) searchParams.append('budgetId', params.budgetId);
-		if (params?.page) searchParams.append('page', params.page.toString());
-		if (params?.pageSize)
-			searchParams.append('pageSize', params.pageSize.toString());
-		if (params?.sortBy) searchParams.append('sortBy', params.sortBy);
-		if (params?.sortOrder)
-			searchParams.append('sortOrder', params.sortOrder);
-
-		const url = `/expense${
-			searchParams.toString() ? `?${searchParams.toString()}` : ''
-		}`;
-		const response = await apiClient.get<ExpenseListResponse>(url);
-		return response.data;
-	},
-
-	/**
-	 * GET /expense/budget/:budgetId - Récupère les dépenses d'un budget spécifique
-	 */
-	async getExpensesByBudget(
-		budgetId: string,
-		pagination?: PaginationParams
-	): Promise<ExpenseListResponse['data']> {
+	async getBudgets(filters?: BudgetFilters): Promise<Budget[]> {
 		const params = new URLSearchParams();
 
-		if (pagination?.page) params.append('page', pagination.page.toString());
-		if (pagination?.pageSize)
-			params.append('pageSize', pagination.pageSize.toString());
-		if (pagination?.sortBy) params.append('sortBy', pagination.sortBy);
-		if (pagination?.sortOrder)
-			params.append('sortOrder', pagination.sortOrder);
+		if (filters?.isActive !== undefined) {
+			params.append('isActive', filters.isActive.toString());
+		}
+		if (filters?.dateRange?.startDate) {
+			params.append('startDate', filters.dateRange.startDate);
+		}
+		if (filters?.dateRange?.endDate) {
+			params.append('endDate', filters.dateRange.endDate);
+		}
 
 		const queryString = params.toString();
-		const url = `/expense/budget/${budgetId}${
-			queryString ? `?${queryString}` : ''
-		}`;
+		const endpoint = `/budget${queryString ? `?${queryString}` : ''}`;
 
-		const response = await apiClient.get<ExpenseListResponse>(url);
-		return response.data;
+		try {
+			const budgets = await apiClient.get<Budget[]>(endpoint);
+
+			return budgets
+				.map((budget) => {
+					if (!isValidBudget(budget)) {
+						const transformed = transformBudgetFromApi(
+							budget as RawBudgetApiData
+						);
+						return transformed;
+					}
+					return budget;
+				})
+				.filter((budget): budget is Budget => budget !== null);
+		} catch {
+			return [];
+		}
 	},
 
-	/**
-	 * GET /expense/recent - Récupère les dépenses récentes (pour le dashboard)
-	 */
-	async getRecentExpenses(limit = 10): Promise<Expense[]> {
-		const response = await apiClient.get<{
-			success: true;
-			data: Expense[];
-		}>(`/expense/recent?limit=${limit}`);
-		return response.data;
+	async getBudgetStats(budgetId: string): Promise<BudgetStats> {
+		return await apiClient.get<BudgetStats>(`/budget/${budgetId}/stats`);
 	},
 
-	/**
-	 * POST /expense - Crée une dépense manuelle
-	 */
-	async createExpense(expenseData: CreateExpenseData): Promise<Expense> {
-		const response = await apiClient.post<ExpenseResponse>(
-			'/expense',
-			expenseData
-		);
-		return response.data;
+	async addExpense(expenseData: CreateExpenseData): Promise<Expense> {
+		return await apiClient.post<Expense>('/expense', expenseData);
 	},
 
-	/**
-	 * PUT /expense/:id - Met à jour une dépense
-	 */
 	async updateExpense(
 		expenseId: string,
-		updateData: Partial<CreateExpenseData>
+		updates: Partial<CreateExpenseData>
 	): Promise<Expense> {
-		const response = await apiClient.put<ExpenseResponse>(
-			`/expense/${expenseId}`,
-			updateData
-		);
-		return response.data;
+		return await apiClient.put<Expense>(`/expense/${expenseId}`, updates);
 	},
 
-	/**
-	 * DELETE /expense/:id - Supprime une dépense
-	 */
 	async deleteExpense(expenseId: string): Promise<void> {
-		await apiClient.delete(`/expense/${expenseId}`);
+		return await apiClient.delete<void>(`/expense/${expenseId}`);
 	},
 
-	/**
-	 * GET /expense/without-amount - Récupère les produits sans prix
-	 */
-	async getExpensesWithoutAmount(budgetId?: string): Promise<Expense[]> {
-		const url = budgetId
-			? `/expense/without-amount?budgetId=${budgetId}`
-			: '/expense/without-amount';
-
-		const response = await apiClient.get<{
-			success: true;
-			data: Expense[];
-		}>(url);
-		return response.data;
+	async getBudgetAlerts(budgetId: string): Promise<BudgetAlert[]> {
+		try {
+			const alerts = await apiClient.get<BudgetAlert[]>(
+				`/budget/${budgetId}/alerts`
+			);
+			return alerts;
+		} catch {
+			return [];
+		}
 	},
 
-	/**
-	 * POST /expense/calculate-impact - Calcule l'impact d'une dépense sur le budget
-	 */
-	async calculateExpenseImpact(
-		amount: number,
-		budgetId?: string
-	): Promise<{
-		currentBudget: Budget;
-		projectedRemaining: number;
-		wouldExceedBudget: boolean;
-		suggestedAction?: string;
-	}> {
-		const response = await apiClient.post<{
-			success: true;
-			data: {
-				currentBudget: Budget;
-				projectedRemaining: number;
-				wouldExceedBudget: boolean;
-				suggestedAction?: string;
-			};
-		}>('/expense/calculate-impact', { amount, budgetId });
-		return response.data;
+	async markAlertAsRead(alertId: string): Promise<void> {
+		return await apiClient.patch<void>(`/budget/alert/${alertId}/read`);
+	},
+
+	async deleteAlert(alertId: string): Promise<void> {
+		return await apiClient.delete<void>(`/budget/alert/${alertId}`);
+	},
+
+	periodsOverlap(
+		start1: string,
+		end1: string,
+		start2: string,
+		end2: string
+	): boolean {
+		const s1 = new Date(start1);
+		const e1 = new Date(end1);
+		const s2 = new Date(start2);
+		const e2 = new Date(end2);
+
+		return s1 <= e2 && s2 <= e1;
+	},
+
+	formatBudgetPeriod(budget: Budget): string {
+		return safeFormatBudgetPeriod(budget);
+	},
+
+	formatCurrency(amount: number): string {
+		return formatCurrency(amount);
+	},
+
+	calculateBudgetDuration(budget: Budget): number {
+		if (!isValidBudget(budget)) {
+			return 0;
+		}
+
+		const start = new Date(budget.periodStart);
+		const end = new Date(budget.periodEnd);
+		const diffTime = Math.abs(end.getTime() - start.getTime());
+		return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	},
+
+	getCurrentMonthString(): string {
+		return getMonthString();
+	},
+
+	parseMonthString(monthString: string): Date {
+		return parseMonthString(monthString);
 	},
 };
-
-// Export par défaut
-export default budgetService;

@@ -13,7 +13,6 @@ import {
   BudgetNotFoundError,
   calculateBudgetStats,
   shouldTriggerAlert,
-  isCurrentMonthBudget,
 } from '../schemas/budget.schema';
 
 @Injectable()
@@ -25,22 +24,25 @@ export class BudgetService {
    */
   async getCurrentBudget(userId: string): Promise<Budget | null> {
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    // Chercher un budget existant pour ce mois
+    // Chercher un budget dont la période englobe la date actuelle
     let budget = await this.prisma.budget.findFirst({
       where: {
         userId,
-        periodStart: {
-          gte: startOfMonth,
-          lt: endOfMonth,
-        },
         isActive: true,
+        periodStart: {
+          lte: now,
+        },
+        periodEnd: {
+          gte: now,
+        },
+      },
+      orderBy: {
+        periodStart: 'desc',
       },
     });
 
-    // Si pas de budget pour ce mois, créer automatiquement depuis le dernier budget
+    // Si pas de budget actif pour la période actuelle, créer automatiquement
     if (!budget) {
       const lastBudget = await this.getLastActiveBudget(userId);
       if (lastBudget) {
@@ -77,10 +79,14 @@ export class BudgetService {
   /**
    * Crée automatiquement un budget pour le mois courant
    */
-  async createMonthlyBudget(userId: string, amount: number, options?: MonthlyBudgetOptions): Promise<Budget> {
+  async createMonthlyBudget(
+    userId: string,
+    amount: number,
+    options?: MonthlyBudgetOptions,
+  ): Promise<Budget> {
     const year = options?.year ?? new Date().getFullYear();
     const month = options?.month ?? new Date().getMonth();
-    
+
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
@@ -95,7 +101,11 @@ export class BudgetService {
   /**
    * Met à jour un budget existant
    */
-  async updateBudget(budgetId: string, userId: string, data: UpdateBudgetData): Promise<Budget> {
+  async updateBudget(
+    budgetId: string,
+    userId: string,
+    data: UpdateBudgetData,
+  ): Promise<Budget> {
     const budget = await this.prisma.budget.findFirst({
       where: { id: budgetId, userId },
     });
@@ -155,7 +165,10 @@ export class BudgetService {
   /**
    * Récupère un budget par son ID
    */
-  async getBudgetById(budgetId: string, userId: string): Promise<Budget | null> {
+  async getBudgetById(
+    budgetId: string,
+    userId: string,
+  ): Promise<Budget | null> {
     return this.prisma.budget.findFirst({
       where: { id: budgetId, userId },
     });
@@ -165,12 +178,12 @@ export class BudgetService {
    * Calcule les statistiques d'un budget avec ses dépenses
    */
   async getBudgetStats(budgetId: string, userId: string): Promise<BudgetStats> {
-    const budget = await this.prisma.budget.findFirst({
+    const budget = (await this.prisma.budget.findFirst({
       where: { id: budgetId, userId },
       include: {
         expenses: true,
       },
-    }) as BudgetWithExpenses | null;
+    })) as BudgetWithExpenses | null;
 
     if (!budget) {
       throw new BudgetNotFoundError(budgetId);
@@ -182,15 +195,21 @@ export class BudgetService {
   /**
    * Vérifie si des alertes doivent être envoyées pour un budget
    */
-  async checkBudgetAlerts(budgetId: string, userId: string): Promise<BudgetAlert[]> {
+  async checkBudgetAlerts(
+    budgetId: string,
+    userId: string,
+  ): Promise<BudgetAlert[]> {
     const stats = await this.getBudgetStats(budgetId, userId);
     const alerts: BudgetAlert[] = [];
 
     // Récupérer le dernier pourcentage d'alerte envoyé (à implémenter selon tes besoins)
     const lastAlertPercentage = 0; // TODO: récupérer depuis la DB ou cache
 
-    const alertCheck: AlertCheckResult = shouldTriggerAlert(stats, lastAlertPercentage);
-    
+    const alertCheck: AlertCheckResult = shouldTriggerAlert(
+      stats,
+      lastAlertPercentage,
+    );
+
     if (alertCheck.shouldAlert && alertCheck.alertType) {
       const alert: BudgetAlert = {
         id: crypto.randomUUID(),
@@ -249,7 +268,11 @@ export class BudgetService {
     });
   }
 
-  private async deactivateBudgetsForPeriod(userId: string, startDate: Date, endDate: Date): Promise<void> {
+  private async deactivateBudgetsForPeriod(
+    userId: string,
+    startDate: Date,
+    endDate: Date,
+  ): Promise<void> {
     await this.prisma.budget.updateMany({
       where: {
         userId,
@@ -287,7 +310,10 @@ export class BudgetService {
     }
   }
 
-  private getAlertMessage(type: BudgetAlert['type'], stats: BudgetStats): string {
+  private getAlertMessage(
+    type: BudgetAlert['type'],
+    stats: BudgetStats,
+  ): string {
     switch (type) {
       case 'THRESHOLD_75':
         return `Vous avez utilisé ${stats.percentageUsed.toFixed(1)}% de votre budget mensuel.`;
@@ -316,7 +342,10 @@ export class BudgetService {
     }
   }
 
-  private getAlertSuggestions(type: BudgetAlert['type'], stats: BudgetStats): string[] {
+  private getAlertSuggestions(
+    type: BudgetAlert['type'],
+    stats: BudgetStats,
+  ): string[] {
     const suggestions: string[] = [];
 
     switch (type) {
@@ -326,7 +355,9 @@ export class BudgetService {
         break;
       case 'THRESHOLD_90':
         suggestions.push('Limitez les achats non essentiels');
-        suggestions.push(`Budget quotidien suggéré: ${stats.suggestedDailyBudget.toFixed(2)}€`);
+        suggestions.push(
+          `Budget quotidien suggéré: ${stats.suggestedDailyBudget.toFixed(2)}€`,
+        );
         break;
       case 'OVER_BUDGET':
         suggestions.push('Revoyez vos dépenses du mois');

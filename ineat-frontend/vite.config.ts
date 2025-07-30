@@ -17,7 +17,6 @@ export default defineConfig(({ mode }) => {
 	if (isDevelopment) {
 		try {
 			const keyPath = path.resolve(homedir(), 'localhost+3-key.pem');
-			console.log(homedir());
 			const certPath = path.resolve(homedir(), 'localhost+3.pem');
 
 			// Vérifier que les certificats existent avant de les utiliser

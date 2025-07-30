@@ -53,7 +53,7 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const budget = await this.budgetService.getCurrentBudget(userId);
-      
+
       if (!budget) {
         return {
           success: true,
@@ -62,14 +62,18 @@ export class BudgetController {
         };
       }
 
-      // Récupérer les statistiques du budget
-      const stats = await this.budgetService.getBudgetStats(budget.id, userId);
-      
+      // Récupérer les statistiques du budget et les dépenses
+      const [stats, expenses] = await Promise.all([
+        this.budgetService.getBudgetStats(budget.id, userId),
+        this.expenseService.getBudgetExpenses(budget.id, userId),
+      ]);
+
       return {
         success: true,
         data: {
           budget,
           stats,
+          expenses,
         },
       };
     } catch (error) {
@@ -86,7 +90,7 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const hasAnyBudget = await this.budgetService.hasAnyBudget(userId);
-      
+
       return {
         success: true,
         data: { hasAnyBudget },
@@ -108,7 +112,7 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const budgets = await this.budgetService.getBudgets(userId, filters);
-      
+
       return {
         success: true,
         data: budgets,
@@ -130,7 +134,7 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const { budgetId } = params;
-      
+
       const budget = await this.budgetService.getBudgetById(budgetId, userId);
       if (!budget) {
         throw new NotFoundException(`Budget avec l'ID ${budgetId} introuvable`);
@@ -140,7 +144,7 @@ export class BudgetController {
         this.budgetService.getBudgetStats(budgetId, userId),
         this.expenseService.getBudgetExpenses(budgetId, userId),
       ]);
-      
+
       return {
         success: true,
         data: {
@@ -170,7 +174,7 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const budget = await this.budgetService.createBudget(userId, data);
-      
+
       return {
         success: true,
         data: budget,
@@ -198,7 +202,7 @@ export class BudgetController {
         data.amount,
         { year: data.year, month: data.month },
       );
-      
+
       return {
         success: true,
         data: budget,
@@ -222,9 +226,13 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const { budgetId } = params;
-      
-      const budget = await this.budgetService.updateBudget(budgetId, userId, data);
-      
+
+      const budget = await this.budgetService.updateBudget(
+        budgetId,
+        userId,
+        data,
+      );
+
       return {
         success: true,
         data: budget,
@@ -250,9 +258,9 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const { budgetId } = params;
-      
+
       const stats = await this.budgetService.getBudgetStats(budgetId, userId);
-      
+
       return {
         success: true,
         data: stats,
@@ -277,9 +285,12 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const { budgetId } = params;
-      
-      const alerts = await this.budgetService.checkBudgetAlerts(budgetId, userId);
-      
+
+      const alerts = await this.budgetService.checkBudgetAlerts(
+        budgetId,
+        userId,
+      );
+
       return {
         success: true,
         data: alerts,
@@ -305,9 +316,9 @@ export class BudgetController {
     try {
       const userId = (req.user as { id: string }).id;
       const { budgetId } = params;
-      
+
       await this.budgetService.deleteBudget(budgetId, userId);
-      
+
       return {
         success: true,
         message: 'Budget supprimé avec succès',

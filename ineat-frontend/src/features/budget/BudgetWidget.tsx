@@ -2,13 +2,10 @@ import { FC, useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 
 // ===== IMPORTS SCHÉMAS ZOD =====
-import { BudgetStats } from '@/schemas';
+import { BudgetStats, formatCurrency } from '@/schemas/budget';
 
 // ===== IMPORTS STORE =====
 import { useBudgetStore, useHasBudget } from '@/stores/budgetStore';
-
-// ===== IMPORTS UTILITAIRES =====
-import { formatPrice } from '@/utils/ui-utils';
 
 // ===== IMPORTS COMPOSANTS UI =====
 import {
@@ -33,6 +30,10 @@ const CreateBudgetPrompt: FC = () => {
 		const budgetAmount = parseFloat(amount);
 
 		if (!budgetAmount || budgetAmount <= 0) {
+			return;
+		}
+
+		if (isCreating) {
 			return;
 		}
 
@@ -135,7 +136,6 @@ interface BudgetSummaryProps {
 }
 
 const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
-	// ===== EXTRACTION DES DONNÉES =====
 	const {
 		totalBudget,
 		totalSpent,
@@ -147,10 +147,8 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 		suggestedDailyBudget,
 	} = budgetStats;
 
-	// ===== CALCULS DÉRIVÉS =====
-	const percentage = Math.min(percentageUsed, 100); // Limiter à 100% pour l'affichage
+	const percentage = Math.min(percentageUsed, 100);
 
-	// ===== UTILITAIRES LOCAUX =====
 	const getBudgetColorClass = (percentage: number): string => {
 		if (percentage < 65) return 'text-success-50';
 		if (percentage < 80) return 'text-warning-50';
@@ -173,7 +171,6 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 	const barClass = getBudgetBarClass(percentage);
 	const barBackgroundClass = getBudgetBarBackgroundClass(percentage);
 
-	// ===== MESSAGES D'ÉTAT =====
 	const getStatusMessage = (): string => {
 		if (isOverBudget) {
 			return 'Budget dépassé !';
@@ -189,7 +186,7 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 
 	const getAdviceMessage = (): string | null => {
 		if (daysRemaining > 0 && !isOverBudget) {
-			return `${formatPrice(suggestedDailyBudget)}/jour conseillé`;
+			return `${formatCurrency(suggestedDailyBudget)}/jour conseillé`;
 		}
 		if (isOverBudget) {
 			return 'Réduisez vos dépenses';
@@ -197,7 +194,6 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 		return null;
 	};
 
-	// ===== RENDU =====
 	return (
 		<Link to='/app/budget'>
 			<Card>
@@ -221,17 +217,15 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 				</CardHeader>
 
 				<CardContent className='space-y-4'>
-					{/* ===== MONTANT RESTANT ===== */}
 					<div className='flex justify-between items-center'>
 						<span className='text-neutral-200'>
 							{isOverBudget ? 'Dépassement' : 'Restant'}
 						</span>
 						<span className={`text-2xl font-bold ${colorClass}`}>
-							{formatPrice(Math.abs(remaining))}
+							{formatCurrency(Math.abs(remaining))}
 						</span>
 					</div>
 
-					{/* ===== BARRE DE PROGRESSION ===== */}
 					<div className='space-y-2'>
 						<div
 							className={`w-full rounded-full h-3 ${barBackgroundClass}`}>
@@ -239,12 +233,11 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 								className={`h-full rounded-full transition-all duration-300 ${barClass}`}
 								style={{
 									width: `${Math.min(percentage, 100)}%`,
-									minWidth: percentage > 0 ? '4px' : '0px', // Largeur minimale visible
+									minWidth: percentage > 0 ? '4px' : '0px',
 								}}
 							/>
 						</div>
 
-						{/* ===== INDICATEURS DE SEUILS ===== */}
 						<div className='flex justify-between text-xs text-neutral-200'>
 							<span>0%</span>
 							<span className='text-warning-50'>75%</span>
@@ -252,7 +245,6 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 						</div>
 					</div>
 
-					{/* ===== CONSEIL BUDGÉTAIRE ===== */}
 					{getAdviceMessage() && (
 						<div className='text-sm text-neutral-200 bg-neutral-100 rounded-md p-2 text-center'>
 							💡 {getAdviceMessage()}
@@ -263,10 +255,10 @@ const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
 				<CardFooter className='flex justify-between text-sm text-neutral-200'>
 					<div className='flex flex-col'>
 						<span className='font-medium'>
-							{formatPrice(totalSpent)} dépensés
+							{formatCurrency(totalSpent)} dépensés
 						</span>
 						<span className='text-xs'>
-							sur {formatPrice(totalBudget)}
+							sur {formatCurrency(totalBudget)}
 						</span>
 					</div>
 					<div className='flex flex-col items-end'>
@@ -291,15 +283,15 @@ export const BudgetWidget: FC = () => {
 	const { budgetStats, isLoading, error, fetchCurrentBudget, clearError } =
 		useBudgetStore();
 
-	// ===== EFFECTS =====
+	const [hasInitialized, setHasInitialized] = useState(false);
+
 	useEffect(() => {
-		// Récupérer les données du budget au montage du composant
-		fetchCurrentBudget();
-	}, [fetchCurrentBudget]);
+		if (!hasInitialized) {
+			fetchCurrentBudget();
+			setHasInitialized(true);
+		}
+	}, [fetchCurrentBudget, hasInitialized]);
 
-	// ===== GESTION DES ÉTATS =====
-
-	// État de chargement initial
 	if (isLoading) {
 		return (
 			<Card>
@@ -307,7 +299,7 @@ export const BudgetWidget: FC = () => {
 					<div className='text-center space-y-2'>
 						<Loader2 className='size-8 animate-spin mx-auto text-accent' />
 						<p className='text-neutral-200'>
-							Chargement du budget...
+							Vérification du budget...
 						</p>
 					</div>
 				</CardContent>
@@ -315,7 +307,6 @@ export const BudgetWidget: FC = () => {
 		);
 	}
 
-	// État d'erreur
 	if (error) {
 		return (
 			<Card>
@@ -327,7 +318,10 @@ export const BudgetWidget: FC = () => {
 							<Button
 								variant='outline'
 								size='sm'
-								onClick={clearError}>
+								onClick={() => {
+									clearError();
+									fetchCurrentBudget(true);
+								}}>
 								Réessayer
 							</Button>
 						</AlertDescription>
@@ -337,13 +331,9 @@ export const BudgetWidget: FC = () => {
 		);
 	}
 
-	// ===== RENDU CONDITIONNEL =====
-
-	// Si aucun budget n'existe, afficher l'invite de création
 	if (!hasBudget || !budgetStats) {
 		return <CreateBudgetPrompt />;
 	}
 
-	// Si un budget existe, afficher le résumé
 	return <BudgetSummary budgetStats={budgetStats} />;
 };

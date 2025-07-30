@@ -13,6 +13,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { Euro, Loader2 } from 'lucide-react';
 import { Category, AddInventoryItemData, UnitType } from '@/schemas';
 
 // Props du composant
@@ -24,8 +25,9 @@ interface AddManualProductFormProps {
 	defaultProductName?: string;
 }
 
+// CORRECTION : Utiliser 'name' au lieu de 'productName'
 interface FormData {
-	productName: string;
+	name: string;
 	brand: string;
 	barcode: string;
 	category: string;
@@ -65,9 +67,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	isSubmitting,
 	defaultProductName = '',
 }) => {
-	// État du formulaire
+	// État du formulaire - CORRECTION : Utiliser 'name' et s'assurer que tous les champs sont des chaînes
 	const [formData, setFormData] = useState<FormData>({
-		productName: defaultProductName,
+		name: defaultProductName || '',
 		brand: '',
 		barcode: '',
 		category: '',
@@ -87,21 +89,21 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 	// Mettre à jour le nom du produit si defaultProductName change
 	useEffect(() => {
-		if (defaultProductName && !formData.productName) {
+		if (defaultProductName && !formData.name) {
 			setFormData((prev) => ({
 				...prev,
-				productName: defaultProductName,
+				name: defaultProductName,
 			}));
 		}
-	}, [defaultProductName, formData.productName]);
+	}, [defaultProductName, formData.name]);
 
 	// Fonction de validation
 	const validateForm = (): boolean => {
 		const newErrors: Partial<Record<keyof FormData, string>> = {};
 
-		// Validation des champs requis
-		if (!formData.productName.trim()) {
-			newErrors.productName = 'Le nom du produit est requis';
+		// Validation des champs requis - CORRECTION : Utiliser 'name'
+		if (!formData.name.trim()) {
+			newErrors.name = 'Le nom du produit est requis';
 		}
 
 		if (!formData.category) {
@@ -164,9 +166,22 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			return;
 		}
 
-		// Préparer les données pour l'API
+		// Debug des catégories disponibles
+		console.log('Catégories disponibles:', categories);
+		console.log('Slug de catégorie sélectionné:', formData.category);
+
+		// Vérifier que la catégorie sélectionnée existe
+		const selectedCategory = categories.find(
+			(cat) => cat.slug === formData.category
+		);
+		if (!selectedCategory) {
+			toast.error("La catégorie sélectionnée n'est pas valide");
+			return;
+		}
+
+		// Préparer les données pour l'API - CORRECTION : Utiliser 'name'
 		const submitData: AddInventoryItemData = {
-			productName: formData.productName.trim(),
+			name: formData.name.trim(),
 			category: formData.category,
 			quantity: parseFloat(formData.quantity),
 			unitType: formData.unitType,
@@ -198,6 +213,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			submitData.notes = formData.notes.trim();
 		}
 
+		// Debug des données envoyées
+		console.log("Données envoyées à l'API:", submitData);
+
 		try {
 			await onSubmit(submitData);
 		} catch (error) {
@@ -214,24 +232,23 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 					Informations de base
 				</h3>
 
-				{/* Nom du produit */}
+				{/* Nom du produit - CORRECTION : Utiliser 'name' */}
 				<div className='space-y-2'>
-					<Label htmlFor='productName'>
+					<Label htmlFor='name'>
 						Nom du produit <span className='text-error-100'>*</span>
 					</Label>
 					<Input
-						id='productName'
-						value={formData.productName}
+						id='name'
+						value={formData.name}
 						onChange={(e) =>
-							handleInputChange('productName', e.target.value)
+							handleInputChange('name', e.target.value)
 						}
 						placeholder='Ex: Pommes Golden'
-						className={errors.productName ? 'border-error-100' : ''}
+						className={errors.name ? 'border-error-100' : ''}
+						disabled={isSubmitting}
 					/>
-					{errors.productName && (
-						<p className='text-sm text-error-100'>
-							{errors.productName}
-						</p>
+					{errors.name && (
+						<p className='text-sm text-error-100'>{errors.name}</p>
 					)}
 				</div>
 
@@ -245,6 +262,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							handleInputChange('brand', e.target.value)
 						}
 						placeholder='Ex: Carrefour Bio'
+						disabled={isSubmitting}
 					/>
 				</div>
 
@@ -259,6 +277,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}
 						placeholder='Ex: 3560070057047'
 						className={errors.barcode ? 'border-error-100' : ''}
+						disabled={isSubmitting}
 					/>
 					{errors.barcode && (
 						<p className='text-sm text-error-100'>
@@ -277,9 +296,14 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 					</Label>
 					<Select
 						value={formData.category}
-						onValueChange={(value) =>
-							handleInputChange('category', value)
-						}>
+						onValueChange={(value) => {
+							console.log(
+								'Slug de catégorie sélectionné:',
+								value
+							);
+							handleInputChange('category', value);
+						}}
+						disabled={isSubmitting}>
 						<SelectTrigger
 							className={
 								errors.category ? 'border-error-100' : ''
@@ -292,13 +316,19 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									Chargement...
 								</SelectItem>
 							) : (
-								categories.map((category) => (
-									<SelectItem
-										key={category.id}
-										value={category.id}>
-										{category.name}
-									</SelectItem>
-								))
+								categories.map((category) => {
+									console.log(
+										'Catégorie disponible:',
+										category
+									);
+									return (
+										<SelectItem
+											key={category.id}
+											value={category.slug}>
+											{category.name}
+										</SelectItem>
+									);
+								})
 							)}
 						</SelectContent>
 					</Select>
@@ -337,6 +367,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							className={
 								errors.quantity ? 'border-error-100' : ''
 							}
+							disabled={isSubmitting}
 						/>
 						{errors.quantity && (
 							<p className='text-sm text-error-100'>
@@ -354,7 +385,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							value={formData.unitType}
 							onValueChange={(value) =>
 								handleInputChange('unitType', value)
-							}>
+							}
+							disabled={isSubmitting}>
 							<SelectTrigger>
 								<SelectValue />
 							</SelectTrigger>
@@ -398,6 +430,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							className={
 								errors.purchaseDate ? 'border-error-100' : ''
 							}
+							disabled={isSubmitting}
 						/>
 						{errors.purchaseDate && (
 							<p className='text-sm text-error-100'>
@@ -419,6 +452,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							className={
 								errors.expiryDate ? 'border-error-100' : ''
 							}
+							disabled={isSubmitting}
 						/>
 						{errors.expiryDate && (
 							<p className='text-sm text-error-100'>
@@ -438,9 +472,17 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				</h3>
 
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-					{/* Prix d'achat */}
+					{/* Prix d'achat avec indication budget */}
 					<div className='space-y-2'>
-						<Label htmlFor='purchasePrice'>Prix d'achat (€)</Label>
+						<Label
+							htmlFor='purchasePrice'
+							className='flex items-center gap-2'>
+							<Euro className='size-3' />
+							Prix d'achat (€)
+							<span className='text-xs text-neutral-200 font-normal'>
+								(pour le budget)
+							</span>
+						</Label>
 						<Input
 							id='purchasePrice'
 							type='number'
@@ -457,12 +499,16 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							className={
 								errors.purchasePrice ? 'border-error-100' : ''
 							}
+							disabled={isSubmitting}
 						/>
 						{errors.purchasePrice && (
 							<p className='text-sm text-error-100'>
 								{errors.purchasePrice}
 							</p>
 						)}
+						<p className='text-xs text-neutral-200'>
+							Optionnel - nécessaire pour le suivi budgétaire
+						</p>
 					</div>
 
 					{/* Lieu de stockage */}
@@ -474,7 +520,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							value={formData.storageLocation}
 							onValueChange={(value) =>
 								handleInputChange('storageLocation', value)
-							}>
+							}
+							disabled={isSubmitting}>
 							<SelectTrigger>
 								<SelectValue placeholder='Sélectionnez un lieu' />
 							</SelectTrigger>
@@ -500,6 +547,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}
 						placeholder='Ajoutez des notes sur ce produit...'
 						rows={3}
+						disabled={isSubmitting}
 					/>
 				</div>
 			</div>
@@ -518,7 +566,14 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 					type='submit'
 					disabled={isSubmitting}
 					className='flex-1'>
-					{isSubmitting ? 'Ajout en cours...' : 'Ajouter le produit'}
+					{isSubmitting ? (
+						<>
+							<Loader2 className='size-4 mr-2 animate-spin' />
+							Ajout en cours...
+						</>
+					) : (
+						'Ajouter le produit'
+					)}
 				</Button>
 			</div>
 		</form>

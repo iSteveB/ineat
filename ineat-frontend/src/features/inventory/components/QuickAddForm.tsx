@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Package, Save, Calendar, MapPin, Euro } from 'lucide-react';
+import {
+	ArrowLeft,
+	Package,
+	Save,
+	Calendar,
+	MapPin,
+	Euro,
+	Loader2,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -113,6 +121,17 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			newErrors.purchasePrice = 'Le prix doit être un nombre positif';
 		}
 
+		// Validation des dates
+		if (expiryDate && purchaseDate) {
+			const purchaseDateObj = new Date(purchaseDate);
+			const expiryDateObj = new Date(expiryDate);
+
+			if (expiryDateObj <= purchaseDateObj) {
+				newErrors.expiryDate =
+					"La date de péremption doit être postérieure à la date d'achat";
+			}
+		}
+
 		setErrors(newErrors);
 		return Object.keys(newErrors).length === 0;
 	};
@@ -136,6 +155,22 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		await onSubmit(data);
 	};
 
+	// Gestionnaire de changement avec effacement d'erreur
+	const handleFieldChange = (
+		field: string,
+		value: string,
+		setter: (value: string) => void
+	) => {
+		setter(value);
+		if (errors[field]) {
+			setErrors((prev) => {
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				const { [field]: removed, ...rest } = prev;
+				return rest;
+			});
+		}
+	};
+
 	return (
 		<div className='space-y-6'>
 			{/* En-tête avec bouton retour */}
@@ -145,6 +180,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					variant='ghost'
 					size='sm'
 					onClick={onCancel}
+					disabled={isSubmitting}
 					className='hover:bg-neutral-100'>
 					<ArrowLeft className='size-4 mr-1' />
 					Retour à la recherche
@@ -206,10 +242,17 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 								step='0.01'
 								min='0.01'
 								value={quantity}
-								onChange={(e) => setQuantity(e.target.value)}
+								onChange={(e) =>
+									handleFieldChange(
+										'quantity',
+										e.target.value,
+										setQuantity
+									)
+								}
 								className={
 									errors.quantity ? 'border-error-50' : ''
 								}
+								disabled={isSubmitting}
 							/>
 							<span className='absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-200'>
 								{product.unitType}
@@ -230,7 +273,8 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						</Label>
 						<Select
 							value={storageLocation}
-							onValueChange={setStorageLocation}>
+							onValueChange={setStorageLocation}
+							disabled={isSubmitting}>
 							<SelectTrigger id='storageLocation'>
 								<SelectValue />
 							</SelectTrigger>
@@ -257,10 +301,17 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							id='purchaseDate'
 							type='date'
 							value={purchaseDate}
-							onChange={(e) => setPurchaseDate(e.target.value)}
+							onChange={(e) =>
+								handleFieldChange(
+									'purchaseDate',
+									e.target.value,
+									setPurchaseDate
+								)
+							}
 							className={
 								errors.purchaseDate ? 'border-error-50' : ''
 							}
+							disabled={isSubmitting}
 						/>
 						{errors.purchaseDate && (
 							<p className='text-xs text-error-50'>
@@ -279,18 +330,38 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							id='expiryDate'
 							type='date'
 							value={expiryDate}
-							onChange={(e) => setExpiryDate(e.target.value)}
+							onChange={(e) =>
+								handleFieldChange(
+									'expiryDate',
+									e.target.value,
+									setExpiryDate
+								)
+							}
+							className={
+								errors.expiryDate ? 'border-error-50' : ''
+							}
+							disabled={isSubmitting}
 						/>
+						{errors.expiryDate && (
+							<p className='text-xs text-error-50'>
+								{errors.expiryDate}
+							</p>
+						)}
 						<p className='text-xs text-neutral-200'>
 							Date suggérée selon la catégorie
 						</p>
 					</div>
 
-					{/* Prix d'achat */}
+					{/* Prix d'achat avec indication budget */}
 					<div className='space-y-2'>
-						<Label htmlFor='purchasePrice'>
-							<Euro className='inline size-3 mr-1' />
-							Prix d'achat
+						<Label
+							htmlFor='purchasePrice'
+							className='flex items-center gap-2'>
+							<Euro className='size-3' />
+							Prix d'achat (€)
+							<span className='text-xs text-neutral-200 font-normal'>
+								(pour le budget)
+							</span>
 						</Label>
 						<Input
 							id='purchasePrice'
@@ -299,16 +370,26 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							min='0'
 							placeholder='0.00'
 							value={purchasePrice}
-							onChange={(e) => setPurchasePrice(e.target.value)}
+							onChange={(e) =>
+								handleFieldChange(
+									'purchasePrice',
+									e.target.value,
+									setPurchasePrice
+								)
+							}
 							className={
 								errors.purchasePrice ? 'border-error-50' : ''
 							}
+							disabled={isSubmitting}
 						/>
 						{errors.purchasePrice && (
 							<p className='text-xs text-error-50'>
 								{errors.purchasePrice}
 							</p>
 						)}
+						<p className='text-xs text-neutral-200'>
+							Optionnel - nécessaire pour le suivi budgétaire
+						</p>
 					</div>
 				</div>
 
@@ -321,6 +402,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						placeholder='Informations complémentaires...'
 						value={notes}
 						onChange={(e) => setNotes(e.target.value)}
+						disabled={isSubmitting}
 					/>
 				</div>
 
@@ -338,10 +420,17 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						onClick={handleSubmit}
 						disabled={isSubmitting}
 						className='bg-accent hover:bg-accent/90'>
-						<Save className='size-4 mr-2' />
-						{isSubmitting
-							? 'Ajout en cours...'
-							: "Ajouter à l'inventaire"}
+						{isSubmitting ? (
+							<>
+								<Loader2 className='size-4 mr-2 animate-spin' />
+								Ajout en cours...
+							</>
+						) : (
+							<>
+								<Save className='size-4 mr-2' />
+								Ajouter à l'inventaire
+							</>
+						)}
 					</Button>
 				</div>
 			</div>
