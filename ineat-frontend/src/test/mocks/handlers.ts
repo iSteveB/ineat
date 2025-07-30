@@ -44,7 +44,7 @@ export const handlers = [
 	// Exemple d'interception d'une requête POST
 	http.post(
 		`${import.meta.env.VITE_API_URL}/inventory/add`,
-		async ({ request }) => {
+		async ({ request }: { request: Request }) => {
 			const data = (await request.json()) as AddProductRequest;
 			const newProduct: Product = {
 				...data,

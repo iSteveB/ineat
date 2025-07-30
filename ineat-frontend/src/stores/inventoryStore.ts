@@ -118,7 +118,7 @@ type InventoryActions = Pick<
 
 // État initial du formulaire (conforme au schéma AddInventoryItemData)
 const initialFormState: Partial<AddInventoryItemData> = {
-	productName: '',
+	name: '',
 	brand: '',
 	category: '',
 	quantity: 1,

@@ -5,11 +5,7 @@ import { createFileRoute } from '@tanstack/react-router';
 
 // ===== IMPORTS SCHÉMAS ZOD =====
 import {
-	BudgetStats,
 	InventoryStats,
-	calculateBudgetStats,
-	Budget,
-	Expense,
 } from '@/schemas';
 
 // ===== IMPORTS COMPOSANTS =====
@@ -75,70 +71,6 @@ const Dashboard: FC = () => {
 	});
 
 	// ===== DONNÉES MOCKÉES CONFORMES AUX SCHÉMAS ZOD =====
-
-	// Budget et dépenses mockés (conformes aux schémas Zod)
-	const mockBudget: Budget = {
-		id: 'mock-budget-id',
-		userId: user?.id || 'mock-user-id',
-		amount: 400, // Budget total du mois
-		periodStart: new Date(
-			new Date().getFullYear(),
-			new Date().getMonth(),
-			1
-		).toISOString(), // 1er du mois
-		periodEnd: new Date(
-			new Date().getFullYear(),
-			new Date().getMonth() + 1,
-			0
-		).toISOString(), // Dernier jour du mois
-		isActive: true,
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	};
-
-	const mockExpenses: Expense[] = [
-		{
-			id: 'expense-1',
-			userId: user?.id || 'mock-user-id',
-			budgetId: 'mock-budget-id',
-			amount: 45.5,
-			date: new Date('2025-07-15').toISOString(),
-			source: 'Supermarché',
-			receiptId: 'receipt-1',
-			category: 'Alimentation',
-			notes: 'Courses hebdomadaires',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-		{
-			id: 'expense-2',
-			userId: user?.id || 'mock-user-id',
-			budgetId: 'mock-budget-id',
-			amount: 120.3,
-			date: new Date('2025-07-10').toISOString(),
-			source: 'Marché',
-			category: 'Fruits et légumes',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-		{
-			id: 'expense-3',
-			userId: user?.id || 'mock-user-id',
-			budgetId: 'mock-budget-id',
-			amount: 84.2,
-			date: new Date('2025-07-05').toISOString(),
-			source: 'Épicerie',
-			category: 'Produits de base',
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		},
-	];
-
-	// Calcul des statistiques de budget (conforme au schéma BudgetStatsSchema)
-	const budgetStats: BudgetStats = calculateBudgetStats(
-		mockBudget,
-		mockExpenses
-	);
 
 	// Données Nutriscore mockées
 	const nutriscoreData = {
@@ -343,7 +275,7 @@ const soonExpiringCount = criticalCount + warningCount;
 
 			{/* ===== WIDGET BUDGET ===== */}
 			<div className='mb-8'>
-				<BudgetWidget budgetStats={budgetStats} />
+				<BudgetWidget />
 			</div>
 
 			{/* ===== DEUXIÈME RANGÉE DE WIDGETS ===== */}
