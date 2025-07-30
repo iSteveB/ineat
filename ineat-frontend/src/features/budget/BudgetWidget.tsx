@@ -96,7 +96,7 @@ const CreateBudgetPrompt: FC = () => {
 					</div>
 
 					{error && (
-						<Alert variant='destructive'>
+						<Alert variant='warning'>
 							<AlertTriangle className='size-4' />
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
@@ -311,7 +311,7 @@ export const BudgetWidget: FC = () => {
 		return (
 			<Card>
 				<CardContent className='py-6'>
-					<Alert variant='destructive'>
+					<Alert variant='warning'>
 						<AlertTriangle className='size-4' />
 						<AlertDescription className='flex justify-between items-center'>
 							<span>{error}</span>

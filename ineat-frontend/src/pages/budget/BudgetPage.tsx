@@ -171,7 +171,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 					</div>
 
 					{error && (
-						<Alert variant='destructive'>
+						<Alert variant='warning'>
 							<AlertTriangle className='size-4' />
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
@@ -403,7 +403,7 @@ const CreateBudgetSection: FC<{ onBudgetCreated: () => void }> = ({
 					</div>
 
 					{error && (
-						<Alert variant='destructive'>
+						<Alert variant='warning'>
 							<AlertTriangle className='size-4' />
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
@@ -562,7 +562,7 @@ const BudgetAlerts: FC<BudgetAlertsProps> = ({ alerts }) => {
 					key={alert.id}
 					variant={
 						alert.severity === 'CRITICAL'
-							? 'destructive'
+							? 'warning'
 							: 'default'
 					}>
 					<AlertTriangle className='size-4' />
@@ -758,7 +758,7 @@ export const BudgetPage: FC = () => {
 			</div>
 
 			{error && (
-				<Alert variant='destructive'>
+				<Alert variant='warning'>
 					<AlertTriangle className='size-4' />
 					<AlertDescription>{error}</AlertDescription>
 				</Alert>
