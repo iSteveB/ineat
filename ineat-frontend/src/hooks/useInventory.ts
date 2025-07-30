@@ -4,18 +4,15 @@ import {
 	inventoryService,
 	UpdateInventoryItemInput,
 	InventoryItemResponse,
+	ProductAddedWithBudgetResult, // Import du bon type
 } from '@/services/inventoryService';
-import {
-	AddInventoryItemData,
-	InventoryFilters,
-	ProductCreatedResponse,
-} from '@/schemas';
+import { AddInventoryItemData, InventoryFilters } from '@/schemas';
 
 // Type pour les paramètres de la mutation updateInventoryItem
-type UpdateInventoryItemParams = {
+interface UpdateInventoryItemParams {
 	inventoryItemId: string;
 	updateData: UpdateInventoryItemInput;
-};
+}
 
 // Clés de cache pour les requêtes
 export const inventoryKeys = {
@@ -28,12 +25,10 @@ export const inventoryKeys = {
 	stats: () => [...inventoryKeys.all, 'stats'] as const,
 	search: () => [...inventoryKeys.all, 'search'] as const,
 	searchQuery: (query: string) => [...inventoryKeys.search(), query] as const,
-};
+} as const;
 
 /**
  * Hook pour récupérer l'inventaire de l'utilisateur
- * @param filters Filtres optionnels
- * @param options Options TanStack Query
  */
 export function useInventory(
 	filters?: InventoryFilters,
@@ -46,7 +41,7 @@ export function useInventory(
 		queryKey: inventoryKeys.list(filters),
 		queryFn: () => inventoryService.getInventory(filters),
 		staleTime: 1000 * 60 * 5, // 5 minutes
-		gcTime: 1000 * 60 * 10, // 10 minutes (anciennement cacheTime)
+		gcTime: 1000 * 60 * 10, // 10 minutes
 		refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
 		enabled: options?.enabled ?? true,
 		meta: {
@@ -72,29 +67,52 @@ export function useInventoryStats() {
 
 /**
  * Hook pour ajouter un produit manuellement
+ * CORRECTION: Types alignés avec ProductAddedWithBudgetResult
  */
 export function useAddManualProduct() {
 	const queryClient = useQueryClient();
 
-	return useMutation({
+	return useMutation<
+		ProductAddedWithBudgetResult, // Type de retour correct
+		Error, // Type d'erreur
+		AddInventoryItemData // Type des variables
+	>({
 		mutationFn: (productData: AddInventoryItemData) =>
 			inventoryService.addManualProduct(productData),
 
-		onSuccess: (data: ProductCreatedResponse) => {
+		onSuccess: (data: ProductAddedWithBudgetResult) => {
 			// Invalider et refetch l'inventaire pour afficher le nouveau produit
 			queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() });
 			queryClient.invalidateQueries({ queryKey: inventoryKeys.stats() });
 
-			toast.success('Produit ajouté avec succès à votre inventaire !', {
-				description: `${data.data.name}`,
-			});
+			// Gestion des toasts selon le type de réponse budgétaire
+			switch (data.type) {
+				case 'success':
+					toast.success(data.message, {
+						description: `${data.productName} ajouté à l'inventaire`,
+					});
+					break;
+				case 'info':
+					toast.info(data.message, {
+						description: `${data.productName}`,
+					});
+					break;
+				case 'warning':
+					toast.warning(data.message, {
+						description: `${data.productName}`,
+					});
+					break;
+			}
+
+			// Si le budget doit être rafraîchi
+			if (data.shouldRefreshBudget) {
+				queryClient.invalidateQueries({ queryKey: ['budget'] });
+			}
 		},
 
-		onError: (error: unknown) => {
+		onError: (error: Error) => {
 			const errorMessage =
-				error instanceof Error
-					? error.message
-					: "Erreur lors de l'ajout du produit";
+				error.message || "Erreur lors de l'ajout du produit";
 
 			toast.error("Erreur lors de l'ajout du produit", {
 				description: errorMessage,
@@ -115,46 +133,46 @@ export function useAddManualProduct() {
 export function useUpdateInventoryItem() {
 	const queryClient = useQueryClient();
 
-	return useMutation<
-		InventoryItemResponse,
-		unknown,
-		UpdateInventoryItemParams
-	>({
-		mutationFn: async ({
-			inventoryItemId,
-			updateData,
-		}: UpdateInventoryItemParams): Promise<InventoryItemResponse> => {
-			return await inventoryService.updateInventoryItem(
+	return useMutation<InventoryItemResponse, Error, UpdateInventoryItemParams>(
+		{
+			mutationFn: async ({
 				inventoryItemId,
-				updateData
-			);
-		},
+				updateData,
+			}: UpdateInventoryItemParams): Promise<InventoryItemResponse> => {
+				return await inventoryService.updateInventoryItem(
+					inventoryItemId,
+					updateData
+				);
+			},
 
-		onSuccess: (updatedItem: InventoryItemResponse, variables) => {
-			// Mettre à jour le cache optimistiquement
-			queryClient.setQueryData(
-				inventoryKeys.detail(variables.inventoryItemId),
-				updatedItem
-			);
+			onSuccess: (updatedItem: InventoryItemResponse, variables) => {
+				// Mettre à jour le cache optimistiquement
+				queryClient.setQueryData(
+					inventoryKeys.detail(variables.inventoryItemId),
+					updatedItem
+				);
 
-			// Invalider les listes pour refléter les changements
-			queryClient.invalidateQueries({ queryKey: inventoryKeys.lists() });
-			queryClient.invalidateQueries({ queryKey: inventoryKeys.stats() });
+				// Invalider les listes pour refléter les changements
+				queryClient.invalidateQueries({
+					queryKey: inventoryKeys.lists(),
+				});
+				queryClient.invalidateQueries({
+					queryKey: inventoryKeys.stats(),
+				});
 
-			toast.success('Produit mis à jour avec succès');
-		},
+				toast.success('Produit mis à jour avec succès');
+			},
 
-		onError: (error: unknown) => {
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: 'Erreur lors de la mise à jour';
+			onError: (error: Error) => {
+				const errorMessage =
+					error.message || 'Erreur lors de la mise à jour';
 
-			toast.error('Erreur lors de la mise à jour', {
-				description: errorMessage,
-			});
-		},
-	});
+				toast.error('Erreur lors de la mise à jour', {
+					description: errorMessage,
+				});
+			},
+		}
+	);
 }
 
 /**
@@ -163,7 +181,11 @@ export function useUpdateInventoryItem() {
 export function useRemoveInventoryItem() {
 	const queryClient = useQueryClient();
 
-	return useMutation({
+	return useMutation<
+		void, // Le service de suppression ne retourne rien
+		Error,
+		string // ID de l'item à supprimer
+	>({
 		mutationFn: (inventoryItemId: string) =>
 			inventoryService.removeInventoryItem(inventoryItemId),
 
@@ -190,11 +212,9 @@ export function useRemoveInventoryItem() {
 			toast.success('Produit supprimé de votre inventaire');
 		},
 
-		onError: (error: unknown) => {
+		onError: (error: Error) => {
 			const errorMessage =
-				error instanceof Error
-					? error.message
-					: 'Erreur lors de la suppression';
+				error.message || 'Erreur lors de la suppression';
 
 			toast.error('Erreur lors de la suppression', {
 				description: errorMessage,
@@ -256,39 +276,4 @@ export function usePrefetchInventory() {
 		prefetchInventory,
 		prefetchStats,
 	};
-}
-
-/**
- * Utilitaire pour transformer une ProductCreatedResponse en InventoryItemResponse partiel
- * Note: Cette fonction est limitée car ProductCreatedResponse ne contient que les données produit
- * Pour un InventoryItem complet, il faut refetch depuis le serveur
- */
-export function transformToInventoryItem(
-	response: ProductCreatedResponse,
-	inventoryData?: {
-		inventoryItemId: string;
-		quantity: number;
-		purchaseDate: string;
-		expiryDate?: string;
-		purchasePrice?: number;
-		storageLocation?: string;
-		notes?: string;
-	}
-): Partial<InventoryItemResponse> {
-	const baseItem: Partial<InventoryItemResponse> = {
-		product: response.data,
-	};
-
-	// Ajouter les données d'inventaire si disponibles
-	if (inventoryData) {
-		baseItem.id = inventoryData.inventoryItemId;
-		baseItem.quantity = inventoryData.quantity;
-		baseItem.purchaseDate = inventoryData.purchaseDate;
-		baseItem.expiryDate = inventoryData.expiryDate;
-		baseItem.purchasePrice = inventoryData.purchasePrice;
-		baseItem.storageLocation = inventoryData.storageLocation;
-		baseItem.notes = inventoryData.notes;
-	}
-
-	return baseItem;
 }
