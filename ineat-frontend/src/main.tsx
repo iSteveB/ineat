@@ -6,6 +6,7 @@ import { useAuthStore } from './stores/authStore';
 import './index.css';
 
 import { routeTree } from './routeTree.gen';
+import { Error404Page } from './pages/error/Error404Page';
 
 const router = createRouter({
 	routeTree,
@@ -14,6 +15,9 @@ const router = createRouter({
     // Initialiser avec une fonction qui récupère l'état actuel du store
 		authStore: ()=> useAuthStore.getState(),
 	},
+	defaultNotFoundComponent: () => {
+    return <Error404Page message="Une erreur est survenue" showSearch={true} quickActions={true} />;
+  },
 });
 
 // Enregistrer l'instance du router

@@ -10,12 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteRouteImport } from './routes/app/route'
-import { Route as ErrorRouteRouteImport } from './routes/_error/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
-import { Route as ErrorNotFoundRouteImport } from './routes/_error/notFound'
-import { Route as ErrorErrorRouteImport } from './routes/_error/error'
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
@@ -44,10 +41,6 @@ const AppRouteRoute = AppRouteRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ErrorRouteRoute = ErrorRouteRouteImport.update({
-  id: '/_error',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
   getParentRoute: () => rootRouteImport,
@@ -61,16 +54,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRouteRoute,
-} as any)
-const ErrorNotFoundRoute = ErrorNotFoundRouteImport.update({
-  id: '/notFound',
-  path: '/notFound',
-  getParentRoute: () => ErrorRouteRoute,
-} as any)
-const ErrorErrorRoute = ErrorErrorRouteImport.update({
-  id: '/error',
-  path: '/error',
-  getParentRoute: () => ErrorRouteRoute,
 } as any)
 const AuthRegisterRoute = AuthRegisterRouteImport.update({
   id: '/register',
@@ -193,8 +176,6 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/error': typeof ErrorErrorRoute
-  '/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
@@ -221,8 +202,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
-  '/error': typeof ErrorErrorRoute
-  '/notFound': typeof ErrorNotFoundRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
@@ -247,14 +226,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
-  '/_error': typeof ErrorRouteRouteWithChildren
   '/app': typeof AppRouteRouteWithChildren
   '/_auth/callback': typeof AuthCallbackRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
-  '/_error/error': typeof ErrorErrorRoute
-  '/_error/notFound': typeof ErrorNotFoundRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
@@ -284,8 +260,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
-    | '/error'
-    | '/notFound'
     | '/app/'
     | '/app/inventory/$productId'
     | '/app/inventory/add-manual'
@@ -312,7 +286,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/register'
-    | '/error'
     | '/notFound'
     | '/app'
     | '/app/inventory/$productId'
@@ -337,14 +310,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_auth'
-    | '/_error'
     | '/app'
     | '/_auth/callback'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
-    | '/_error/error'
-    | '/_error/notFound'
     | '/app/'
     | '/app/inventory/$productId'
     | '/app/inventory/add-manual'
@@ -369,7 +339,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
-  ErrorRouteRoute: typeof ErrorRouteRouteWithChildren
   AppRouteRoute: typeof AppRouteRouteWithChildren
 }
 
@@ -380,13 +349,6 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_error': {
-      id: '/_error'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof ErrorRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth': {
@@ -415,13 +377,6 @@ declare module '@tanstack/react-router' {
       path: '/notFound'
       fullPath: '/notFound'
       preLoaderRoute: typeof ErrorNotFoundRouteImport
-      parentRoute: typeof ErrorRouteRoute
-    }
-    '/_error/error': {
-      id: '/_error/error'
-      path: '/error'
-      fullPath: '/error'
-      preLoaderRoute: typeof ErrorErrorRouteImport
       parentRoute: typeof ErrorRouteRoute
     }
     '/_auth/register': {
@@ -599,20 +554,6 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
-interface ErrorRouteRouteChildren {
-  ErrorErrorRoute: typeof ErrorErrorRoute
-  ErrorNotFoundRoute: typeof ErrorNotFoundRoute
-}
-
-const ErrorRouteRouteChildren: ErrorRouteRouteChildren = {
-  ErrorErrorRoute: ErrorErrorRoute,
-  ErrorNotFoundRoute: ErrorNotFoundRoute,
-}
-
-const ErrorRouteRouteWithChildren = ErrorRouteRoute._addFileChildren(
-  ErrorRouteRouteChildren,
-)
-
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
@@ -664,7 +605,6 @@ const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
-  ErrorRouteRoute: ErrorRouteRouteWithChildren,
   AppRouteRoute: AppRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
