@@ -7,7 +7,6 @@ import {
 	MapPin,
 	Euro,
 	Loader2,
-	Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,23 +22,14 @@ import {
 } from '@/components/ui/select';
 import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
 import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
-import { useCategories } from '@/hooks/useCategories';
-import { ProductSearchResult } from '@/services/inventoryService';
+import {
+	ProductSearchResult,
+	QuickAddFormData,
+} from '@/services/inventoryService';
 
-// NOUVEAU: Type spécifique pour le QuickAddForm avec category
-export interface QuickAddFormDataWithCategory {
-	quantity: number;
-	category: string; // Obligatoire pour créer un nouveau produit
-	expiryDate?: string;
-	purchaseDate: string;
-	purchasePrice?: number;
-	storageLocation?: string;
-	notes?: string;
-}
-
-interface QuickAddFormProps {
+interface ExistingProductQuickAddFormProps {
 	product: ProductSearchResult;
-	onSubmit: (data: QuickAddFormDataWithCategory) => Promise<void>;
+	onSubmit: (data: QuickAddFormData) => Promise<void>;
 	onCancel: () => void;
 	isSubmitting?: boolean;
 }
@@ -69,19 +59,15 @@ const addDays = (date: Date, days: number): Date => {
 	return result;
 };
 
-export const QuickAddForm: React.FC<QuickAddFormProps> = ({
-	product,
-	onSubmit,
-	onCancel,
-	isSubmitting = false,
-}) => {
-	// Hook pour récupérer les catégories
-	const { data: categories = [], isLoading: categoriesLoading } =
-		useCategories();
-
+/**
+ * Composant pour ajouter rapidement un produit existant à l'inventaire
+ * Utilisé dans AddManualProductPage quand un produit est sélectionné depuis la recherche
+ */
+export const ExistingProductQuickAddForm: React.FC<
+	ExistingProductQuickAddFormProps
+> = ({ product, onSubmit, onCancel, isSubmitting = false }) => {
 	// États du formulaire
 	const [quantity, setQuantity] = useState('1');
-	const [category, setCategory] = useState(''); // État pour la catégorie
 	const [purchaseDate, setPurchaseDate] = useState(formatDate(new Date()));
 	const [expiryDate, setExpiryDate] = useState('');
 	const [purchasePrice, setPurchasePrice] = useState('');
@@ -94,7 +80,6 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		const today = new Date();
 		let daysToAdd = 7; // Par défaut, 1 semaine
 
-		// Logique simplifiée - à adapter selon vos catégories
 		if (categorySlug.includes('frais') || categorySlug.includes('viande')) {
 			daysToAdd = 3;
 		} else if (categorySlug.includes('laitier')) {
@@ -109,44 +94,12 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		return formatDate(addDays(today, daysToAdd));
 	};
 
-	// Fonction pour trouver la meilleure catégorie correspondante
-	const findBestCategoryMatch = (productCategory: string): string => {
-		if (!categories.length) return '';
-
-		// Chercher une correspondance exacte par nom
-		const exactMatch = categories.find(
-			(cat) => cat.name.toLowerCase() === productCategory.toLowerCase()
-		);
-		if (exactMatch) return exactMatch.slug;
-
-		// Chercher une correspondance partielle
-		const partialMatch = categories.find(
-			(cat) =>
-				cat.name
-					.toLowerCase()
-					.includes(productCategory.toLowerCase()) ||
-				productCategory.toLowerCase().includes(cat.name.toLowerCase())
-		);
-		if (partialMatch) return partialMatch.slug;
-
-		// Par défaut, retourner la première catégorie ou chaîne vide
-		return categories[0]?.slug || '';
-	};
-
 	useEffect(() => {
-		// Pré-sélectionner une catégorie basée sur celle du produit
-		if (categories.length > 0 && product.category?.name) {
-			const bestMatch = findBestCategoryMatch(product.category.name);
-			setCategory(bestMatch);
+		// Suggérer une date de péremption basée sur la catégorie du produit
+		if (product.category?.slug) {
+			setExpiryDate(getSuggestedExpiryDate(product.category.slug));
 		}
-	}, [categories, product.category?.name]);
-
-	useEffect(() => {
-		// Suggérer une date de péremption basée sur la catégorie sélectionnée
-		if (category) {
-			setExpiryDate(getSuggestedExpiryDate(category));
-		}
-	}, [category]);
+	}, [product]);
 
 	// Validation du formulaire
 	const validate = (): boolean => {
@@ -155,10 +108,6 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		const quantityNum = parseFloat(quantity);
 		if (!quantity || isNaN(quantityNum) || quantityNum <= 0) {
 			newErrors.quantity = 'La quantité doit être supérieure à 0';
-		}
-
-		if (!category) {
-			newErrors.category = 'La catégorie est obligatoire';
 		}
 
 		if (!purchaseDate) {
@@ -191,9 +140,9 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 	const handleSubmit = async () => {
 		if (!validate()) return;
 
-		const data: QuickAddFormDataWithCategory = {
+		const data: QuickAddFormData = {
+			productId: product.id, // IMPORTANT: Inclure le productId
 			quantity: parseFloat(quantity),
-			category, // Inclure la catégorie
 			purchaseDate,
 			expiryDate: expiryDate || undefined,
 			purchasePrice: purchasePrice
@@ -316,60 +265,6 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						)}
 					</div>
 
-					{/* Catégorie */}
-					<div className='space-y-2'>
-						<Label htmlFor='category'>
-							<Tag className='inline size-3 mr-1' />
-							Catégorie <span className='text-error-100'>*</span>
-						</Label>
-						<Select
-							value={category}
-							onValueChange={(value) =>
-								handleFieldChange(
-									'category',
-									value,
-									setCategory
-								)
-							}
-							disabled={isSubmitting || categoriesLoading}>
-							<SelectTrigger
-								id='category'
-								className={
-									errors.category ? 'border-error-50' : ''
-								}>
-								<SelectValue placeholder='Sélectionnez une catégorie' />
-							</SelectTrigger>
-							<SelectContent>
-								{categoriesLoading ? (
-									<SelectItem value='loading' disabled>
-										Chargement des catégories...
-									</SelectItem>
-								) : categories.length === 0 ? (
-									<SelectItem value='empty' disabled>
-										Aucune catégorie disponible
-									</SelectItem>
-								) : (
-									categories.map((cat) => (
-										<SelectItem
-											key={cat.id}
-											value={cat.slug}>
-											{cat.name}
-										</SelectItem>
-									))
-								)}
-							</SelectContent>
-						</Select>
-						{errors.category && (
-							<p className='text-xs text-error-50'>
-								{errors.category}
-							</p>
-						)}
-						<p className='text-xs text-neutral-200'>
-							Catégorie suggérée basée sur "
-							{product.category.name}"
-						</p>
-					</div>
-
 					{/* Lieu de stockage */}
 					<div className='space-y-2'>
 						<Label htmlFor='storageLocation'>
@@ -453,7 +348,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							</p>
 						)}
 						<p className='text-xs text-neutral-200'>
-							Date suggérée selon la catégorie sélectionnée
+							Date suggérée selon la catégorie du produit
 						</p>
 					</div>
 
@@ -543,4 +438,4 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 	);
 };
 
-export default QuickAddForm;
+export default ExistingProductQuickAddForm;

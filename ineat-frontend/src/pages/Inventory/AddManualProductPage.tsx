@@ -10,14 +10,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 // Composants de recherche et ajout
 import { ProductSearchBar } from '@/features/product/ProductSearchBar';
 import { ProductSearchResults } from '@/features/product/ProductSearchResult';
-import { QuickAddForm } from '@/features/inventory/components/QuickAddForm';
+import { ExistingProductQuickAddForm } from '@/features/inventory/components/ExistingProductQuickAddForm';
 import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
 
-// Services et types - utilisation du nouveau système avec budget
+// Services et types
 import {
 	inventoryService,
 	ProductSearchResult,
-	QuickAddFormData,
+	QuickAddFormData, // Pour produits existants
 	ProductAddedWithBudgetResult,
 } from '@/services/inventoryService';
 import { AddInventoryItemData } from '@/schemas';
@@ -65,18 +65,8 @@ export const AddManualProductPage: React.FC = () => {
 
 		// Si une dépense a été créée, rafraîchir les données budget
 		if (result.shouldRefreshBudget) {
-			// Invalider les queries budget pour forcer le rechargement
 			queryClient.invalidateQueries({ queryKey: ['budget', 'current'] });
 			queryClient.invalidateQueries({ queryKey: ['budget', 'stats'] });
-
-			// Optionnel : afficher des informations budget supplémentaires
-			if (result.budgetInfo.remainingBudget !== undefined) {
-				console.log(
-					`Budget restant: ${result.budgetInfo.remainingBudget.toFixed(
-						2
-					)}€`
-				);
-			}
 		}
 
 		// Invalider l'inventaire pour afficher le nouveau produit
@@ -88,7 +78,6 @@ export const AddManualProductPage: React.FC = () => {
 
 	// Fonction pour gérer les erreurs
 	const handleProductAddedError = (error: Error, productName?: string) => {
-		console.error("Erreur lors de l'ajout du produit:", error);
 		toast.error(
 			error.message ||
 				`Erreur lors de l'ajout${
@@ -97,7 +86,7 @@ export const AddManualProductPage: React.FC = () => {
 		);
 	};
 
-	// Mutation pour l'ajout rapide avec feedback budgétaire
+	// CORRECTION: Mutation pour l'ajout rapide de produits existants
 	const quickAddMutation = useMutation({
 		mutationFn: inventoryService.addExistingProductToInventory,
 		onSuccess: handleProductAddedSuccess,
@@ -112,7 +101,6 @@ export const AddManualProductPage: React.FC = () => {
 		mutationFn: inventoryService.addManualProduct,
 		onSuccess: handleProductAddedSuccess,
 		onError: (error: Error, variables: AddInventoryItemData) => {
-			// CORRECTION : Utiliser 'name' au lieu de 'productName'
 			const productName = variables.name;
 			handleProductAddedError(error, productName);
 		},
@@ -131,8 +119,7 @@ export const AddManualProductPage: React.FC = () => {
 		try {
 			const results = await inventoryService.searchProducts(query);
 			setSearchResults(results);
-		} catch (error) {
-			console.error('Erreur de recherche:', error);
+		} catch {
 			toast.error('Erreur lors de la recherche');
 			setSearchResults([]);
 		} finally {
@@ -146,14 +133,13 @@ export const AddManualProductPage: React.FC = () => {
 		setPageState('quick-add');
 	};
 
-	// Gestion de l'ajout rapide
+	// CORRECTION: Gestion de l'ajout rapide avec le bon type
 	const handleQuickAdd = async (data: QuickAddFormData) => {
 		await quickAddMutation.mutateAsync(data);
 	};
 
 	// Gestion de l'ajout manuel
 	const handleManualAdd = async (data: AddInventoryItemData) => {
-		// CORRECTION : Supprimer le cast 'as never' qui masque les erreurs de type
 		await manualAddMutation.mutateAsync(data);
 	};
 
@@ -310,10 +296,10 @@ export const AddManualProductPage: React.FC = () => {
 					</div>
 				)}
 
-				{/* État ajout rapide */}
+				{/* État ajout rapide avec le bon composant */}
 				{pageState === 'quick-add' && selectedProduct && (
 					<Card className='p-6'>
-						<QuickAddForm
+						<ExistingProductQuickAddForm
 							product={selectedProduct}
 							onSubmit={handleQuickAdd}
 							onCancel={handleBackToSearch}

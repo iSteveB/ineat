@@ -12,10 +12,13 @@ import {
 import { BarcodeScanner } from './BarcodeScanner';
 import { QuickAddForm } from '@/features/inventory/components/QuickAddForm';
 import { Product } from '@/schemas/product';
-import { useAddManualProduct } from '@/hooks/useInventory';
+import { AddInventoryItemData } from '@/schemas';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import {
+	inventoryService,
 	ProductSearchResult,
-	QuickAddFormData,
+	QuickAddFormDataWithCategory,
 } from '@/services/inventoryService';
 
 /**
@@ -50,7 +53,7 @@ interface ProductScanFlowProps {
  * 2. Recherche OpenFoodFacts automatique
  * 3. Pré-remplissage QuickAddForm avec données OFF
  * 4. L'utilisateur complète : catégorie, prix, lieu, date péremption
- * 5. Ajout à l'inventaire
+ * 5. Ajout à l'inventaire via addManualProduct (nouveau produit)
  * 6. Gestion produits non trouvés → création manuelle
  */
 export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
@@ -60,12 +63,48 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	className = '',
 }) => {
 	const router = useRouter();
-	const addManualProductMutation = useAddManualProduct();
+	const queryClient = useQueryClient();
 
 	// États locaux
 	const [currentStep, setCurrentStep] = useState<FlowStep>(defaultStep);
 	const [productDraft, setProductDraft] = useState<ProductDraft>({});
 	const [error, setError] = useState<string | null>(null);
+
+	// Mutation pour addManualProduct (création nouveau produit)
+	const addManualProductMutation = useMutation({
+		mutationFn: inventoryService.addManualProduct,
+		onSuccess: (result) => {
+			// Afficher la notification selon le type
+			switch (result.type) {
+				case 'success':
+					toast.success(result.message);
+					break;
+				case 'info':
+					toast.info(result.message, {
+						description: result.budgetInfo.expenseCreated
+							? `Dépense ajoutée au budget`
+							: 'Prix non renseigné - aucune dépense créée',
+					});
+					break;
+				case 'warning':
+					toast.warning(result.message, {
+						description: 'Attention à votre budget !',
+					});
+					break;
+			}
+
+			// Rafraîchir les données
+			queryClient.invalidateQueries({ queryKey: ['inventory'] });
+			if (result.shouldRefreshBudget) {
+				queryClient.invalidateQueries({ queryKey: ['budget'] });
+			}
+		},
+		onError: (error: Error) => {
+			toast.error("Erreur lors de l'ajout", {
+				description: error.message,
+			});
+		},
+	});
 
 	/**
 	 * Gère la détection d'un produit via scan/saisie
@@ -121,56 +160,57 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 	/**
 	 * Gère la soumission du formulaire QuickAdd
+	 * Convertit QuickAddFormDataWithCategory vers AddInventoryItemData
+	 * et utilise addManualProduct pour créer un nouveau produit
 	 */
 	const handleFormSubmit = useCallback(
-	async (formData: QuickAddFormData) => {
-		try {
-			setError(null);
+		async (formData: QuickAddFormDataWithCategory) => {
+			try {
+				setError(null);
 
-			// CORRECTION: Utiliser la catégorie sélectionnée dans le formulaire
-			// au lieu de celle du productSearchResult
-			const addInventoryData = {
-				name:
-					productDraft.productSearchResult?.name ||
-					'Produit sans nom',
-				brand: productDraft.productSearchResult?.brand || undefined,
-				category: formData.category, // NOUVEAU: Utiliser la catégorie du formulaire
-				quantity: formData.quantity,
-				unitType:
-					productDraft.productSearchResult?.unitType || 'UNIT',
-				purchaseDate: formData.purchaseDate,
-				expiryDate: formData.expiryDate,
-				purchasePrice: formData.purchasePrice,
-				storageLocation: formData.storageLocation,
-				notes: formData.notes,
-				barcode: productDraft.scannedBarcode,
-			};
+				// Convertir QuickAddFormDataWithCategory vers AddInventoryItemData
+				const addInventoryData: AddInventoryItemData = {
+					name:
+						productDraft.productSearchResult?.name ||
+						'Produit sans nom',
+					brand: productDraft.productSearchResult?.brand || undefined,
+					category: formData.category, // Utiliser la catégorie du formulaire
+					quantity: formData.quantity,
+					unitType:
+						productDraft.productSearchResult?.unitType || 'UNIT',
+					purchaseDate: formData.purchaseDate,
+					expiryDate: formData.expiryDate,
+					purchasePrice: formData.purchasePrice,
+					storageLocation: formData.storageLocation,
+					notes: formData.notes,
+					barcode: productDraft.scannedBarcode,
+				};
 
-			// Utiliser la mutation pour ajouter le produit
-			await addManualProductMutation.mutateAsync(addInventoryData);
+				console.log(
+					'ProductScanFlow - Données envoyées:',
+					addInventoryData
+				);
 
-			setCurrentStep('success');
+				// Utiliser addManualProduct pour créer un nouveau produit
+				await addManualProductMutation.mutateAsync(addInventoryData);
 
-			// Callback de succès après un délai
-			setTimeout(() => {
-				onComplete?.();
-			}, 1500);
-		} catch (err: unknown) {
-			console.error('Erreur ajout produit:', err);
-			setError(
-				err instanceof Error
-					? err.message
-					: "Erreur lors de l'ajout du produit"
-			);
-		}
-	},
-	[
-		addManualProductMutation,
-		onComplete,
-		productDraft.productSearchResult,
-		productDraft.scannedBarcode,
-	]
-);
+				setCurrentStep('success');
+
+				// Callback de succès après un délai
+				setTimeout(() => {
+					onComplete?.();
+				}, 1500);
+			} catch (err: unknown) {
+				console.error('Erreur ajout produit:', err);
+				setError(
+					err instanceof Error
+						? err.message
+						: "Erreur lors de l'ajout du produit"
+				);
+			}
+		},
+		[addManualProductMutation, onComplete, productDraft]
+	);
 
 	/**
 	 * Retourne au scan
