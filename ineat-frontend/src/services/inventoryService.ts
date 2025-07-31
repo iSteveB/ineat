@@ -36,6 +36,7 @@ export interface ProductSearchResult {
 export interface QuickAddFormData {
 	productId: string;
 	quantity: number;
+	category: string;
 	expiryDate?: string;
 	purchaseDate: string;
 	purchasePrice?: number;
