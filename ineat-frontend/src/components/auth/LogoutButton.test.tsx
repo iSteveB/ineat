@@ -79,14 +79,14 @@ describe('LogoutButton', () => {
 		expect(button).toBeDisabled();
 	});
 
-	it('a le variant destructive par défaut', () => {
-    render(<LogoutButton />);
-    
-    const button = screen.getByTestId('logout-button');
-    
-    // Vérifier que le bouton a les classes correspondant au variant destructive
-    // Les classes exactes sont définies dans buttonVariants dans button.tsx
-    expect(button).toHaveClass('bg-error-50');
-    expect(button).toHaveClass('text-neutral-50');
-  });
+	it('a le variant error par défaut', () => {
+		render(<LogoutButton />);
+
+		const button = screen.getByTestId('logout-button');
+
+		// Vérifier que le bouton a les classes correspondant au variant error
+		// Les classes exactes sont définies dans buttonVariants dans button.tsx
+		expect(button).toHaveClass('bg-error-50');
+		expect(button).toHaveClass('text-neutral-50');
+	});
 });

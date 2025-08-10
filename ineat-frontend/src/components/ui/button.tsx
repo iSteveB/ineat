@@ -13,8 +13,7 @@ const buttonVariants = cva(
 					'bg-success-50 text-neutral-50 shadow-xs hover:bg-success-50/90 active:bg-success-50/70',
 				secondary:
 					'bg-neutral-50 border border-neutral-200 text-neutral-300 shadow-xs hover:bg-neutral-100/50 active:bg-neutral-200/50',
-				destructive:
-					'bg-error-50 text-neutral-50 shadow-xs hover:bg-error-100 active:bg-error-100/80',
+				error: 'bg-error-50 text-neutral-50 shadow-xs hover:bg-error-100 active:bg-error-100/80',
 				outline:
 					'border border-success-50 bg-transparent text-success-50 hover:bg-success-50 hover:text-neutral-50 active:bg-success-50/90',
 				ghost: 'bg-transparent text-neutral-300 hover:bg-success-50/10 hover:text-success-50 active:bg-success-50/20',

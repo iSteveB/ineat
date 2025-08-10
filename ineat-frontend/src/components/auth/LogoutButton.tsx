@@ -37,7 +37,7 @@ export function LogoutButton(props: ButtonProps) {
 
 	return (
 		<Button
-			variant='destructive'
+			variant='error'
 			onClick={handleLogout}
 			disabled={isLoggingOut}
 			data-testid='logout-button'

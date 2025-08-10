@@ -73,7 +73,7 @@ function DropdownMenuItem({
 	...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Item> & {
 	inset?: boolean;
-	variant?: 'default' | 'destructive' | 'success';
+	variant?: 'default' | 'error' | 'success';
 }) {
 	return (
 		<DropdownMenuPrimitive.Item
@@ -87,7 +87,7 @@ function DropdownMenuItem({
 				'data-[highlighted]:bg-neutral-200/10 data-[highlighted]:text-neutral-300',
 				{
 					'text-error-50 focus:bg-error-50/10 focus:text-error-100':
-						variant === 'destructive',
+						variant === 'error',
 					'text-success-50 focus:bg-success-50/10 focus:text-success-50':
 						variant === 'success',
 					'pl-8': inset,

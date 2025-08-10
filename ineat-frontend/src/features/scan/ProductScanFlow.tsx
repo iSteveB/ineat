@@ -300,7 +300,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 							{/* Erreur */}
 							{(error || addManualProductMutation.error) && (
-								<Alert variant='destructive'>
+								<Alert variant='error'>
 									<AlertTriangle className='size-5' />
 									<AlertTitle>
 										Erreur lors de l'ajout
