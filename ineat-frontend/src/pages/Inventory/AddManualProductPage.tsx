@@ -1,50 +1,57 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearch } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Package, Plus, Search, AlertCircle, ArrowLeft } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-// Composants de recherche et ajout
 import { ProductSearchBar } from '@/features/product/ProductSearchBar';
 import { ProductSearchResults } from '@/features/product/ProductSearchResult';
 import { ExistingProductQuickAddForm } from '@/features/inventory/components/ExistingProductQuickAddForm';
 import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
 
-// Services et types
 import {
 	inventoryService,
-	ProductSearchResult,
-	QuickAddFormData, // Pour produits existants
-	ProductAddedWithBudgetResult,
+	type ProductSearchResult,
+	type QuickAddFormData,
+	type ProductAddedWithBudgetResult,
 } from '@/services/inventoryService';
-import { AddInventoryItemData } from '@/schemas';
+import type { AddInventoryItemData } from '@/schemas';
 
-// États de la page
 type PageState = 'search' | 'quick-add' | 'manual-add';
 
-export const AddManualProductPage: React.FC = () => {
+const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
+	const searchParams = useSearch({ from: '/app/inventory/add/search' });
+	const defaultBarcode = searchParams.barcode?.toString() || '';
 
-	// États
 	const [pageState, setPageState] = useState<PageState>('search');
-	const [searchQuery, setSearchQuery] = useState('');
+	const [searchQuery, setSearchQuery] = useState<string>('');
 	const [searchResults, setSearchResults] = useState<ProductSearchResult[]>(
 		[]
 	);
 	const [selectedProduct, setSelectedProduct] =
 		useState<ProductSearchResult | null>(null);
-	const [isSearching, setIsSearching] = useState(false);
+	const [isSearching, setIsSearching] = useState<boolean>(false);
 
-	// Query pour récupérer les catégories
 	const { data: categories = [] } = useQuery({
 		queryKey: ['categories'],
 		queryFn: inventoryService.getCategories,
 		staleTime: 1000 * 60 * 60, // 1 heure
 	});
+
+	// Effet pour gérer le paramètre barcode depuis l'URL
+	useEffect(() => {
+		if (defaultBarcode) {
+			// Si un code-barre est fourni, passer directement en mode création manuelle
+			// mais aussi pré-remplir la recherche au cas où l'utilisateur voudrait revenir en arrière
+			setSearchQuery(defaultBarcode);
+			setPageState('manual-add');
+		}
+	}, [defaultBarcode]);
 
 	// Fonction pour gérer le succès avec feedback budgétaire
 	const handleProductAddedSuccess = (
@@ -86,7 +93,7 @@ export const AddManualProductPage: React.FC = () => {
 		);
 	};
 
-	// CORRECTION: Mutation pour l'ajout rapide de produits existants
+	// Mutation pour l'ajout rapide de produits existants
 	const quickAddMutation = useMutation({
 		mutationFn: inventoryService.addExistingProductToInventory,
 		onSuccess: handleProductAddedSuccess,
@@ -133,7 +140,7 @@ export const AddManualProductPage: React.FC = () => {
 		setPageState('quick-add');
 	};
 
-	// CORRECTION: Gestion de l'ajout rapide avec le bon type
+	// Gestion de l'ajout rapide avec le bon type
 	const handleQuickAdd = async (data: QuickAddFormData) => {
 		await quickAddMutation.mutateAsync(data);
 	};
@@ -160,77 +167,101 @@ export const AddManualProductPage: React.FC = () => {
 	const handleBackToSearch = () => {
 		setSelectedProduct(null);
 		setPageState('search');
+
+		// Si on était arrivé avec un barcode, nettoyer l'URL
+		if (defaultBarcode) {
+			navigate({ to: '/app/inventory/add/search' });
+		}
+	};
+
+	/**
+	 * Détermine le titre de la page selon l'état et les paramètres
+	 */
+	const getPageTitle = (): string => {
+		if (defaultBarcode) {
+			return 'Créer un produit';
+		}
+		return 'Ajouter un produit';
+	};
+
+	/**
+	 * Détermine la description de la page selon l'état et les paramètres
+	 */
+	const getPageDescription = (): string => {
+		if (defaultBarcode) {
+			return `Code-barre scanné : ${defaultBarcode}`;
+		}
+		return 'Recherchez ou créez un nouveau produit';
 	};
 
 	return (
 		<div className='min-h-screen bg-neutral-50'>
-			{/* Header */}
-			<div className='bg-neutral-50 border-b border-neutral-100'>
-				<div className='max-w-4xl mx-auto px-4 py-4'>
-					<div className='flex items-center space-x-4'>
-						<Link
-							to='/app/inventory/add'
-							className='p-2 hover:bg-neutral-100 rounded-full transition-colors'>
-							<ArrowLeft className='size-5 text-neutral-300' />
-						</Link>
+			{/* ===== HEADER ===== */}
+			<div className='relative overflow-hidden bg-neutral-50 border-b border-neutral-100 shadow-sm'>
+				<div className='absolute top-0 right-0 w-32 h-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
+				<div className='relative px-6 py-4 flex items-center justify-between'>
+					<div className='flex items-center gap-4'>
+						<Link to='/app/inventory'>
+							<Button
+								variant='ghost'
+								size='sm'
+								className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 shadow-sm'>
+								<ArrowLeft className='size-5 text-neutral-300' />
+							</Button>
+						</Link>
 						<div>
-							<h1 className="text-xl font-semibold text-neutral-300 font-['Fredoka']">
-								Recherche et ajout manuel
+							<h1 className='text-2xl font-bold text-neutral-300'>
+								{getPageTitle()}
 							</h1>
-							<p className='text-sm text-neutral-200 mt-1'>
-								Recherchez un produit existant ou créez-en un
-								nouveau
+							<p className='text-sm text-neutral-200'>
+								{getPageDescription()}
 							</p>
 						</div>
 					</div>
+
+					{pageState === 'search' &&
+						searchResults.length === 0 &&
+						searchQuery && (
+							<Button
+								onClick={handleSwitchToManualAdd}
+								variant='outline'
+								size='sm'
+								className='flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 text-neutral-300 hover:bg-neutral-100 hover:text-neutral-300 shadow-sm'>
+								<Plus className='size-4' />
+								Créer un nouveau produit
+							</Button>
+						)}
 				</div>
 			</div>
 
 			{/* Content */}
-			<div className='max-w-4xl mx-auto px-4 py-6'>
-				<div className='flex items-start justify-between mb-6'>
-					<div className='flex-1'>
-						{pageState === 'search' &&
-							searchResults.length === 0 &&
-							searchQuery && (
-								<Button
-									onClick={handleSwitchToManualAdd}
-									variant='outline'
-									size='sm'
-									className='ml-auto'>
-									<Plus className='size-4 mr-2' />
-									Créer un nouveau produit
-								</Button>
-							)}
-					</div>
-				</div>
-
+			<div className='max-w-4xl mx-auto px-4 py-6 space-y-6'>
 				{/* Contenu principal selon l'état */}
 				{pageState === 'search' && (
 					<div className='space-y-6'>
 						{/* Barre de recherche */}
-						<Card className='p-6'>
-							<div className='flex items-start space-x-4'>
-								<div className='size-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0'>
-									<Search className='size-5 text-accent' />
-								</div>
-								<div className='flex-1 space-y-3'>
-									<h2 className='text-lg font-semibold text-neutral-300'>
-										Rechercher un produit existant
-									</h2>
-									<p className='text-sm text-neutral-200'>
-										Commencez par rechercher si le produit
-										existe déjà dans notre base de données
-									</p>
-									<ProductSearchBar
-										onSearch={handleSearch}
-										onClear={handleClearSearch}
-										isLoading={isSearching}
-										autoFocus
-									/>
-								</div>
-							</div>
+						<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+							<CardHeader>
+								<CardTitle className='flex items-center gap-3'>
+									<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
+										<Search className='size-5 text-success-50' />
+									</div>
+									Rechercher un produit existant
+								</CardTitle>
+							</CardHeader>
+							<CardContent className='p-6 pt-0 space-y-3'>
+								<p className='text-sm text-neutral-200'>
+									Commencez par rechercher si le produit
+									existe déjà dans notre base de données
+								</p>
+								<ProductSearchBar
+									onSearch={handleSearch}
+									onClear={handleClearSearch}
+									isLoading={isSearching}
+									autoFocus
+								/>
+							</CardContent>
 						</Card>
 
 						{/* Résultats de recherche */}
@@ -248,14 +279,14 @@ export const AddManualProductPage: React.FC = () => {
 						{searchResults.length === 0 &&
 							searchQuery &&
 							!isSearching && (
-								<Alert className='border-warning-50/20 bg-warning-50/10'>
+								<Alert className='border-warning-50/20 bg-warning-50/10 text-neutral-300'>
 									<AlertCircle className='size-4 text-warning-50' />
-									<AlertDescription className='text-neutral-300'>
+									<AlertDescription>
 										Aucun produit trouvé pour "{searchQuery}
 										".{' '}
 										<Button
 											variant='link'
-											className='px-1 h-auto font-medium'
+											className='px-1 h-auto font-medium text-success-50 hover:text-success-50/90'
 											onClick={handleSwitchToManualAdd}>
 											Créer ce produit
 										</Button>
@@ -265,32 +296,38 @@ export const AddManualProductPage: React.FC = () => {
 
 						{/* Aide initiale */}
 						{!searchQuery && (
-							<Card className='p-8 text-center border-dashed'>
-								<div className='flex flex-col items-center space-y-4'>
-									<div className='size-16 rounded-full bg-neutral-100 flex items-center justify-center'>
-										<Package className='size-8 text-neutral-200' />
+							<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+								<CardContent className='p-8 text-center'>
+									<div className='flex flex-col items-center space-y-4'>
+										<div className='size-16 rounded-full bg-neutral-100 flex items-center justify-center'>
+											<Package className='size-8 text-neutral-200' />
+										</div>
+										<div className='space-y-2'>
+											<h3 className='text-lg font-medium text-neutral-300'>
+												Commencez par rechercher
+											</h3>
+											<p className='text-sm text-neutral-200 max-w-md mx-auto'>
+												Tapez le nom, la marque ou le
+												code-barres du produit que vous
+												souhaitez ajouter. Si le produit
+												n'existe pas, vous pourrez le
+												créer.
+											</p>
+										</div>
+										<div className='flex items-center space-x-4 text-sm text-neutral-200'>
+											<span>ou</span>
+											<Button
+												variant='link'
+												className='text-success-50 hover:text-success-50/90'
+												onClick={
+													handleSwitchToManualAdd
+												}>
+												Créer directement un nouveau
+												produit
+											</Button>
+										</div>
 									</div>
-									<div className='space-y-2'>
-										<h3 className='text-lg font-medium text-neutral-300'>
-											Commencez par rechercher
-										</h3>
-										<p className='text-sm text-neutral-200 max-w-md mx-auto'>
-											Tapez le nom, la marque ou le
-											code-barres du produit que vous
-											souhaitez ajouter. Si le produit
-											n'existe pas, vous pourrez le créer.
-										</p>
-									</div>
-									<div className='flex items-center space-x-4 text-sm text-neutral-200'>
-										<span>ou</span>
-										<Button
-											variant='link'
-											className='text-accent'
-											onClick={handleSwitchToManualAdd}>
-											Créer directement un nouveau produit
-										</Button>
-									</div>
-								</div>
+								</CardContent>
 							</Card>
 						)}
 					</div>
@@ -298,39 +335,40 @@ export const AddManualProductPage: React.FC = () => {
 
 				{/* État ajout rapide avec le bon composant */}
 				{pageState === 'quick-add' && selectedProduct && (
-					<Card className='p-6'>
-						<ExistingProductQuickAddForm
-							product={selectedProduct}
-							onSubmit={handleQuickAdd}
-							onCancel={handleBackToSearch}
-							isSubmitting={quickAddMutation.isPending}
-						/>
+					<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+						<CardHeader>
+							<CardTitle className='flex items-center gap-3'>
+								<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
+									<Plus className='size-5 text-success-50' />
+								</div>
+								Ajout rapide : {selectedProduct.name}
+							</CardTitle>
+						</CardHeader>
+						<CardContent className='p-6 pt-0'>
+							<ExistingProductQuickAddForm
+								product={selectedProduct}
+								onSubmit={handleQuickAdd}
+								onCancel={handleBackToSearch}
+								isSubmitting={quickAddMutation.isPending}
+							/>
+						</CardContent>
 					</Card>
 				)}
 
 				{/* État ajout manuel */}
 				{pageState === 'manual-add' && (
-					<Card className='p-6'>
-						<div className='space-y-6'>
-							{searchQuery && (
-								<Alert className='border-primary-100 bg-primary-50/50'>
-									<AlertDescription className='text-neutral-300'>
-										Vous créez un nouveau produit :{' '}
-										<strong>"{searchQuery}"</strong>
-									</AlertDescription>
-								</Alert>
-							)}
-							<AddManualProductForm
-								categories={categories}
-								onSubmit={handleManualAdd}
-								onCancel={handleBackToSearch}
-								isSubmitting={manualAddMutation.isPending}
-								defaultProductName={searchQuery}
-							/>
-						</div>
-					</Card>
+					<AddManualProductForm
+						categories={categories}
+						onSubmit={handleManualAdd}
+						onCancel={handleBackToSearch}
+						isSubmitting={manualAddMutation.isPending}
+						defaultProductName={defaultBarcode ? '' : searchQuery} 
+						defaultBarcode={defaultBarcode}
+					/>
 				)}
 			</div>
 		</div>
 	);
 };
+
+export default AddManualProductPage;

@@ -1,17 +1,42 @@
-import React from 'react';
-import { StorageLocationFilter } from '@/schemas';
+import type React from 'react';
+import type { StorageLocationFilter } from '@/schemas';
+import { Package, Refrigerator, Snowflake, ShoppingBasket } from 'lucide-react';
 
-// Type pour les propriétés du composant
 interface CategoryFilterProps {
 	activeCategory: StorageLocationFilter;
 	onCategoryChange: (category: StorageLocationFilter) => void;
 }
 
-const categories: { id: StorageLocationFilter; label: string }[] = [
-	{ id: 'ALL', label: 'Tout' },
-	{ id: 'FRESH', label: 'Frais' },
-	{ id: 'FREEZER', label: 'Surgelé' },
-	{ id: 'PANTRY', label: 'Épicerie' },
+const categories: {
+	id: StorageLocationFilter;
+	label: string;
+	icon: React.ReactNode;
+	description: string;
+}[] = [
+	{
+		id: 'ALL',
+		label: 'Tout',
+		icon: <Package className='size-4' />,
+		description: 'Tous les produits',
+	},
+	{
+		id: 'FRESH',
+		label: 'Frais',
+		icon: <Refrigerator className='size-4' />,
+		description: 'Produits frais',
+	},
+	{
+		id: 'FREEZER',
+		label: 'Surgelé',
+		icon: <Snowflake className='size-4' />,
+		description: 'Produits surgelés',
+	},
+	{
+		id: 'PANTRY',
+		label: 'Épicerie',
+		icon: <ShoppingBasket className='size-4' />,
+		description: "Produits d'épicerie",
+	},
 ];
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({
@@ -19,19 +44,43 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 	onCategoryChange,
 }) => {
 	return (
-		<div className='flex space-x-2 overflow-x-auto pb-2'>
-			{categories.map((category) => (
-				<button
-					key={category.id}
-					className={`px-6 py-3 rounded-full font-medium transition-colors cursor-pointer ${
-						activeCategory === category.id
-							? 'bg-primary-100 text-neutral-300'
-							: 'bg-neutral-50 text-neutral-200 hover:bg-neutral-100'
-					}`}
-					onClick={() => onCategoryChange(category.id)}>
-					{category.label}
-				</button>
-			))}
+		<div className='space-y-4'>
+			{/* Filtres */}
+			<div className='flex gap-2 overflow-x-auto py-2 scrollbar-hide'>
+				{categories.map((category) => {
+					const isActive = activeCategory === category.id;
+
+					return (
+						<button
+							key={category.id}
+							className={`
+                group relative flex items-center gap-2.5 px-4 py-2.5 rounded-xl font-medium text-sm
+                transition-all duration-200 cursor-pointer flex-shrink-0 border
+                ${
+					isActive
+						? 'bg-success-50 text-neutral-50 border-success-50 shadow-sm'
+						: 'bg-neutral-50 text-[#6B7280] border-[#E5E7EB] hover:bg-[#F9F9E9] hover:text-[#1F2937] hover:border-success-50/20'
+				}
+              `}
+							onClick={() => onCategoryChange(category.id)}>
+							{/* Icône */}
+							<div
+								className={`transition-colors duration-200 ${
+									isActive
+										? 'text-neutral-50'
+										: 'text-[#6B7280] group-hover:text-success-50'
+								}`}>
+								{category.icon}
+							</div>
+
+							{/* Label */}
+							<span className='whitespace-nowrap font-medium'>
+								{category.label}
+							</span>
+						</button>
+					);
+				})}
+			</div>
 		</div>
 	);
 };

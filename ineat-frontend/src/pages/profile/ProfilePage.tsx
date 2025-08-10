@@ -9,14 +9,10 @@ import {
 	ShoppingCart,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import {
-	Card,
-	CardContent,
-	CardHeader,
-	CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { getInitials } from '@/utils/ui-utils'; 
 
 // TODO: Données fictives pour la démo - à remplacer par de vraies données
 const mockStatistics = {
@@ -55,45 +51,46 @@ const mockStatistics = {
 };
 
 const ProfilePage = () => {
-  const user = useAuthStore((state) => state.user);
+	const user = useAuthStore((state) => state.user);
 	const isPremium = user?.subscription === 'PREMIUM';
 
 	//TODO: Récupérer les restrictions alimentaires (à implémenter)
 	const dietaryRestrictions = ['Sans Gluten', 'Végétarien'];
 
 	return (
-		<div className='min-h-screen bg-primary-50 pb-16'>
-			{/* Header de profil amélioré */}
-			<div className='bg-neutral-50 pt-8 pb-12 relative'>
+		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 pb-16'>
+			{/* Header */}
+			<div className='bg-neutral-50 pt-8 pb-12 relative shadow-sm border-b border-gray-200'>
 				<div className='flex flex-col items-center space-y-4'>
-					<div className='size-32 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-primary-100'>
+					<div className='size-32 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-primary-100 shadow-lg'>
 						{user?.avatarUrl ? (
 							<img
-								src={user.avatarUrl}
+								src={user.avatarUrl || '/placeholder.svg'}
 								alt='Photo de profil'
 								className='size-full object-cover'
 							/>
 						) : (
-							<span className='text-4xl font-semibold'>
-								{user?.firstName && user?.lastName
-									? `${user?.firstName[0]}${user?.lastName[0]}`
-									: '?'}
+							<span className='text-4xl font-semibold text-neutral-50'>
+								{getInitials(
+									user?.firstName || '',
+									user?.lastName || ''
+								)}
 							</span>
 						)}
 					</div>
 
 					<div className='text-center'>
-						<h1 className='text-3xl font-bold'>
+						<h1 className='text-3xl font-bold text-gray-900'>
 							{user?.firstName} {user?.lastName}
 						</h1>
-						<p className='text-neutral-200 mt-1'>
+						<p className='text-gray-600 mt-1'>
 							Membre depuis {mockStatistics.memberSince}
 						</p>
 
 						{isPremium && (
 							<Badge
 								variant='outline'
-								className='mt-2 bg-primary-100 border-0 text-neutral-300 px-3 py-1'>
+								className='mt-2 bg-primary-100 border-0 text-neutral-50 px-3 py-1 shadow-md'>
 								Premium
 							</Badge>
 						)}
@@ -104,7 +101,7 @@ const ProfilePage = () => {
 								<Badge
 									key={restriction}
 									variant='secondary'
-									className='bg-success-50 bg-opacity-10 text-success-50 border-0'>
+									className='bg-success-50/10 text-success-50 border-0'>
 									{restriction}
 								</Badge>
 							))}
@@ -115,39 +112,39 @@ const ProfilePage = () => {
 				{/* Bouton paramètres */}
 				<Link
 					to='/app/settings'
-					className='absolute top-4 right-4 p-2 rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors'>
-					<Settings className='size-5 text-neutral-300' />
+					className='absolute top-4 right-4 p-2 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors'>
+					<Settings className='size-5 text-gray-600' />
 				</Link>
 			</div>
 
 			{/* Contenu principal */}
 			<div className='px-4 py-6 space-y-6 -mt-6'>
 				{/* Carte statistiques */}
-				<Card>
+				<Card className='shadow-xl border-0 bg-neutral-50'>
 					<CardHeader>
-						<CardTitle className='flex items-center gap-2'>
+						<CardTitle className='flex items-center gap-2 text-gray-900'>
 							<TrendingUp className='size-5 text-success-50' />
 							Mes statistiques
 						</CardTitle>
 					</CardHeader>
 					<CardContent className='space-y-4'>
 						<div className='grid grid-cols-2 gap-4'>
-							<div className='flex flex-col items-center p-3 bg-neutral-50 rounded-lg'>
+							<div className='flex flex-col items-center p-3 bg-gray-50 rounded-lg border border-gray-100'>
 								<ShoppingCart className='size-6 text-success-50 mb-1' />
-								<span className='text-xl font-bold'>
+								<span className='text-xl font-bold text-gray-900'>
 									{mockStatistics.productsCount}
 								</span>
-								<span className='text-xs text-neutral-200'>
+								<span className='text-xs text-gray-600'>
 									Produits enregistrés
 								</span>
 							</div>
 
-							<div className='flex flex-col items-center p-3 bg-neutral-50 rounded-lg'>
+							<div className='flex flex-col items-center p-3 bg-gray-50 rounded-lg border border-gray-100'>
 								<Award className='size-6 text-success-50 mb-1' />
-								<span className='text-xl font-bold'>
+								<span className='text-xl font-bold text-gray-900'>
 									{mockStatistics.daysStreak} jours
 								</span>
-								<span className='text-xs text-neutral-200'>
+								<span className='text-xs text-gray-600'>
 									Streak d'utilisation
 								</span>
 							</div>
@@ -155,7 +152,7 @@ const ProfilePage = () => {
 
 						<div className='space-y-2'>
 							<div className='flex justify-between'>
-								<span className='text-sm font-medium'>
+								<span className='text-sm font-medium text-gray-700'>
 									Économies réalisées
 								</span>
 								<span className='text-sm font-bold text-success-50'>
@@ -164,7 +161,7 @@ const ProfilePage = () => {
 							</div>
 
 							<div className='space-y-1'>
-								<div className='flex justify-between text-sm'>
+								<div className='flex justify-between text-sm text-gray-700'>
 									<span>Réduction du gaspillage</span>
 									<span>
 										{mockStatistics.wasteReduction}%
@@ -172,12 +169,12 @@ const ProfilePage = () => {
 								</div>
 								<Progress
 									value={mockStatistics.wasteReduction}
-									className='h-2'
+									className='h-2 [&>*]:bg-success-50' 
 								/>
 							</div>
 						</div>
 
-						<div className='flex items-center gap-2 justify-center mt-2'>
+						<div className='flex items-center gap-2 justify-center mt-2 text-gray-700'>
 							<Leaf className='size-5 text-success-50' />
 							<span className='font-medium'>
 								Impact écologique positif!
@@ -187,16 +184,16 @@ const ProfilePage = () => {
 				</Card>
 
 				{/* Carte Habitudes alimentaires */}
-				<Card>
+				<Card className='shadow-xl border-0 bg-neutral-50'>
 					<CardHeader>
-						<CardTitle className='flex items-center gap-2'>
+						<CardTitle className='flex items-center gap-2 text-gray-900'>
 							<ChefHat className='size-5 text-success-50' />
 							Habitudes alimentaires
 						</CardTitle>
 					</CardHeader>
 					<CardContent className='space-y-4'>
 						<div className='space-y-2'>
-							<span className='text-sm font-medium'>
+							<span className='text-sm font-medium text-gray-700'>
 								Catégories préférées
 							</span>
 							<div className='flex flex-wrap gap-2'>
@@ -205,7 +202,7 @@ const ProfilePage = () => {
 										<Badge
 											key={category}
 											variant='outline'
-											className='bg-neutral-50'>
+											className='bg-gray-50 border border-gray-100 text-gray-700'>
 											{category}
 										</Badge>
 									)
@@ -215,7 +212,7 @@ const ProfilePage = () => {
 
 						<div className='space-y-2'>
 							<div className='flex justify-between'>
-								<span className='text-sm font-medium'>
+								<span className='text-sm font-medium text-gray-700'>
 									Nutriscore moyen
 								</span>
 								<div className='flex items-center'>
@@ -234,7 +231,7 @@ const ProfilePage = () => {
 												  'D'
 												? 'bg-orange-500'
 												: 'bg-red-500'
-										} text-white`}>
+										} text-neutral-50`}>
 										{mockStatistics.nutritionalScore}
 									</Badge>
 								</div>
@@ -244,16 +241,16 @@ const ProfilePage = () => {
 				</Card>
 
 				{/* Carte Activités récentes */}
-				<Card>
+				<Card className='shadow-xl border-0 bg-neutral-50'>
 					<CardHeader>
-						<CardTitle className='flex items-center gap-2'>
+						<CardTitle className='flex items-center gap-2 text-gray-900'>
 							<Clock className='size-5 text-success-50' />
 							Activités récentes
 						</CardTitle>
 					</CardHeader>
 					<CardContent className='space-y-4'>
 						<div className='space-y-2'>
-							<h3 className='text-sm font-medium'>
+							<h3 className='text-sm font-medium text-gray-700'>
 								Derniers produits ajoutés
 							</h3>
 							<div className='space-y-2'>
@@ -261,9 +258,9 @@ const ProfilePage = () => {
 									(product) => (
 										<div
 											key={product.id}
-											className='flex justify-between items-center py-2 border-b border-neutral-100 last:border-0'>
+											className='flex justify-between items-center py-2 border-b border-gray-200 last:border-0 text-gray-700'>
 											<span>{product.name}</span>
-											<span className='text-xs text-neutral-200'>
+											<span className='text-xs text-gray-600'>
 												{product.date}
 											</span>
 										</div>
@@ -273,7 +270,7 @@ const ProfilePage = () => {
 						</div>
 
 						<div className='space-y-2'>
-							<h3 className='text-sm font-medium'>
+							<h3 className='text-sm font-medium text-gray-700'>
 								Recettes consultées
 							</h3>
 							<div className='flex flex-wrap gap-2'>
@@ -281,7 +278,7 @@ const ProfilePage = () => {
 									<Badge
 										key={recipe}
 										variant='outline'
-										className='bg-neutral-50'>
+										className='bg-gray-50 border border-gray-100 text-gray-700'>
 										{recipe}
 									</Badge>
 								))}

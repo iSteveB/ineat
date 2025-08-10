@@ -14,9 +14,9 @@ export default function AuthLayout() {
 						<Logo />
 					</div>
 					<h1 className='text-3xl font-bold font-fredoka'>InEat</h1>
-					<p className='text-gray-600'>
+					<h2 className='text-gray-600'>
 						Gérez vos <strong>courses</strong> comme un <strong>chef</strong> !
-					</p>
+					</h2>
 				</div>
 				<Outlet />
 			</div>

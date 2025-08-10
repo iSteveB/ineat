@@ -1,12 +1,13 @@
+'use client';
+
 import React, { useState, useCallback } from 'react';
 import { Search, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { OFF_UTILS, OFF_ERROR_MESSAGES } from '@/schemas/openfoodfact';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
-import { Product } from '@/schemas/product';
+import type { Product } from '@/schemas/product';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
-/**
- * Props du composant ManualBarcodeInput
- */
 interface ManualBarcodeInputProps {
 	onProductFound: (localProduct: Partial<Product>) => void;
 	onProductNotFound: (barcode: string) => void;
@@ -16,29 +17,6 @@ interface ManualBarcodeInputProps {
 	className?: string;
 }
 
-/**
- * Composant de saisie manuelle de code-barre
- *
- * Permet à l'utilisateur de saisir un code-barre manuellement avec :
- * - Validation en temps réel du format
- * - Recherche automatique dans OpenFoodFacts
- * - Messages d'erreur appropriés
- * - États de loading/succès/erreur
- *
- * @example
- * ```tsx
- * <ManualBarcodeInput
- *   onProductFound={(product) => {
- *     // Pré-remplir le formulaire d'ajout
- *     setFormData(product);
- *   }}
- *   onProductNotFound={(barcode) => {
- *     // Rediriger vers création manuelle
- *     router.push(`/products/create?barcode=${barcode}`);
- *   }}
- * />
- * ```
- */
 export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	onProductFound,
 	onProductNotFound,
@@ -51,7 +29,6 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	const [validationError, setValidationError] = useState<string | null>(null);
 	const [hasSearched, setHasSearched] = useState<boolean>(false);
 
-	// CORRECTION: Utiliser une seule instance du hook
 	const {
 		searchByBarcode,
 		loading,
@@ -103,7 +80,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	 * Gère la soumission du formulaire
 	 */
 	const handleSubmit = useCallback(
-		async (e: React.FormEvent) => {
+		async (e: React.FormEvent<HTMLFormElement>) => {
 			e.preventDefault();
 
 			const trimmedBarcode = barcode.trim();
@@ -178,21 +155,18 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	const inputState = getInputState();
 
 	/**
-	 * Classes CSS selon l'état
+	 * Classes CSS pour l'input selon l'état
 	 */
 	const getInputClasses = (): string => {
-		const baseClasses =
-			'w-full px-4 py-3 pl-12 pr-12 rounded-lg border text-base transition-all duration-200 focus:outline-none focus:ring-2';
-
 		switch (inputState) {
 			case 'error':
-				return `${baseClasses} border-red-300 bg-red-50 focus:border-red-500 focus:ring-red-200 text-red-900 placeholder-red-400`;
+				return 'border-error-500 focus-visible:ring-error-500 text-error-900 placeholder:text-error-400';
 			case 'loading':
-				return `${baseClasses} border-blue-300 bg-blue-50 focus:border-blue-500 focus:ring-blue-200`;
+				return 'border-primary-500 focus-visible:ring-primary-500';
 			case 'success':
-				return `${baseClasses} border-green-300 bg-green-50 focus:border-green-500 focus:ring-green-200`;
+				return 'border-success-500 focus-visible:ring-success-500';
 			default:
-				return `${baseClasses} border-gray-300 bg-white focus:border-blue-500 focus:ring-blue-200`;
+				return 'border-neutral-200 focus-visible:ring-primary-500';
 		}
 	};
 
@@ -203,14 +177,14 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 		switch (inputState) {
 			case 'loading':
 				return (
-					<Loader2 className='size-5 text-blue-500 animate-spin' />
+					<Loader2 className='size-5 text-primary-500 animate-spin' />
 				);
 			case 'error':
-				return <AlertCircle className='size-5 text-red-500' />;
+				return <AlertCircle className='size-5 text-error-500' />;
 			case 'success':
-				return <CheckCircle2 className='size-5 text-green-500' />;
+				return <CheckCircle2 className='size-5 text-success-500' />;
 			default:
-				return <Search className='size-5 text-gray-400' />;
+				return <Search className='size-5 text-neutral-50' />;
 		}
 	};
 
@@ -219,19 +193,14 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 			<form onSubmit={handleSubmit} className='space-y-3'>
 				{/* Input avec icônes */}
 				<div className='relative'>
-					{/* Icône à gauche */}
-					<div className='absolute left-4 top-1/2 -translate-y-1/2'>
-						{getIcon()}
-					</div>
-
 					{/* Input principal */}
-					<input
+					<Input
 						type='text'
 						value={barcode}
 						onChange={handleBarcodeChange}
 						placeholder={placeholder}
 						disabled={disabled || loading}
-						className={getInputClasses()}
+						className={`pl-4 pr-[100px] h-12 ${getInputClasses()}`}
 						autoComplete='off'
 						inputMode='numeric'
 						pattern='[0-9]*'
@@ -239,7 +208,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 					/>
 
 					{/* Bouton de soumission intégré */}
-					<button
+					<Button
 						type='submit'
 						disabled={
 							disabled ||
@@ -247,14 +216,14 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 							!!validationError ||
 							barcode.trim().length === 0
 						}
-						className='absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors'>
-						{loading ? 'Recherche...' : 'Rechercher'}
-					</button>
+						className='absolute right-2 top-1/2 -translate-y-1/2 h-9 px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed'>
+						{loading ? 'Recherche...' : getIcon()}
+					</Button>
 				</div>
 
 				{/* Message d'erreur */}
 				{validationError && (
-					<div className='flex items-center gap-2 text-sm text-red-600'>
+					<div className='flex items-center gap-2 text-sm text-error-600'>
 						<AlertCircle className='size-4 flex-shrink-0' />
 						<span>{validationError}</span>
 					</div>
@@ -262,7 +231,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 
 				{/* Message d'aide */}
 				{!validationError && !loading && (
-					<p className='text-sm text-gray-500'>
+					<p className='text-sm text-neutral-500'>
 						Formats supportés : EAN-8 (8 chiffres), EAN-13 (13
 						chiffres), UPC-A (12 chiffres)
 					</p>

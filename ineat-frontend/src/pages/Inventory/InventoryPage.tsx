@@ -1,16 +1,12 @@
+import type React from 'react';
 import { useState, useEffect } from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Plus, Package, Grid3X3, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
-
-// ===== IMPORTS SCHÉMAS ZOD =====
-import { StorageLocationFilter } from '@/schemas';
-
-// ===== IMPORTS COMPOSANTS =====
+import { useAuthStore } from '@/stores/authStore';
+import type { StorageLocationFilter } from '@/schemas';
 import ProductCard from '@/components/common/ProductCard';
 import CategoryFilter from '@/components/common/CategoryFilter';
-
-// ===== IMPORTS STORE ET HOOKS =====
 import {
 	useInventoryItems,
 	useInventoryLoading,
@@ -18,8 +14,8 @@ import {
 	useInventoryActions,
 } from '@/stores/inventoryStore';
 import { useCategories } from '@/hooks/useCategories';
+import { getInitials } from '@/utils/ui-utils';
 
-// ===== MAPPING ENTRE CATÉGORIES ET LIEUX DE STOCKAGE =====
 const CATEGORY_TO_STORAGE_MAPPING: Record<StorageLocationFilter, string[]> = {
 	ALL: [],
 	FRESH: ['refrigerator', 'fridge', 'frigo', 'réfrigérateur'],
@@ -27,35 +23,30 @@ const CATEGORY_TO_STORAGE_MAPPING: Record<StorageLocationFilter, string[]> = {
 	PANTRY: ['pantry', 'placard', 'cupboard', 'épicerie', 'epicerie', 'other'],
 } as const;
 
-// ===== COMPOSANT PRINCIPAL =====
 const InventoryPage: React.FC = () => {
-	// ===== ÉTAT LOCAL =====
 	const [searchQuery, setSearchQuery] = useState('');
-	const [activeStorageCategory, setActiveStorageCategory] = useState<StorageLocationFilter>('ALL');
+	const [activeStorageCategory, setActiveStorageCategory] =
+		useState<StorageLocationFilter>('ALL');
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 	const [showFilters, setShowFilters] = useState(false);
+	const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-	// ===== STORE INVENTORY =====
 	const items = useInventoryItems(); // Items déjà enrichis avec expiryStatus par le store
 	const isLoading = useInventoryLoading();
 	const error = useInventoryError();
 	const { fetchInventoryItems, clearError } = useInventoryActions();
+	const { user } = useAuthStore();
 
-	// ===== HOOK CATÉGORIES =====
-	const { 
-		data: categories = [], 
-		isLoading: categoriesLoading, 
-		error: categoriesError 
+	const {
+		data: categories = [],
+		isLoading: categoriesLoading,
+		error: categoriesError,
 	} = useCategories();
 
-	// ===== EFFECTS =====
-
-	// Charger les données au montage du composant
 	useEffect(() => {
 		fetchInventoryItems();
 	}, [fetchInventoryItems]);
 
-	// Gérer les erreurs
 	useEffect(() => {
 		if (error) {
 			toast.error(error);
@@ -69,20 +60,22 @@ const InventoryPage: React.FC = () => {
 		}
 	}, [categoriesError]);
 
-	// ===== LOGIQUE DE FILTRAGE =====
-
-	// Filtrer les items selon tous les critères
 	const filteredItems = items.filter((item) => {
-		// ===== FILTRE DE RECHERCHE =====
-		const matchesSearch = !searchQuery || 
-			item.product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			(item.product.brand && item.product.brand.toLowerCase().includes(searchQuery.toLowerCase()));
+		const matchesSearch =
+			!searchQuery ||
+			item.product.name
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase()) ||
+			(item.product.brand &&
+				item.product.brand
+					.toLowerCase()
+					.includes(searchQuery.toLowerCase()));
 
-		// ===== FILTRE PAR LIEU DE STOCKAGE =====
 		let matchesStorageCategory = true;
 		if (activeStorageCategory !== 'ALL') {
 			if (item.storageLocation) {
-				const storageLocations = CATEGORY_TO_STORAGE_MAPPING[activeStorageCategory];
+				const storageLocations =
+					CATEGORY_TO_STORAGE_MAPPING[activeStorageCategory];
 				matchesStorageCategory = storageLocations.some((location) =>
 					item.storageLocation?.toLowerCase().includes(location)
 				);
@@ -93,10 +86,13 @@ const InventoryPage: React.FC = () => {
 		}
 
 		// ===== FILTRE PAR CATÉGORIE DE PRODUIT =====
-		const matchesProductCategory = !selectedCategoryId || 
+		const matchesProductCategory =
+			!selectedCategoryId ||
 			item.product.category.id === selectedCategoryId;
 
-		return matchesSearch && matchesStorageCategory && matchesProductCategory;
+		return (
+			matchesSearch && matchesStorageCategory && matchesProductCategory
+		);
 	});
 
 	// ===== TRI DES ITEMS =====
@@ -104,7 +100,9 @@ const InventoryPage: React.FC = () => {
 	const sortedItems = [...filteredItems].sort((a, b) => {
 		if (!a.expiryDate) return 1;
 		if (!b.expiryDate) return -1;
-		return new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime();
+		return (
+			new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+		);
 	});
 
 	// ===== UTILITAIRES =====
@@ -116,103 +114,173 @@ const InventoryPage: React.FC = () => {
 		setShowFilters(false);
 	};
 
-	const hasActiveFilters = searchQuery || activeStorageCategory !== 'ALL' || selectedCategoryId;
+	const hasActiveFilters =
+		searchQuery || activeStorageCategory !== 'ALL' || selectedCategoryId;
 
 	const getSelectedCategoryName = () => {
 		if (!selectedCategoryId) return null;
-		const category = categories.find(cat => cat.id === selectedCategoryId);
+		const category = categories.find(
+			(cat) => cat.id === selectedCategoryId
+		);
 		return category?.name || 'Catégorie inconnue';
 	};
 
-	// ===== RENDU =====
 	return (
-		<div className='flex flex-col h-full bg-primary-50'>
-			{/* ===== HEADER AVEC AVATAR ET TITRE ===== */}
-			<div className='px-4 py-6 flex items-center gap-4'>
-				<div className='size-16 rounded-full bg-primary-100 overflow-hidden'>
-					<img
-						src='https://i.pravatar.cc/300'
-						alt='Avatar utilisateur'
-						className='size-full object-cover'
-					/>
+		<div className='flex flex-col h-full bg-gradient-to-br from-gray-50 to-blue-50/30'>
+			<div className='relative overflow-hidden bg-neutral-50 border-b border-gray-200 shadow-sm'>
+				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+
+				<div className='relative px-6 py-4 flex items-center gap-4'>
+					<div className='relative'>
+						<div className='size-14 rounded-2xl bg-gradient-to-br from-primary-100/50 to-primary-100 overflow-hidden shadow-lg'>
+							{user?.avatarUrl ? (
+								<img
+									src={user.avatarUrl}
+									alt='Avatar utilisateur'
+									className='size-full object-cover'
+								/>
+							) : (
+								<div className='flex items-center justify-center size-full text-neutral-50 text-4xl'>
+									{getInitials(
+										user?.firstName || '',
+										user?.lastName || ''
+									)}
+								</div>
+							)}
+						</div>
+					</div>
+					<div className='flex-1'>
+						<h1 className='text-2xl font-bold text-gray-900 mb-1'>
+							Mon Inventaire
+						</h1>
+						<p className='text-gray-600 text-sm'>
+							{items.length} produit
+							{items.length > 1 ? 's' : ''} dans votre inventaire
+						</p>
+					</div>
+					<Link
+						to='/app/inventory/add'
+						className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-success-50 to-emerald-700 text-neutral-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'>
+						<Plus className='size-4' />
+						<span className='font-semibold'>Ajouter</span>
+					</Link>
 				</div>
-				<h1 className='text-3xl font-bold font-display'>Mon Inventaire</h1>
 			</div>
 
 			{/* ===== BARRE DE RECHERCHE ===== */}
-			<div className='px-4 mb-4'>
+			<div className='px-6 py-5'>
 				<div className='relative'>
-					<div className='absolute inset-y-0 left-3 flex items-center pointer-events-none'>
-						<Search className='size-5 text-neutral-200' />
+					<div className='absolute inset-y-0 left-4 flex items-center pointer-events-none'>
+						<Search className='size-5 text-gray-400' />
 					</div>
 					<input
 						type='text'
-						placeholder='Rechercher un produit'
-						className='py-3 pl-10 pr-4 w-full rounded-full bg-neutral-50 border-0 shadow-sm focus:ring-2 focus:ring-accent focus:outline-none'
+						placeholder='Rechercher un produit ou une marque...'
+						className='w-full pl-12 pr-4 py-4 bg-neutral-50 border border-gray-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none transition-all duration-300'
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
+					{searchQuery && (
+						<button
+							onClick={() => setSearchQuery('')}
+							className='absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600'>
+							<X className='size-5' />
+						</button>
+					)}
 				</div>
 			</div>
 
-			{/* ===== FILTRES PAR LIEU DE STOCKAGE ===== */}
-			<div className='px-4 mb-4'>
+			{/* ===== FILTRES ET CONTRÔLES ===== */}
+			<div className='px-6 space-y-5'>
+				{/* Filtres par lieu de stockage */}
 				<CategoryFilter
 					activeCategory={activeStorageCategory}
 					onCategoryChange={setActiveStorageCategory}
 				/>
-			</div>
 
-			{/* ===== BOUTON FILTRES AVANCÉS ===== */}
-			<div className='px-4 mb-4'>
-				<button
-					onClick={() => setShowFilters(!showFilters)}
-					className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors ${
-						hasActiveFilters
-							? 'bg-accent text-white border-accent'
-							: 'bg-white text-neutral-600 border-neutral-200 hover:border-accent'
-					}`}>
-					<Filter className='size-4' />
-					<span>Filtres</span>
-					{hasActiveFilters && (
-						<span className='bg-white/20 text-xs px-2 py-0.5 rounded-full'>
-							{(searchQuery ? 1 : 0) + 
-							 (activeStorageCategory !== 'ALL' ? 1 : 0) + 
-							 (selectedCategoryId ? 1 : 0)}
-						</span>
-					)}
-				</button>
+				{/* Contrôles avancés */}
+				<div className='flex items-center justify-between pb-2'>
+					<button
+						onClick={() => setShowFilters(!showFilters)}
+						className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer duration-300 ${
+							hasActiveFilters
+								? 'bg-blue-500 text-neutral-50 border-blue-500 shadow-lg'
+								: 'bg-neutral-50 text-gray-600 border-gray-200 hover:border-blue-500 hover:shadow-md'
+						}`}>
+						<Filter className='size-4 ' />
+
+						{hasActiveFilters && (
+							<span className='bg-neutral-50/20 text-xs px-2 py-0.5 rounded-full font-semibold'>
+								{(searchQuery ? 1 : 0) +
+									(activeStorageCategory !== 'ALL' ? 1 : 0) +
+									(selectedCategoryId ? 1 : 0)}
+							</span>
+						)}
+					</button>
+
+					<div className='items-center gap-2 hidden md:flex'>
+						<button
+							onClick={() => setViewMode('grid')}
+							className={`p-2 rounded-lg transition-colors ${
+								viewMode === 'grid'
+									? 'bg-blue-100 text-blue-600'
+									: 'text-gray-400 hover:text-gray-600'
+							}`}>
+							<Grid3X3 className='size-4' />
+						</button>
+						<button
+							onClick={() => setViewMode('list')}
+							className={`p-2 rounded-lg transition-colors ${
+								viewMode === 'list'
+									? 'bg-blue-100 text-blue-600'
+									: 'text-gray-400 hover:text-gray-600'
+							}`}>
+							<List className='size-4' />
+						</button>
+					</div>
+				</div>
 			</div>
 
 			{/* ===== PANNEAU FILTRES AVANCÉS ===== */}
 			{showFilters && (
-				<div className='px-4 mb-4'>
-					<div className='bg-white rounded-xl p-4 shadow-sm border border-neutral-200'>
-						<div className='flex items-center justify-between mb-4'>
-							<h3 className='font-semibold text-neutral-900'>Filtres</h3>
+				<div className='px-6 py-5'>
+					<div className='bg-neutral-50 rounded-2xl p-6 shadow-lg border border-gray-200'>
+						<div className='flex items-center justify-between mb-5'>
+							<h3 className='text-lg font-bold text-gray-900'>
+								Filtres
+							</h3>
 							<button
 								onClick={() => setShowFilters(false)}
-								className='text-neutral-400 hover:text-neutral-600'>
+								className='p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors'>
 								<X className='size-5' />
 							</button>
 						</div>
 
-						{/* ===== FILTRE PAR CATÉGORIE DE PRODUIT ===== */}
-						<div className='space-y-3'>
+						<div className='space-y-4'>
 							<div>
-								<label className='block text-sm font-medium text-neutral-700 mb-2'>
+								<label className='block text-sm font-semibold text-gray-700 mb-2'>
 									Catégorie de produit
 								</label>
 								{categoriesLoading ? (
-									<div className='text-sm text-neutral-500'>Chargement des catégories...</div>
+									<div className='text-sm text-gray-500 p-3 bg-gray-50 rounded-lg'>
+										Chargement des catégories...
+									</div>
 								) : (
 									<select
 										value={selectedCategoryId}
-										onChange={(e) => setSelectedCategoryId(e.target.value)}
-										className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
-										<option value=''>Toutes les catégories</option>
+										onChange={(e) =>
+											setSelectedCategoryId(
+												e.target.value
+											)
+										}
+										className='w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300'>
+										<option value=''>
+											Toutes les catégories
+										</option>
 										{categories.map((category) => (
-											<option key={category.id} value={category.id}>
+											<option
+												key={category.id}
+												value={category.id}>
 												{category.name}
 											</option>
 										))}
@@ -220,16 +288,15 @@ const InventoryPage: React.FC = () => {
 								)}
 							</div>
 
-							{/* ===== BOUTONS D'ACTION ===== */}
-							<div className='flex justify-between pt-3 border-t border-neutral-200'>
+							<div className='flex justify-between pt-5 border-t border-gray-200'>
 								<button
 									onClick={clearAllFilters}
-									className='text-neutral-600 hover:text-neutral-900 transition-colors'>
+									className='text-gray-600 hover:text-gray-900 font-medium cursor-pointer transition-colors'>
 									Effacer tous les filtres
 								</button>
 								<button
 									onClick={() => setShowFilters(false)}
-									className='bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/80 transition-colors'>
+									className='bg-success-50 text-neutral-50 px-6 py-2 rounded-xl hover:bg-success-50/80 cursor-pointer transition-colors font-semibold shadow-lg hover:shadow-xl'>
 									Appliquer
 								</button>
 							</div>
@@ -240,36 +307,27 @@ const InventoryPage: React.FC = () => {
 
 			{/* ===== FILTRES ACTIFS (TAGS) ===== */}
 			{hasActiveFilters && (
-				<div className='px-4 mb-4'>
+				<div className='px-6 py-3'>
 					<div className='flex flex-wrap gap-2'>
 						{searchQuery && (
-							<div className='flex items-center gap-1 bg-accent/10 text-accent px-3 py-1 rounded-full text-sm'>
+							<div className='flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-xl text-sm font-medium cursor-pointer'>
 								<span>Recherche: "{searchQuery}"</span>
 								<button
 									onClick={() => setSearchQuery('')}
-									className='hover:bg-accent/20 rounded-full p-0.5'>
+									className='hover:bg-blue-200 rounded-full p-0.5 transition-colors cursor-pointer'>
 									<X className='size-3' />
 								</button>
 							</div>
 						)}
-						
-						{activeStorageCategory !== 'ALL' && (
-							<div className='flex items-center gap-1 bg-accent/10 text-accent px-3 py-1 rounded-full text-sm'>
-								<span>Lieu: {activeStorageCategory.toLowerCase()}</span>
-								<button
-									onClick={() => setActiveStorageCategory('ALL')}
-									className='hover:bg-accent/20 rounded-full p-0.5'>
-									<X className='size-3' />
-								</button>
-							</div>
-						)}
-						
+
 						{selectedCategoryId && (
-							<div className='flex items-center gap-1 bg-accent/10 text-accent px-3 py-1 rounded-full text-sm'>
-								<span>Catégorie: {getSelectedCategoryName()}</span>
+							<div className='flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-xl text-sm font-medium'>
+								<span>
+									Catégorie: {getSelectedCategoryName()}
+								</span>
 								<button
 									onClick={() => setSelectedCategoryId('')}
-									className='hover:bg-accent/20 rounded-full p-0.5'>
+									className='hover:bg-blue-200 rounded-full p-0.5 transition-colors'>
 									<X className='size-3' />
 								</button>
 							</div>
@@ -279,45 +337,79 @@ const InventoryPage: React.FC = () => {
 			)}
 
 			{/* ===== LISTE DES PRODUITS ===== */}
-			<div className='flex-1 px-4 pb-20 overflow-auto'>
+			<div className='flex-1 px-6 pb-28 overflow-auto'>
 				{isLoading ? (
 					// ===== ÉTAT DE CHARGEMENT =====
-					<div className='flex justify-center items-center h-40'>
-						<div className='animate-spin rounded-full size-8 border-b-2 border-accent'></div>
+					<div className='flex flex-col justify-center items-center h-64'>
+						<div className='relative'>
+							<div className='size-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600' />
+							<div className='absolute inset-0 size-16 border-4 border-transparent rounded-full animate-pulse border-t-blue-400' />
+						</div>
+						<div className='mt-6 text-center'>
+							<p className='text-gray-700 font-medium'>
+								Chargement de votre inventaire...
+							</p>
+							<p className='text-sm text-gray-500 mt-1'>
+								Analyse de vos produits en cours
+							</p>
+						</div>
 					</div>
 				) : sortedItems.length > 0 ? (
 					// ===== LISTE DES PRODUITS =====
-					<div className='space-y-4'>
-						{sortedItems.map((item) => (
-							<ProductCard key={item.id} item={item} />
+					<div
+						className={
+							viewMode === 'grid'
+								? 'grid gap-4 md:grid-cols-2'
+								: 'space-y-4'
+						}>
+						{sortedItems.map((item, index) => (
+							<div
+								key={item.id}
+								className='transform transition-all duration-300 hover:scale-[1.01]'
+								style={{
+									animationDelay: `${index * 50}ms`,
+								}}>
+								<ProductCard item={item} />
+							</div>
 						))}
 					</div>
 				) : (
-					// ===== ÉTAT VIDE =====
-					<div className='flex flex-col items-center justify-center h-40 text-center'>
-						<p className='text-neutral-200 mb-2'>
-							{hasActiveFilters
-								? 'Aucun produit trouvé'
-								: 'Votre inventaire est vide'}
-						</p>
-						<p className='text-sm text-neutral-200'>
-							{hasActiveFilters
-								? 'Modifiez vos critères de recherche'
-								: 'Commencez par ajouter des produits'}
-						</p>
-						{hasActiveFilters ? (
-							<button
-								onClick={clearAllFilters}
-								className='mt-4 px-6 py-2 rounded-full bg-neutral-200 text-neutral-600 font-medium hover:bg-neutral-300 transition-colors'>
-								Effacer les filtres
-							</button>
-						) : (
-							<Link
-								to='/app/inventory/add'
-								className='mt-4 px-6 py-2 rounded-full bg-accent text-neutral-50 font-medium hover:bg-accent-600 transition-colors'>
-								Ajouter un produit
-							</Link>
-						)}
+					// ===== ÉTAT VIDE  =====
+					<div className='flex flex-col items-center justify-center h-64 text-center pt-22'>
+						<div className='relative mb-8'>
+							<div className='size-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center'>
+								<Package className='size-10 text-gray-400' />
+							</div>
+							<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg'>
+								<Plus className='size-4 text-neutral-50' />
+							</div>
+						</div>
+						<div className='space-y-3'>
+							<h3 className='text-xl font-bold text-gray-900'>
+								{hasActiveFilters
+									? 'Aucun produit trouvé'
+									: 'Votre inventaire est vide'}
+							</h3>
+							<p className='text-gray-600 max-w-md'>
+								{hasActiveFilters
+									? 'Aucun produit ne correspond à vos critères de recherche. Essayez de modifier vos filtres.'
+									: 'Commencez par ajouter des produits à votre inventaire pour mieux gérer vos stocks.'}
+							</p>
+							{hasActiveFilters ? (
+								<button
+									onClick={clearAllFilters}
+									className='mt-8 px-8 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors shadow-md hover:shadow-lg cursor-pointer'>
+									Effacer les filtres
+								</button>
+							) : (
+								<Link
+									to='/app/inventory/add'
+									className='inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-neutral-50 font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105'>
+									<Plus className='size-5' />
+									Ajouter un produit
+								</Link>
+							)}
+						</div>
 					</div>
 				)}
 			</div>

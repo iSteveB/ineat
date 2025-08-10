@@ -4,7 +4,6 @@ import { isAuthenticated } from '@/utils/auth';
 
 export const Route = createFileRoute('/_auth/login')({
   beforeLoad: async () => {
-    // Vérifier l'authentification la fonction utilitaire
     const userIsAuthenticated = await isAuthenticated();
     
     if (userIsAuthenticated) {
@@ -13,9 +12,5 @@ export const Route = createFileRoute('/_auth/login')({
     
     return null;
   },
-  component: LoginPage,
+  component: LoginForm,
 });
-
-export default function LoginPage() {
-  return <LoginForm />;
-};

@@ -190,7 +190,7 @@ export const ExistingProductQuickAddForm: React.FC<
 			{/* Carte du produit sélectionné */}
 			<Card className='p-4 bg-primary-50/50 border-primary-100'>
 				<div className='flex items-center space-x-4'>
-					<div className='size-16 rounded-lg overflow-hidden bg-white flex-shrink-0'>
+					<div className='size-16 rounded-lg overflow-hidden bg-neutral-50 flex-shrink-0'>
 						{product.imageUrl ? (
 							<img
 								src={product.imageUrl}

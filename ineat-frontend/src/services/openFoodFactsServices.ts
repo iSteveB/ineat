@@ -64,6 +64,12 @@ export class OpenFoodFactsService {
 						'Limite de taux dépassée. Veuillez patienter.'
 					);
 				}
+				if (response.status === 404) {
+					throw this.createError(
+						'PRODUCT_NOT_FOUND',
+						'Produit non trouvé.'
+					);
+				}
 				throw this.createError(
 					'API_ERROR',
 					`Erreur API: ${response.status} ${response.statusText}`

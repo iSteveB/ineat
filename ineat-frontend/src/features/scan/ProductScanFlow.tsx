@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+import type React from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from '@tanstack/react-router';
 import {
 	Package,
@@ -11,20 +12,25 @@ import {
 } from 'lucide-react';
 import { BarcodeScanner } from './BarcodeScanner';
 import { QuickAddForm } from '@/features/inventory/components/QuickAddForm';
-import { Product } from '@/schemas/product';
-import { AddInventoryItemData } from '@/schemas';
+import type { Product } from '@/schemas/product';
+import type { AddInventoryItemData } from '@/schemas';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
 	inventoryService,
-	ProductSearchResult,
-	QuickAddFormDataWithCategory,
+	type ProductSearchResult,
+	type QuickAddFormDataWithCategory,
 } from '@/services/inventoryService';
-
-/**
- * Étapes du flow de scan
- */
-type FlowStep = 'scan' | 'form' | 'success' | 'not-found';
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import type { FlowStep } from '@/hooks/useProductScanFlow';
 
 /**
  * Données du produit en cours d'ajout
@@ -35,9 +41,6 @@ interface ProductDraft {
 	productSearchResult?: ProductSearchResult;
 }
 
-/**
- * Props du composant ProductScanFlow
- */
 interface ProductScanFlowProps {
 	onComplete?: () => void;
 	onCancel?: () => void;
@@ -45,17 +48,6 @@ interface ProductScanFlowProps {
 	className?: string;
 }
 
-/**
- * Composant d'intégration complète du flow de scan
- *
- * Orchestration complète :
- * 1. Scanner de code-barre (ou saisie manuelle)
- * 2. Recherche OpenFoodFacts automatique
- * 3. Pré-remplissage QuickAddForm avec données OFF
- * 4. L'utilisateur complète : catégorie, prix, lieu, date péremption
- * 5. Ajout à l'inventaire via addManualProduct (nouveau produit)
- * 6. Gestion produits non trouvés → création manuelle
- */
 export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	onComplete,
 	onCancel,
@@ -109,37 +101,40 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	/**
 	 * Gère la détection d'un produit via scan/saisie
 	 */
-	const handleProductFound = useCallback((localProduct: Partial<Product>) => {
-		// Convertir les données OFF en ProductSearchResult pour le QuickAddForm
-		const productSearchResult: ProductSearchResult = {
-			id: crypto.randomUUID(),
-			name: localProduct.name || 'Produit sans nom',
-			brand: localProduct.brand || undefined,
-			category: {
-				id: 'temp-category',
-				name: 'À définir',
-				slug: 'a-definir',
-			},
-			unitType: 'UNIT',
-			imageUrl: undefined,
-			nutriscore: undefined,
-			ecoScore: undefined,
-		};
+	const handleProductFound = useCallback(
+		(localProduct: Partial<Product>): void => {
+			// Convertir les données OFF en ProductSearchResult pour le QuickAddForm
+			const productSearchResult: ProductSearchResult = {
+				id: crypto.randomUUID(),
+				name: localProduct.name || 'Produit sans nom',
+				brand: localProduct.brand || undefined,
+				category: {
+					id: 'temp-category',
+					name: 'À définir',
+					slug: 'a-definir',
+				},
+				unitType: 'UNIT',
+				imageUrl: undefined,
+				nutriscore: undefined,
+				ecoScore: undefined,
+			};
 
-		setProductDraft((prev) => ({
-			...prev,
-			offData: localProduct,
-			productSearchResult,
-		}));
+			setProductDraft((prev) => ({
+				...prev,
+				offData: localProduct,
+				productSearchResult,
+			}));
 
-		setCurrentStep('form');
-		setError(null);
-	}, []);
+			setCurrentStep('form');
+			setError(null);
+		},
+		[]
+	);
 
 	/**
 	 * Gère les produits non trouvés dans OFF
 	 */
-	const handleProductNotFound = useCallback((barcode: string) => {
+	const handleProductNotFound = useCallback((barcode: string): void => {
 		setProductDraft((prev) => ({
 			...prev,
 			scannedBarcode: barcode,
@@ -154,7 +149,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	/**
 	 * Gère les erreurs de scan/recherche
 	 */
-	const handleScanError = useCallback((errorMessage: string) => {
+	const handleScanError = useCallback((errorMessage: string): void => {
 		setError(errorMessage);
 	}, []);
 
@@ -164,7 +159,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	 * et utilise addManualProduct pour créer un nouveau produit
 	 */
 	const handleFormSubmit = useCallback(
-		async (formData: QuickAddFormDataWithCategory) => {
+		async (formData: QuickAddFormDataWithCategory): Promise<void> => {
 			try {
 				setError(null);
 
@@ -215,7 +210,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	/**
 	 * Retourne au scan
 	 */
-	const handleBackToScan = useCallback(() => {
+	const handleBackToScan = useCallback((): void => {
 		setCurrentStep('scan');
 		setProductDraft({});
 		setError(null);
@@ -224,10 +219,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	/**
 	 * Redirige vers la création manuelle complète
 	 */
-	const handleCreateManually = useCallback(() => {
+	const handleCreateManually = useCallback((): void => {
 		const barcode = productDraft.scannedBarcode;
 		const search = barcode ? `?barcode=${barcode}` : '';
-		router.navigate({ to: `/products/create${search}` });
+		router.navigate({ to: `/app/inventory/add/search${search}` });
 	}, [router, productDraft.scannedBarcode]);
 
 	/**
@@ -251,102 +246,98 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 			case 'form':
 				return (
-					<div className='p-6 space-y-6'>
-						{/* Header */}
-						<div className='flex items-center justify-between'>
+					<Card className='w-full h-full flex flex-col'>
+						<CardHeader className='flex flex-row items-center justify-between pb-4'>
 							<div className='flex items-center space-x-3'>
-								<button
+								<Button
+									variant='ghost'
+									size='icon'
 									onClick={handleBackToScan}
-									className='p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors'>
-									<ArrowLeft className='size-5 text-gray-600' />
-								</button>
+									className='text-neutral-600 hover:bg-neutral-100'>
+									<ArrowLeft className='size-5' />
+								</Button>
 								<div>
-									<h2 className='text-xl font-semibold text-gray-900'>
+									<CardTitle className='text-xl font-semibold text-neutral-900'>
 										Ajouter le produit
-									</h2>
-									<p className='text-sm text-gray-600'>
+									</CardTitle>
+									<CardDescription className='text-sm text-neutral-600'>
 										Complétez les informations
-									</p>
+									</CardDescription>
 								</div>
 							</div>
-							<Package className='size-8 text-blue-600' />
-						</div>
+							<Package className='size-8 text-primary-500' />
+						</CardHeader>
+						<CardContent className='flex-1 overflow-y-auto p-6 pt-0 space-y-6'>
+							{/* Infos du produit trouvé */}
+							{productDraft.offData && (
+								<Alert variant='success'>
+									<CheckCircle2 className='size-5' />
+									<AlertTitle>Produit trouvé !</AlertTitle>
+									<AlertDescription>
+										<p>
+											<strong>Nom :</strong>{' '}
+											{productDraft.offData.name}
+										</p>
+										<p>
+											<strong>Marque :</strong>{' '}
+											{productDraft.offData.brand}
+										</p>
+									</AlertDescription>
+								</Alert>
+							)}
 
-						{/* Infos du produit trouvé */}
-						{productDraft.offData && (
-							<div className='bg-green-50 border border-green-200 rounded-lg p-4'>
-								<div className='flex items-center space-x-2 mb-2'>
-									<CheckCircle2 className='size-5 text-green-600' />
-									<span className='font-medium text-green-800'>
-										Produit trouvé dans OpenFoodFacts
-									</span>
-								</div>
-								<div className='text-sm text-green-700'>
-									<p>
-										<strong>Nom :</strong>{' '}
-										{productDraft.offData.name}
-									</p>
-									<p>
-										<strong>Marque :</strong>{' '}
-										{productDraft.offData.brand}
-									</p>
-								</div>
-							</div>
-						)}
+							{/* Formulaire d'ajout rapide */}
+							{productDraft.productSearchResult && (
+								<QuickAddForm
+									product={productDraft.productSearchResult}
+									onSubmit={handleFormSubmit}
+									onCancel={handleBackToScan}
+									isSubmitting={
+										addManualProductMutation.isPending
+									}
+								/>
+							)}
 
-						{/* Formulaire d'ajout rapide */}
-						{productDraft.productSearchResult && (
-							<QuickAddForm
-								product={productDraft.productSearchResult}
-								onSubmit={handleFormSubmit}
-								onCancel={handleBackToScan}
-								isSubmitting={
-									addManualProductMutation.isPending
-								}
-							/>
-						)}
-
-						{/* Erreur */}
-						{(error || addManualProductMutation.error) && (
-							<div className='bg-red-50 border border-red-200 rounded-lg p-4'>
-								<div className='flex items-center space-x-2'>
-									<AlertTriangle className='size-5 text-red-600' />
-									<span className='text-sm text-red-800'>
+							{/* Erreur */}
+							{(error || addManualProductMutation.error) && (
+								<Alert variant='destructive'>
+									<AlertTriangle className='size-5' />
+									<AlertTitle>
+										Erreur lors de l'ajout
+									</AlertTitle>
+									<AlertDescription>
 										{error ||
 											addManualProductMutation.error
 												?.message}
-									</span>
-								</div>
-							</div>
-						)}
-					</div>
+									</AlertDescription>
+								</Alert>
+							)}
+						</CardContent>
+					</Card>
 				);
 
 			case 'not-found':
 				return (
-					<div className='p-6 text-center space-y-6'>
-						{/* Header */}
-						<div className='flex items-center justify-center space-x-3 mb-6'>
-							<button
-								onClick={handleBackToScan}
-								className='absolute left-6 top-6 p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors'>
-								<ArrowLeft className='size-5 text-gray-600' />
-							</button>
-						</div>
+					<Card className='w-full h-full flex flex-col items-center justify-center text-center p-6'>
+						<Button
+							variant='ghost'
+							size='icon'
+							onClick={handleBackToScan}
+							className='absolute left-6 top-6 text-neutral-600 hover:bg-neutral-100'>
+							<ArrowLeft className='size-5' />
+						</Button>
 
-						{/* Message principal */}
-						<div className='space-y-4'>
-							<AlertTriangle className='size-16 text-orange-500 mx-auto' />
+						<div className='space-y-4 mb-6'>
+							<AlertTriangle className='size-16 text-warning-500 mx-auto' />
 							<div>
-								<h2 className='text-xl font-semibold text-gray-900 mb-2'>
+								<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
 									Produit non trouvé
-								</h2>
-								<p className='text-gray-600 mb-4'>
-									Ce produit n'existe pas dans la base
-									OpenFoodFacts.
-								</p>
+								</CardTitle>
+								<CardDescription className='text-neutral-600 mb-4'>
+									Ce produit n'existe pas dans OpenFoodFacts.
+								</CardDescription>
 								{productDraft.scannedBarcode && (
-									<p className='text-sm text-gray-500 font-mono bg-gray-100 px-3 py-1 rounded'>
+									<p className='text-sm text-neutral-500 font-mono bg-neutral-100 px-3 py-1 rounded-md inline-block'>
 										Code-barre :{' '}
 										{productDraft.scannedBarcode}
 									</p>
@@ -354,56 +345,57 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 							</div>
 						</div>
 
-						{/* Actions */}
-						<div className='space-y-3'>
-							<button
+						<div className='space-y-3 w-full max-w-sm'>
+							<Button
 								onClick={handleCreateManually}
-								className='w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2'>
-								<Plus className='size-5' />
+								className='w-full'
+								size='lg'>
+								<Plus className='size-5 mr-2' />
 								<span>Créer ce produit manuellement</span>
-							</button>
+							</Button>
 
-							<button
+							<Button
 								onClick={handleBackToScan}
-								className='w-full px-6 py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2'>
-								<Scan className='size-5' />
+								variant='outline'
+								className='w-full'
+								size='lg'>
+								<Scan className='size-5 mr-2' />
 								<span>Scanner un autre produit</span>
-							</button>
+							</Button>
 
-							{/* Lien OpenFoodFacts pour contribuer */}
-							<div className='pt-4 border-t border-gray-200'>
-								<p className='text-xs text-gray-500 mb-2'>
+							<div className='pt-4 border-t border-neutral-200 mt-6'>
+								<p className='text-xs text-neutral-500 mb-2'>
 									Vous pouvez aider en ajoutant ce produit à
 									OpenFoodFacts
 								</p>
 								<a
-									href={`https://world.openfoodfacts.org/cgi/product_jqm2.pl?code=${productDraft.scannedBarcode}`}
+									href={`https://fr.openfoodfacts.org/contribuer`}
 									target='_blank'
 									rel='noopener noreferrer'
-									className='inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800'>
+									className='inline-flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-800'>
 									<ExternalLink className='size-4' />
 									<span>Contribuer à OpenFoodFacts</span>
 								</a>
 							</div>
 						</div>
-					</div>
+					</Card>
 				);
 
 			case 'success':
 				return (
-					<div className='p-6 text-center space-y-6'>
-						<CheckCircle2 className='size-16 text-green-500 mx-auto' />
+					<Card className='w-full h-full flex flex-col items-center justify-center text-center p-6'>
+						<CheckCircle2 className='size-16 text-success-500 mx-auto mb-4' />
 						<div>
-							<h2 className='text-xl font-semibold text-gray-900 mb-2'>
+							<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
 								Produit ajouté !
-							</h2>
-							<p className='text-gray-600'>
+							</CardTitle>
+							<CardDescription className='text-neutral-600'>
 								{productDraft.offData?.name || 'Le produit'} a
 								été ajouté à votre inventaire.
-							</p>
+							</CardDescription>
 						</div>
-						<div className='animate-pulse bg-gray-200 h-2 rounded'></div>
-					</div>
+						<div className='animate-pulse bg-neutral-200 h-2 rounded w-1/2 mt-6'></div>
+					</Card>
 				);
 
 			default:
@@ -413,39 +405,8 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 	return (
 		<div
-			className={`bg-white rounded-lg shadow-lg overflow-hidden ${className}`}>
+			className={`bg-neutral-50 rounded-2xl shadow-xl overflow-hidden ${className}`}>
 			{renderStep()}
 		</div>
 	);
-};
-
-/**
- * Hook utilitaire pour gérer le flow de scan
- */
-export const useProductScanFlow = () => {
-	const [isOpen, setIsOpen] = useState<boolean>(false);
-	const [step, setStep] = useState<FlowStep>('scan');
-
-	const openScanner = useCallback(() => {
-		setStep('scan');
-		setIsOpen(true);
-	}, []);
-
-	const closeScanner = useCallback(() => {
-		setIsOpen(false);
-	}, []);
-
-	const openManualForm = useCallback(() => {
-		setStep('form');
-		setIsOpen(true);
-	}, []);
-
-	return {
-		isOpen,
-		step,
-		openScanner,
-		closeScanner,
-		openManualForm,
-		setStep,
-	};
 };

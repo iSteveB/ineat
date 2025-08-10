@@ -10,10 +10,7 @@ import {
 } from 'lucide-react';
 
 // ===== IMPORTS SCHÉMAS ZOD =====
-import {
-	InventoryItemWithStatus,
-	InventoryFilters,
-} from '@/schemas';
+import { InventoryItemWithStatus, InventoryFilters } from '@/schemas';
 
 // ===== IMPORTS STORE =====
 import {
@@ -154,7 +151,7 @@ export function InventoryListPage() {
 		return (
 			<div className='min-h-screen bg-primary-50 p-4'>
 				<div className='max-w-2xl mx-auto'>
-					<div className='bg-error-50 text-white p-6 rounded-xl'>
+					<div className='bg-error-50 text-neutral-50 p-6 rounded-xl'>
 						<h2 className='text-xl font-semibold mb-2'>
 							Erreur de chargement
 						</h2>
@@ -164,12 +161,12 @@ export function InventoryListPage() {
 						<div className='flex gap-2'>
 							<button
 								onClick={() => fetchInventoryItems()}
-								className='bg-white text-error-50 px-4 py-2 rounded-lg font-medium'>
+								className='bg-neutral-50 text-error-50 px-4 py-2 rounded-lg font-medium'>
 								Réessayer
 							</button>
 							<button
 								onClick={clearError}
-								className='bg-white/20 text-white px-4 py-2 rounded-lg font-medium'>
+								className='bg-neutral-50/20 text-neutral-50 px-4 py-2 rounded-lg font-medium'>
 								Fermer
 							</button>
 						</div>
@@ -190,7 +187,7 @@ export function InventoryListPage() {
 						</h1>
 						<Link
 							to='/app/inventory/add'
-							className='bg-success-50 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
+							className='bg-success-50 text-neutral-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
 							<Plus className='size-4' />
 							Ajouter
 						</Link>
@@ -198,7 +195,7 @@ export function InventoryListPage() {
 
 					{/* ===== STATISTIQUES RAPIDES ===== */}
 					<div className='grid grid-cols-3 gap-4 mb-4'>
-						<div className='bg-white p-3 rounded-lg border border-neutral-200'>
+						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<Package2 className='size-4 text-success-50' />
 								<span className='text-sm text-neutral-600'>
@@ -210,7 +207,7 @@ export function InventoryListPage() {
 							</p>
 						</div>
 
-						<div className='bg-white p-3 rounded-lg border border-neutral-200'>
+						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<AlertTriangle className='size-4 text-warning-50' />
 								<span className='text-sm text-neutral-600'>
@@ -222,7 +219,7 @@ export function InventoryListPage() {
 							</p>
 						</div>
 
-						<div className='bg-white p-3 rounded-lg border border-neutral-200'>
+						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<CheckCircle className='size-4 text-success-50' />
 								<span className='text-sm text-neutral-600'>
@@ -256,7 +253,7 @@ export function InventoryListPage() {
 						{(currentFilters.categoryId ||
 							currentFilters.storageLocation ||
 							currentFilters.expiringWithinDays) && (
-							<span className='bg-accent text-white text-xs px-2 py-1 rounded-full'>
+							<span className='bg-accent text-neutral-50 text-xs px-2 py-1 rounded-full'>
 								Actifs
 							</span>
 						)}
@@ -265,7 +262,7 @@ export function InventoryListPage() {
 
 				{/* ===== PANNEAU DE FILTRES ===== */}
 				{showFilters && (
-					<div className='bg-white border-t border-neutral-200 p-4'>
+					<div className='bg-neutral-50 border-t border-neutral-200 p-4'>
 						<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
 							{/* Filtre par catégorie */}
 							<div>
@@ -379,7 +376,7 @@ export function InventoryListPage() {
 						{items.length === 0 && (
 							<Link
 								to='/app/inventory/add'
-								className='bg-success-50 text-white px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
+								className='bg-success-50 text-neutral-50 px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
 								<Plus className='size-4' />
 								Ajouter mon premier produit
 							</Link>
@@ -426,7 +423,7 @@ function InventoryItemCard({
 
 	return (
 		<div
-			className={`bg-white border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm`}>
+			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm`}>
 			<div className='flex items-start justify-between'>
 				<div className='flex-1'>
 					<div className='flex items-start gap-3'>
@@ -477,12 +474,12 @@ function InventoryItemCard({
 							{/* ===== SCORES NUTRITIONNELS ===== */}
 							<div className='flex gap-2 mt-2'>
 								{item.product.nutriscore && (
-									<span className='text-xs px-2 py-1 bg-nutriscore-a text-white rounded'>
+									<span className='text-xs px-2 py-1 bg-nutriscore-a text-neutral-50 rounded'>
 										Nutriscore {item.product.nutriscore}
 									</span>
 								)}
 								{item.product.ecoScore && (
-									<span className='text-xs px-2 py-1 bg-success-50 text-white rounded'>
+									<span className='text-xs px-2 py-1 bg-success-50 text-neutral-50 rounded'>
 										Eco {item.product.ecoScore}
 									</span>
 								)}

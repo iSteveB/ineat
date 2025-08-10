@@ -20,29 +20,49 @@ export const formatDate = (date: Date | string): string => {
 };
 
 /**
- * Formate la date en format relatif (J-0, J-1, J-X, Expiré)
+ * Formate la date en format relatif (J-0, J-1, J-X, mois, années, Expiré)
  */
 export const formatRelativeDate = (date: Date | string): string => {
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-	const targetDate =
-		typeof date === 'string' ? new Date(date) : new Date(date);
-	targetDate.setHours(0, 0, 0, 0);
+  const targetDate = typeof date === 'string' ? new Date(date) : new Date(date);
+  targetDate.setHours(0, 0, 0, 0);
 
-	const diffTime = targetDate.getTime() - today.getTime();
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffTime = targetDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-	if (diffDays < 0) {
-		const absDays = Math.abs(diffDays);
-		return absDays === 1 ? 'Expiré hier' : `Expiré il y a ${absDays} jours`;
-	} else if (diffDays === 0) {
-		return "Expire aujourd'hui";
-	} else if (diffDays === 1) {
-		return 'Expire demain';
-	} else {
-		return `Expire dans ${diffDays} jours`;
-	}
+  // Gestion des dates passées (expirées)
+  if (diffDays < 0) {
+    const absDays = Math.abs(diffDays);
+    
+    if (absDays >= 365) {
+      const years = Math.floor(absDays / 365);
+      return years === 1 ? 'Expiré il y a 1 an' : `Expiré il y a ${years} ans`;
+    } else if (absDays >= 31) {
+      const months = Math.floor(absDays / 31);
+      return months === 1 ? 'Expiré il y a 1 mois' : `Expiré il y a ${months} mois`;
+    } else if (absDays === 1) {
+      return 'Expiré hier';
+    } else {
+      return `Expiré il y a ${absDays} jours`;
+    }
+  }
+  
+  // Gestion des dates futures
+  if (diffDays === 0) {
+    return "Expire aujourd'hui";
+  } else if (diffDays === 1) {
+    return 'Expire demain';
+  } else if (diffDays >= 365) {
+    const years = Math.floor(diffDays / 365);
+    return years === 1 ? 'Expire dans 1 an' : `Expire dans ${years} ans`;
+  } else if (diffDays >= 31) {
+    const months = Math.floor(diffDays / 31);
+    return months === 1 ? 'Expire dans 1 mois' : `Expire dans ${months} mois`;
+  } else {
+    return `Expire dans ${diffDays} jours`;
+  }
 };
 
 /**
@@ -259,7 +279,7 @@ export const getTodayForInput = (): string => {
 // ===== UTILITAIRES DE VALIDATION =====
 
 /**
- * Vérifie si une date est dans le futur
+ * Vérifie si une date est dans le passé, présent ou futur
  */
 export const isFutureDate = (date: Date | string): boolean => {
 	const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -269,9 +289,6 @@ export const isFutureDate = (date: Date | string): boolean => {
 	return dateObj > today;
 };
 
-/**
- * Vérifie si une date est dans le passé
- */
 export const isPastDate = (date: Date | string): boolean => {
 	const dateObj = typeof date === 'string' ? new Date(date) : date;
 	const today = new Date();
@@ -280,9 +297,6 @@ export const isPastDate = (date: Date | string): boolean => {
 	return dateObj < today;
 };
 
-/**
- * Vérifie si une date est aujourd'hui
- */
 export const isToday = (date: Date | string): boolean => {
 	const dateObj = typeof date === 'string' ? new Date(date) : date;
 	const today = new Date();
@@ -326,8 +340,6 @@ export const formatQuantity = (quantity: number, unit: string): string => {
 	return `${formattedQuantity} ${formatUnit(unit, quantity)}`;
 };
 
-// ===== RE-EXPORTS DES FONCTIONS ZOD =====
-
 // Re-export des fonctions utiles des schémas Zod pour éviter les imports multiples
 export {
 	calculateExpiryStatus,
@@ -335,7 +347,7 @@ export {
 	numberToNutriScore,
 } from '@/schemas';
 
-// ===== CONSTANTES UTILES =====
+// ===== CONSTANTES =====
 
 export const UI_CONSTANTS = {
 	// Seuils de budget pour les couleurs
@@ -358,3 +370,33 @@ export const UI_CONSTANTS = {
 		BACKGROUND: 'bg-neutral-200',
 	},
 } as const;
+
+export const getInitials = (firstName: string, lastName: string) => {
+	return `${firstName[0]}${lastName[0]}`.toUpperCase();
+};
+
+export const getCurrentMonthTitle = (): string => {
+	const now = new Date();
+	const monthIndex = now.getMonth();
+
+	const months = [
+		'janvier',
+		'février',
+		'mars',
+		'avril',
+		'mai',
+		'juin',
+		'juillet',
+		'août',
+		'septembre',
+		'octobre',
+		'novembre',
+		'décembre',
+	];
+
+	const vowelMonths = ['janvier', 'avril', 'août', 'octobre'];
+	const currentMonth = months[monthIndex];
+	const determiner = vowelMonths.includes(currentMonth) ? "d'" : 'de ';
+
+	return `Budget ${determiner}${currentMonth}`;
+};

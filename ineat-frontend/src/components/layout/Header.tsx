@@ -1,9 +1,7 @@
 import { UserMenu } from '../auth/UserMenu';
 import { Button } from '../ui/button';
-import { Bell, Search } from 'lucide-react';
-import { Input } from '../ui/input';
+import { Bell } from 'lucide-react';
 import { useLocation } from '@tanstack/react-router';
-import { cn } from '@/lib/utils';
 import Logo from './Logo';
 
 export function Header() {
@@ -45,33 +43,8 @@ export function Header() {
 				</h1>
 			</div>
 
-			{/* Barre de recherche */}
-			<div
-				className={cn(
-					'mx-4 flex-1 max-w-md relative',
-					// Masquer sur les petits écrans
-					'hidden md:flex'
-				)}>
-				<div className='relative w-full'>
-					<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-200 size-4' />
-					<Input
-						type='search'
-						placeholder='Rechercher...'
-						className='pl-10 pr-4 py-2 w-full bg-neutral-50 border-neutral-200/50 focus:bg-neutral-50'
-					/>
-				</div>
-			</div>
-
 			{/* Actions rapides */}
 			<div className='flex items-center space-x-2'>
-				{/* Bouton de recherche pour mobile */}
-				<Button
-					variant='ghost'
-					size='icon'
-					className='md:hidden cursor-pointer'>
-					<Search className='size-5' />
-				</Button>
-
 				{/* Bouton de notifications */}
 				<Button
 					variant='ghost'

@@ -1,283 +1,20 @@
-import { FC, useEffect, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { type FC, useEffect, useState } from 'react';
 
-// ===== IMPORTS SCHÉMAS ZOD =====
-import { BudgetStats, formatCurrency } from '@/schemas/budget';
+import BudgetOnboardingCard from '@/features/budget/BudgetOnboardingCard';
+import BudgetSummary from '@/features/budget/BudgetSummary';
 
-// ===== IMPORTS STORE =====
 import { useBudgetStore, useHasBudget } from '@/stores/budgetStore';
-
-// ===== IMPORTS COMPOSANTS UI =====
 import {
 	Card,
-	CardHeader,
-	CardTitle,
 	CardContent,
-	CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, PlusCircle, TrendingUp, AlertTriangle } from 'lucide-react';
+import {
+	Loader2,
+	AlertTriangle,
+} from 'lucide-react';
 
-// ===== COMPOSANT CREATE BUDGET PROMPT =====
-const CreateBudgetPrompt: FC = () => {
-	const [amount, setAmount] = useState<string>('');
-	const [isCreating, setIsCreating] = useState(false);
-	const { createMonthlyBudget, error } = useBudgetStore();
-
-	const handleCreateBudget = async () => {
-		const budgetAmount = parseFloat(amount);
-
-		if (!budgetAmount || budgetAmount <= 0) {
-			return;
-		}
-
-		if (isCreating) {
-			return;
-		}
-
-		setIsCreating(true);
-		try {
-			await createMonthlyBudget(budgetAmount);
-			setAmount('');
-		} catch (error) {
-			console.error('Erreur création budget:', error);
-		} finally {
-			setIsCreating(false);
-		}
-	};
-
-	const handleKeyPress = (e: React.KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			handleCreateBudget();
-		}
-	};
-
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className='flex items-center gap-2'>
-					<PlusCircle className='size-5 text-accent' />
-					Créer votre budget
-				</CardTitle>
-			</CardHeader>
-
-			<CardContent className='space-y-4'>
-				<div className='text-center space-y-2'>
-					<div className='text-2xl'>💰</div>
-					<h3 className='font-semibold text-lg'>
-						Définissez votre budget mensuel
-					</h3>
-					<p className='text-neutral-200 text-sm'>
-						Suivez vos dépenses et maîtrisez votre budget
-						alimentaire
-					</p>
-				</div>
-
-				<div className='space-y-3'>
-					<div className='space-y-2'>
-						<label
-							htmlFor='budget-amount'
-							className='text-sm font-medium'>
-							Montant mensuel (€)
-						</label>
-						<Input
-							id='budget-amount'
-							type='number'
-							placeholder='Ex: 300'
-							value={amount}
-							onChange={(e) => setAmount(e.target.value)}
-							onKeyPress={handleKeyPress}
-							min='1'
-							step='1'
-							disabled={isCreating}
-						/>
-					</div>
-
-					{error && (
-						<Alert variant='warning'>
-							<AlertTriangle className='size-4' />
-							<AlertDescription>{error}</AlertDescription>
-						</Alert>
-					)}
-
-					<Button
-						onClick={handleCreateBudget}
-						disabled={
-							!amount || parseFloat(amount) <= 0 || isCreating
-						}
-						className='w-full'>
-						{isCreating ? (
-							<>
-								<Loader2 className='size-4 mr-2 animate-spin' />
-								Création en cours...
-							</>
-						) : (
-							<>
-								<PlusCircle className='size-4 mr-2' />
-								Créer mon budget
-							</>
-						)}
-					</Button>
-				</div>
-
-				<div className='text-xs text-neutral-200 text-center'>
-					💡 Votre budget sera automatiquement reconduit chaque mois
-				</div>
-			</CardContent>
-		</Card>
-	);
-};
-
-// ===== COMPOSANT BUDGET SUMMARY =====
-interface BudgetSummaryProps {
-	budgetStats: BudgetStats;
-}
-
-const BudgetSummary: FC<BudgetSummaryProps> = ({ budgetStats }) => {
-	const {
-		totalBudget,
-		totalSpent,
-		remaining,
-		percentageUsed,
-		isOverBudget,
-		riskLevel,
-		daysRemaining,
-		suggestedDailyBudget,
-	} = budgetStats;
-
-	const percentage = Math.min(percentageUsed, 100);
-
-	const getBudgetColorClass = (percentage: number): string => {
-		if (percentage < 65) return 'text-success-50';
-		if (percentage < 80) return 'text-warning-50';
-		return 'text-error-100';
-	};
-
-	const getBudgetBarClass = (percentage: number): string => {
-		if (percentage < 65) return 'bg-success-50';
-		if (percentage < 80) return 'bg-warning-50';
-		return 'bg-error-100';
-	};
-
-	const getBudgetBarBackgroundClass = (percentage: number): string => {
-		if (percentage < 65) return 'bg-success-50/10';
-		if (percentage < 80) return 'bg-warning-50/10';
-		return 'bg-error-100/10';
-	};
-
-	const colorClass = getBudgetColorClass(percentage);
-	const barClass = getBudgetBarClass(percentage);
-	const barBackgroundClass = getBudgetBarBackgroundClass(percentage);
-
-	const getStatusMessage = (): string => {
-		if (isOverBudget) {
-			return 'Budget dépassé !';
-		}
-		if (riskLevel === 'HIGH') {
-			return 'Attention au budget';
-		}
-		if (riskLevel === 'MEDIUM') {
-			return 'Budget surveillé';
-		}
-		return 'Budget maîtrisé';
-	};
-
-	const getAdviceMessage = (): string | null => {
-		if (daysRemaining > 0 && !isOverBudget) {
-			return `${formatCurrency(suggestedDailyBudget)}/jour conseillé`;
-		}
-		if (isOverBudget) {
-			return 'Réduisez vos dépenses';
-		}
-		return null;
-	};
-
-	return (
-		<Link to='/app/budget'>
-			<Card>
-				<CardHeader>
-					<CardTitle className='flex justify-between items-center'>
-						<span className='flex items-center gap-2'>
-							<TrendingUp className='size-5 text-accent' />
-							Budget du mois
-						</span>
-						<span
-							className={`text-sm font-normal ${
-								riskLevel === 'HIGH'
-									? 'text-error-100'
-									: riskLevel === 'MEDIUM'
-									? 'text-warning-50'
-									: 'text-success-50'
-							}`}>
-							{getStatusMessage()}
-						</span>
-					</CardTitle>
-				</CardHeader>
-
-				<CardContent className='space-y-4'>
-					<div className='flex justify-between items-center'>
-						<span className='text-neutral-200'>
-							{isOverBudget ? 'Dépassement' : 'Restant'}
-						</span>
-						<span className={`text-2xl font-bold ${colorClass}`}>
-							{formatCurrency(Math.abs(remaining))}
-						</span>
-					</div>
-
-					<div className='space-y-2'>
-						<div
-							className={`w-full rounded-full h-3 ${barBackgroundClass}`}>
-							<div
-								className={`h-full rounded-full transition-all duration-300 ${barClass}`}
-								style={{
-									width: `${Math.min(percentage, 100)}%`,
-									minWidth: percentage > 0 ? '4px' : '0px',
-								}}
-							/>
-						</div>
-
-						<div className='flex justify-between text-xs text-neutral-200'>
-							<span>0%</span>
-							<span className='text-warning-50'>75%</span>
-							<span className='text-error-100'>100%</span>
-						</div>
-					</div>
-
-					{getAdviceMessage() && (
-						<div className='text-sm text-neutral-200 bg-neutral-100 rounded-md p-2 text-center'>
-							💡 {getAdviceMessage()}
-						</div>
-					)}
-				</CardContent>
-
-				<CardFooter className='flex justify-between text-sm text-neutral-200'>
-					<div className='flex flex-col'>
-						<span className='font-medium'>
-							{formatCurrency(totalSpent)} dépensés
-						</span>
-						<span className='text-xs'>
-							sur {formatCurrency(totalBudget)}
-						</span>
-					</div>
-					<div className='flex flex-col items-end'>
-						<span className='font-medium'>
-							{Math.round(percentage)}% utilisé
-						</span>
-						{daysRemaining > 0 && (
-							<span className='text-xs'>
-								{daysRemaining} jours restants
-							</span>
-						)}
-					</div>
-				</CardFooter>
-			</Card>
-		</Link>
-	);
-};
-
-// ===== COMPOSANT BUDGET WIDGET PRINCIPAL =====
 export const BudgetWidget: FC = () => {
 	const hasBudget = useHasBudget();
 	const { budgetStats, isLoading, error, fetchCurrentBudget, clearError } =
@@ -294,13 +31,21 @@ export const BudgetWidget: FC = () => {
 
 	if (isLoading) {
 		return (
-			<Card>
-				<CardContent className='flex items-center justify-center py-8'>
-					<div className='text-center space-y-2'>
-						<Loader2 className='size-8 animate-spin mx-auto text-accent' />
-						<p className='text-neutral-200'>
-							Vérification du budget...
-						</p>
+			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
+				<CardContent className='flex items-center justify-center py-12'>
+					<div className='text-center space-y-4'>
+						<div className='relative'>
+							<Loader2 className='size-12 animate-spin text-blue-600 mx-auto' />
+							<div className='absolute inset-0 size-12 border-4 border-blue-200 rounded-full animate-pulse mx-auto' />
+						</div>
+						<div className='space-y-2'>
+							<p className='text-gray-700 font-medium'>
+								Vérification du budget...
+							</p>
+							<p className='text-sm text-gray-500'>
+								Analyse de vos données financières
+							</p>
+						</div>
 					</div>
 				</CardContent>
 			</Card>
@@ -309,19 +54,22 @@ export const BudgetWidget: FC = () => {
 
 	if (error) {
 		return (
-			<Card>
+			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-red-50/50 shadow-xl'>
 				<CardContent className='py-6'>
-					<Alert variant='warning'>
-						<AlertTriangle className='size-4' />
+					<Alert className='border-red-200 bg-red-50'>
+						<AlertTriangle className='size-4 text-red-600' />
 						<AlertDescription className='flex justify-between items-center'>
-							<span>{error}</span>
+							<span className='text-red-800 font-medium'>
+								{error}
+							</span>
 							<Button
 								variant='outline'
 								size='sm'
 								onClick={() => {
 									clearError();
 									fetchCurrentBudget(true);
-								}}>
+								}}
+								className='border-red-200 text-red-700 hover:bg-red-100'>
 								Réessayer
 							</Button>
 						</AlertDescription>
@@ -332,7 +80,7 @@ export const BudgetWidget: FC = () => {
 	}
 
 	if (!hasBudget || !budgetStats) {
-		return <CreateBudgetPrompt />;
+		return <BudgetOnboardingCard />;
 	}
 
 	return <BudgetSummary budgetStats={budgetStats} />;
