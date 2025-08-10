@@ -16,7 +16,7 @@ const router = createRouter({
 		authStore: ()=> useAuthStore.getState(),
 	},
 	defaultNotFoundComponent: () => {
-    return <Error404Page message="Une erreur est survenue" showSearch={true} quickActions={true} />;
+    return <Error404Page message="Une erreur est survenue" showSearch={true} />;
   },
 });
 
