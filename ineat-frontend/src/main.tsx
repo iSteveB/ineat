@@ -11,6 +11,8 @@ import { Error404Page } from './pages/error/Error404Page';
 const router = createRouter({
 	routeTree,
 	defaultPreload: 'intent',
+	defaultViewTransition: true,
+  scrollRestoration: true,
 	context: {
     // Initialiser avec une fonction qui récupère l'état actuel du store
 		authStore: ()=> useAuthStore.getState(),
