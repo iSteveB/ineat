@@ -394,7 +394,7 @@ const SecurityPrivacyPage = () => {
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className='p-4 bg-error-50/5 rounded-xl border border-error-100/20'>
+						<div className='flex flex-col p-4 bg-error-50/5 rounded-xl border border-error-100/20'>
 							<p className='text-sm text-neutral-300 mb-4'>
 								Cette action est définitive et supprimera toutes
 								vos données, recettes sauvegardées, préférences
@@ -402,9 +402,11 @@ const SecurityPrivacyPage = () => {
 							</p>
 							<Button
 								onClick={() => setDeleteConfirmOpen(true)}
-								className='bg-error-100 hover:bg-error-100/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'>
-								<Trash2 className='size-4 mr-2' />
-								Supprimer définitivement mon compte
+								className='bg-error-100 hover:bg-error-100/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'>
+								<Trash2 className='size-4 mr-2 flex-shrink-0' />
+								<span className='break-words'>
+									Supprimer définitivement mon compte
+								</span>
 							</Button>
 						</div>
 					</CardContent>
