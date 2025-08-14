@@ -55,7 +55,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const readerRef = useRef<BrowserMultiFormatReader | null>(null);
 	const streamRef = useRef<MediaStream | null>(null);
-	const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const scanControlsRef = useRef<{ stop: () => void } | null>(null);
 
 	const [state, setState] = useState<ScannerState>('idle');
 	const [error, setError] = useState<ScannerError | null>(null);
@@ -68,15 +68,18 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 	const { searchByBarcode, loading, localProduct, data } = useOpenFoodFacts();
 
+	/**
+	 * Demande l'autorisation d'accès à la caméra
+	 */
 	const requestCameraPermission = useCallback(async (): Promise<boolean> => {
 		try {
 			setState('requesting-permission');
 
 			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: 'environment' }, // Caméra arrière preferée
+				video: { facingMode: 'environment' },
 			});
 
-			// Fermer immédiatement le stream
+			// Fermer immédiatement le stream de test
 			stream.getTracks().forEach((track) => track.stop());
 
 			setHasPermission(true);
@@ -122,13 +125,13 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	 */
 	const stopScanning = useCallback((): void => {
 		try {
-			// Nettoyer le timeout de redémarrage
-			if (restartTimeoutRef.current) {
-				clearTimeout(restartTimeoutRef.current);
-				restartTimeoutRef.current = null;
+			// Arrêter les contrôles de scan ZXing
+			if (scanControlsRef.current) {
+				scanControlsRef.current.stop();
+				scanControlsRef.current = null;
 			}
 
-			// Arrêter ZXing reader
+			// Réinitialiser ZXing reader
 			if (readerRef.current) {
 				readerRef.current.reset();
 			}
@@ -139,25 +142,16 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 				streamRef.current = null;
 			}
 
+			// Réinitialiser la vidéo
+			if (videoRef.current) {
+				videoRef.current.srcObject = null;
+			}
+
 			// Réinitialiser la torche
 			setIsTorchOn(false);
-			setState('idle');
 		} catch (err: unknown) {
 			console.error('Erreur arrêt scanner:', err);
 		}
-	}, []);
-
-	/**
-	 * Redémarre le scanner avec un délai
-	 */
-	const scheduleRestart = useCallback((): void => {
-		if (restartTimeoutRef.current) {
-			clearTimeout(restartTimeoutRef.current);
-		}
-
-		restartTimeoutRef.current = setTimeout(() => {
-			setState('scanning');
-		}, 100);
 	}, []);
 
 	/**
@@ -166,10 +160,11 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	const handleScanResult = useCallback(
 		async (result: Result): Promise<void> => {
 			const barcode = result.getText();
+			console.log('Code-barre détecté:', barcode);
 
 			// Vibration de feedback
 			if ('vibrate' in navigator) {
-				navigator.vibrate(200); // 200ms de vibration
+				navigator.vibrate(200);
 			}
 
 			// Pauser le scan pendant la recherche
@@ -183,16 +178,17 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 				console.error('Erreur recherche produit:', err);
 				onError?.('Erreur lors de la recherche du produit');
 				// Redémarrer le scan en cas d'erreur
-				scheduleRestart();
+				setState('scanning');
 			}
 		},
-		[searchByBarcode, stopScanning, scheduleRestart, onError]
+		[searchByBarcode, stopScanning, onError]
 	);
 
 	/**
 	 * Démarre le scanner
 	 */
 	const startScanning = useCallback(async (): Promise<void> => {
+		// Vérifier les permissions
 		if (!hasPermission) {
 			const granted = await requestCameraPermission();
 			if (!granted) return;
@@ -202,40 +198,70 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			setState('scanning');
 			setError(null);
 
+			// Arrêter tout scan existant
+			stopScanning();
+
 			// Initialiser ZXing reader
 			if (!readerRef.current) {
 				readerRef.current = new BrowserMultiFormatReader();
 			}
 
+			// Énumérer les caméras
 			await enumerateCameras();
 
-			// Sélectionner la caméra
-			const selectedCamera = availableCameras[currentCameraIndex];
-			const deviceId = selectedCamera?.deviceId;
+			// Attendre que les caméras soient disponibles
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// Démarrer le scan
-			const result = await readerRef.current.decodeOnceFromVideoDevice(
-				deviceId,
-				videoRef.current!
+			// Sélectionner la caméra
+			let deviceId: string | undefined;
+			if (availableCameras.length > 0) {
+				const selectedCamera = availableCameras[currentCameraIndex];
+				deviceId = selectedCamera?.deviceId;
+			}
+
+			// Configurer les contraintes vidéo
+			const constraints: MediaStreamConstraints = {
+				video: deviceId
+					? { deviceId: { exact: deviceId } }
+					: { facingMode: 'environment' },
+			};
+
+			// Obtenir le stream
+			const stream = await navigator.mediaDevices.getUserMedia(
+				constraints
+			);
+			streamRef.current = stream;
+
+			// Configurer la vidéo
+			if (videoRef.current) {
+				videoRef.current.srcObject = stream;
+			}
+
+			// Démarrer le scan continu
+			const controls = await readerRef.current.decodeFromVideoDevice(
+				deviceId || null,
+				videoRef.current!,
+				(result: Result | null, error?: Error) => {
+					if (result) {
+						handleScanResult(result);
+					} else if (error && !(error instanceof NotFoundException)) {
+						console.error('Erreur scan:', error);
+						// Ne pas considérer NotFoundException comme une erreur
+						// car elle est levée quand aucun code-barre n'est trouvé
+					}
+				}
 			);
 
-			if (result) {
-				handleScanResult(result);
-			}
+			scanControlsRef.current = { stop: () => controls };
 		} catch (err: unknown) {
 			console.error('Erreur démarrage scanner:', err);
-
-			if (err instanceof NotFoundException) {
-				// Pas de code-barre trouvé, continuer le scan
-				return;
-			}
-
 			setError('scanner-error');
 			setState('error');
 		}
 	}, [
 		hasPermission,
 		requestCameraPermission,
+		stopScanning,
 		enumerateCameras,
 		availableCameras,
 		currentCameraIndex,
@@ -251,6 +277,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			if (!stream) return;
 
 			const track = stream.getVideoTracks()[0];
+			if (!track) return;
+
 			const capabilities = track.getCapabilities();
 
 			if ('torch' in capabilities) {
@@ -275,16 +303,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 		// Redémarrer avec la nouvelle caméra
 		if (state === 'scanning') {
-			stopScanning();
-			scheduleRestart();
+			startScanning();
 		}
-	}, [
-		availableCameras,
-		currentCameraIndex,
-		state,
-		stopScanning,
-		scheduleRestart,
-	]);
+	}, [availableCameras, currentCameraIndex, state, startScanning]);
 
 	/**
 	 * Passe en mode saisie manuelle
@@ -298,13 +319,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	 * Retourne au scan
 	 */
 	const returnToScan = useCallback((): void => {
-		setState('idle');
-		if (autoStart) {
-			scheduleRestart();
-		}
-	}, [autoStart, scheduleRestart]);
+		setState('scanning');
+	}, []);
 
-	// Effet pour gérer le redémarrage automatique du scan
+	// Effet pour démarrer le scan
 	useEffect(() => {
 		if (state === 'scanning') {
 			startScanning();
@@ -325,7 +343,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 		}
 	}, [autoStart, state]);
 
-	// Cleanup
+	// Cleanup au démontage
 	useEffect(() => {
 		return () => {
 			stopScanning();
@@ -389,7 +407,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								{error === 'no-camera' &&
 									"Aucune caméra n'a été trouvée sur cet appareil."}
 								{error === 'scanner-error' &&
-									'Le scanner a rencontré une erreur technique.'}
+									'Le scanner a rencontré une erreur technique. Essayez de redémarrer la caméra.'}
 								{error === 'unknown' &&
 									"Une erreur inattendue s'est produite."}
 							</p>
@@ -430,6 +448,22 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			);
 		}
 
+		if (state === 'requesting-permission') {
+			return (
+				<CardContent className='p-6 text-center space-y-4'>
+					<div className='animate-spin rounded-full size-12 border-4 border-primary-500 border-t-transparent mx-auto'></div>
+					<div>
+						<h3 className='text-lg font-semibold text-neutral-300'>
+							Demande d'autorisation
+						</h3>
+						<p className='text-sm text-neutral-200'>
+							Veuillez autoriser l'accès à la caméra
+						</p>
+					</div>
+				</CardContent>
+			);
+		}
+
 		// Interface de scan
 		return (
 			<div className='relative size-full bg-black'>
@@ -439,6 +473,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 					className='size-full object-cover'
 					playsInline
 					muted
+					autoPlay
 				/>
 
 				{/* Overlay guide */}
