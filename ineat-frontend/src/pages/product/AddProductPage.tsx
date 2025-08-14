@@ -73,7 +73,7 @@ const AddProductPage: React.FC = () => {
 									</div>
 								)}
 							</div>
-							<h1 className="text-xl font-semibold text-gray-900 font-['Fredoka']">
+							<h1 className="text-xl font-semibold text-gray-900">
 								Ajouter un produit
 							</h1>
 						</div>
