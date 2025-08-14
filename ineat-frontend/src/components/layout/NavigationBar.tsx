@@ -11,7 +11,7 @@ const NavigationBar: FC = () => {
 	return (
 		<div className='fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2'>
 			{/* Backdrop blur effect */}
-			<div className='absolute inset-0 bg-neutral-50/80 backdrop-blur-xl border-t border-gray-200/50' />
+			<div className='absolute inset-0  backdrop-blur-xl border-t border-gray-200/50' />
 
 			{/* Navigation container */}
 			<div className='relative mx-auto max-w-md'>
