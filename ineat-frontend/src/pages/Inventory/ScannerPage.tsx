@@ -21,7 +21,7 @@ const ScannerPage: FC = () => {
 	const handleProductFound = (localProduct: Partial<Product>) => {
 		// Naviguer vers la page d'ajout de produit avec les données pré-remplies
 		navigate({
-			to: '/app/inventory/add',
+			to: '/app/inventory/add/manual',
 			search: {
 				productData: JSON.stringify(localProduct),
 			},

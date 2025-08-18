@@ -25,7 +25,11 @@ type PageState = 'search' | 'quick-add' | 'manual-add';
 const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const searchParams = useSearch({ from: '/app/inventory/add/search' });
+
+	// CORRECTION: Utiliser le bon chemin pour la route
+	const searchParams = useSearch({
+		from: '/app/inventory/add/search',
+	});
 	const defaultBarcode = searchParams.barcode?.toString() || '';
 
 	const [pageState, setPageState] = useState<PageState>('search');
@@ -56,7 +60,7 @@ const AddManualProductPage: React.FC = () => {
 	// Fonction pour gérer le succès avec feedback budgétaire
 	const handleProductAddedSuccess = (
 		result: ProductAddedWithBudgetResult
-	) => {
+	): void => {
 		// Affichage de la notification selon le type
 		switch (result.type) {
 			case 'success':
@@ -84,7 +88,10 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	// Fonction pour gérer les erreurs
-	const handleProductAddedError = (error: Error, productName?: string) => {
+	const handleProductAddedError = (
+		error: Error,
+		productName?: string
+	): void => {
 		toast.error(
 			error.message ||
 				`Erreur lors de l'ajout${
@@ -114,7 +121,7 @@ const AddManualProductPage: React.FC = () => {
 	});
 
 	// Gestion de la recherche
-	const handleSearch = async (query: string) => {
+	const handleSearch = async (query: string): Promise<void> => {
 		if (!query || query.length < 2) {
 			setSearchResults([]);
 			return;
@@ -135,23 +142,25 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	// Gestion de la sélection d'un produit
-	const handleSelectProduct = (product: ProductSearchResult) => {
+	const handleSelectProduct = (product: ProductSearchResult): void => {
 		setSelectedProduct(product);
 		setPageState('quick-add');
 	};
 
 	// Gestion de l'ajout rapide avec le bon type
-	const handleQuickAdd = async (data: QuickAddFormData) => {
+	const handleQuickAdd = async (data: QuickAddFormData): Promise<void> => {
 		await quickAddMutation.mutateAsync(data);
 	};
 
 	// Gestion de l'ajout manuel
-	const handleManualAdd = async (data: AddInventoryItemData) => {
+	const handleManualAdd = async (
+		data: AddInventoryItemData
+	): Promise<void> => {
 		await manualAddMutation.mutateAsync(data);
 	};
 
 	// Réinitialisation de la recherche
-	const handleClearSearch = () => {
+	const handleClearSearch = (): void => {
 		setSearchQuery('');
 		setSearchResults([]);
 		setSelectedProduct(null);
@@ -159,12 +168,12 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	// Passer au formulaire complet
-	const handleSwitchToManualAdd = () => {
+	const handleSwitchToManualAdd = (): void => {
 		setPageState('manual-add');
 	};
 
 	// Retour à la recherche
-	const handleBackToSearch = () => {
+	const handleBackToSearch = (): void => {
 		setSelectedProduct(null);
 		setPageState('search');
 
@@ -198,7 +207,7 @@ const AddManualProductPage: React.FC = () => {
 		<div className='min-h-screen bg-neutral-50'>
 			{/* ===== HEADER ===== */}
 			<div className='relative overflow-hidden bg-neutral-50 border-b border-neutral-100 shadow-sm'>
-				<div className='absolute top-0 right-0 w-32 h-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+				<div className='absolute top-0 right-0 size-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center justify-between'>
 					<div className='flex items-center gap-4'>
@@ -362,7 +371,7 @@ const AddManualProductPage: React.FC = () => {
 						onSubmit={handleManualAdd}
 						onCancel={handleBackToSearch}
 						isSubmitting={manualAddMutation.isPending}
-						defaultProductName={defaultBarcode ? '' : searchQuery} 
+						defaultProductName={defaultBarcode ? '' : searchQuery}
 						defaultBarcode={defaultBarcode}
 					/>
 				)}

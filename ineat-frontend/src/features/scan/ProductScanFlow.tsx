@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from '@tanstack/react-router';
 import {
 	Package,
@@ -45,6 +45,7 @@ interface ProductScanFlowProps {
 	onComplete?: () => void;
 	onCancel?: () => void;
 	defaultStep?: FlowStep;
+	initialProductData?: Partial<Product>; // NOUVEAU: Données de produit initiales
 	className?: string;
 }
 
@@ -52,6 +53,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	onComplete,
 	onCancel,
 	defaultStep = 'scan',
+	initialProductData, // NOUVEAU: Données de produit initiales
 	className = '',
 }) => {
 	const router = useRouter();
@@ -61,6 +63,44 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	const [currentStep, setCurrentStep] = useState<FlowStep>(defaultStep);
 	const [productDraft, setProductDraft] = useState<ProductDraft>({});
 	const [error, setError] = useState<string | null>(null);
+
+	// NOUVEAU: Effet pour traiter les données de produit initiales
+	useEffect(() => {
+		if (initialProductData) {
+			console.log(
+				'Données de produit initiales reçues:',
+				initialProductData
+			);
+
+			// Convertir les données OFF en ProductSearchResult pour le QuickAddForm
+			const productSearchResult: ProductSearchResult = {
+				id: crypto.randomUUID(),
+				name: initialProductData.name || 'Produit sans nom',
+				brand: initialProductData.brand || undefined,
+				category: {
+					id: 'temp-category',
+					name: 'À définir',
+					slug: 'a-definir',
+				},
+				unitType: 'UNIT',
+				imageUrl: undefined,
+				nutriscore: undefined,
+				ecoScore: undefined,
+			};
+
+			setProductDraft({
+				offData: initialProductData,
+				productSearchResult,
+			});
+
+			// Si on a des données initiales et qu'on commence par 'form', on peut directement aller au formulaire
+			if (defaultStep === 'form') {
+				setCurrentStep('form');
+			}
+
+			setError(null);
+		}
+	}, [initialProductData, defaultStep]);
 
 	// Mutation pour addManualProduct (création nouveau produit)
 	const addManualProductMutation = useMutation({
