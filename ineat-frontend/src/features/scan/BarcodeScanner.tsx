@@ -90,8 +90,12 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 		if (isInitializedRef.current) return;
 
 		try {
+			// Passer directement à l'interface de scan pour que la vidéo existe
 			setState('scanning');
 			setError(null);
+
+			// Petit délai pour que la vidéo soit rendue
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			// Créer le lecteur ZXing
 			if (!codeReaderRef.current) {
@@ -274,19 +278,28 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 		// Interface de scan
 		return (
-			<div className='relative size-full bg-black'>
+			<div className='relative size-full bg-neutral-950'>
+				{/* Vidéo */}
+				<video
+					ref={videoRef}
+					className='size-full object-cover'
+					playsInline
+					muted
+					autoPlay
+				/>
+
 				{/* Overlay guide */}
 				<div className='absolute inset-0 flex items-center justify-center'>
 					<div className='relative'>
 						{/* Zone de scan */}
 						<div className='size-64 border-2 border-neutral-50 rounded-lg relative'>
-							<div className='absolute -top-1 -left-1 size-6 border-t-4 border-l-4 border-success-500 rounded-tl-lg'></div>
-							<div className='absolute -top-1 -right-1 size-6 border-t-4 border-r-4 border-success-500 rounded-tr-lg'></div>
-							<div className='absolute -bottom-1 -left-1 size-6 border-b-4 border-l-4 border-success-500 rounded-bl-lg'></div>
-							<div className='absolute -bottom-1 -right-1 size-6 border-b-4 border-r-4 border-success-500 rounded-br-lg'></div>
+							<div className='absolute -top-1 -left-1 size-8 border-t-6 border-l-6 border-neutral-300 rounded-tl-lg'></div>
+							<div className='absolute -top-1 -right-1 size-8 border-t-6 border-r-6 border-neutral-300 rounded-tr-lg'></div>
+							<div className='absolute -bottom-1 -left-1 size-8 border-b-6 border-l-6 border-neutral-300 rounded-bl-lg'></div>
+							<div className='absolute -bottom-1 -right-1 size-8 border-b-6 border-r-6 border-neutral-300 rounded-br-lg'></div>
 
 							{/* Ligne de scan animée */}
-							<div className='absolute inset-x-0 top-1/2 h-0.5 bg-success-500 animate-pulse'></div>
+							<div className='absolute inset-x-0 top-1/2 h-0.5 bg-red-500 animate-pulse'></div>
 						</div>
 
 						{/* Instructions */}
@@ -323,16 +336,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	return (
 		<Card
 			className={`bg-neutral-50 rounded-2xl shadow-xl overflow-hidden ${className}`}>
-			<video
-				ref={videoRef}
-				className={`size-full object-cover ${
-					state === 'scanning' ? 'block' : 'hidden'
-				}`}
-				playsInline
-				muted
-				autoPlay
-			/>
-
 			{renderContent()}
 		</Card>
 	);
