@@ -5,15 +5,7 @@ import {
 	type Result,
 	NotFoundException,
 } from '@zxing/library';
-import {
-	Flashlight,
-	FlashlightOff,
-	RotateCcw,
-	Keyboard,
-	AlertCircle,
-	CheckCircle2,
-	X,
-} from 'lucide-react';
+import { Keyboard, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { ManualBarcodeInput } from './ManualBarcodeInput';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
 import type { Product } from '@/schemas/product';
@@ -21,25 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-type ScannerState =
-	| 'idle'
-	| 'requesting-permission'
-	| 'scanning'
-	| 'paused'
-	| 'manual-input'
-	| 'error';
-
-type ScannerError =
-	| 'permission-denied'
-	| 'no-camera'
-	| 'scanner-error'
-	| 'unknown';
-
-// Interface pour les contrôles du scanner ZXing
-interface ScannerControls {
-	stop: () => void;
-	stream?: MediaStream;
-}
+type ScannerState = 'idle' | 'scanning' | 'manual-input' | 'error';
 
 interface BarcodeScannerProps {
 	onProductFound: (localProduct: Partial<Product>) => void;
@@ -59,282 +33,24 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	className = '',
 }) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
-	const readerRef = useRef<BrowserMultiFormatReader | null>(null);
-	const controlsRef = useRef<ScannerControls | null>(null);
-	const streamRef = useRef<MediaStream | null>(null);
-	const isScanningRef = useRef<boolean>(false);
+	const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+	const isInitializedRef = useRef<boolean>(false);
 
 	const [state, setState] = useState<ScannerState>('idle');
-	const [error, setError] = useState<ScannerError | null>(null);
-	const [isTorchOn, setIsTorchOn] = useState<boolean>(false);
-	const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-	const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>(
-		[]
-	);
-	const [currentCameraIndex, setCurrentCameraIndex] = useState<number>(0);
-	const [lastScannedCode, setLastScannedCode] = useState<string>('');
-	const [scanCooldown, setScanCooldown] = useState<boolean>(false);
-	const [camerasEnumerated, setCamerasEnumerated] = useState<boolean>(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const { searchByBarcode, loading, localProduct, data } = useOpenFoodFacts();
-
-	/**
-	 * Teste si une caméra est l'arrière en utilisant facingMode
-	 */
-	const testCameraFacingMode = useCallback(
-		async (deviceId: string): Promise<string | null> => {
-			try {
-				const stream = await navigator.mediaDevices.getUserMedia({
-					video: { deviceId: { exact: deviceId } },
-				});
-
-				const track = stream.getVideoTracks()[0];
-				const settings = track.getSettings();
-				const facingMode = settings.facingMode;
-
-				stream.getTracks().forEach((t) => t.stop());
-
-				return facingMode || null;
-			} catch (err) {
-				console.warn('Erreur test caméra:', err);
-				return null;
-			}
-		},
-		[]
-	);
-
-	/**
-	 * Énumère les caméras disponibles et sélectionne la caméra arrière par défaut
-	 */
-	const enumerateCameras = useCallback(async (): Promise<
-		MediaDeviceInfo[]
-	> => {
-		try {
-			// D'abord obtenir toutes les devices
-			let devices = await navigator.mediaDevices.enumerateDevices();
-			let cameras = devices.filter(
-				(device) => device.kind === 'videoinput'
-			);
-
-			// Si les labels sont vides, on doit d'abord demander l'accès
-			// car certains navigateurs cachent les labels sans permission
-			if (cameras.length > 0 && !cameras[0].label) {
-				console.log(
-					"Labels vides, demande d'accès pour énumérer correctement"
-				);
-				try {
-					const stream = await navigator.mediaDevices.getUserMedia({
-						video: true,
-					});
-					stream.getTracks().forEach((track) => track.stop());
-
-					// Ré-énumérer après avoir eu l'accès
-					devices = await navigator.mediaDevices.enumerateDevices();
-					cameras = devices.filter(
-						(device) => device.kind === 'videoinput'
-					);
-				} catch (e) {
-					console.warn(
-						"Impossible d'obtenir les labels des caméras:",
-						e
-					);
-				}
-			}
-
-			console.log(
-				'Caméras détectées:',
-				cameras.map((c, i) => ({
-					index: i,
-					id: c.deviceId,
-					label: c.label,
-				}))
-			);
-
-			setAvailableCameras(cameras);
-
-			// Stratégie de sélection de la caméra arrière
-			let backCameraIndex = -1;
-
-			// Détection si on est sur mobile
-			const isMobile =
-				/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-					navigator.userAgent
-				);
-
-			if (isMobile && cameras.length > 1) {
-				console.log('Appareil mobile détecté avec plusieurs caméras');
-
-				// Sur mobile avec 3+ caméras, tester le facingMode pour être sûr
-				if (cameras.length >= 3) {
-					console.log(
-						'Test du facingMode pour identifier la vraie caméra arrière...'
-					);
-
-					// Tester chaque caméra pour trouver celle avec facingMode: 'environment'
-					for (let i = 0; i < cameras.length; i++) {
-						const facingMode = await testCameraFacingMode(
-							cameras[i].deviceId
-						);
-						console.log(
-							`Caméra ${i} (${cameras[i].label}): facingMode = ${facingMode}`
-						);
-
-						if (facingMode === 'environment') {
-							backCameraIndex = i;
-							console.log(
-								`✓ Caméra arrière identifiée par facingMode : index ${i}`
-							);
-							break;
-						}
-					}
-				}
-
-				// Si le test facingMode n'a pas fonctionné, utiliser la stratégie par défaut
-				if (backCameraIndex === -1) {
-					if (cameras.length === 2) {
-						// 2 caméras : généralement index 0 = arrière, index 1 = avant
-						backCameraIndex = 0;
-						console.log(
-							'2 caméras : sélection de la première (généralement arrière)'
-						);
-					} else {
-						// Chercher "camera 0" ou "camera2 0" ou celle qui n'a pas "front" dans le nom
-						backCameraIndex = cameras.findIndex((camera) => {
-							const label = camera.label.toLowerCase();
-							return (
-								label === 'camera 0' || label === 'camera2 0'
-							);
-						});
-
-						if (backCameraIndex === -1) {
-							// Chercher celle qui n'a PAS "camera 2" ou "camera 3" dans le nom
-							for (let i = 0; i < cameras.length; i++) {
-								const label = cameras[i].label.toLowerCase();
-								if (
-									!label.includes('camera 2') &&
-									!label.includes('camera 3') &&
-									!label.includes('camera2 2') &&
-									!label.includes('camera2 3')
-								) {
-									backCameraIndex = i;
-									break;
-								}
-							}
-						}
-
-						if (backCameraIndex === -1) {
-							backCameraIndex = 0;
-						}
-
-						console.log(
-							`Sélection par heuristique : index ${backCameraIndex}`
-						);
-					}
-				}
-			} else {
-				// Desktop ou tablette : chercher par label
-				backCameraIndex = cameras.findIndex((camera) => {
-					const label = camera.label.toLowerCase();
-					return (
-						label.includes('back') ||
-						label.includes('rear') ||
-						label.includes('arrière') ||
-						label.includes('environment') ||
-						label.match(/\b0\b/) // Cherche "0" comme mot entier
-					);
-				});
-
-				console.log('Desktop/tablette : recherche par label');
-			}
-
-			// Si toujours pas trouvé, prendre la première disponible
-			if (backCameraIndex === -1 && cameras.length > 0) {
-				backCameraIndex = 0;
-				console.log(
-					'Aucune caméra arrière identifiée, utilisation de la première'
-				);
-			}
-
-			if (backCameraIndex >= 0) {
-				setCurrentCameraIndex(backCameraIndex);
-				console.log(
-					`✅ Caméra finale sélectionnée : index ${backCameraIndex} - "${cameras[backCameraIndex].label}"`
-				);
-			}
-
-			setCamerasEnumerated(true);
-			return cameras;
-		} catch (err) {
-			console.error('Erreur énumération caméras:', err);
-			setCamerasEnumerated(true);
-			return [];
-		}
-	}, [testCameraFacingMode]);
-
-	/**
-	 * Demande la permission d'accès à la caméra et énumère les caméras
-	 */
-	const requestCameraPermission = useCallback(async (): Promise<boolean> => {
-		try {
-			setState('requesting-permission');
-
-			// Essayer d'abord avec la caméra arrière
-			const stream = await navigator.mediaDevices.getUserMedia({
-				video: { facingMode: 'environment' },
-			});
-
-			// Fermer immédiatement le stream de test
-			stream.getTracks().forEach((track) => track.stop());
-
-			setHasPermission(true);
-
-			// Énumérer les caméras après avoir obtenu la permission
-			// pour avoir accès aux labels complets
-			await enumerateCameras();
-
-			return true;
-		} catch (err) {
-			console.error('Erreur permissions caméra:', err);
-			setHasPermission(false);
-			setError('permission-denied');
-			setState('error');
-			return false;
-		}
-	}, [enumerateCameras]);
 
 	/**
 	 * Arrête le scanner
 	 */
 	const stopScanning = useCallback((): void => {
 		try {
-			isScanningRef.current = false;
-
-			// Arrêter les contrôles ZXing
-			if (controlsRef.current) {
-				controlsRef.current.stop();
-				controlsRef.current = null;
+			if (codeReaderRef.current) {
+				codeReaderRef.current.reset();
 			}
-
-			// Réinitialiser le reader
-			if (readerRef.current) {
-				readerRef.current.reset();
-			}
-
-			// Arrêter le stream vidéo
-			if (streamRef.current) {
-				streamRef.current.getTracks().forEach((track) => track.stop());
-				streamRef.current = null;
-			}
-
-			// Réinitialiser la vidéo
-			if (videoRef.current) {
-				videoRef.current.srcObject = null;
-			}
-
-			// Réinitialiser la torche
-			setIsTorchOn(false);
-			setState('idle');
-		} catch (err) {
+			isInitializedRef.current = false;
+		} catch (err: unknown) {
 			console.error('Erreur arrêt scanner:', err);
 		}
 	}, []);
@@ -343,256 +59,82 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	 * Gère le résultat du scan
 	 */
 	const handleScanResult = useCallback(
-		async (result: Result): Promise<void> => {
-			// Éviter les scans multiples du même code
-			if (scanCooldown || !isScanningRef.current) return;
+		(result: Result | null, scanError?: Error): void => {
+			if (result) {
+				const barcode = result.getText();
 
-			const barcode = result.getText();
+				// Vibration de feedback
+				if ('vibrate' in navigator) {
+					navigator.vibrate(200);
+				}
 
-			// Éviter de scanner le même code plusieurs fois de suite
-			if (barcode === lastScannedCode) {
-				return;
-			}
+				// Arrêter le scan
+				stopScanning();
 
-			// Vibration de feedback
-			if ('vibrate' in navigator) {
-				navigator.vibrate(200);
-			}
-
-			// Activer le cooldown et stocker le code
-			setScanCooldown(true);
-			setLastScannedCode(barcode);
-
-			// Pauser le scan pendant la recherche
-			setState('paused');
-			isScanningRef.current = false;
-
-			try {
 				// Rechercher dans OpenFoodFacts
-				await searchByBarcode(barcode);
-			} catch (err) {
-				console.error('Erreur recherche produit:', err);
-				onError?.('Erreur lors de la recherche du produit');
-
-				// Réactiver le scan après erreur
-				setTimeout(() => {
-					setScanCooldown(false);
-					if (state !== 'manual-input' && state !== 'error') {
-						setState('scanning');
-					}
-				}, 2000);
+				searchByBarcode(barcode).catch((err: unknown) => {
+					console.error('Erreur recherche produit:', err);
+					onError?.('Erreur lors de la recherche du produit');
+				});
+			} else if (scanError && !(scanError instanceof NotFoundException)) {
+				console.error('Erreur scan:', scanError);
 			}
 		},
-		[scanCooldown, lastScannedCode, searchByBarcode, onError, state]
+		[stopScanning, searchByBarcode, onError]
 	);
 
 	/**
-	 * Démarre le scanner
+	 * Démarre le scanner de la façon la plus simple possible
 	 */
-	const startScanning = useCallback(async (): Promise<void> => {
-		// Vérifier si on n'est pas déjà en train de scanner
-		if (isScanningRef.current) return;
-
-		// Demander la permission si nécessaire
-		if (!hasPermission) {
-			const granted = await requestCameraPermission();
-			if (!granted) return;
-		}
+	const startScanner = useCallback(async (): Promise<void> => {
+		if (isInitializedRef.current) return;
 
 		try {
 			setState('scanning');
 			setError(null);
-			isScanningRef.current = true;
 
-			// S'assurer que les caméras sont énumérées
-			let cameras = availableCameras;
-			if (!camerasEnumerated || cameras.length === 0) {
-				console.log('Énumération des caméras...');
-				cameras = await enumerateCameras();
-				if (cameras.length === 0) {
-					throw new Error('Aucune caméra trouvée');
-				}
+			// Créer le lecteur ZXing
+			if (!codeReaderRef.current) {
+				codeReaderRef.current = new BrowserMultiFormatReader();
 			}
 
-			// Initialiser ZXing reader si nécessaire
-			if (!readerRef.current) {
-				readerRef.current = new BrowserMultiFormatReader();
+			// Vérifier l'élément vidéo
+			if (!videoRef.current) {
+				throw new Error('Élément vidéo non disponible');
 			}
 
-			// Sélectionner la caméra
-			const selectedCamera = cameras[currentCameraIndex];
-			let deviceId: string | null = null;
-
-			if (selectedCamera?.deviceId) {
-				deviceId = selectedCamera.deviceId;
-				console.log(
-					`Utilisation de la caméra: ${
-						selectedCamera.label || 'Sans nom'
-					} (${deviceId})`
-				);
-			} else {
-				console.log('Pas de deviceId, utilisation du mode environment');
-			}
-
-			// Démarrer le scan continu avec callback
-			const controls = await readerRef.current.decodeFromVideoDevice(
-				deviceId,
-				videoRef.current!,
-				(
-					result: Result | null,
-					error?: Error | undefined,
-					controls?: ScannerControls
-				) => {
-					// Stocker les contrôles au premier appel
-					if (!controlsRef.current && controls) {
-						controlsRef.current = controls;
-						// Stocker le stream pour la torche
-						const stream = controls.stream;
-						if (stream) {
-							streamRef.current = stream;
-						}
-					}
-
-					// Traiter le résultat si trouvé
-					if (result && isScanningRef.current) {
-						handleScanResult(result);
-					}
-
-					// Si c'est une NotFoundException, continuer simplement
-					if (error && !(error instanceof NotFoundException)) {
-						console.error('Erreur scan:', error);
-					}
-				}
+			// Démarrer le scan avec auto-sélection de caméra
+			// null = ZXing choisit automatiquement la meilleure caméra
+			await codeReaderRef.current.decodeFromVideoDevice(
+				null, // Auto-sélection
+				videoRef.current,
+				handleScanResult
 			);
 
-			// Stocker les contrôles
-			controlsRef.current = controls as unknown as ScannerControls;
-
-			// Récupérer et stocker le stream
-			if (videoRef.current?.srcObject) {
-				streamRef.current = videoRef.current.srcObject as MediaStream;
-
-				// Vérifier quelle caméra est réellement utilisée
-				const videoTrack = streamRef.current.getVideoTracks()[0];
-				if (videoTrack) {
-					const settings = videoTrack.getSettings();
-					console.log('Caméra active:', {
-						deviceId: settings.deviceId,
-						facingMode: settings.facingMode,
-						label: videoTrack.label,
-					});
-				}
-			}
-		} catch (err) {
+			isInitializedRef.current = true;
+		} catch (err: unknown) {
 			console.error('Erreur démarrage scanner:', err);
-			isScanningRef.current = false;
 
-			if (err instanceof Error) {
-				if (
-					err.name === 'NotAllowedError' ||
-					err.name === 'PermissionDeniedError'
-				) {
-					setError('permission-denied');
-				} else if (
-					err.message.includes('caméra') ||
-					err.name === 'NotFoundError'
-				) {
-					setError('no-camera');
-				} else {
-					setError('scanner-error');
-				}
+			const errorMessage =
+				err instanceof Error ? err.message : 'Erreur inconnue';
+
+			if (
+				errorMessage.includes('Permission denied') ||
+				errorMessage.includes('NotAllowedError')
+			) {
+				setError(
+					"Accès caméra refusé. Autorisez l'accès dans les paramètres du navigateur."
+				);
+			} else if (errorMessage.includes('NotFoundError')) {
+				setError('Aucune caméra trouvée sur cet appareil.');
 			} else {
-				setError('unknown');
+				setError(`Erreur du scanner: ${errorMessage}`);
 			}
 
 			setState('error');
-			onError?.(err instanceof Error ? err.message : 'Erreur inconnue');
+			isInitializedRef.current = false;
 		}
-	}, [
-		hasPermission,
-		requestCameraPermission,
-		availableCameras,
-		camerasEnumerated,
-		enumerateCameras,
-		currentCameraIndex,
-		handleScanResult,
-		onError,
-	]);
-
-	/**
-	 * Toggle de la torche/flash
-	 */
-	const toggleTorch = useCallback(async (): Promise<void> => {
-		try {
-			const stream = streamRef.current;
-			if (!stream) {
-				console.warn('Pas de stream disponible pour la torche');
-				return;
-			}
-
-			const videoTrack = stream.getVideoTracks()[0];
-			if (!videoTrack) {
-				console.warn('Pas de piste vidéo disponible');
-				return;
-			}
-
-			// Vérifier les capacités
-			const capabilities =
-				videoTrack.getCapabilities() as MediaTrackCapabilities & {
-					torch?: boolean;
-				};
-
-			if ('torch' in capabilities) {
-				await videoTrack.applyConstraints({
-					advanced: [
-						{ torch: !isTorchOn } as MediaTrackConstraintSet,
-					],
-				});
-				setIsTorchOn(!isTorchOn);
-			} else {
-				console.warn("La torche n'est pas supportée sur cette caméra");
-			}
-		} catch (err) {
-			console.error('Erreur toggle torche:', err);
-		}
-	}, [isTorchOn]);
-
-	/**
-	 * Change de caméra
-	 */
-	const switchCamera = useCallback(async (): Promise<void> => {
-		if (availableCameras.length <= 1) {
-			console.log('Une seule caméra disponible, impossible de changer');
-			return;
-		}
-
-		const nextIndex = (currentCameraIndex + 1) % availableCameras.length;
-		setCurrentCameraIndex(nextIndex);
-
-		const nextCamera = availableCameras[nextIndex];
-		console.log(
-			`Changement vers la caméra ${nextIndex}: ${nextCamera.label}`
-		);
-
-		// Test rapide du facingMode de la nouvelle caméra
-		const facingMode = await testCameraFacingMode(nextCamera.deviceId);
-		console.log(`Nouvelle caméra facingMode: ${facingMode}`);
-
-		// Redémarrer avec la nouvelle caméra
-		if (state === 'scanning' || state === 'paused') {
-			stopScanning();
-			// Attendre un peu avant de redémarrer
-			setTimeout(() => {
-				setState('scanning');
-			}, 100);
-		}
-	}, [
-		availableCameras,
-		currentCameraIndex,
-		state,
-		stopScanning,
-		testCameraFacingMode,
-	]);
+	}, [handleScanResult]);
 
 	/**
 	 * Passe en mode saisie manuelle
@@ -606,82 +148,37 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	 * Retourne au scan
 	 */
 	const returnToScan = useCallback((): void => {
-		setScanCooldown(false);
-		setLastScannedCode('');
 		setState('idle');
-		if (autoStart) {
-			setTimeout(() => setState('scanning'), 100);
-		}
-	}, [autoStart]);
+		setTimeout(() => {
+			startScanner();
+		}, 100);
+	}, [startScanner]);
 
-	// Énumérer les caméras au montage si possible
-	useEffect(() => {
-		const checkAndEnumerateCameras = async () => {
-			try {
-				// Vérifier si on a déjà la permission
-				const permissionStatus = await navigator.permissions?.query?.({
-					name: 'camera' as PermissionName,
-				});
-
-				if (permissionStatus?.state === 'granted') {
-					console.log(
-						'Permission caméra déjà accordée, énumération des caméras...'
-					);
-					setHasPermission(true);
-					await enumerateCameras();
-				}
-			} catch (err) {
-				// La vérification des permissions n'est pas supportée partout
-				console.log(
-					'Impossible de vérifier les permissions caméra:',
-					err
-				);
-			}
-		};
-
-		checkAndEnumerateCameras();
-	}, [enumerateCameras]);
-
-	// Effet pour gérer le démarrage du scan
-	useEffect(() => {
-		if (state === 'scanning' && !isScanningRef.current) {
-			startScanning();
-		}
-	}, [state, startScanning]);
+	/**
+	 * Réessayer en cas d'erreur
+	 */
+	const retry = useCallback((): void => {
+		stopScanning();
+		setError(null);
+		setState('idle');
+		setTimeout(() => {
+			startScanner();
+		}, 500);
+	}, [stopScanning, startScanner]);
 
 	// Gestion des résultats de recherche
 	useEffect(() => {
 		if (localProduct && data) {
 			onProductFound(localProduct);
-			// Réinitialiser après succès
-			setScanCooldown(false);
-			setLastScannedCode('');
-		} else if (!loading && !data && lastScannedCode) {
-			onProductNotFound(lastScannedCode);
-			// Permettre un nouveau scan après échec
-			setTimeout(() => {
-				setScanCooldown(false);
-				if (state === 'paused') {
-					setState('scanning');
-				}
-			}, 2000);
 		}
-	}, [
-		localProduct,
-		data,
-		loading,
-		lastScannedCode,
-		onProductFound,
-		onProductNotFound,
-		state,
-	]);
+	}, [localProduct, data, onProductFound]);
 
 	// Auto-start
 	useEffect(() => {
 		if (autoStart && state === 'idle') {
-			setState('scanning');
+			startScanner();
 		}
-	}, [autoStart, state]);
+	}, [autoStart, state, startScanner]);
 
 	// Cleanup
 	useEffect(() => {
@@ -731,35 +228,19 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 						variant='warning'
 						className='border-error-50/20 bg-error-50/10'>
 						<AlertDescription className='flex flex-col items-center text-neutral-300'>
-							<AlertCircle className='size-5 text-error-500 mb-2' />
+							<AlertCircle className='size-5 text-error-500' />
 							<h3 className='text-lg font-semibold mb-2'>
-								{error === 'permission-denied' &&
-									'Accès caméra refusé'}
-								{error === 'no-camera' &&
-									'Aucune caméra détectée'}
-								{error === 'scanner-error' &&
-									'Erreur du scanner'}
-								{error === 'unknown' && 'Erreur inconnue'}
+								Erreur du scanner
 							</h3>
-							<p className='text-sm text-neutral-200'>
-								{error === 'permission-denied' &&
-									"Veuillez autoriser l'accès à la caméra dans les paramètres de votre navigateur."}
-								{error === 'no-camera' &&
-									"Aucune caméra n'a été trouvée sur cet appareil."}
-								{error === 'scanner-error' &&
-									'Le scanner a rencontré une erreur technique. Essayez de recharger la page.'}
-								{error === 'unknown' &&
-									"Une erreur inattendue s'est produite."}
+							<p className='text-sm text-neutral-200 mb-4'>
+								{error}
 							</p>
 						</AlertDescription>
 					</Alert>
 
 					<div className='space-y-2'>
 						<Button
-							onClick={() => {
-								setError(null);
-								setState('scanning');
-							}}
+							onClick={retry}
 							className='w-full bg-success-50 text-neutral-50 hover:bg-success-500/90'>
 							Réessayer
 						</Button>
@@ -794,15 +275,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 		// Interface de scan
 		return (
 			<div className='relative size-full bg-black'>
-				{/* Vidéo */}
-				<video
-					ref={videoRef}
-					className='size-full object-cover'
-					playsInline
-					muted
-					autoPlay
-				/>
-
 				{/* Overlay guide */}
 				<div className='absolute inset-0 flex items-center justify-center'>
 					<div className='relative'>
@@ -821,70 +293,16 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 						<p className='text-neutral-50 text-center mt-4 text-sm font-medium'>
 							Centrez le code-barre dans le cadre
 						</p>
-
-						{/* Info caméra (pour debug, peut être retiré en production) */}
-						{availableCameras.length > 0 && (
-							<div className='text-center mt-2'>
-								<p className='text-neutral-50/70 text-xs'>
-									Caméra {currentCameraIndex + 1}/
-									{availableCameras.length}
-									{availableCameras[currentCameraIndex]
-										?.label &&
-										`: ${availableCameras[
-											currentCameraIndex
-										].label.substring(0, 30)}`}
-								</p>
-								{availableCameras.length > 1 && (
-									<p className='text-neutral-50/50 text-xs mt-1'>
-										Utilisez le bouton ↻ pour changer de
-										caméra
-									</p>
-								)}
-							</div>
-						)}
 					</div>
 				</div>
 
 				{/* Contrôles */}
 				<div className='absolute bottom-6 left-0 right-0 flex justify-center items-center space-x-4'>
-					{/* Torche */}
-					<Button
-						onClick={toggleTorch}
-						size='icon'
-						className={`size-12 rounded-full transition-colors ${
-							isTorchOn
-								? 'bg-warning-50 text-neutral-300 hover:bg-warning-50/90'
-								: 'bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'
-						}`}
-						title={
-							isTorchOn
-								? 'Éteindre la torche'
-								: 'Allumer la torche'
-						}>
-						{isTorchOn ? (
-							<FlashlightOff className='size-6' />
-						) : (
-							<Flashlight className='size-6' />
-						)}
-					</Button>
-
-					{/* Changer de caméra */}
-					{availableCameras.length > 1 && (
-						<Button
-							onClick={switchCamera}
-							size='icon'
-							className='size-12 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'
-							title={`Changer de caméra (${availableCameras.length} disponibles)`}>
-							<RotateCcw className='size-6' />
-						</Button>
-					)}
-
 					{/* Saisie manuelle */}
 					<Button
 						onClick={switchToManualInput}
 						size='icon'
-						className='size-12 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'
-						title='Saisir manuellement le code-barre'>
+						className='size-12 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'>
 						<Keyboard className='size-6' />
 					</Button>
 				</div>
@@ -894,8 +312,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 					<Button
 						onClick={onClose}
 						size='icon'
-						className='absolute top-4 right-4 size-10 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'
-						title='Fermer le scanner'>
+						className='absolute top-4 right-4 size-10 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'>
 						<X className='size-5' />
 					</Button>
 				)}
@@ -906,6 +323,16 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	return (
 		<Card
 			className={`bg-neutral-50 rounded-2xl shadow-xl overflow-hidden ${className}`}>
+			<video
+				ref={videoRef}
+				className={`size-full object-cover ${
+					state === 'scanning' ? 'block' : 'hidden'
+				}`}
+				playsInline
+				muted
+				autoPlay
+			/>
+
 			{renderContent()}
 		</Card>
 	);
