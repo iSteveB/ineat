@@ -25,7 +25,7 @@ import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/in
 import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
 import { Route as AppRecipesSuggestionsRouteImport } from './routes/app/recipes/suggestions'
 import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$recipeId'
-import { Route as AppInventoryAddManualRouteImport } from './routes/app/inventory/add-manual'
+import { Route as AppInventoryAddManualRouteImport } from './routes/app/inventory/add/manual'
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
 import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
@@ -116,8 +116,8 @@ const AppRecipesRecipeIdRoute = AppRecipesRecipeIdRouteImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppInventoryAddManualRoute = AppInventoryAddManualRouteImport.update({
-  id: '/inventory/add-manual',
-  path: '/inventory/add-manual',
+  id: '/inventory/add/manual',
+  path: '/inventory/add/manual',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
@@ -178,7 +178,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
+  '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -204,7 +204,7 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
+  '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -233,7 +233,7 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/inventory/add-manual': typeof AppInventoryAddManualRoute
+  '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget/': typeof AppBudgetIndexRoute
@@ -262,7 +262,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/inventory/add-manual'
+    | '/app/inventory/add/manual'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -289,7 +289,7 @@ export interface FileRouteTypes {
     | '/notFound'
     | '/app'
     | '/app/inventory/$productId'
-    | '/app/inventory/add-manual'
+    | '/app/inventory/add/manual'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -317,7 +317,7 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/inventory/add-manual'
+    | '/app/inventory/add/manual'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget/'
@@ -463,10 +463,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRecipesRecipeIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/inventory/add-manual': {
-      id: '/app/inventory/add-manual'
-      path: '/inventory/add-manual'
-      fullPath: '/app/inventory/add-manual'
+    '/app/inventory/add/manual': {
+      id: '/app/inventory/add/manual'
+      path: '/inventory/add/manual'
+      fullPath: '/app/inventory/add/manual'
       preLoaderRoute: typeof AppInventoryAddManualRouteImport
       parentRoute: typeof AppRouteRoute
     }

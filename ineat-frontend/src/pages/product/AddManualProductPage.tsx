@@ -202,7 +202,7 @@ const AddManualProductPage: React.FC = () => {
 
 				<div className='relative px-6 py-4 flex items-center justify-between'>
 					<div className='flex items-center gap-4'>
-						<Link to='/app/inventory'>
+						<Link to='/app/inventory/add'>
 							<Button
 								variant='ghost'
 								size='sm'

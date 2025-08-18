@@ -1,47 +1,21 @@
-import React, { useState } from 'react';
-import { Link, useRouter } from '@tanstack/react-router';
+import React from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
 import AddMethodCard from '@/components/common/AddMethodCard';
-import { ProductScanFlow } from '@/features/scan/ProductScanFlow';
 import { Scan, Receipt, Car, ShoppingCart, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { getInitials } from '@/utils/ui-utils';
 
 const AddProductPage: React.FC = () => {
-	const router = useRouter();
+	const navigate = useNavigate();
 	const { user } = useAuthStore();
-
-	// État pour gérer l'ouverture du scanner
-	const [showScanner, setShowScanner] = useState<boolean>(false);
 
 	// TODO: Récupérer le statut premium de l'utilisateur depuis le store
 	const isPremiumUser = false;
 
 	const handleOpenScanner = () => {
-		setShowScanner(true);
-	};
-	const handleCloseScanner = () => {
-		setShowScanner(false);
+		navigate({ to: '/app/inventory/add/scan' });
 	};
 
-	const handleScanComplete = () => {
-		setShowScanner(false);
-		router.navigate({ to: '/app/inventory' });
-	};
-
-	// Interface du scanner en plein écran
-	if (showScanner) {
-		return (
-			<div className='fixed inset-0 z-50 bg-black'>
-				<ProductScanFlow
-					onComplete={handleScanComplete}
-					onCancel={handleCloseScanner}
-					className='size-full'
-				/>
-			</div>
-		);
-	}
-
-	// Interface normale de sélection de méthode
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
 			{/* Header */}
@@ -73,7 +47,7 @@ const AddProductPage: React.FC = () => {
 									</div>
 								)}
 							</div>
-							<h1 className="text-xl font-semibold text-gray-900">
+							<h1 className="text-xl font-semibold text-gray-900 font-['Fredoka']">
 								Ajouter un produit
 							</h1>
 						</div>
