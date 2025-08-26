@@ -5,13 +5,40 @@ import {
 	type Result,
 	NotFoundException,
 } from '@zxing/library';
-import { Keyboard, AlertCircle, CheckCircle2, X, Camera } from 'lucide-react';
+import {
+	Keyboard,
+	AlertCircle,
+	CheckCircle2,
+	X,
+	Camera,
+	Flashlight,
+	FlashlightOff,
+} from 'lucide-react';
 import { ManualBarcodeInput } from './ManualBarcodeInput';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
 import type { Product } from '@/schemas/product';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+
+//Types personnalisés pour l'API Torch (non standard dans TypeScript)
+interface ExtendedMediaTrackSupportedConstraints
+	extends MediaTrackSupportedConstraints {
+	torch?: boolean;
+}
+
+interface ExtendedMediaTrackCapabilities extends MediaTrackCapabilities {
+	torch?: boolean;
+}
+
+interface ExtendedMediaTrackConstraintSet extends MediaTrackConstraintSet {
+	torch?: boolean;
+}
+
+interface ExtendedMediaTrackConstraints extends MediaTrackConstraints {
+	torch?: boolean;
+	advanced?: ExtendedMediaTrackConstraintSet[];
+}
 
 type ScannerState =
 	| 'initializing'
@@ -39,11 +66,16 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 }) => {
 	const videoRef = useRef<HTMLVideoElement>(null);
 	const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+	const streamRef = useRef<MediaStream | null>(null);
 	const isInitializedRef = useRef<boolean>(false);
 
 	const [state, setState] = useState<ScannerState>('initializing');
 	const [error, setError] = useState<string | null>(null);
 	const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+
+	const [isFlashOn, setIsFlashOn] = useState<boolean>(false);
+	const [isFlashSupported, setIsFlashSupported] = useState<boolean>(false);
+	const [isFlashLoading, setIsFlashLoading] = useState<boolean>(false);
 
 	const {
 		searchByBarcode,
@@ -53,18 +85,95 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	} = useOpenFoodFacts();
 
 	/**
+	 * Vérifie si le flash/torche est supporté
+	 */
+	const checkFlashSupport = useCallback((): void => {
+		try {
+			const constraints =
+				navigator.mediaDevices?.getSupportedConstraints() as ExtendedMediaTrackSupportedConstraints;
+			const torchSupported = constraints?.torch === true;
+			setIsFlashSupported(torchSupported);
+			console.log('Support flash/torche:', torchSupported);
+		} catch (error) {
+			console.log('Impossible de vérifier le support flash:', error);
+			setIsFlashSupported(false);
+		}
+	}, []);
+
+	/**
+	 * Contrôle du flash/torche
+	 */
+	const toggleFlash = useCallback(async (): Promise<void> => {
+		if (!isFlashSupported || !streamRef.current) return;
+
+		setIsFlashLoading(true);
+
+		try {
+			const track = streamRef.current.getVideoTracks()[0];
+			if (!track) {
+				throw new Error('Aucune piste vidéo disponible');
+			}
+
+			// Vérifier les capacités de la piste avec type safety
+			const capabilities =
+				track.getCapabilities() as ExtendedMediaTrackCapabilities;
+			if (!capabilities.torch) {
+				throw new Error('Flash non supporté par cette caméra');
+			}
+
+			// Appliquer la contrainte torche avec type safety
+			const constraints: ExtendedMediaTrackConstraints = {
+				advanced: [{ torch: !isFlashOn }],
+			};
+
+			await track.applyConstraints(constraints);
+
+			setIsFlashOn(!isFlashOn);
+			console.log('Flash', !isFlashOn ? 'activé' : 'désactivé');
+		} catch (err: unknown) {
+			console.error('Erreur contrôle flash:', err);
+			const message =
+				err instanceof Error ? err.message : 'Erreur inconnue';
+
+			// Ne pas afficher d'erreur pour les cas où le flash n'est simplement pas disponible
+			if (
+				!message.includes('not supported') &&
+				!message.includes('non supporté')
+			) {
+				onError?.(`Erreur flash: ${message}`);
+			}
+		} finally {
+			setIsFlashLoading(false);
+		}
+	}, [isFlashSupported, isFlashOn, onError]);
+
+	/**
 	 * Arrête le scanner proprement
 	 */
 	const stopScanning = useCallback((): void => {
 		try {
+			// Éteindre le flash avant d'arrêter
+			if (isFlashOn && streamRef.current) {
+				const track = streamRef.current.getVideoTracks()[0];
+				if (track) {
+					const constraints: ExtendedMediaTrackConstraints = {
+						advanced: [{ torch: false }],
+					};
+					track.applyConstraints(constraints).catch(console.error);
+				}
+			}
+
 			if (codeReaderRef.current) {
 				codeReaderRef.current.reset();
 			}
+
+			streamRef.current = null;
 			isInitializedRef.current = false;
+			setIsFlashOn(false);
 		} catch (err: unknown) {
 			console.error('Erreur arrêt scanner:', err);
 		}
-	}, []);
+	}, [isFlashOn]);
 
 	/**
 	 * Gère les erreurs du scanner
@@ -141,6 +250,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			setState('initializing');
 			setError(null);
 
+			// Vérifier le support du flash
+			checkFlashSupport();
+
 			// Petit délai pour que la vidéo soit rendue
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -154,9 +266,32 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 				throw new Error('Élément vidéo non disponible');
 			}
 
-			// Démarrer le scan avec auto-sélection de caméra
-			await codeReaderRef.current.decodeFromVideoDevice(
-				null, // Auto-sélection de la meilleure caméra
+			// Configurer les contraintes avec la caméra arrière préférée
+			const constraints: MediaStreamConstraints = {
+				video: {
+					facingMode: 'environment', // Caméra arrière préférée
+					width: { ideal: 1280 },
+					height: { ideal: 720 },
+				},
+			};
+
+			// Obtenir le flux média
+			const stream = await navigator.mediaDevices.getUserMedia(
+				constraints
+			);
+			streamRef.current = stream;
+
+			// Vérifier à nouveau le support du flash avec la vraie piste
+			const videoTrack = stream.getVideoTracks()[0];
+			if (videoTrack) {
+				const capabilities =
+					videoTrack.getCapabilities() as ExtendedMediaTrackCapabilities;
+				setIsFlashSupported(!!capabilities.torch);
+			}
+
+			// Démarrer le scan avec ZXing
+			await codeReaderRef.current.decodeFromStream(
+				stream,
 				videoRef.current,
 				handleScanResult
 			);
@@ -167,7 +302,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			console.error('Erreur démarrage scanner:', err);
 			handleScannerError(err);
 		}
-	}, [handleScanResult, handleScannerError]);
+	}, [handleScanResult, handleScannerError, checkFlashSupport]);
 
 	/**
 	 * Passe en mode saisie manuelle
@@ -199,6 +334,20 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			startScanner();
 		}, 500);
 	}, [stopScanning, startScanner]);
+
+	// Auto-start du scanner
+	useEffect(() => {
+		if (autoStart && state === 'initializing') {
+			startScanner();
+		}
+	}, [autoStart, state, startScanner]);
+
+	// Cleanup à la destruction
+	useEffect(() => {
+		return () => {
+			stopScanning();
+		};
+	}, [stopScanning]);
 
 	// Gestion des résultats de recherche OpenFoodFacts
 	useEffect(() => {
@@ -234,20 +383,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 		onProductNotFound,
 		onError,
 	]);
-
-	// Auto-start du scanner
-	useEffect(() => {
-		if (autoStart && state === 'initializing') {
-			startScanner();
-		}
-	}, [autoStart, state, startScanner]);
-
-	// Cleanup à la destruction
-	useEffect(() => {
-		return () => {
-			stopScanning();
-		};
-	}, [stopScanning]);
 
 	/**
 	 * Rendu du contenu selon l'état
@@ -386,8 +521,30 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 							</div>
 						</div>
 
-						{/* Contrôles en bas */}
-						<div className='absolute bottom-8 left-0 right-0 flex justify-center'>
+						{/* ✅ NOUVEAU : Contrôles en bas avec flash */}
+						<div className='absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4'>
+							{/* Bouton flash */}
+							{isFlashSupported && (
+								<Button
+									onClick={toggleFlash}
+									disabled={isFlashLoading}
+									size='lg'
+									className={`size-14 rounded-full border border-neutral-200/30 backdrop-blur-sm transition-colors ${
+										isFlashOn
+											? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
+											: 'bg-neutral-50/10 text-neutral-50 hover:bg-neutral-50/20'
+									}`}>
+									{isFlashLoading ? (
+										<div className='size-6 border-2 border-current border-t-transparent rounded-full animate-spin' />
+									) : isFlashOn ? (
+										<Flashlight className='size-6' />
+									) : (
+										<FlashlightOff className='size-6' />
+									)}
+								</Button>
+							)}
+
+							{/* Bouton saisie manuelle */}
 							<Button
 								onClick={switchToManualInput}
 								size='lg'
