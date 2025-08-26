@@ -1,3 +1,5 @@
+'use client';
+
 import type React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
@@ -393,7 +395,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 				return (
 					<CardContent className='p-6 space-y-4'>
 						<div className='text-center space-y-2'>
-							<Keyboard className='size-8 text-accent mx-auto' />
+							<Keyboard className='size-8 text-success-500 mx-auto' />
 							<h3 className='text-lg font-semibold text-neutral-300'>
 								Saisie manuelle
 							</h3>
@@ -412,7 +414,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 						<Button
 							onClick={returnToScan}
 							variant='outline'
-							className='w-full border-accent text-accent hover:bg-accent/10'>
+							className='w-full border-success-500 text-success-500 hover:bg-success-50/10'>
 							<Camera className='size-4 mr-2' />
 							Retour au scan
 						</Button>
@@ -424,7 +426,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 					<CardContent className='p-6 text-center space-y-4'>
 						<Alert className='border-error-50/20 bg-error-50/10'>
 							<AlertDescription className='flex flex-col items-center text-neutral-300'>
-								<AlertCircle className='size-8 text-error-50 mb-3' />
+								<AlertCircle className='size-8 text-error-500 mb-3' />
 								<h3 className='text-lg font-semibold mb-2'>
 									Problème avec le scanner
 								</h3>
@@ -437,14 +439,14 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 						<div className='space-y-2'>
 							<Button
 								onClick={retry}
-								className='w-full bg-accent text-neutral-50 hover:bg-accent/90'>
+								className='w-full bg-success-500 text-neutral-50 hover:bg-success-500/90'>
 								<Camera className='size-4 mr-2' />
 								Réessayer
 							</Button>
 							<Button
 								onClick={switchToManualInput}
 								variant='outline'
-								className='w-full border-accent text-accent hover:bg-accent/10'>
+								className='w-full border-success-500 text-success-500 hover:bg-success-50/10'>
 								<Keyboard className='size-4 mr-2' />
 								Saisir manuellement
 							</Button>
@@ -454,23 +456,33 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 			case 'searching':
 				return (
-					<div className='relative size-full bg-neutral-950 flex items-center justify-center'>
-						<div className='text-center space-y-4'>
-							<CheckCircle2 className='size-16 text-success-500 mx-auto animate-pulse' />
-							<div>
-								<h3 className='text-xl font-semibold text-neutral-50'>
+					<div className='min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6'>
+						{/* Bouton fermer en haut à droite */}
+						{onClose && (
+							<Button
+								onClick={onClose}
+								size='icon'
+								className='absolute top-6 right-6 size-12 rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 shadow-lg'>
+								<X className='size-5' />
+							</Button>
+						)}
+
+						<div className='text-center space-y-6'>
+							<CheckCircle2 className='size-20 text-success-500 mx-auto animate-pulse' />
+							<div className='space-y-2'>
+								<h3 className='text-2xl font-bold text-neutral-900'>
 									Code-barre détecté !
 								</h3>
-								<p className='text-sm text-neutral-200 mt-2'>
+								<p className='text-neutral-600'>
 									Recherche du produit en cours...
 								</p>
 								{scannedBarcode && (
-									<p className='text-xs text-neutral-400 mt-2 font-mono'>
+									<p className='text-sm text-neutral-500 font-mono bg-neutral-100 px-3 py-1 rounded-lg inline-block'>
 										{scannedBarcode}
 									</p>
 								)}
 							</div>
-							<div className='w-32 h-1 bg-neutral-800 rounded-full mx-auto overflow-hidden'>
+							<div className='w-48 h-2 bg-neutral-200 rounded-full mx-auto overflow-hidden'>
 								<div className='h-full bg-success-500 rounded-full animate-pulse'></div>
 							</div>
 						</div>
@@ -480,67 +492,84 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			case 'initializing':
 			case 'scanning':
 			default:
-				// Interface de scan principale
+				// Interface de scan principale - NOUVEAU DESIGN
 				return (
-					<div className='relative size-full bg-neutral-950'>
-						{/* Vidéo */}
-						<video
-							ref={videoRef}
-							className='size-full object-cover'
-							playsInline
-							muted
-							autoPlay
-						/>
+					<div className='min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6'>
+						{/* Bouton fermer en haut à droite */}
+						{onClose && (
+							<Button
+								onClick={onClose}
+								size='icon'
+								className='absolute top-6 right-6 size-12 rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 shadow-lg'>
+								<X className='size-5' />
+							</Button>
+						)}
 
-						{/* Overlay guide de scan */}
-						<div className='absolute inset-0 flex items-center justify-center'>
-							<div className='relative'>
-								{/* Zone de scan */}
-								<div className='size-64 border-2 border-neutral-50 rounded-2xl relative'>
-									{/* Coins animés */}
-									<div className='absolute -top-1 -left-1 size-8 border-t-4 border-l-4 border-accent rounded-tl-2xl animate-pulse'></div>
-									<div className='absolute -top-1 -right-1 size-8 border-t-4 border-r-4 border-accent rounded-tr-2xl animate-pulse'></div>
-									<div className='absolute -bottom-1 -left-1 size-8 border-b-4 border-l-4 border-accent rounded-bl-2xl animate-pulse'></div>
-									<div className='absolute -bottom-1 -right-1 size-8 border-b-4 border-r-4 border-accent rounded-br-2xl animate-pulse'></div>
+						{/* Titre et instructions */}
+						<div className='text-center mb-8'>
+							<h2 className='text-2xl font-bold text-neutral-900 mb-2'>
+								Scanner un code-barre
+							</h2>
+							<p className='text-neutral-600'>
+								{state === 'initializing'
+									? 'Initialisation de la caméra...'
+									: 'Centrez le code-barre dans le cadre'}
+							</p>
+						</div>
 
-									{/* Ligne de scan animée */}
-									<div className='absolute inset-x-0 top-1/2 h-0.5 bg-accent animate-pulse shadow-lg shadow-accent/50'></div>
-								</div>
+						{/* Vidéo dans un carré au centre */}
+						<div className='relative mb-8'>
+							<div className='size-80 rounded-2xl overflow-hidden bg-neutral-900 shadow-2xl'>
+								<video
+									ref={videoRef}
+									className='size-full object-cover'
+									playsInline
+									muted
+									autoPlay
+								/>
 
-								{/* Instructions */}
-								<div className='text-center mt-6 space-y-2'>
-									<p className='text-neutral-50 text-lg font-medium'>
-										Centrez le code-barre dans le cadre
-									</p>
-									<p className='text-neutral-200 text-sm'>
-										{state === 'initializing'
-											? 'Initialisation...'
-											: 'Scan en cours...'}
-									</p>
+								{/* Overlay guide de scan */}
+								<div className='absolute inset-0 flex items-center justify-center'>
+									<div className='relative'>
+										{/* Zone de scan */}
+										<div className='size-64 relative'>
+											{/* Coins */}
+											<div className='absolute -top-1 -left-1 size-8 border-t-4 border-l-4 border-neutral-150 rounded-tl-2xl'></div>
+											<div className='absolute -top-1 -right-1 size-8 border-t-4 border-r-4 border-neutral-150 rounded-tr-2xl'></div>
+											<div className='absolute -bottom-1 -left-1 size-8 border-b-4 border-l-4 border-neutral-150 rounded-bl-2xl'></div>
+											<div className='absolute -bottom-1 -right-1 size-8 border-b-4 border-r-4 border-neutral-150 rounded-br-2xl'></div>
+
+											{/* Ligne de scan animée */}
+											<div className='absolute inset-x-0 top-1/2 h-0.5 bg-red-500 animate-pulse shadow-lg shadow-red-500/50'></div>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 
-						{/* ✅ NOUVEAU : Contrôles en bas avec flash */}
-						<div className='absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4'>
+						{/* Boutons de contrôle en dessous */}
+						<div className='flex flex-col gap-4'>
 							{/* Bouton flash */}
 							{isFlashSupported && (
 								<Button
 									onClick={toggleFlash}
 									disabled={isFlashLoading}
 									size='lg'
-									className={`size-14 rounded-full border border-neutral-200/30 backdrop-blur-sm transition-colors ${
+									className={`h-14 px-6 rounded-xl shadow-lg transition-all ${
 										isFlashOn
-											? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
-											: 'bg-neutral-50/10 text-neutral-50 hover:bg-neutral-50/20'
+											? 'bg-warning-500 text-neutral-50 hover:bg-warning-600'
+											: 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
 									}`}>
 									{isFlashLoading ? (
-										<div className='size-6 border-2 border-current border-t-transparent rounded-full animate-spin' />
+										<div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2' />
 									) : isFlashOn ? (
-										<Flashlight className='size-6' />
+										<Flashlight className='size-5 mr-2' />
 									) : (
-										<FlashlightOff className='size-6' />
+										<FlashlightOff className='size-5 mr-2' />
 									)}
+									{isFlashOn
+										? 'Flash activé'
+										: 'Activer flash'}
 								</Button>
 							)}
 
@@ -548,20 +577,12 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 							<Button
 								onClick={switchToManualInput}
 								size='lg'
-								className='size-14 rounded-full bg-neutral-50/10 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-50/20 backdrop-blur-sm'>
-								<Keyboard className='size-6' />
+								variant='outline'
+								className='h-14 px-6 rounded-xl border-success-500 text-success-500 hover:bg-success-50 shadow-lg'>
+								<Keyboard className='size-5 mr-2' />
+								Saisir manuellement le code-barre
 							</Button>
 						</div>
-
-						{/* Bouton fermer */}
-						{onClose && (
-							<Button
-								onClick={onClose}
-								size='icon'
-								className='absolute top-6 right-6 size-12 rounded-full bg-neutral-50/10 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-50/20 backdrop-blur-sm'>
-								<X className='size-5' />
-							</Button>
-						)}
 					</div>
 				);
 		}
