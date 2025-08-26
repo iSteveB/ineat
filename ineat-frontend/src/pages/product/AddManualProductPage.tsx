@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearch } from '@tanstack/react-router';
+import React, { useState } from 'react';
+import { useNavigate, Link } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Package, Plus, Search, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -26,12 +26,7 @@ const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	// CORRECTION: Utiliser le bon chemin pour la route
-	const searchParams = useSearch({
-		from: '/app/inventory/add/search',
-	});
-	const defaultBarcode = searchParams.barcode?.toString() || '';
-
+	// États locaux simplifiés
 	const [pageState, setPageState] = useState<PageState>('search');
 	const [searchQuery, setSearchQuery] = useState<string>('');
 	const [searchResults, setSearchResults] = useState<ProductSearchResult[]>(
@@ -41,21 +36,12 @@ const AddManualProductPage: React.FC = () => {
 		useState<ProductSearchResult | null>(null);
 	const [isSearching, setIsSearching] = useState<boolean>(false);
 
+	// Récupération des catégories
 	const { data: categories = [] } = useQuery({
 		queryKey: ['categories'],
 		queryFn: inventoryService.getCategories,
 		staleTime: 1000 * 60 * 60, // 1 heure
 	});
-
-	// Effet pour gérer le paramètre barcode depuis l'URL
-	useEffect(() => {
-		if (defaultBarcode) {
-			// Si un code-barre est fourni, passer directement en mode création manuelle
-			// mais aussi pré-remplir la recherche au cas où l'utilisateur voudrait revenir en arrière
-			setSearchQuery(defaultBarcode);
-			setPageState('manual-add');
-		}
-	}, [defaultBarcode]);
 
 	// Fonction pour gérer le succès avec feedback budgétaire
 	const handleProductAddedSuccess = (
@@ -67,10 +53,16 @@ const AddManualProductPage: React.FC = () => {
 				toast.success(result.message);
 				break;
 			case 'info':
-				toast.info(result.message);
+				toast.info(result.message, {
+					description: result.budgetInfo.expenseCreated
+						? `Dépense ajoutée au budget`
+						: 'Prix non renseigné - aucune dépense créée',
+				});
 				break;
 			case 'warning':
-				toast.warning(result.message);
+				toast.warning(result.message, {
+					description: 'Attention à votre budget !',
+				});
 				break;
 		}
 
@@ -133,7 +125,8 @@ const AddManualProductPage: React.FC = () => {
 		try {
 			const results = await inventoryService.searchProducts(query);
 			setSearchResults(results);
-		} catch {
+		} catch (error) {
+			console.error('Erreur lors de la recherche:', error);
 			toast.error('Erreur lors de la recherche');
 			setSearchResults([]);
 		} finally {
@@ -143,12 +136,14 @@ const AddManualProductPage: React.FC = () => {
 
 	// Gestion de la sélection d'un produit
 	const handleSelectProduct = (product: ProductSearchResult): void => {
+		console.log('Produit sélectionné:', product);
 		setSelectedProduct(product);
 		setPageState('quick-add');
 	};
 
 	// Gestion de l'ajout rapide avec le bon type
 	const handleQuickAdd = async (data: QuickAddFormData): Promise<void> => {
+		console.log('Ajout rapide avec données:', data);
 		await quickAddMutation.mutateAsync(data);
 	};
 
@@ -156,6 +151,7 @@ const AddManualProductPage: React.FC = () => {
 	const handleManualAdd = async (
 		data: AddInventoryItemData
 	): Promise<void> => {
+		console.log('Ajout manuel avec données:', data);
 		await manualAddMutation.mutateAsync(data);
 	};
 
@@ -176,31 +172,6 @@ const AddManualProductPage: React.FC = () => {
 	const handleBackToSearch = (): void => {
 		setSelectedProduct(null);
 		setPageState('search');
-
-		// Si on était arrivé avec un barcode, nettoyer l'URL
-		if (defaultBarcode) {
-			navigate({ to: '/app/inventory/add/search' });
-		}
-	};
-
-	/**
-	 * Détermine le titre de la page selon l'état et les paramètres
-	 */
-	const getPageTitle = (): string => {
-		if (defaultBarcode) {
-			return 'Créer un produit';
-		}
-		return 'Ajouter un produit';
-	};
-
-	/**
-	 * Détermine la description de la page selon l'état et les paramètres
-	 */
-	const getPageDescription = (): string => {
-		if (defaultBarcode) {
-			return `Code-barre scanné : ${defaultBarcode}`;
-		}
-		return 'Recherchez ou créez un nouveau produit';
 	};
 
 	return (
@@ -221,10 +192,10 @@ const AddManualProductPage: React.FC = () => {
 						</Link>
 						<div>
 							<h1 className='text-2xl font-bold text-neutral-300'>
-								{getPageTitle()}
+								Ajouter un produit
 							</h1>
 							<p className='text-sm text-neutral-200'>
-								{getPageDescription()}
+								Recherchez ou créez un nouveau produit
 							</p>
 						</div>
 					</div>
@@ -246,7 +217,7 @@ const AddManualProductPage: React.FC = () => {
 
 			{/* Content */}
 			<div className='max-w-4xl mx-auto px-4 py-6 space-y-6'>
-				{/* Contenu principal selon l'état */}
+				{/* État de recherche */}
 				{pageState === 'search' && (
 					<div className='space-y-6'>
 						{/* Barre de recherche */}
@@ -342,7 +313,7 @@ const AddManualProductPage: React.FC = () => {
 					</div>
 				)}
 
-				{/* État ajout rapide avec le bon composant */}
+				{/* État ajout rapide avec produit existant */}
 				{pageState === 'quick-add' && selectedProduct && (
 					<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
 						<CardHeader>
@@ -371,8 +342,7 @@ const AddManualProductPage: React.FC = () => {
 						onSubmit={handleManualAdd}
 						onCancel={handleBackToSearch}
 						isSubmitting={manualAddMutation.isPending}
-						defaultProductName={defaultBarcode ? '' : searchQuery}
-						defaultBarcode={defaultBarcode}
+						defaultProductName={searchQuery} // Utilise la recherche en cours
 					/>
 				)}
 			</div>

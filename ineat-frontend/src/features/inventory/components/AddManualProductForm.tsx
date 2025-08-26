@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { Euro, Loader2, PackagePlus } from 'lucide-react';
 import type { Category, AddInventoryItemData, UnitType } from '@/schemas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AddManualProductFormProps {
 	categories: Category[];
@@ -23,6 +24,7 @@ interface AddManualProductFormProps {
 	onCancel: () => void;
 	isSubmitting: boolean;
 	defaultProductName?: string;
+	defaultBrand?: string; // NOUVEAU: Marque par défaut
 	defaultBarcode?: string;
 }
 
@@ -67,19 +69,20 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	onCancel,
 	isSubmitting,
 	defaultProductName = '',
+	defaultBrand = '', // NOUVEAU: Marque par défaut
 	defaultBarcode = '',
 }) => {
 	const [formData, setFormData] = useState<FormData>({
 		name: defaultProductName || '',
-		brand: '',
+		brand: defaultBrand || '', // NOUVEAU: Pré-remplir la marque
 		barcode: defaultBarcode || '',
 		category: '',
-		quantity: '',
+		quantity: '1', // Quantité par défaut
 		unitType: 'UNIT',
 		purchaseDate: format(new Date(), 'yyyy-MM-dd'),
 		expiryDate: '',
 		purchasePrice: '',
-		storageLocation: '',
+		storageLocation: 'placard', // Valeur par défaut
 		notes: '',
 	});
 
@@ -93,9 +96,10 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		setFormData((prev) => ({
 			...prev,
 			name: defaultProductName || prev.name,
+			brand: defaultBrand || prev.brand, // NOUVEAU: Mise à jour de la marque
 			barcode: defaultBarcode || prev.barcode,
 		}));
-	}, [defaultProductName, defaultBarcode]);
+	}, [defaultProductName, defaultBrand, defaultBarcode]);
 
 	// Fonction de validation
 	const validateForm = (): boolean => {
@@ -245,6 +249,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		}
 	};
 
+	// NOUVEAU: Déterminer si on affiche une alerte pour les données pré-remplies
+	const hasPrefilledData = defaultProductName || defaultBrand || defaultBarcode;
+
 	return (
 		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
 			<CardHeader>
@@ -256,6 +263,18 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
+				{/* NOUVEAU: Alerte pour les données pré-remplies */}
+				{hasPrefilledData && (
+					<Alert className='border-success-500/20 bg-success-50/10'>
+						<AlertDescription className='text-neutral-300'>
+							<strong>Données récupérées du scan :</strong>
+							{defaultProductName && <span> Nom: {defaultProductName}</span>}
+							{defaultBrand && <span>, Marque: {defaultBrand}</span>}
+							{defaultBarcode && <span>, Code-barre: {defaultBarcode}</span>}
+						</AlertDescription>
+					</Alert>
+				)}
+
 				<form onSubmit={handleSubmit} className='space-y-6'>
 					{/* Informations de base */}
 					<div className='space-y-4'>
@@ -278,6 +297,10 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								placeholder='Ex: Pommes Golden'
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
 									errors.name ? 'border-error-100' : ''
+								} ${
+									defaultProductName
+										? 'bg-success-50/5 border-success-500/20'
+										: ''
 								}`}
 								disabled={isSubmitting}
 							/>
@@ -300,7 +323,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									handleInputChange('brand', e.target.value)
 								}
 								placeholder='Ex: Carrefour Bio'
-								className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200'
+								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+									defaultBrand
+										? 'bg-success-50/5 border-success-500/20'
+										: ''
+								}`}
 								disabled={isSubmitting}
 							/>
 						</div>

@@ -5,7 +5,7 @@ import {
 	type Result,
 	NotFoundException,
 } from '@zxing/library';
-import { Keyboard, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Keyboard, AlertCircle, CheckCircle2, X, Camera } from 'lucide-react';
 import { ManualBarcodeInput } from './ManualBarcodeInput';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
 import type { Product } from '@/schemas/product';
@@ -13,7 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-type ScannerState = 'idle' | 'scanning' | 'manual-input' | 'error';
+type ScannerState =
+	| 'initializing'
+	| 'scanning'
+	| 'manual-input'
+	| 'error'
+	| 'searching';
 
 interface BarcodeScannerProps {
 	onProductFound: (localProduct: Partial<Product>) => void;
@@ -36,13 +41,19 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 	const isInitializedRef = useRef<boolean>(false);
 
-	const [state, setState] = useState<ScannerState>('idle');
+	const [state, setState] = useState<ScannerState>('initializing');
 	const [error, setError] = useState<string | null>(null);
+	const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
 
-	const { searchByBarcode, loading, localProduct, data } = useOpenFoodFacts();
+	const {
+		searchByBarcode,
+		localProduct,
+		data,
+		error: offError,
+	} = useOpenFoodFacts();
 
 	/**
-	 * Arrête le scanner
+	 * Arrête le scanner proprement
 	 */
 	const stopScanning = useCallback((): void => {
 		try {
@@ -56,48 +67,84 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	}, []);
 
 	/**
+	 * Gère les erreurs du scanner
+	 */
+	const handleScannerError = useCallback(
+		(err: unknown): void => {
+			const errorMessage =
+				err instanceof Error ? err.message : 'Erreur inconnue';
+
+			let userFriendlyMessage: string;
+
+			if (
+				errorMessage.includes('Permission denied') ||
+				errorMessage.includes('NotAllowedError')
+			) {
+				userFriendlyMessage =
+					"Accès caméra refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.";
+			} else if (errorMessage.includes('NotFoundError')) {
+				userFriendlyMessage = 'Aucune caméra trouvée sur cet appareil.';
+			} else if (errorMessage.includes('NotSupportedError')) {
+				userFriendlyMessage =
+					'Votre navigateur ne supporte pas cette fonctionnalité.';
+			} else {
+				userFriendlyMessage = `Erreur du scanner : ${errorMessage}`;
+			}
+
+			setError(userFriendlyMessage);
+			setState('error');
+			isInitializedRef.current = false;
+			onError?.(userFriendlyMessage);
+		},
+		[onError]
+	);
+
+	/**
 	 * Gère le résultat du scan
 	 */
 	const handleScanResult = useCallback(
 		(result: Result | null, scanError?: Error): void => {
 			if (result) {
 				const barcode = result.getText();
+				console.log('Code-barre scanné:', barcode);
 
-				// Vibration de feedback
+				// Feedback haptique
 				if ('vibrate' in navigator) {
 					navigator.vibrate(200);
 				}
 
 				// Arrêter le scan
 				stopScanning();
+				setScannedBarcode(barcode);
+				setState('searching');
 
 				// Rechercher dans OpenFoodFacts
 				searchByBarcode(barcode).catch((err: unknown) => {
-					console.error('Erreur recherche produit:', err);
+					console.error('Erreur recherche OpenFoodFacts:', err);
 					onError?.('Erreur lors de la recherche du produit');
 				});
 			} else if (scanError && !(scanError instanceof NotFoundException)) {
 				console.error('Erreur scan:', scanError);
+				// Les erreurs NotFoundException sont normales (pas de code-barre détecté)
 			}
 		},
 		[stopScanning, searchByBarcode, onError]
 	);
 
 	/**
-	 * Démarre le scanner de la façon la plus simple possible
+	 * Démarre le scanner
 	 */
 	const startScanner = useCallback(async (): Promise<void> => {
 		if (isInitializedRef.current) return;
 
 		try {
-			// Passer directement à l'interface de scan pour que la vidéo existe
-			setState('scanning');
+			setState('initializing');
 			setError(null);
 
 			// Petit délai pour que la vidéo soit rendue
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
-			// Créer le lecteur ZXing
+			// Créer le lecteur ZXing si nécessaire
 			if (!codeReaderRef.current) {
 				codeReaderRef.current = new BrowserMultiFormatReader();
 			}
@@ -108,37 +155,19 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			}
 
 			// Démarrer le scan avec auto-sélection de caméra
-			// null = ZXing choisit automatiquement la meilleure caméra
 			await codeReaderRef.current.decodeFromVideoDevice(
-				null, // Auto-sélection
+				null, // Auto-sélection de la meilleure caméra
 				videoRef.current,
 				handleScanResult
 			);
 
+			setState('scanning');
 			isInitializedRef.current = true;
 		} catch (err: unknown) {
 			console.error('Erreur démarrage scanner:', err);
-
-			const errorMessage =
-				err instanceof Error ? err.message : 'Erreur inconnue';
-
-			if (
-				errorMessage.includes('Permission denied') ||
-				errorMessage.includes('NotAllowedError')
-			) {
-				setError(
-					"Accès caméra refusé. Autorisez l'accès dans les paramètres du navigateur."
-				);
-			} else if (errorMessage.includes('NotFoundError')) {
-				setError('Aucune caméra trouvée sur cet appareil.');
-			} else {
-				setError(`Erreur du scanner: ${errorMessage}`);
-			}
-
-			setState('error');
-			isInitializedRef.current = false;
+			handleScannerError(err);
 		}
-	}, [handleScanResult]);
+	}, [handleScanResult, handleScannerError]);
 
 	/**
 	 * Passe en mode saisie manuelle
@@ -149,10 +178,11 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	}, [stopScanning]);
 
 	/**
-	 * Retourne au scan
+	 * Retourne au scan depuis la saisie manuelle
 	 */
 	const returnToScan = useCallback((): void => {
-		setState('idle');
+		setState('initializing');
+		setScannedBarcode(null);
 		setTimeout(() => {
 			startScanner();
 		}, 100);
@@ -164,27 +194,55 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	const retry = useCallback((): void => {
 		stopScanning();
 		setError(null);
-		setState('idle');
+		setScannedBarcode(null);
 		setTimeout(() => {
 			startScanner();
 		}, 500);
 	}, [stopScanning, startScanner]);
 
-	// Gestion des résultats de recherche
+	// Gestion des résultats de recherche OpenFoodFacts
 	useEffect(() => {
-		if (localProduct && data) {
-			onProductFound(localProduct);
+		if (state === 'searching') {
+			if (localProduct && data) {
+				console.log('Produit trouvé dans OpenFoodFacts:', localProduct);
+				onProductFound(localProduct);
+			} else if (
+				offError &&
+				offError.type === 'PRODUCT_NOT_FOUND' &&
+				scannedBarcode
+			) {
+				console.log(
+					'Produit non trouvé dans OpenFoodFacts:',
+					scannedBarcode
+				);
+				onProductNotFound(scannedBarcode);
+			} else if (offError && offError.type !== 'PRODUCT_NOT_FOUND') {
+				// Autres erreurs (réseau, etc.)
+				console.error('Erreur OpenFoodFacts:', offError);
+				onError?.(offError.message || 'Erreur lors de la recherche');
+				setState('error');
+				setError(offError.message || 'Erreur lors de la recherche');
+			}
 		}
-	}, [localProduct, data, onProductFound]);
+	}, [
+		state,
+		localProduct,
+		data,
+		offError,
+		scannedBarcode,
+		onProductFound,
+		onProductNotFound,
+		onError,
+	]);
 
-	// Auto-start
+	// Auto-start du scanner
 	useEffect(() => {
-		if (autoStart && state === 'idle') {
+		if (autoStart && state === 'initializing') {
 			startScanner();
 		}
 	}, [autoStart, state, startScanner]);
 
-	// Cleanup
+	// Cleanup à la destruction
 	useEffect(() => {
 		return () => {
 			stopScanning();
@@ -195,142 +253,161 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	 * Rendu du contenu selon l'état
 	 */
 	const renderContent = (): React.ReactNode => {
-		if (state === 'manual-input') {
-			return (
-				<CardContent className='p-6 space-y-4'>
-					<div className='text-center space-y-2'>
-						<Keyboard className='size-8 text-success-500 mx-auto' />
-						<h3 className='text-lg font-semibold text-neutral-300'>
-							Saisie manuelle
-						</h3>
-						<p className='text-sm text-neutral-200'>
-							Saisissez le code-barre manuellement
-						</p>
-					</div>
-
-					<ManualBarcodeInput
-						onProductFound={onProductFound}
-						onProductNotFound={onProductNotFound}
-						onError={onError}
-						className='mt-4'
-					/>
-
-					<Button
-						onClick={returnToScan}
-						variant='outline'
-						className='w-full border-success-500 text-success-500 hover:bg-success-50/10'>
-						Retour au scan
-					</Button>
-				</CardContent>
-			);
-		}
-
-		if (state === 'error') {
-			return (
-				<CardContent className='p-6 text-center space-y-4'>
-					<Alert
-						variant='warning'
-						className='border-error-50/20 bg-error-50/10'>
-						<AlertDescription className='flex flex-col items-center text-neutral-300'>
-							<AlertCircle className='size-5 text-error-500' />
-							<h3 className='text-lg font-semibold mb-2'>
-								Erreur du scanner
+		switch (state) {
+			case 'manual-input':
+				return (
+					<CardContent className='p-6 space-y-4'>
+						<div className='text-center space-y-2'>
+							<Keyboard className='size-8 text-accent mx-auto' />
+							<h3 className='text-lg font-semibold text-neutral-300'>
+								Saisie manuelle
 							</h3>
-							<p className='text-sm text-neutral-200 mb-4'>
-								{error}
+							<p className='text-sm text-neutral-200'>
+								Saisissez le code-barre manuellement
 							</p>
-						</AlertDescription>
-					</Alert>
-
-					<div className='space-y-2'>
-						<Button
-							onClick={retry}
-							className='w-full bg-success-50 text-neutral-50 hover:bg-success-500/90'>
-							Réessayer
-						</Button>
-						<Button
-							onClick={switchToManualInput}
-							variant='outline'
-							className='w-full border-success-500 text-success-500 hover:bg-success-50/10'>
-							Entrer manuellement le code-barre
-						</Button>
-					</div>
-				</CardContent>
-			);
-		}
-
-		if (loading) {
-			return (
-				<CardContent className='p-6 text-center space-y-4'>
-					<CheckCircle2 className='size-12 text-success-500 mx-auto' />
-					<div>
-						<h3 className='text-lg font-semibold text-neutral-300'>
-							Code-barre détecté !
-						</h3>
-						<p className='text-sm text-neutral-200'>
-							Recherche du produit en cours...
-						</p>
-					</div>
-					<div className='animate-pulse bg-neutral-100 h-2 rounded'></div>
-				</CardContent>
-			);
-		}
-
-		// Interface de scan
-		return (
-			<div className='relative size-full bg-neutral-950'>
-				{/* Vidéo */}
-				<video
-					ref={videoRef}
-					className='size-full object-cover'
-					playsInline
-					muted
-					autoPlay
-				/>
-
-				{/* Overlay guide */}
-				<div className='absolute inset-0 flex items-center justify-center'>
-					<div className='relative'>
-						{/* Zone de scan */}
-						<div className='size-64 border-2 border-neutral-50 rounded-lg relative'>
-							<div className='absolute -top-1 -left-1 size-8 border-t-6 border-l-6 border-neutral-300 rounded-tl-lg'></div>
-							<div className='absolute -top-1 -right-1 size-8 border-t-6 border-r-6 border-neutral-300 rounded-tr-lg'></div>
-							<div className='absolute -bottom-1 -left-1 size-8 border-b-6 border-l-6 border-neutral-300 rounded-bl-lg'></div>
-							<div className='absolute -bottom-1 -right-1 size-8 border-b-6 border-r-6 border-neutral-300 rounded-br-lg'></div>
-
-							{/* Ligne de scan animée */}
-							<div className='absolute inset-x-0 top-1/2 h-0.5 bg-red-500 animate-pulse'></div>
 						</div>
 
-						{/* Instructions */}
-						<p className='text-neutral-50 text-center mt-4 text-sm font-medium'>
-							Centrez le code-barre dans le cadre
-						</p>
+						<ManualBarcodeInput
+							onProductFound={onProductFound}
+							onProductNotFound={onProductNotFound}
+							onError={onError}
+							className='mt-4'
+						/>
+
+						<Button
+							onClick={returnToScan}
+							variant='outline'
+							className='w-full border-accent text-accent hover:bg-accent/10'>
+							<Camera className='size-4 mr-2' />
+							Retour au scan
+						</Button>
+					</CardContent>
+				);
+
+			case 'error':
+				return (
+					<CardContent className='p-6 text-center space-y-4'>
+						<Alert className='border-error-50/20 bg-error-50/10'>
+							<AlertDescription className='flex flex-col items-center text-neutral-300'>
+								<AlertCircle className='size-8 text-error-50 mb-3' />
+								<h3 className='text-lg font-semibold mb-2'>
+									Problème avec le scanner
+								</h3>
+								<p className='text-sm text-neutral-200 text-center'>
+									{error}
+								</p>
+							</AlertDescription>
+						</Alert>
+
+						<div className='space-y-2'>
+							<Button
+								onClick={retry}
+								className='w-full bg-accent text-neutral-50 hover:bg-accent/90'>
+								<Camera className='size-4 mr-2' />
+								Réessayer
+							</Button>
+							<Button
+								onClick={switchToManualInput}
+								variant='outline'
+								className='w-full border-accent text-accent hover:bg-accent/10'>
+								<Keyboard className='size-4 mr-2' />
+								Saisir manuellement
+							</Button>
+						</div>
+					</CardContent>
+				);
+
+			case 'searching':
+				return (
+					<div className='relative size-full bg-neutral-950 flex items-center justify-center'>
+						<div className='text-center space-y-4'>
+							<CheckCircle2 className='size-16 text-success-500 mx-auto animate-pulse' />
+							<div>
+								<h3 className='text-xl font-semibold text-neutral-50'>
+									Code-barre détecté !
+								</h3>
+								<p className='text-sm text-neutral-200 mt-2'>
+									Recherche du produit en cours...
+								</p>
+								{scannedBarcode && (
+									<p className='text-xs text-neutral-400 mt-2 font-mono'>
+										{scannedBarcode}
+									</p>
+								)}
+							</div>
+							<div className='w-32 h-1 bg-neutral-800 rounded-full mx-auto overflow-hidden'>
+								<div className='h-full bg-success-500 rounded-full animate-pulse'></div>
+							</div>
+						</div>
 					</div>
-				</div>
+				);
 
-				{/* Contrôles */}
-				<div className='absolute bottom-6 left-0 right-0 flex justify-center items-center space-x-4'>
-					{/* Saisie manuelle */}
-					<Button
-						onClick={switchToManualInput}
-						size='icon'
-						className='size-12 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'>
-						<Keyboard className='size-6' />
-					</Button>
-				</div>
+			case 'initializing':
+			case 'scanning':
+			default:
+				// Interface de scan principale
+				return (
+					<div className='relative size-full bg-neutral-950'>
+						{/* Vidéo */}
+						<video
+							ref={videoRef}
+							className='size-full object-cover'
+							playsInline
+							muted
+							autoPlay
+						/>
 
-				{/* Bouton fermer */}
-				{onClose && (
-					<Button
-						onClick={onClose}
-						size='icon'
-						className='absolute top-4 right-4 size-10 rounded-full bg-neutral-300/50 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-300/70'>
-						<X className='size-5' />
-					</Button>
-				)}
-			</div>
-		);
+						{/* Overlay guide de scan */}
+						<div className='absolute inset-0 flex items-center justify-center'>
+							<div className='relative'>
+								{/* Zone de scan */}
+								<div className='size-64 border-2 border-neutral-50 rounded-2xl relative'>
+									{/* Coins animés */}
+									<div className='absolute -top-1 -left-1 size-8 border-t-4 border-l-4 border-accent rounded-tl-2xl animate-pulse'></div>
+									<div className='absolute -top-1 -right-1 size-8 border-t-4 border-r-4 border-accent rounded-tr-2xl animate-pulse'></div>
+									<div className='absolute -bottom-1 -left-1 size-8 border-b-4 border-l-4 border-accent rounded-bl-2xl animate-pulse'></div>
+									<div className='absolute -bottom-1 -right-1 size-8 border-b-4 border-r-4 border-accent rounded-br-2xl animate-pulse'></div>
+
+									{/* Ligne de scan animée */}
+									<div className='absolute inset-x-0 top-1/2 h-0.5 bg-accent animate-pulse shadow-lg shadow-accent/50'></div>
+								</div>
+
+								{/* Instructions */}
+								<div className='text-center mt-6 space-y-2'>
+									<p className='text-neutral-50 text-lg font-medium'>
+										Centrez le code-barre dans le cadre
+									</p>
+									<p className='text-neutral-200 text-sm'>
+										{state === 'initializing'
+											? 'Initialisation...'
+											: 'Scan en cours...'}
+									</p>
+								</div>
+							</div>
+						</div>
+
+						{/* Contrôles en bas */}
+						<div className='absolute bottom-8 left-0 right-0 flex justify-center'>
+							<Button
+								onClick={switchToManualInput}
+								size='lg'
+								className='size-14 rounded-full bg-neutral-50/10 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-50/20 backdrop-blur-sm'>
+								<Keyboard className='size-6' />
+							</Button>
+						</div>
+
+						{/* Bouton fermer */}
+						{onClose && (
+							<Button
+								onClick={onClose}
+								size='icon'
+								className='absolute top-6 right-6 size-12 rounded-full bg-neutral-50/10 text-neutral-50 border border-neutral-200/30 hover:bg-neutral-50/20 backdrop-blur-sm'>
+								<X className='size-5' />
+							</Button>
+						)}
+					</div>
+				);
+		}
 	};
 
 	return (

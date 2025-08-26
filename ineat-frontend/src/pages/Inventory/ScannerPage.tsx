@@ -1,9 +1,8 @@
 import type { FC } from 'react';
 import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { BarcodeScanner } from '@/features/scan/BarcodeScanner';
+import { ProductScanFlow } from '@/features/scan/ProductScanFlow';
 import { useNavigationStore } from '@/stores/navigationStore';
-import type { Product } from '@/schemas/product';
 
 const ScannerPage: FC = () => {
 	const navigate = useNavigate();
@@ -18,45 +17,30 @@ const ScannerPage: FC = () => {
 		};
 	}, [hideNavigation, showNavigation]);
 
-	const handleProductFound = (localProduct: Partial<Product>) => {
-		// Naviguer vers la page d'ajout de produit avec les données pré-remplies
-		navigate({
-			to: '/app/inventory/add/manual',
-			search: {
-				productData: JSON.stringify(localProduct),
-			},
-		});
+	/**
+	 * Gestionnaire de succès : retourne à l'inventaire après ajout réussi
+	 */
+	const handleScanComplete = (): void => {
+		navigate({ to: '/app/inventory' });
 	};
 
-	const handleProductNotFound = (barcode: string) => {
-		// Naviguer vers la page d'ajout manuel avec le code-barre
-		navigate({
-			to: '/app/inventory/add/manual',
-			search: {
-				barcode,
-			},
-		});
-	};
-
-	const handleError = (error: string) => {
-		console.error('Erreur scanner:', error);
-		// Optionnel : afficher une notification d'erreur
-	};
-
-	const handleClose = () => {
-		// Retourner à la page précédente ou à la page d'ajout
+	/**
+	 * Gestionnaire d'annulation : retourne à la page de sélection des méthodes d'ajout
+	 */
+	const handleScanCancel = (): void => {
 		navigate({ to: '/app/inventory/add' });
 	};
 
+	// ❌ Supprimé : handleNavigateToManualCreation - plus utilisé car géré en interne
+
 	return (
 		<div className='fixed inset-0 bg-black z-50'>
-			<BarcodeScanner
-				onProductFound={handleProductFound}
-				onProductNotFound={handleProductNotFound}
-				onError={handleError}
-				onClose={handleClose}
-				autoStart={true}
-				className='size-full rounded-none'
+			<ProductScanFlow
+				onComplete={handleScanComplete}
+				onCancel={handleScanCancel}
+				// ❌ Supprimé : onNavigateToManualCreation - plus nécessaire
+				defaultStep='scan'
+				className='size-full'
 			/>
 		</div>
 	);
