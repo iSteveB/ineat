@@ -1,5 +1,3 @@
-'use client';
-
 import type React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
@@ -7,40 +5,13 @@ import {
 	type Result,
 	NotFoundException,
 } from '@zxing/library';
-import {
-	Keyboard,
-	AlertCircle,
-	CheckCircle2,
-	X,
-	Camera,
-	Flashlight,
-	FlashlightOff,
-} from 'lucide-react';
+import { Keyboard, AlertCircle, CheckCircle2, X, Camera } from 'lucide-react';
 import { ManualBarcodeInput } from './ManualBarcodeInput';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
 import type { Product } from '@/schemas/product';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-//Types personnalisés pour l'API Torch (non standard dans TypeScript)
-interface ExtendedMediaTrackSupportedConstraints
-	extends MediaTrackSupportedConstraints {
-	torch?: boolean;
-}
-
-interface ExtendedMediaTrackCapabilities extends MediaTrackCapabilities {
-	torch?: boolean;
-}
-
-interface ExtendedMediaTrackConstraintSet extends MediaTrackConstraintSet {
-	torch?: boolean;
-}
-
-interface ExtendedMediaTrackConstraints extends MediaTrackConstraints {
-	torch?: boolean;
-	advanced?: ExtendedMediaTrackConstraintSet[];
-}
 
 type ScannerState =
 	| 'initializing'
@@ -75,10 +46,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	const [error, setError] = useState<string | null>(null);
 	const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
 
-	const [isFlashOn, setIsFlashOn] = useState<boolean>(false);
-	const [isFlashSupported, setIsFlashSupported] = useState<boolean>(false);
-	const [isFlashLoading, setIsFlashLoading] = useState<boolean>(false);
-
 	const {
 		searchByBarcode,
 		localProduct,
@@ -87,95 +54,20 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	} = useOpenFoodFacts();
 
 	/**
-	 * Vérifie si le flash/torche est supporté
-	 */
-	const checkFlashSupport = useCallback((): void => {
-		try {
-			const constraints =
-				navigator.mediaDevices?.getSupportedConstraints() as ExtendedMediaTrackSupportedConstraints;
-			const torchSupported = constraints?.torch === true;
-			setIsFlashSupported(torchSupported);
-			console.log('Support flash/torche:', torchSupported);
-		} catch (error) {
-			console.log('Impossible de vérifier le support flash:', error);
-			setIsFlashSupported(false);
-		}
-	}, []);
-
-	/**
-	 * Contrôle du flash/torche
-	 */
-	const toggleFlash = useCallback(async (): Promise<void> => {
-		if (!isFlashSupported || !streamRef.current) return;
-
-		setIsFlashLoading(true);
-
-		try {
-			const track = streamRef.current.getVideoTracks()[0];
-			if (!track) {
-				throw new Error('Aucune piste vidéo disponible');
-			}
-
-			// Vérifier les capacités de la piste avec type safety
-			const capabilities =
-				track.getCapabilities() as ExtendedMediaTrackCapabilities;
-			if (!capabilities.torch) {
-				throw new Error('Flash non supporté par cette caméra');
-			}
-
-			// Appliquer la contrainte torche avec type safety
-			const constraints: ExtendedMediaTrackConstraints = {
-				advanced: [{ torch: !isFlashOn }],
-			};
-
-			await track.applyConstraints(constraints);
-
-			setIsFlashOn(!isFlashOn);
-			console.log('Flash', !isFlashOn ? 'activé' : 'désactivé');
-		} catch (err: unknown) {
-			console.error('Erreur contrôle flash:', err);
-			const message =
-				err instanceof Error ? err.message : 'Erreur inconnue';
-
-			// Ne pas afficher d'erreur pour les cas où le flash n'est simplement pas disponible
-			if (
-				!message.includes('not supported') &&
-				!message.includes('non supporté')
-			) {
-				onError?.(`Erreur flash: ${message}`);
-			}
-		} finally {
-			setIsFlashLoading(false);
-		}
-	}, [isFlashSupported, isFlashOn, onError]);
-
-	/**
 	 * Arrête le scanner proprement
 	 */
 	const stopScanning = useCallback((): void => {
 		try {
-			// Éteindre le flash avant d'arrêter
-			if (isFlashOn && streamRef.current) {
-				const track = streamRef.current.getVideoTracks()[0];
-				if (track) {
-					const constraints: ExtendedMediaTrackConstraints = {
-						advanced: [{ torch: false }],
-					};
-					track.applyConstraints(constraints).catch(console.error);
-				}
-			}
-
 			if (codeReaderRef.current) {
 				codeReaderRef.current.reset();
 			}
 
 			streamRef.current = null;
 			isInitializedRef.current = false;
-			setIsFlashOn(false);
 		} catch (err: unknown) {
 			console.error('Erreur arrêt scanner:', err);
 		}
-	}, [isFlashOn]);
+	}, []);
 
 	/**
 	 * Gère les erreurs du scanner
@@ -252,9 +144,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			setState('initializing');
 			setError(null);
 
-			// Vérifier le support du flash
-			checkFlashSupport();
-
 			// Petit délai pour que la vidéo soit rendue
 			await new Promise((resolve) => setTimeout(resolve, 100));
 
@@ -283,14 +172,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			);
 			streamRef.current = stream;
 
-			// Vérifier à nouveau le support du flash avec la vraie piste
-			const videoTrack = stream.getVideoTracks()[0];
-			if (videoTrack) {
-				const capabilities =
-					videoTrack.getCapabilities() as ExtendedMediaTrackCapabilities;
-				setIsFlashSupported(!!capabilities.torch);
-			}
-
 			// Démarrer le scan avec ZXing
 			await codeReaderRef.current.decodeFromStream(
 				stream,
@@ -304,7 +185,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			console.error('Erreur démarrage scanner:', err);
 			handleScannerError(err);
 		}
-	}, [handleScanResult, handleScannerError, checkFlashSupport]);
+	}, [handleScanResult, handleScannerError]);
 
 	/**
 	 * Passe en mode saisie manuelle
@@ -549,30 +430,6 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 						{/* Boutons de contrôle en dessous */}
 						<div className='flex flex-col gap-4'>
-							{/* Bouton flash */}
-							{isFlashSupported && (
-								<Button
-									onClick={toggleFlash}
-									disabled={isFlashLoading}
-									size='lg'
-									className={`h-14 px-6 rounded-xl shadow-lg transition-all ${
-										isFlashOn
-											? 'bg-warning-500 text-neutral-50 hover:bg-warning-600'
-											: 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-									}`}>
-									{isFlashLoading ? (
-										<div className='size-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2' />
-									) : isFlashOn ? (
-										<Flashlight className='size-5 mr-2' />
-									) : (
-										<FlashlightOff className='size-5 mr-2' />
-									)}
-									{isFlashOn
-										? 'Flash activé'
-										: 'Activer flash'}
-								</Button>
-							)}
-
 							{/* Bouton saisie manuelle */}
 							<Button
 								onClick={switchToManualInput}
