@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Search, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { OFF_UTILS, OFF_ERROR_MESSAGES } from '@/schemas/openfoodfact';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
@@ -114,13 +112,18 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	/**
 	 * Gère les résultats de la recherche - SUCCÈS
 	 */
-	React.useEffect(() => {
-		if (hasSearched && localProduct && data) {
-			onProductFound(localProduct);
-			setHasSearched(false);
-			setBarcode(''); // Réinitialiser le champ
-		}
-	}, [hasSearched, localProduct, data, onProductFound]);
+	useEffect(() => {
+	if (hasSearched && localProduct && data) {
+		const productWithBarcode: Partial<Product> = {
+			...localProduct,
+			barcode: barcode.trim(), // Le code-barre saisi prend la priorité
+		};
+	
+		onProductFound(productWithBarcode);
+		setHasSearched(false);
+		setBarcode(''); // Réinitialiser le champ
+	}
+}, [hasSearched, localProduct, data, onProductFound, barcode]);
 
 	/**
 	 * Gère les résultats de la recherche - ERREURS

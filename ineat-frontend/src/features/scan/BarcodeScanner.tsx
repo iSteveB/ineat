@@ -233,39 +233,39 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	}, [stopScanning]);
 
 	// Gestion des résultats de recherche OpenFoodFacts
-	useEffect(() => {
-		if (state === 'searching') {
-			if (localProduct && data) {
-				console.log('Produit trouvé dans OpenFoodFacts:', localProduct);
-				onProductFound(localProduct);
-			} else if (
-				offError &&
-				offError.type === 'PRODUCT_NOT_FOUND' &&
-				scannedBarcode
-			) {
-				console.log(
-					'Produit non trouvé dans OpenFoodFacts:',
-					scannedBarcode
-				);
-				onProductNotFound(scannedBarcode);
-			} else if (offError && offError.type !== 'PRODUCT_NOT_FOUND') {
-				// Autres erreurs (réseau, etc.)
-				console.error('Erreur OpenFoodFacts:', offError);
-				onError?.(offError.message || 'Erreur lors de la recherche');
-				setState('error');
-				setError(offError.message || 'Erreur lors de la recherche');
-			}
+useEffect(() => {
+	if (state === 'searching') {
+		if (localProduct && data && scannedBarcode) {
+			
+			const productWithBarcode: Partial<Product> = {
+				...localProduct,
+				barcode: scannedBarcode,
+			};
+			
+			onProductFound(productWithBarcode);
+		} else if (
+			offError &&
+			offError.type === 'PRODUCT_NOT_FOUND' &&
+			scannedBarcode
+		) {
+			onProductNotFound(scannedBarcode);
+		} else if (offError && offError.type !== 'PRODUCT_NOT_FOUND') {
+			// Autres erreurs (réseau, etc.)
+			onError?.(offError.message || 'Erreur lors de la recherche');
+			setState('error');
+			setError(offError.message || 'Erreur lors de la recherche');
 		}
-	}, [
-		state,
-		localProduct,
-		data,
-		offError,
-		scannedBarcode,
-		onProductFound,
-		onProductNotFound,
-		onError,
-	]);
+	}
+}, [
+	state,
+	localProduct,
+	data,
+	offError,
+	scannedBarcode,
+	onProductFound,
+	onProductNotFound,
+	onError,
+]);
 
 	/**
 	 * Rendu du contenu selon l'état

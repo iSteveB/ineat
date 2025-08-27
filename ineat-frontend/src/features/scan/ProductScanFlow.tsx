@@ -226,21 +226,20 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	 * Gestionnaire quand un produit est trouvé via scan/saisie dans OpenFoodFacts
 	 */
 	const handleProductFound = useCallback(
-		async (localProduct: Partial<Product>): Promise<void> => {
-			console.log('Produit trouvé dans OpenFoodFacts:', localProduct);
+	async (localProduct: Partial<Product>): Promise<void> => {
 
-			setFlowData({
-				offProductData: localProduct,
-				scannedBarcode: flowData.scannedBarcode, // Garder le code-barre scanné
-				isNewProduct: true, // Par défaut nouveau, sera vérifié
-			});
+		setFlowData({
+			offProductData: localProduct,
+			scannedBarcode: localProduct.barcode,
+			isNewProduct: true,
+		});
 
-			// Vérifier si existe en local
-			await checkIfProductExists(localProduct);
-			setCurrentStep('form');
-		},
-		[flowData.scannedBarcode, checkIfProductExists]
-	);
+		// Vérifier si existe en local
+		await checkIfProductExists(localProduct);
+		setCurrentStep('form');
+	},
+	[checkIfProductExists]
+);
 
 	/**
 	 * Gestionnaire quand un produit n'est pas trouvé dans OpenFoodFacts

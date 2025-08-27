@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-	ArrowLeft,
 	Package,
 	Save,
 	Calendar,
@@ -173,19 +172,6 @@ export const ExistingProductQuickAddForm: React.FC<
 
 	return (
 		<div className='space-y-6'>
-			{/* En-tête avec bouton retour */}
-			<div className='flex items-center space-x-4'>
-				<Button
-					type='button'
-					variant='ghost'
-					size='sm'
-					onClick={onCancel}
-					disabled={isSubmitting}
-					className='hover:bg-neutral-100'>
-					<ArrowLeft className='size-4 mr-1' />
-					Retour à la recherche
-				</Button>
-			</div>
 
 			{/* Carte du produit sélectionné */}
 			<Card className='p-4 bg-primary-50/50 border-primary-100'>

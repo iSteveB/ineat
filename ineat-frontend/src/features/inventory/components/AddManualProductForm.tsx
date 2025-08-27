@@ -69,12 +69,12 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	onCancel,
 	isSubmitting,
 	defaultProductName = '',
-	defaultBrand = '', // Marque par défaut
+	defaultBrand = '', 
 	defaultBarcode = '',
 }) => {
 	const [formData, setFormData] = useState<FormData>({
 		name: defaultProductName || '',
-		brand: defaultBrand || '', // Pré-remplir la marque
+		brand: defaultBrand || '',
 		barcode: defaultBarcode || '',
 		category: '',
 		quantity: '1', // Quantité par défaut
@@ -82,7 +82,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		purchaseDate: format(new Date(), 'yyyy-MM-dd'),
 		expiryDate: '',
 		purchasePrice: '',
-		storageLocation: 'placard', // Valeur par défaut
+		storageLocation: '',
 		notes: '',
 	});
 
@@ -93,13 +93,22 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 	// Mettre à jour les valeurs par défaut quand les props changent
 	useEffect(() => {
-		setFormData((prev) => ({
+	setFormData((prev) => {
+		const shouldUpdate = 
+			defaultProductName !== undefined || 
+			defaultBrand !== undefined || 
+			defaultBarcode !== undefined;
+
+		if (!shouldUpdate) return prev;
+
+		return {
 			...prev,
 			name: defaultProductName || prev.name,
-			brand: defaultBrand || prev.brand, // Mise à jour de la marque
+			brand: defaultBrand || prev.brand,
 			barcode: defaultBarcode || prev.barcode,
-		}));
-	}, [defaultProductName, defaultBrand, defaultBarcode]);
+		};
+	});
+}, [defaultProductName, defaultBrand, defaultBarcode]);
 
 	// Fonction de validation
 	const validateForm = (): boolean => {
@@ -302,7 +311,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting}
+								disabled={isSubmitting || Boolean(defaultProductName)}
 							/>
 							{errors.name && (
 								<p className='text-sm text-error-100'>
@@ -328,7 +337,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting}
+								disabled={isSubmitting || Boolean(formData.brand)}
 							/>
 						</div>
 
@@ -338,11 +347,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								htmlFor='barcode'
 								className='text-neutral-300'>
 								Code-barres
-								{defaultBarcode && (
-									<span className='text-xs text-success-500 ml-2'>
-										(pré-rempli depuis le scan)
-									</span>
-								)}
 							</Label>
 							<Input
 								id='barcode'
@@ -358,7 +362,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting}
+								disabled={isSubmitting || Boolean(defaultBarcode)}
 							/>
 							{errors.barcode && (
 								<p className='text-sm text-error-100'>
@@ -586,7 +590,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									<Euro className='size-3 text-neutral-300' />
 									Prix d'achat (€)
 									<span className='text-xs text-neutral-200 font-normal'>
-										(pour le budget)
+										(déduit du budget)
 									</span>
 								</Label>
 								<Input
@@ -614,10 +618,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										{errors.purchasePrice}
 									</p>
 								)}
-								<p className='text-xs text-neutral-200'>
-									Optionnel - nécessaire pour le suivi
-									budgétaire
-								</p>
 							</div>
 
 							{/* Lieu de stockage */}
@@ -658,7 +658,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						{/* Notes */}
 						<div className='space-y-2'>
 							<Label htmlFor='notes' className='text-neutral-300'>
-								Notes
+								Note
 							</Label>
 							<Textarea
 								id='notes'
@@ -666,7 +666,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								onChange={(e) =>
 									handleInputChange('notes', e.target.value)
 								}
-								placeholder='Ajoutez des notes sur ce produit...'
+								placeholder='Ajoutez une note sur ce produit...'
 								rows={3}
 								className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200'
 								disabled={isSubmitting}
