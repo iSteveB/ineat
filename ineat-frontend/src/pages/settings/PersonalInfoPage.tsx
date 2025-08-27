@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Link } from '@tanstack/react-router';
 import {
@@ -15,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ProfileType } from '@/schemas';
 import { useAuthStore } from '@/stores/authStore';
-import { ChevronLeft, User, Edit, Save, Loader2 } from 'lucide-react';
+import { ChevronLeft, User, Save, Loader2, Camera, Edit3 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -74,6 +72,10 @@ const PersonalInfoPage = () => {
 		}, 1000);
 	};
 
+	const handleAvatarClick = () => {
+		//TODO : Ouvrir le modal de modification de la photo de profil
+	};
+
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-neutral-50 to-info-50/30'>
 			{/* ===== HEADER ===== */}
@@ -107,15 +109,18 @@ const PersonalInfoPage = () => {
 				<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-neutral-50 to-neutral-100/50 shadow-xl'>
 					<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-success-50/20 to-primary-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 					<CardContent className='p-6 flex flex-col items-center justify-center gap-4'>
-						<div className='relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg'>
+						<div
+							className='relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-xl'
+							onClick={handleAvatarClick}>
+							{/* Photo de profil */}
 							{user?.avatarUrl ? (
 								<img
 									src={user.avatarUrl || '/placeholder.svg'}
 									alt='Photo de profil'
-									className='size-full object-cover'
+									className='size-full object-cover transition-all duration-300 group-hover:scale-110'
 								/>
 							) : (
-								<span className='text-4xl font-semibold text-neutral-50'>
+								<span className='text-4xl font-semibold text-neutral-50 transition-all duration-300 group-hover:scale-110'>
 									{user?.firstName && user?.lastName ? (
 										`${user?.firstName[0]}${user?.lastName[0]}`
 									) : (
@@ -123,19 +128,34 @@ const PersonalInfoPage = () => {
 									)}
 								</span>
 							)}
-							<Button
-								variant='ghost'
-								size='icon'
-								className='absolute bottom-0 right-0 size-8 rounded-full bg-neutral-50 border border-gray-200 shadow-md hover:bg-neutral-100'>
-								<Edit className='size-4 text-neutral-200' />
-							</Button>
+
+							{/* Overlay d'édition */}
+							<div className='absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center'>
+								<div className='bg-white/20 backdrop-blur-sm rounded-full p-2 transform scale-75 group-hover:scale-100 transition-all duration-300'>
+									<Camera className='size-5 text-white' />
+								</div>
+							</div>
 						</div>
-						<h2 className='text-xl font-bold text-neutral-300'>
-							{user?.firstName} {user?.lastName}
-						</h2>
-						<p className='text-sm text-neutral-200'>
-							{user?.email}
-						</p>
+
+						{/* Informations utilisateur */}
+						<div className='text-center'>
+							<h2 className='text-xl font-bold text-neutral-300'>
+								{user?.firstName} {user?.lastName}
+							</h2>
+							<p className='text-sm text-neutral-200'>
+								{user?.email}
+							</p>
+						</div>
+
+						{/* Bouton d'édition de profil */}
+						<Button
+							variant='ghost'
+							size='sm'
+							onClick={handleAvatarClick}
+							className='mt-2 text-success-50 hover:text-success-50/80 hover:bg-success-50/10 border border-success-50/20 hover:border-success-50/30 transition-all duration-200'>
+							<Edit3 className='size-4 mr-2' />
+							Modifier la photo
+						</Button>
 					</CardContent>
 				</Card>
 

@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Search, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { OFF_UTILS, OFF_ERROR_MESSAGES } from '@/schemas/openfoodfact';
 import { useOpenFoodFacts } from '@/hooks/useOpenFoodFacts';
@@ -114,13 +112,18 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	/**
 	 * Gère les résultats de la recherche - SUCCÈS
 	 */
-	React.useEffect(() => {
-		if (hasSearched && localProduct && data) {
-			onProductFound(localProduct);
-			setHasSearched(false);
-			setBarcode(''); // Réinitialiser le champ
-		}
-	}, [hasSearched, localProduct, data, onProductFound]);
+	useEffect(() => {
+	if (hasSearched && localProduct && data) {
+		const productWithBarcode: Partial<Product> = {
+			...localProduct,
+			barcode: barcode.trim(), // Le code-barre saisi prend la priorité
+		};
+	
+		onProductFound(productWithBarcode);
+		setHasSearched(false);
+		setBarcode(''); // Réinitialiser le champ
+	}
+}, [hasSearched, localProduct, data, onProductFound, barcode]);
 
 	/**
 	 * Gère les résultats de la recherche - ERREURS
@@ -160,13 +163,13 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	const getInputClasses = (): string => {
 		switch (inputState) {
 			case 'error':
-				return 'border-error-500 focus-visible:ring-error-500 text-error-900 placeholder:text-error-400';
+				return 'border-error-100 focus-visible:ring-error-100 text-error-100 placeholder:text-error-100';
 			case 'loading':
-				return 'border-primary-500 focus-visible:ring-primary-500';
+				return 'border-primary-150 focus-visible:ring-primary-150';
 			case 'success':
-				return 'border-success-500 focus-visible:ring-success-500';
+				return 'border-success-50 focus-visible:ring-success-50';
 			default:
-				return 'border-neutral-200 focus-visible:ring-primary-500';
+				return 'border-neutral-200 focus-visible:ring-primary-50';
 		}
 	};
 
@@ -177,12 +180,12 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 		switch (inputState) {
 			case 'loading':
 				return (
-					<Loader2 className='size-5 text-primary-500 animate-spin' />
+					<Loader2 className='size-5 text-neutral-100 animate-spin' />
 				);
 			case 'error':
-				return <AlertCircle className='size-5 text-error-500' />;
+				return <AlertCircle className='size-5 text-neutral-100' />;
 			case 'success':
-				return <CheckCircle2 className='size-5 text-success-500' />;
+				return <CheckCircle2 className='size-5 text-success-50' />;
 			default:
 				return <Search className='size-5 text-neutral-50' />;
 		}
@@ -216,7 +219,11 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 							!!validationError ||
 							barcode.trim().length === 0
 						}
-						className='absolute right-2 top-1/2 -translate-y-1/2 h-9 px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed'>
+						className={`absolute right-2 top-1/2 -translate-y-1/2 h-9 px-4 py-2 text-sm font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed text-neutral-50 ${
+							validationError
+								? 'bg-error-100 hover:bg-error-100 active:bg-error-100'
+								: 'bg-success-50'
+						}`}>
 						{loading ? 'Recherche...' : getIcon()}
 					</Button>
 				</div>
@@ -227,14 +234,6 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 						<AlertCircle className='size-4 flex-shrink-0' />
 						<span>{validationError}</span>
 					</div>
-				)}
-
-				{/* Message d'aide */}
-				{!validationError && !loading && (
-					<p className='text-sm text-neutral-500'>
-						Formats supportés : EAN-8 (8 chiffres), EAN-13 (13
-						chiffres), UPC-A (12 chiffres)
-					</p>
 				)}
 			</form>
 		</div>

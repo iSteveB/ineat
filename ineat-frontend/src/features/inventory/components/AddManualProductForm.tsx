@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { Euro, Loader2, PackagePlus } from 'lucide-react';
 import type { Category, AddInventoryItemData, UnitType } from '@/schemas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AddManualProductFormProps {
 	categories: Category[];
@@ -23,6 +24,7 @@ interface AddManualProductFormProps {
 	onCancel: () => void;
 	isSubmitting: boolean;
 	defaultProductName?: string;
+	defaultBrand?: string; // Marque par défaut
 	defaultBarcode?: string;
 }
 
@@ -67,14 +69,15 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	onCancel,
 	isSubmitting,
 	defaultProductName = '',
+	defaultBrand = '', 
 	defaultBarcode = '',
 }) => {
 	const [formData, setFormData] = useState<FormData>({
 		name: defaultProductName || '',
-		brand: '',
+		brand: defaultBrand || '',
 		barcode: defaultBarcode || '',
 		category: '',
-		quantity: '',
+		quantity: '1', // Quantité par défaut
 		unitType: 'UNIT',
 		purchaseDate: format(new Date(), 'yyyy-MM-dd'),
 		expiryDate: '',
@@ -90,12 +93,22 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 	// Mettre à jour les valeurs par défaut quand les props changent
 	useEffect(() => {
-		setFormData((prev) => ({
+	setFormData((prev) => {
+		const shouldUpdate = 
+			defaultProductName !== undefined || 
+			defaultBrand !== undefined || 
+			defaultBarcode !== undefined;
+
+		if (!shouldUpdate) return prev;
+
+		return {
 			...prev,
 			name: defaultProductName || prev.name,
+			brand: defaultBrand || prev.brand,
 			barcode: defaultBarcode || prev.barcode,
-		}));
-	}, [defaultProductName, defaultBarcode]);
+		};
+	});
+}, [defaultProductName, defaultBrand, defaultBarcode]);
 
 	// Fonction de validation
 	const validateForm = (): boolean => {
@@ -245,6 +258,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		}
 	};
 
+	// Déterminer si on affiche une alerte pour les données pré-remplies
+	const hasPrefilledData = defaultProductName || defaultBrand || defaultBarcode;
+
 	return (
 		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
 			<CardHeader>
@@ -256,6 +272,18 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
+				{/* Alerte pour les données pré-remplies */}
+				{hasPrefilledData && (
+					<Alert className='border-success-500/20 bg-success-50/10'>
+						<AlertDescription className='flex flex-col text-neutral-300'>
+							<strong>Données récupérées du scan :</strong>
+							{defaultProductName && <span> Nom: {defaultProductName}</span>}
+							{defaultBrand && <span> Marque: {defaultBrand}</span>}
+							{defaultBarcode && <span> Code-barre: {defaultBarcode}</span>}
+						</AlertDescription>
+					</Alert>
+				)}
+
 				<form onSubmit={handleSubmit} className='space-y-6'>
 					{/* Informations de base */}
 					<div className='space-y-4'>
@@ -278,8 +306,12 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								placeholder='Ex: Pommes Golden'
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
 									errors.name ? 'border-error-100' : ''
+								} ${
+									defaultProductName
+										? 'bg-success-50/5 border-success-500/20'
+										: ''
 								}`}
-								disabled={isSubmitting}
+								disabled={isSubmitting || Boolean(defaultProductName)}
 							/>
 							{errors.name && (
 								<p className='text-sm text-error-100'>
@@ -300,8 +332,12 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									handleInputChange('brand', e.target.value)
 								}
 								placeholder='Ex: Carrefour Bio'
-								className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200'
-								disabled={isSubmitting}
+								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+									defaultBrand
+										? 'bg-success-50/5 border-success-500/20'
+										: ''
+								}`}
+								disabled={isSubmitting || Boolean(formData.brand)}
 							/>
 						</div>
 
@@ -311,11 +347,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								htmlFor='barcode'
 								className='text-neutral-300'>
 								Code-barres
-								{defaultBarcode && (
-									<span className='text-xs text-success-500 ml-2'>
-										(pré-rempli depuis le scan)
-									</span>
-								)}
 							</Label>
 							<Input
 								id='barcode'
@@ -331,7 +362,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting}
+								disabled={isSubmitting || Boolean(defaultBarcode)}
 							/>
 							{errors.barcode && (
 								<p className='text-sm text-error-100'>
@@ -559,7 +590,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									<Euro className='size-3 text-neutral-300' />
 									Prix d'achat (€)
 									<span className='text-xs text-neutral-200 font-normal'>
-										(pour le budget)
+										(déduit du budget)
 									</span>
 								</Label>
 								<Input
@@ -587,10 +618,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										{errors.purchasePrice}
 									</p>
 								)}
-								<p className='text-xs text-neutral-200'>
-									Optionnel - nécessaire pour le suivi
-									budgétaire
-								</p>
 							</div>
 
 							{/* Lieu de stockage */}
@@ -631,7 +658,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						{/* Notes */}
 						<div className='space-y-2'>
 							<Label htmlFor='notes' className='text-neutral-300'>
-								Notes
+								Note
 							</Label>
 							<Textarea
 								id='notes'
@@ -639,7 +666,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								onChange={(e) =>
 									handleInputChange('notes', e.target.value)
 								}
-								placeholder='Ajoutez des notes sur ce produit...'
+								placeholder='Ajoutez une note sur ce produit...'
 								rows={3}
 								className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200'
 								disabled={isSubmitting}

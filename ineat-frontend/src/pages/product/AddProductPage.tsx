@@ -1,49 +1,31 @@
-import React, { useState } from 'react';
-import { Link, useRouter } from '@tanstack/react-router';
-import AddMethodCard from '@/components/common/AddMethodCard';
-import { ProductScanFlow } from '@/features/scan/ProductScanFlow';
+import React from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { Scan, Receipt, Car, ShoppingCart, ArrowLeft } from 'lucide-react';
+import AddMethodCard from '@/components/common/AddMethodCard';
 import { useAuthStore } from '@/stores/authStore';
-import { getInitials } from '@/utils/ui-utils';
 
 const AddProductPage: React.FC = () => {
-	const router = useRouter();
+	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
-	// État pour gérer l'ouverture du scanner
-	const [showScanner, setShowScanner] = useState<boolean>(false);
+	const isPremiumUser = user?.subscription === 'PREMIUM';
 
-	// TODO: Récupérer le statut premium de l'utilisateur depuis le store
-	const isPremiumUser = false;
-
-	const handleOpenScanner = () => {
-		setShowScanner(true);
-	};
-	const handleCloseScanner = () => {
-		setShowScanner(false);
+	/**
+	 * Utilitaire pour obtenir les initiales de l'utilisateur
+	 */
+	const getInitials = (firstName: string, lastName: string): string => {
+		return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
 	};
 
-	const handleScanComplete = () => {
-		setShowScanner(false);
-		router.navigate({ to: '/app/inventory' });
+	/**
+	 * Gestionnaire pour ouvrir le scanner (navigation vers route dédiée)
+	 */
+	const handleOpenScanner = (): void => {
+		navigate({ to: '/app/inventory/add/scan' });
 	};
 
-	// Interface du scanner en plein écran
-	if (showScanner) {
-		return (
-			<div className='fixed inset-0 z-50 bg-black'>
-				<ProductScanFlow
-					onComplete={handleScanComplete}
-					onCancel={handleCloseScanner}
-					className='size-full'
-				/>
-			</div>
-		);
-	}
-
-	// Interface normale de sélection de méthode
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
+		<div className='min-h-screen bg-neutral-50'>
 			{/* Header */}
 			<div className='bg-neutral-50 border-b border-gray-200 shadow-sm'>
 				<div className='max-w-md mx-auto px-4 py-4'>
@@ -58,9 +40,7 @@ const AddProductPage: React.FC = () => {
 							<div className='size-12 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-100/50 to-primary-100 shadow-lg'>
 								{user?.avatarUrl ? (
 									<img
-										src={
-											user.avatarUrl || '/placeholder.svg'
-										}
+										src={user.avatarUrl}
 										alt='Avatar utilisateur'
 										className='size-full object-cover'
 									/>
@@ -94,7 +74,7 @@ const AddProductPage: React.FC = () => {
 							icon={<Scan className='size-6 text-blue-600' />}
 							title='Scanner un code-barre'
 							description="Scanner directement le code-barre d'un produit avec recherche automatique OpenFoodFacts."
-							to={''} // Pas de 'to' car on gère le clic manuellement
+							to='' // Pas de 'to' car on gère le clic manuellement
 						/>
 					</div>
 

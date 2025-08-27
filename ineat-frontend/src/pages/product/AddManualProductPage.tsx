@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link, useSearch } from '@tanstack/react-router';
+import React, { useState } from 'react';
+import { useNavigate, Link } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Package, Plus, Search, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -25,9 +25,8 @@ type PageState = 'search' | 'quick-add' | 'manual-add';
 const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const searchParams = useSearch({ from: '/app/inventory/add/search' });
-	const defaultBarcode = searchParams.barcode?.toString() || '';
 
+	// États locaux simplifiés
 	const [pageState, setPageState] = useState<PageState>('search');
 	const [searchQuery, setSearchQuery] = useState<string>('');
 	const [searchResults, setSearchResults] = useState<ProductSearchResult[]>(
@@ -37,36 +36,33 @@ const AddManualProductPage: React.FC = () => {
 		useState<ProductSearchResult | null>(null);
 	const [isSearching, setIsSearching] = useState<boolean>(false);
 
+	// Récupération des catégories
 	const { data: categories = [] } = useQuery({
 		queryKey: ['categories'],
 		queryFn: inventoryService.getCategories,
 		staleTime: 1000 * 60 * 60, // 1 heure
 	});
 
-	// Effet pour gérer le paramètre barcode depuis l'URL
-	useEffect(() => {
-		if (defaultBarcode) {
-			// Si un code-barre est fourni, passer directement en mode création manuelle
-			// mais aussi pré-remplir la recherche au cas où l'utilisateur voudrait revenir en arrière
-			setSearchQuery(defaultBarcode);
-			setPageState('manual-add');
-		}
-	}, [defaultBarcode]);
-
 	// Fonction pour gérer le succès avec feedback budgétaire
 	const handleProductAddedSuccess = (
 		result: ProductAddedWithBudgetResult
-	) => {
+	): void => {
 		// Affichage de la notification selon le type
 		switch (result.type) {
 			case 'success':
 				toast.success(result.message);
 				break;
 			case 'info':
-				toast.info(result.message);
+				toast.info(result.message, {
+					description: result.budgetInfo.expenseCreated
+						? `Dépense ajoutée au budget`
+						: 'Prix non renseigné - aucune dépense créée',
+				});
 				break;
 			case 'warning':
-				toast.warning(result.message);
+				toast.warning(result.message, {
+					description: 'Attention à votre budget !',
+				});
 				break;
 		}
 
@@ -84,7 +80,10 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	// Fonction pour gérer les erreurs
-	const handleProductAddedError = (error: Error, productName?: string) => {
+	const handleProductAddedError = (
+		error: Error,
+		productName?: string
+	): void => {
 		toast.error(
 			error.message ||
 				`Erreur lors de l'ajout${
@@ -114,7 +113,7 @@ const AddManualProductPage: React.FC = () => {
 	});
 
 	// Gestion de la recherche
-	const handleSearch = async (query: string) => {
+	const handleSearch = async (query: string): Promise<void> => {
 		if (!query || query.length < 2) {
 			setSearchResults([]);
 			return;
@@ -126,7 +125,8 @@ const AddManualProductPage: React.FC = () => {
 		try {
 			const results = await inventoryService.searchProducts(query);
 			setSearchResults(results);
-		} catch {
+		} catch (error) {
+			console.error('Erreur lors de la recherche:', error);
 			toast.error('Erreur lors de la recherche');
 			setSearchResults([]);
 		} finally {
@@ -135,23 +135,28 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	// Gestion de la sélection d'un produit
-	const handleSelectProduct = (product: ProductSearchResult) => {
+	const handleSelectProduct = (product: ProductSearchResult): void => {
+		console.log('Produit sélectionné:', product);
 		setSelectedProduct(product);
 		setPageState('quick-add');
 	};
 
 	// Gestion de l'ajout rapide avec le bon type
-	const handleQuickAdd = async (data: QuickAddFormData) => {
+	const handleQuickAdd = async (data: QuickAddFormData): Promise<void> => {
+		console.log('Ajout rapide avec données:', data);
 		await quickAddMutation.mutateAsync(data);
 	};
 
 	// Gestion de l'ajout manuel
-	const handleManualAdd = async (data: AddInventoryItemData) => {
+	const handleManualAdd = async (
+		data: AddInventoryItemData
+	): Promise<void> => {
+		console.log('Ajout manuel avec données:', data);
 		await manualAddMutation.mutateAsync(data);
 	};
 
 	// Réinitialisation de la recherche
-	const handleClearSearch = () => {
+	const handleClearSearch = (): void => {
 		setSearchQuery('');
 		setSearchResults([]);
 		setSelectedProduct(null);
@@ -159,50 +164,25 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	// Passer au formulaire complet
-	const handleSwitchToManualAdd = () => {
+	const handleSwitchToManualAdd = (): void => {
 		setPageState('manual-add');
 	};
 
 	// Retour à la recherche
-	const handleBackToSearch = () => {
+	const handleBackToSearch = (): void => {
 		setSelectedProduct(null);
 		setPageState('search');
-
-		// Si on était arrivé avec un barcode, nettoyer l'URL
-		if (defaultBarcode) {
-			navigate({ to: '/app/inventory/add/search' });
-		}
-	};
-
-	/**
-	 * Détermine le titre de la page selon l'état et les paramètres
-	 */
-	const getPageTitle = (): string => {
-		if (defaultBarcode) {
-			return 'Créer un produit';
-		}
-		return 'Ajouter un produit';
-	};
-
-	/**
-	 * Détermine la description de la page selon l'état et les paramètres
-	 */
-	const getPageDescription = (): string => {
-		if (defaultBarcode) {
-			return `Code-barre scanné : ${defaultBarcode}`;
-		}
-		return 'Recherchez ou créez un nouveau produit';
 	};
 
 	return (
 		<div className='min-h-screen bg-neutral-50'>
 			{/* ===== HEADER ===== */}
 			<div className='relative overflow-hidden bg-neutral-50 border-b border-neutral-100 shadow-sm'>
-				<div className='absolute top-0 right-0 w-32 h-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+				<div className='absolute top-0 right-0 size-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center justify-between'>
 					<div className='flex items-center gap-4'>
-						<Link to='/app/inventory'>
+						<Link to='/app/inventory/add'>
 							<Button
 								variant='ghost'
 								size='sm'
@@ -212,10 +192,10 @@ const AddManualProductPage: React.FC = () => {
 						</Link>
 						<div>
 							<h1 className='text-2xl font-bold text-neutral-300'>
-								{getPageTitle()}
+								Ajouter un produit
 							</h1>
 							<p className='text-sm text-neutral-200'>
-								{getPageDescription()}
+								Recherchez ou créez un nouveau produit
 							</p>
 						</div>
 					</div>
@@ -237,7 +217,7 @@ const AddManualProductPage: React.FC = () => {
 
 			{/* Content */}
 			<div className='max-w-4xl mx-auto px-4 py-6 space-y-6'>
-				{/* Contenu principal selon l'état */}
+				{/* État de recherche */}
 				{pageState === 'search' && (
 					<div className='space-y-6'>
 						{/* Barre de recherche */}
@@ -333,7 +313,7 @@ const AddManualProductPage: React.FC = () => {
 					</div>
 				)}
 
-				{/* État ajout rapide avec le bon composant */}
+				{/* État ajout rapide avec produit existant */}
 				{pageState === 'quick-add' && selectedProduct && (
 					<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
 						<CardHeader>
@@ -362,8 +342,7 @@ const AddManualProductPage: React.FC = () => {
 						onSubmit={handleManualAdd}
 						onCancel={handleBackToSearch}
 						isSubmitting={manualAddMutation.isPending}
-						defaultProductName={defaultBarcode ? '' : searchQuery} 
-						defaultBarcode={defaultBarcode}
+						defaultProductName={searchQuery} // Utilise la recherche en cours
 					/>
 				)}
 			</div>

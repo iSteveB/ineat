@@ -1,9 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
+import ScannerPage from '@/pages/Inventory/ScannerPage'
 
 export const Route = createFileRoute('/app/inventory/add/scan')({
-  component: RouteComponent,
+  component: ScannerPage,
 })
-
-function RouteComponent() {
-  return <div>Hello "/app/inventory/add/scan"!</div>
-}

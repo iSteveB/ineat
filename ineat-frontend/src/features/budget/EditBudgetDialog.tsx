@@ -81,7 +81,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 			<DialogTrigger asChild>
 				<Button variant='secondary' size='sm'>
 					<Edit className='size-4 mr-1' />
-					Modifier le budget
+					Modifier
 				</Button>
 			</DialogTrigger>
 			<DialogContent className='sm:max-w-md'>
