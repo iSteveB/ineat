@@ -24,7 +24,6 @@ import {
 import {
 	Card,
 	CardContent,
-	CardHeader,
 	CardTitle,
 	CardDescription,
 } from '@/components/ui/card';
@@ -296,8 +295,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 	}, []);
 
 	/**
-	 * ✅ NOUVEAU : Création manuelle (produit non trouvé dans OFF)
-	 * Au lieu de naviguer, on passe en mode formulaire manuel en interne
+	 * Création manuelle (produit non trouvé dans OFF)
 	 */
 	const handleCreateManually = useCallback((): void => {
 		// Préparer les données du produit avec le code-barre scanné
@@ -333,38 +331,53 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 			case 'form':
 				return (
-					<Card className='w-full h-full overflow-y-auto'>
-						<CardHeader>
-							<Button
-								variant='ghost'
-								size='sm'
-								onClick={handleBackToScan}
-								className='absolute left-6 top-6 text-neutral-600 hover:bg-neutral-100'>
-								<ArrowLeft className='size-5' />
-							</Button>
-							<CardTitle className='text-xl font-semibold text-neutral-900 pt-12'>
-								{flowData.isNewProduct
-									? 'Nouveau produit'
-									: 'Produit existant'}
-							</CardTitle>
-							{flowData.offProductData && (
-								<CardDescription>
-									{flowData.offProductData.name}{' '}
-									{flowData.offProductData.brand &&
-										`• ${flowData.offProductData.brand}`}
-								</CardDescription>
-							)}
-						</CardHeader>
-						<CardContent>
+					<div className='min-h-screen bg-neutral-50'>
+						{/* Header */}
+						<div className='relative bg-neutral-50 border-b border-neutral-100 shadow-sm'>
+							<div className='absolute top-0 right-0 size-32 bg-primary-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+
+							<div className='relative px-6 py-4 flex items-center gap-4'>
+								<Button
+									variant='ghost'
+									size='sm'
+									onClick={handleBackToScan}
+									className='size-10 p-0 rounded-xl bg-neutral-50 border border-neutral-200 shadow-sm'>
+									<ArrowLeft className='size-5 text-neutral-600' />
+								</Button>
+								<div className='flex items-center gap-3'>
+									<div className='p-2 rounded-xl bg-primary-50/20 border border-success-50/50'>
+										<Package className='size-5 text-neutral-300' />
+									</div>
+									<div>
+										<h1 className='text-xl font-bold text-neutral-900'>
+											{flowData.isNewProduct
+												? 'Nouveau produit'
+												: 'Produit existant'}
+										</h1>
+										{flowData.offProductData && (
+											<p className='text-sm text-neutral-600'>
+												{flowData.offProductData.name}
+												{flowData.offProductData
+													.brand &&
+													` • ${flowData.offProductData.brand}`}
+											</p>
+										)}
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{/* Contenu principal */}
+						<div className='p-6'>
 							{/* Information sur le produit existant */}
 							{!flowData.isNewProduct &&
 								flowData.existingProduct && (
-									<Alert className='mb-6 border-info-200 bg-info-50 text-info-800'>
-										<Package className='size-5' />
-										<AlertTitle>
+									<Alert className='mb-6 border-primary-200 bg-primary-50'>
+										<Package className='size-5 text-primary-600' />
+										<AlertTitle className='text-primary-800'>
 											Produit déjà dans votre inventaire
 										</AlertTitle>
-										<AlertDescription>
+										<AlertDescription className='text-primary-700'>
 											Ce produit existe déjà. Vous pouvez
 											l'ajouter directement.
 										</AlertDescription>
@@ -374,51 +387,59 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 							{/* Information nouveau produit */}
 							{flowData.isNewProduct &&
 								flowData.offProductData?.name && (
-									<Alert className='mb-6 border-success-200 bg-success-50 text-success-800'>
-										<Plus className='size-5' />
-										<AlertTitle>Nouveau produit</AlertTitle>
-										<AlertDescription>
+									<Alert className='mb-6 border-neutral-150 bg-primary-50'>
+										<Plus className='size-5 text-neutral-150' />
+										<AlertTitle className='text-neutral-150'>
+											Nouveau produit scanné
+										</AlertTitle>
+										<AlertDescription className='text-success-700'>
 											{flowData.offProductData?.barcode
 												? 'Ce produit sera ajouté à votre inventaire avec ses informations.'
 												: "Vous pouvez l'ajouter directement."}
 										</AlertDescription>
 									</Alert>
 								)}
-
-							{/* Formulaire approprié */}
-							{flowData.isNewProduct ? (
-								<AddManualProductForm
-									categories={categories}
-									onSubmit={handleNewProductSubmit}
-									onCancel={handleBackToScan}
-									isSubmitting={
-										addManualProductMutation.isPending
-									}
-									defaultProductName={
-										flowData.offProductData?.name
-									}
-									defaultBrand={
-										flowData.offProductData?.brand
-									}
-									defaultBarcode={flowData.scannedBarcode}
-								/>
-							) : (
-								flowData.existingProduct && (
-									<ExistingProductQuickAddForm
-										product={flowData.existingProduct}
-										onSubmit={handleExistingProductSubmit}
-										onCancel={handleBackToScan}
-										isSubmitting={
-											addExistingProductMutation.isPending
-										}
-									/>
-								)
-							)}
-
+	
+									{/* Formulaire approprié */}
+									{flowData.isNewProduct ? (
+										<AddManualProductForm
+											categories={categories}
+											onSubmit={handleNewProductSubmit}
+											onCancel={handleBackToScan}
+											isSubmitting={
+												addManualProductMutation.isPending
+											}
+											defaultProductName={
+												flowData.offProductData?.name
+											}
+											defaultBrand={
+												flowData.offProductData?.brand
+											}
+											defaultBarcode={
+												flowData.scannedBarcode
+											}
+										/>
+									) : (
+										flowData.existingProduct && (
+											<ExistingProductQuickAddForm
+												product={
+													flowData.existingProduct
+												}
+												onSubmit={
+													handleExistingProductSubmit
+												}
+												onCancel={handleBackToScan}
+												isSubmitting={
+													addExistingProductMutation.isPending
+												}
+											/>
+										)
+									)}
+				
 							{/* Erreurs des mutations */}
 							{(addManualProductMutation.error ||
 								addExistingProductMutation.error) && (
-								<Alert variant='warning'>
+								<Alert variant='warning' className='mt-6'>
 									<AlertTriangle className='size-5' />
 									<AlertTitle>
 										Erreur lors de l'ajout
@@ -431,89 +452,138 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									</AlertDescription>
 								</Alert>
 							)}
-						</CardContent>
-					</Card>
+						</div>
+					</div>
 				);
 
 			case 'not-found':
 				return (
-					<Card className='w-full h-full flex flex-col items-center justify-center text-center p-6'>
-						<Button
-							variant='ghost'
-							size='icon'
-							onClick={handleBackToScan}
-							className='absolute left-6 top-6 text-neutral-600 hover:bg-neutral-100'>
-							<ArrowLeft className='size-5' />
-						</Button>
+					<div className='min-h-screen bg-neutral-50 flex flex-col'>
+						{/* Header avec bouton retour */}
+						<div className='relative bg-white border-b border-neutral-100 shadow-sm'>
+							<div className='absolute top-0 right-0 size-32 bg-warning-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
-						<div className='space-y-4 mb-6'>
-							<AlertTriangle className='size-16 text-warning-500 mx-auto' />
-							<div>
-								<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
-									Produit non trouvé
-								</CardTitle>
-								<CardDescription className='text-neutral-600 mb-4'>
-									Ce produit n'existe pas dans OpenFoodFacts.
-								</CardDescription>
-								{flowData.scannedBarcode && (
-									<p className='text-sm text-neutral-500 font-mono bg-neutral-100 px-3 py-1 rounded-md inline-block'>
-										Code-barre : {flowData.scannedBarcode}
-									</p>
-								)}
+							<div className='relative px-6 py-4 flex items-center gap-4'>
+								<Button
+									variant='ghost'
+									size='sm'
+									onClick={handleBackToScan}
+									className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 shadow-sm'>
+									<ArrowLeft className='size-5 text-neutral-600' />
+								</Button>
+								<div className='flex items-center gap-3'>
+									<div className='p-2 rounded-xl bg-warning-50/20 border border-warning-100/50'>
+										<AlertTriangle className='size-5 text-warning-600' />
+									</div>
+									<div>
+										<h1 className='text-xl font-bold text-neutral-900'>
+											Produit non trouvé
+										</h1>
+										<p className='text-sm text-neutral-600'>
+											Ce produit n'existe pas dans
+											OpenFoodFacts
+										</p>
+									</div>
+								</div>
 							</div>
 						</div>
 
-						<div className='space-y-3 w-full max-w-sm'>
-							<Button
-								onClick={handleCreateManually}
-								className='w-full'
-								size='lg'>
-								<Plus className='size-5 mr-2' />
-								<span>Créer ce produit manuellement</span>
-							</Button>
+						{/* Contenu centré */}
+						<div className='flex-1 flex items-center justify-center p-6'>
+							<Card className='w-full max-w-md border-0 bg-white shadow-xl rounded-2xl'>
+								<CardContent className='p-8 text-center space-y-6'>
+									<div className='space-y-4'>
+										<AlertTriangle className='size-20 text-warning-500 mx-auto' />
+										<div>
+											<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
+												Produit introuvable
+											</CardTitle>
+											<CardDescription className='text-neutral-600 mb-4'>
+												Ce produit n'existe pas dans la
+												base OpenFoodFacts.
+											</CardDescription>
+											{flowData.scannedBarcode && (
+												<div className='inline-flex items-center px-3 py-2 bg-neutral-100 rounded-lg'>
+													<span className='text-sm text-neutral-600 font-medium'>
+														Code-barre :
+													</span>
+													<span className='text-sm text-neutral-900 font-mono ml-2'>
+														{
+															flowData.scannedBarcode
+														}
+													</span>
+												</div>
+											)}
+										</div>
+									</div>
 
-							<Button
-								onClick={handleBackToScan}
-								variant='outline'
-								className='w-full'
-								size='lg'>
-								<Scan className='size-5 mr-2' />
-								<span>Scanner un autre produit</span>
-							</Button>
+									<div className='space-y-3'>
+										<Button
+											onClick={handleCreateManually}
+											className='w-full h-12 bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-300'
+											size='lg'>
+											<Plus className='size-5 mr-2' />
+											<span>
+												Créer ce produit manuellement
+											</span>
+										</Button>
 
-							<div className='pt-4 border-t border-neutral-200 mt-6'>
-								<p className='text-xs text-neutral-500 mb-2'>
-									Vous pouvez aider en ajoutant ce produit à
-									OpenFoodFacts
-								</p>
-								<a
-									href='https://fr.openfoodfacts.org/contribuer'
-									target='_blank'
-									rel='noopener noreferrer'
-									className='inline-flex items-center space-x-1 text-sm text-primary-600 hover:text-primary-800'>
-									<ExternalLink className='size-4' />
-									<span>Contribuer à OpenFoodFacts</span>
-								</a>
-							</div>
+										<Button
+											onClick={handleBackToScan}
+											variant='outline'
+											className='w-full h-12 border-neutral-200 text-neutral-700 hover:bg-neutral-50'
+											size='lg'>
+											<Scan className='size-5 mr-2' />
+											<span>
+												Scanner un autre produit
+											</span>
+										</Button>
+									</div>
+
+									<div className='pt-6 border-t border-neutral-100'>
+										<p className='text-xs text-neutral-500 mb-3'>
+											Vous pouvez aider en ajoutant ce
+											produit à OpenFoodFacts
+										</p>
+										<a
+											href='https://fr.openfoodfacts.org/contribuer'
+											target='_blank'
+											rel='noopener noreferrer'
+											className='inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 transition-colors'>
+											<ExternalLink className='size-4' />
+											<span>
+												Contribuer à OpenFoodFacts
+											</span>
+										</a>
+									</div>
+								</CardContent>
+							</Card>
 						</div>
-					</Card>
+					</div>
 				);
 
 			case 'success':
 				return (
-					<Card className='size-full flex flex-col items-center justify-center text-center p-6'>
-						<CheckCircle2 className='size-16 text-success-500 mx-auto mb-4' />
-						<div>
-							<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
-								Produit ajouté !
-							</CardTitle>
-							<CardDescription className='text-neutral-600'>
-								{flowData.offProductData?.name || 'Le produit'}{' '}
-								a été ajouté à votre inventaire.
-							</CardDescription>
-						</div>
-						<div className='animate-pulse bg-neutral-200 h-2 rounded w-1/2 mt-6'></div>
-					</Card>
+					<div className='min-h-screen bg-neutral-50 flex items-center justify-center p-6'>
+						<Card className='w-full max-w-md border-0 bg-white shadow-xl rounded-2xl'>
+							<CardContent className='p-8 text-center space-y-6'>
+								<CheckCircle2 className='size-20 text-success-500 mx-auto animate-pulse' />
+								<div>
+									<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
+										Produit ajouté avec succès !
+									</CardTitle>
+									<CardDescription className='text-neutral-600'>
+										{flowData.offProductData?.name ||
+											'Le produit'}{' '}
+										a été ajouté à votre inventaire.
+									</CardDescription>
+								</div>
+								<div className='w-32 h-2 bg-neutral-200 rounded-full mx-auto overflow-hidden'>
+									<div className='h-full bg-success-500 rounded-full animate-pulse'></div>
+								</div>
+							</CardContent>
+						</Card>
+					</div>
 				);
 
 			default:
@@ -521,10 +591,5 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 		}
 	};
 
-	return (
-		<div
-			className={`bg-neutral-50 rounded-2xl shadow-xl overflow-hidden ${className}`}>
-			{renderStep()}
-		</div>
-	);
+	return <div className={`${className}`}>{renderStep()}</div>;
 };

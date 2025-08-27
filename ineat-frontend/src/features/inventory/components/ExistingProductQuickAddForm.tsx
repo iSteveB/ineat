@@ -407,10 +407,11 @@ export const ExistingProductQuickAddForm: React.FC<
 				</div>
 
 				{/* Boutons d'action */}
-				<div className='flex justify-end space-x-3 pt-4'>
+				<div className='flex justify-center space-x-3 pt-4'>
 					<Button
 						type='button'
 						variant='outline'
+						className='text-error-100 border-error-100 hover:bg-error-100'
 						onClick={onCancel}
 						disabled={isSubmitting}>
 						Annuler
@@ -419,7 +420,7 @@ export const ExistingProductQuickAddForm: React.FC<
 						type='button'
 						onClick={handleSubmit}
 						disabled={isSubmitting}
-						className='bg-accent hover:bg-accent/90'>
+						className='bg-success-50 hover:bg-success-50/90'>
 						{isSubmitting ? (
 							<>
 								<Loader2 className='size-4 mr-2 animate-spin' />

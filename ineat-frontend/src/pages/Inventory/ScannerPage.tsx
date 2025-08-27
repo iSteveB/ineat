@@ -31,14 +31,11 @@ const ScannerPage: FC = () => {
 		navigate({ to: '/app/inventory/add' });
 	};
 
-	// ❌ Supprimé : handleNavigateToManualCreation - plus utilisé car géré en interne
-
 	return (
-		<div className='fixed inset-0 bg-black z-50'>
+		<div className='inset-0 bg-neutral-50 z-50'>
 			<ProductScanFlow
 				onComplete={handleScanComplete}
 				onCancel={handleScanCancel}
-				// ❌ Supprimé : onNavigateToManualCreation - plus nécessaire
 				defaultStep='scan'
 				className='size-full'
 			/>

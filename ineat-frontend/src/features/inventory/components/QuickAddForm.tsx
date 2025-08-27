@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
 	ArrowLeft,
 	Package,
@@ -109,29 +109,35 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		return formatDate(addDays(today, daysToAdd));
 	};
 
-	// Fonction pour trouver la meilleure catégorie correspondante
-	const findBestCategoryMatch = (productCategory: string): string => {
-		if (!categories.length) return '';
+	// ✅ Fonction mémorisée avec useCallback
+	const findBestCategoryMatch = useCallback(
+		(productCategory: string): string => {
+			if (!categories.length) return '';
 
-		// Chercher une correspondance exacte par nom
-		const exactMatch = categories.find(
-			(cat) => cat.name.toLowerCase() === productCategory.toLowerCase()
-		);
-		if (exactMatch) return exactMatch.slug;
+			// Chercher une correspondance exacte par nom
+			const exactMatch = categories.find(
+				(cat) =>
+					cat.name.toLowerCase() === productCategory.toLowerCase()
+			);
+			if (exactMatch) return exactMatch.slug;
 
-		// Chercher une correspondance partielle
-		const partialMatch = categories.find(
-			(cat) =>
-				cat.name
-					.toLowerCase()
-					.includes(productCategory.toLowerCase()) ||
-				productCategory.toLowerCase().includes(cat.name.toLowerCase())
-		);
-		if (partialMatch) return partialMatch.slug;
+			// Chercher une correspondance partielle
+			const partialMatch = categories.find(
+				(cat) =>
+					cat.name
+						.toLowerCase()
+						.includes(productCategory.toLowerCase()) ||
+					productCategory
+						.toLowerCase()
+						.includes(cat.name.toLowerCase())
+			);
+			if (partialMatch) return partialMatch.slug;
 
-		// Par défaut, retourner la première catégorie ou chaîne vide
-		return categories[0]?.slug || '';
-	};
+			// Par défaut, retourner la première catégorie ou chaîne vide
+			return categories[0]?.slug || '';
+		},
+		[categories]
+	); // ✅ Dépendance correcte
 
 	useEffect(() => {
 		// Pré-sélectionner une catégorie basée sur celle du produit
@@ -139,7 +145,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			const bestMatch = findBestCategoryMatch(product.category.name);
 			setCategory(bestMatch);
 		}
-	}, [categories, product.category?.name]);
+	}, [categories, product.category?.name, findBestCategoryMatch]); // ✅ Dépendance ajoutée
 
 	useEffect(() => {
 		// Suggérer une date de péremption basée sur la catégorie sélectionnée
@@ -188,7 +194,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 	};
 
 	// Soumission du formulaire
-	const handleSubmit = async () => {
+	const handleSubmit = async (): Promise<void> => {
 		if (!validate()) return;
 
 		const data: QuickAddFormDataWithCategory = {
@@ -211,7 +217,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		field: string,
 		value: string,
 		setter: (value: string) => void
-	) => {
+	): void => {
 		setter(value);
 		if (errors[field]) {
 			setErrors((prev) => {
@@ -516,6 +522,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					<Button
 						type='button'
 						variant='outline'
+						className='text-error-100 border-error-100'
 						onClick={onCancel}
 						disabled={isSubmitting}>
 						Annuler
@@ -524,7 +531,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						type='button'
 						onClick={handleSubmit}
 						disabled={isSubmitting}
-						className='bg-accent hover:bg-accent/90'>
+						className='bg-success-50 hover:bg-success-50/90'>
 						{isSubmitting ? (
 							<>
 								<Loader2 className='size-4 mr-2 animate-spin' />

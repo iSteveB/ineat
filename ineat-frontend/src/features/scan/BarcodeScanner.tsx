@@ -274,32 +274,37 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 		switch (state) {
 			case 'manual-input':
 				return (
-					<CardContent className='p-6 space-y-4'>
-						<div className='text-center space-y-2'>
-							<Keyboard className='size-8 text-success-500 mx-auto' />
-							<h3 className='text-lg font-semibold text-neutral-300'>
-								Saisie manuelle
-							</h3>
-							<p className='text-sm text-neutral-200'>
-								Saisissez le code-barre manuellement
-							</p>
-						</div>
+					<div className='min-h-screen flex items-center justify-center'>
+						<Card className='w-full max-w-lg border-0 bg-neutral-50 shadow-xl rounded-2xl'>
+							<CardContent className='p-8 text-center space-y-6'>
+								<div className='space-y-4'>
+									<Keyboard className='size-12 text-accent mx-auto' />
+									<div>
+										<h3 className='text-xl font-semibold text-neutral-900 mb-2'>
+											Saisie manuelle
+										</h3>
+										<p className='text-sm text-neutral-600'>
+											Saisissez le code-barre manuellement
+										</p>
+									</div>
+								</div>
 
-						<ManualBarcodeInput
-							onProductFound={onProductFound}
-							onProductNotFound={onProductNotFound}
-							onError={onError}
-							className='mt-4'
-						/>
+								<ManualBarcodeInput
+									onProductFound={onProductFound}
+									onProductNotFound={onProductNotFound}
+									onError={onError}
+								/>
 
-						<Button
-							onClick={returnToScan}
-							variant='outline'
-							className='w-full border-success-500 text-success-500 hover:bg-success-50/10'>
-							<Camera className='size-4 mr-2' />
-							Retour au scan
-						</Button>
-					</CardContent>
+								<Button
+									onClick={returnToScan}
+									variant='outline'
+									className='w-full border-neutral-200 text-neutral-700 hover:bg-error-100 hover:border-none'>
+									<Camera className='size-4 mr-2' />
+									Retour au scan
+								</Button>
+							</CardContent>
+						</Card>
+					</div>
 				);
 
 			case 'error':
@@ -373,15 +378,15 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			case 'initializing':
 			case 'scanning':
 			default:
-				// Interface de scan principale - NOUVEAU DESIGN
+				// Interface de scan principale
 				return (
-					<div className='min-h-screen bg-neutral-50 flex flex-col items-center justify-center p-6'>
+					<div className='min-h-screen relative bg-neutral-50 flex flex-col items-center justify-center p-6'>
 						{/* Bouton fermer en haut à droite */}
 						{onClose && (
 							<Button
 								onClick={onClose}
 								size='icon'
-								className='absolute top-6 right-6 size-12 rounded-full bg-neutral-100 text-neutral-600 hover:bg-neutral-200 shadow-lg'>
+								className='absolute top-6 right-6 size-12 rounded-full bg-neutral-100 text-neutral-300 hover:bg-error-100 hover:text-neutral-50 shadow-lg'>
 								<X className='size-5' />
 							</Button>
 						)}

@@ -24,7 +24,7 @@ interface AddManualProductFormProps {
 	onCancel: () => void;
 	isSubmitting: boolean;
 	defaultProductName?: string;
-	defaultBrand?: string; // NOUVEAU: Marque par défaut
+	defaultBrand?: string; // Marque par défaut
 	defaultBarcode?: string;
 }
 
@@ -69,12 +69,12 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	onCancel,
 	isSubmitting,
 	defaultProductName = '',
-	defaultBrand = '', // NOUVEAU: Marque par défaut
+	defaultBrand = '', // Marque par défaut
 	defaultBarcode = '',
 }) => {
 	const [formData, setFormData] = useState<FormData>({
 		name: defaultProductName || '',
-		brand: defaultBrand || '', // NOUVEAU: Pré-remplir la marque
+		brand: defaultBrand || '', // Pré-remplir la marque
 		barcode: defaultBarcode || '',
 		category: '',
 		quantity: '1', // Quantité par défaut
@@ -96,7 +96,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		setFormData((prev) => ({
 			...prev,
 			name: defaultProductName || prev.name,
-			brand: defaultBrand || prev.brand, // NOUVEAU: Mise à jour de la marque
+			brand: defaultBrand || prev.brand, // Mise à jour de la marque
 			barcode: defaultBarcode || prev.barcode,
 		}));
 	}, [defaultProductName, defaultBrand, defaultBarcode]);
@@ -249,7 +249,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		}
 	};
 
-	// NOUVEAU: Déterminer si on affiche une alerte pour les données pré-remplies
+	// Déterminer si on affiche une alerte pour les données pré-remplies
 	const hasPrefilledData = defaultProductName || defaultBrand || defaultBarcode;
 
 	return (
@@ -263,14 +263,14 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
-				{/* NOUVEAU: Alerte pour les données pré-remplies */}
+				{/* Alerte pour les données pré-remplies */}
 				{hasPrefilledData && (
 					<Alert className='border-success-500/20 bg-success-50/10'>
-						<AlertDescription className='text-neutral-300'>
+						<AlertDescription className='flex flex-col text-neutral-300'>
 							<strong>Données récupérées du scan :</strong>
 							{defaultProductName && <span> Nom: {defaultProductName}</span>}
-							{defaultBrand && <span>, Marque: {defaultBrand}</span>}
-							{defaultBarcode && <span>, Code-barre: {defaultBarcode}</span>}
+							{defaultBrand && <span> Marque: {defaultBrand}</span>}
+							{defaultBarcode && <span> Code-barre: {defaultBarcode}</span>}
 						</AlertDescription>
 					</Alert>
 				)}
