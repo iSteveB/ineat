@@ -294,7 +294,7 @@ const AddManualProductPage: React.FC = () => {
 												créer.
 											</p>
 										</div>
-										<div className='flex items-center space-x-4 text-sm text-neutral-200'>
+										<div className='flex flex-col items-center space-x-4 text-sm text-neutral-200'>
 											<span>ou</span>
 											<Button
 												variant='link'
