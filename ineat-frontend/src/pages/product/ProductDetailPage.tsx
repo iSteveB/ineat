@@ -15,7 +15,6 @@ import {
 	CheckCircle2,
 	Clock,
 	Heart,
-	Share2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -268,12 +267,6 @@ const ProductDetailPage: FC = () => {
 					</div>
 
 					<div className='flex items-center gap-2'>
-						<Button
-							variant='ghost'
-							size='sm'
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'>
-							<Share2 className='size-4' />
-						</Button>
 						<Button
 							variant='ghost'
 							size='sm'
