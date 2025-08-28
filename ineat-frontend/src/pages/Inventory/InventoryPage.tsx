@@ -337,81 +337,83 @@ const InventoryPage: React.FC = () => {
 			)}
 
 			{/* ===== LISTE DES PRODUITS ===== */}
-			<div className='flex-1 px-6 pb-28 overflow-auto'>
-				{isLoading ? (
-					// ===== ÉTAT DE CHARGEMENT =====
-					<div className='flex flex-col justify-center items-center h-64'>
-						<div className='relative'>
-							<div className='size-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600' />
-							<div className='absolute inset-0 size-16 border-4 border-transparent rounded-full animate-pulse border-t-blue-400' />
-						</div>
-						<div className='mt-6 text-center'>
-							<p className='text-gray-700 font-medium'>
-								Chargement de votre inventaire...
-							</p>
-							<p className='text-sm text-gray-500 mt-1'>
-								Analyse de vos produits en cours
-							</p>
-						</div>
-					</div>
-				) : sortedItems.length > 0 ? (
-					// ===== LISTE DES PRODUITS =====
-					<div
-						className={
-							viewMode === 'grid'
-								? 'grid gap-4 md:grid-cols-2'
-								: 'space-y-4'
-						}>
-						{sortedItems.map((item, index) => (
-							<div
-								key={item.id}
-								className='transform transition-all duration-300 hover:scale-[1.01]'
-								style={{
-									animationDelay: `${index * 50}ms`,
-								}}>
-								<ProductCard item={item} />
+			<div className='flex-1 pb-28 overflow-auto'>
+				<div className='px-4 sm:px-6'>
+					{isLoading ? (
+						// ===== ÉTAT DE CHARGEMENT =====
+						<div className='flex flex-col justify-center items-center h-64'>
+							<div className='relative'>
+								<div className='size-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600' />
+								<div className='absolute inset-0 size-16 border-4 border-transparent rounded-full animate-pulse border-t-blue-400' />
 							</div>
-						))}
-					</div>
-				) : (
-					// ===== ÉTAT VIDE  =====
-					<div className='flex flex-col items-center justify-center h-64 text-center pt-22'>
-						<div className='relative mb-8'>
-							<div className='size-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center'>
-								<Package className='size-10 text-gray-400' />
-							</div>
-							<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg'>
-								<Plus className='size-4 text-neutral-50' />
+							<div className='mt-6 text-center'>
+								<p className='text-gray-700 font-medium'>
+									Chargement de votre inventaire...
+								</p>
+								<p className='text-sm text-gray-500 mt-1'>
+									Analyse de vos produits en cours
+								</p>
 							</div>
 						</div>
-						<div className='space-y-3'>
-							<h3 className='text-xl font-bold text-gray-900'>
-								{hasActiveFilters
-									? 'Aucun produit trouvé'
-									: 'Votre inventaire est vide'}
-							</h3>
-							<p className='text-gray-600 max-w-md'>
-								{hasActiveFilters
-									? 'Aucun produit ne correspond à vos critères de recherche. Essayez de modifier vos filtres.'
-									: 'Commencez par ajouter des produits à votre inventaire pour mieux gérer vos stocks.'}
-							</p>
-							{hasActiveFilters ? (
-								<button
-									onClick={clearAllFilters}
-									className='mt-8 px-8 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors shadow-md hover:shadow-lg cursor-pointer'>
-									Effacer les filtres
-								</button>
-							) : (
-								<Link
-									to='/app/inventory/add'
-									className='inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-neutral-50 font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105'>
-									<Plus className='size-5' />
-									Ajouter un produit
-								</Link>
-							)}
+					) : sortedItems.length > 0 ? (
+						// ===== LISTE DES PRODUITS =====
+						<div
+							className={
+								viewMode === 'grid'
+									? 'grid gap-3 lg:gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
+									: 'space-y-3 lg:space-y-4'
+							}>
+							{sortedItems.map((item, index) => (
+								<div
+									key={item.id}
+									className='w-full overflow-hidden'
+									style={{
+										animationDelay: `${index * 50}ms`,
+									}}>
+									<ProductCard item={item} />
+								</div>
+							))}
 						</div>
-					</div>
-				)}
+					) : (
+						// ===== ÉTAT VIDE  =====
+						<div className='flex flex-col items-center justify-center h-64 text-center pt-22'>
+							<div className='relative mb-8'>
+								<div className='size-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center'>
+									<Package className='size-10 text-gray-400' />
+								</div>
+								<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg'>
+									<Plus className='size-4 text-neutral-50' />
+								</div>
+							</div>
+							<div className='space-y-3'>
+								<h3 className='text-xl font-bold text-gray-900'>
+									{hasActiveFilters
+										? 'Aucun produit trouvé'
+										: 'Votre inventaire est vide'}
+								</h3>
+								<p className='text-gray-600 max-w-md'>
+									{hasActiveFilters
+										? 'Aucun produit ne correspond à vos critères de recherche. Essayez de modifier vos filtres.'
+										: 'Commencez par ajouter des produits à votre inventaire pour mieux gérer vos stocks.'}
+								</p>
+								{hasActiveFilters ? (
+									<button
+										onClick={clearAllFilters}
+										className='mt-8 px-8 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors shadow-md hover:shadow-lg cursor-pointer'>
+										Effacer les filtres
+									</button>
+								) : (
+									<Link
+										to='/app/inventory/add'
+										className='inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-neutral-50 font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105'>
+										<Plus className='size-5' />
+										Ajouter un produit
+									</Link>
+								)}
+							</div>
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
