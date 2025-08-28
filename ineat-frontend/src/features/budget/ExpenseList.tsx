@@ -95,17 +95,17 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 									<TableHead className='text-gray-700'>
 										Date
 									</TableHead>
-									<TableHead className='text-gray-700'>
-										Source
+									<TableHead className='text-gray-700 w-48'>
+										Article
+									</TableHead>
+									<TableHead className='text-right text-gray-700'>
+										Prix
 									</TableHead>
 									<TableHead className='text-gray-700'>
 										Catégorie
 									</TableHead>
 									<TableHead className='text-gray-700'>
-										Article
-									</TableHead>
-									<TableHead className='text-right text-gray-700'>
-										Montant
+										Source
 									</TableHead>
 								</TableRow>
 							</TableHeader>
@@ -119,15 +119,9 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 												expense.date
 											).toLocaleDateString('fr-FR')}
 										</TableCell>
-										<TableCell className='py-3'>
-											{expense.source || 'Non spécifié'}
-										</TableCell>
-										<TableCell className='py-3'>
-											<span className='px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium'>
-												{expense.category || 'Autre'}
-											</span>
-										</TableCell>
-										<TableCell className='max-w-xs truncate py-3 text-gray-700'>
+										<TableCell
+											className='w-48 max-w-48 truncate py-3 text-gray-700'
+											title={expense.notes || '-'}>
 											{expense.notes || '-'}
 										</TableCell>
 										<TableCell className='text-right font-bold text-gray-900 py-3'>
@@ -136,6 +130,14 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 														expense.amount
 												  )
 												: '-'}
+										</TableCell>
+										<TableCell className='py-3'>
+											<span className='px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium'>
+												{expense.category || 'Autre'}
+											</span>
+										</TableCell>
+										<TableCell className='py-3'>
+											{expense.source || 'Non spécifié'}
 										</TableCell>
 									</TableRow>
 								))}
