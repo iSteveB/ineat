@@ -23,7 +23,7 @@ export const EcoScoreSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
 export type EcoScore = z.infer<typeof EcoScoreSchema>;
 
 // Nova score (degré de transformation des aliments)
-export const NovaScoreSchema = z.enum(['A', 'B', 'C', 'D']);
+export const NovaScoreSchema = z.enum(['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4']);
 export type NovaScore = z.infer<typeof NovaScoreSchema>;
 
 // Statut d'expiration

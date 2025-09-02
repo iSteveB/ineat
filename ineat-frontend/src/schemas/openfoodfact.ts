@@ -19,7 +19,6 @@ export const OFF_API_CONFIG = {
   TEST_TIMEOUT: 5000, // 5 secondes pour les tests
 } as const;
 
-// Champs par défaut à récupérer pour optimiser les requêtes
 export const OFF_DEFAULT_FIELDS = [
   // Noms et identifiants
   'product_name',
@@ -40,16 +39,34 @@ export const OFF_DEFAULT_FIELDS = [
   'quantity',
   'product_quantity',
   'product_quantity_unit',
+
+  // Ingredients
+  'ingredients_text',
+  'ingredients_text_fr',          // Ingrédients en français
+  'ingredients_text_en',          // Ingrédients en anglais
+  'ingredients_text_with_allergens',
+  'ingredients_text_with_allergens_fr',
+
+  // Allergènes
+  'allergens',                   // Allergènes
+  'allergens_tags',              
+  'traces',                      // Traces d'allergènes  
+  'traces_tags',
   
   // Scores et notes
   'nutrition_grades',
   'nutriscore_grade',
+  'nutriscore_data',             // Données détaillées Nutriscore
+  'nutrition_data_per',          // Données nutritionnelles par 100g
   'ecoscore_grade',
+  'ecoscore_score',               // Score numérique EcoScore
   'nova_group',
   
   // Images
   'selected_images',
   'image_front_url',
+  'image_front_small_url',        // Image petite taille
+  'image_front_thumb_url',        // Vignette
   
   // Métadonnées utiles
   'last_modified_t',

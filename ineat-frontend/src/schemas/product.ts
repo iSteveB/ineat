@@ -101,6 +101,7 @@ export const ProductSchema = z
 		novaScore: NovaScoreSchema.optional(),
 		imageUrl: z.string().url("URL d'image invalide").optional(),
 		externalId: z.string().optional(), // ID OpenFoodFacts
+		ingredients: z.string().optional(),
 		nutrients: NutritionalInfoSchema.optional(),
 	})
 	.merge(TimestampsSchema);
@@ -140,6 +141,7 @@ export const CreateProductSchema = z.object({
 	novaScore: NovaScoreSchema.optional(),
 	imageUrl: z.string().url("URL d'image invalide").optional(),
 	nutrients: NutritionalInfoSchema.optional(),
+	ingredients: z.string().optional(),
 });
 export type CreateProductData = z.infer<typeof CreateProductSchema>;
 
