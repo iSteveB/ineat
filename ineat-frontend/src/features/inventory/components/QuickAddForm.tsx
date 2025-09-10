@@ -21,10 +21,9 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
-import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
 import { useCategories } from '@/hooks/useCategories';
 import { ProductSearchResult } from '@/services/inventoryService';
+import ScoreBadge from '@/components/common/ScoreBadge';
 
 // NOUVEAU: Type spécifique pour le QuickAddForm avec category
 export interface QuickAddFormDataWithCategory {
@@ -275,10 +274,10 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					</div>
 					<div className='flex items-center space-x-2'>
 						{product.nutriscore && (
-							<NutriScoreBadge score={product.nutriscore} />
+							<ScoreBadge type='nutri' score={product.nutriscore} />
 						)}
 						{product.ecoScore && (
-							<EcoScoreBadge score={product.ecoScore} />
+							<ScoreBadge type='eco' score={product.ecoScore} />
 						)}
 					</div>
 				</div>

@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ProductSearchResult } from '@/services/inventoryService';
-import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
-import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
+import ScoreBadge from '@/components/common/ScoreBadge';
 
 interface ProductSearchResultsProps {
 	results: ProductSearchResult[];
@@ -118,13 +117,15 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 						{/* Scores nutritionnels */}
 						<div className='flex items-center space-x-2 flex-shrink-0'>
 							{product.nutriscore && (
-								<NutriScoreBadge
+								<ScoreBadge
+									type='nutri'
 									score={product.nutriscore}
 									size='sm'
 								/>
 							)}
 							{product.ecoScore && (
-								<EcoScoreBadge
+								<ScoreBadge
+									type='eco'
 									score={product.ecoScore}
 									size='sm'
 								/>

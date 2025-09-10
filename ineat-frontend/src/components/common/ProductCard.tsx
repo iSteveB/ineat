@@ -1,6 +1,6 @@
 import type React from 'react';
 import { Link } from '@tanstack/react-router';
-import type { InventoryItemWithStatus, NutriScore } from '@/schemas';
+import type { InventoryItemWithStatus } from '@/schemas';
 import { formatRelativeDate, formatQuantity } from '@/utils/ui-utils';
 import {
 	MapPin,
@@ -11,6 +11,7 @@ import {
 	Clock,
 	StickyNote,
 } from 'lucide-react';
+import ScoreBadge from './ScoreBadge';
 
 interface ProductCardProps {
 	item: InventoryItemWithStatus;
@@ -55,24 +56,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 					icon: <Clock className='size-4' />,
 					bar: 'bg-gray-500',
 				};
-		}
-	};
-
-	// Obtenir la classe CSS pour le Nutriscore
-	const getNutriscoreColors = (score: NutriScore) => {
-		switch (score) {
-			case 'A':
-				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
-			case 'B':
-				return 'bg-gradient-to-br from-lime-500 to-green-500 text-neutral-50';
-			case 'C':
-				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
-			case 'D':
-				return 'bg-gradient-to-br from-orange-500 to-red-500 text-neutral-50';
-			case 'E':
-				return 'bg-gradient-to-br from-red-500 to-red-600 text-neutral-50';
-			default:
-				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-neutral-50';
 		}
 	};
 
@@ -128,15 +111,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 									)}
 								</div>
 
-								{/* ===== NUTRISCORE ===== */}
-								{item.product.nutriscore && (
-									<div
-										className={`size-10 rounded-xl flex items-center justify-center font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 ${getNutriscoreColors(
-											item.product.nutriscore
-										)}`}>
-										{item.product.nutriscore}
-									</div>
-								)}
+								{/* ===== SCORES NUTRITIONNELS ===== */}
+								<div className='flex gap-2'>
+									{item.product.nutriscore && (
+										<ScoreBadge
+											type='nutri'
+											score={item.product.nutriscore}
+											size='md'
+										/>
+									)}
+									{item.product.ecoScore && (
+										<ScoreBadge
+											type='eco'
+											score={item.product.ecoScore}
+											size='md'
+										/>
+									)}
+									{item.product.novaScore && (
+										<ScoreBadge
+											type='nova'
+											score={item.product.novaScore}
+											size='md'
+										/>
+									)}
+								</div>
 							</div>
 
 							{/* ===== DATE D'EXPIRATION ===== */}

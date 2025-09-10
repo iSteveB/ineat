@@ -13,18 +13,23 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Euro, Loader2, PackagePlus } from 'lucide-react';
+import { Euro, Loader2, PackagePlus, Star, Leaf, Zap } from 'lucide-react';
 import type { Category, AddInventoryItemData, UnitType } from '@/schemas';
+import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 
 interface AddManualProductFormProps {
 	categories: Category[];
 	onSubmit: (data: AddInventoryItemData) => Promise<void>;
 	onCancel: () => void;
 	isSubmitting: boolean;
+	// NOUVEAU - Données enrichies d'OpenFoodFacts (optionnel)
+	enrichedProduct?: OpenFoodFactsMapping | null;
+	// Champs par défaut (pour compatibilité avec l'existant)
 	defaultProductName?: string;
-	defaultBrand?: string; // Marque par défaut
+	defaultBrand?: string;
 	defaultBarcode?: string;
 }
 
@@ -68,8 +73,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	onSubmit,
 	onCancel,
 	isSubmitting,
+	enrichedProduct,
 	defaultProductName = '',
-	defaultBrand = '', 
+	defaultBrand = '',
 	defaultBarcode = '',
 }) => {
 	const [formData, setFormData] = useState<FormData>({
@@ -77,7 +83,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		brand: defaultBrand || '',
 		barcode: defaultBarcode || '',
 		category: '',
-		quantity: '1', // Quantité par défaut
+		quantity: '1',
 		unitType: 'UNIT',
 		purchaseDate: format(new Date(), 'yyyy-MM-dd'),
 		expiryDate: '',
@@ -86,35 +92,85 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		notes: '',
 	});
 
-	// État pour les erreurs de validation
 	const [errors, setErrors] = useState<
 		Partial<Record<keyof FormData, string>>
 	>({});
 
-	// Mettre à jour les valeurs par défaut quand les props changent
+	// NOUVEAU - Pré-remplissage avec les données enrichies d'OpenFoodFacts
 	useEffect(() => {
-	setFormData((prev) => {
-		const shouldUpdate = 
-			defaultProductName !== undefined || 
-			defaultBrand !== undefined || 
-			defaultBarcode !== undefined;
+		if (enrichedProduct) {
+			console.log(
+				'Pré-remplissage avec données enrichies:',
+				enrichedProduct
+			);
 
-		if (!shouldUpdate) return prev;
+			// Extraire le nom principal depuis les métadonnées (pas encore implementé dans le mapping)
+			// Pour l'instant on utilise les valeurs par défaut
+			const productName = defaultProductName || '';
+			const productBrand = defaultBrand || '';
 
-		return {
-			...prev,
-			name: defaultProductName || prev.name,
-			brand: defaultBrand || prev.brand,
-			barcode: defaultBarcode || prev.barcode,
-		};
-	});
-}, [defaultProductName, defaultBrand, defaultBarcode]);
+			// Construire des notes automatiques basées sur les données enrichies
+			const autoNotes: string[] = [];
+
+			if (enrichedProduct.nutriscore) {
+				autoNotes.push(`Nutri-Score: ${enrichedProduct.nutriscore}`);
+			}
+
+			if (enrichedProduct.ecoScore) {
+				autoNotes.push(`Eco-Score: ${enrichedProduct.ecoScore}`);
+			}
+
+			if (enrichedProduct.novaScore) {
+				const novaLabels = {
+					GROUP_1: 'Aliments non transformés',
+					GROUP_2: 'Ingrédients culinaires transformés',
+					GROUP_3: 'Aliments transformés',
+					GROUP_4: 'Aliments ultra-transformés',
+				};
+				autoNotes.push(
+					`Nova: ${novaLabels[enrichedProduct.novaScore]}`
+				);
+			}
+
+			if (enrichedProduct.nutrients) {
+				autoNotes.push(`Données nutritionnelles disponibles`);
+			}
+
+			// Mise à jour du formulaire avec les données enrichies
+			setFormData((prev) => ({
+				...prev,
+				name: productName || prev.name,
+				brand: productBrand || prev.brand,
+				barcode: defaultBarcode || prev.barcode,
+				notes:
+					autoNotes.length > 0 ? autoNotes.join(' • ') : prev.notes,
+			}));
+		}
+	}, [enrichedProduct, defaultProductName, defaultBrand, defaultBarcode]);
+
+	// Mettre à jour les valeurs par défaut quand les props changent (comportement existant)
+	useEffect(() => {
+		setFormData((prev) => {
+			const shouldUpdate =
+				defaultProductName !== undefined ||
+				defaultBrand !== undefined ||
+				defaultBarcode !== undefined;
+
+			if (!shouldUpdate) return prev;
+
+			return {
+				...prev,
+				name: defaultProductName || prev.name,
+				brand: defaultBrand || prev.brand,
+				barcode: defaultBarcode || prev.barcode,
+			};
+		});
+	}, [defaultProductName, defaultBrand, defaultBarcode]);
 
 	// Fonction de validation
 	const validateForm = (): boolean => {
 		const newErrors: Partial<Record<keyof FormData, string>> = {};
 
-		// Validation des champs requis
 		if (!formData.name.trim()) {
 			newErrors.name = 'Le nom du produit est requis';
 		}
@@ -131,7 +187,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			newErrors.purchaseDate = "La date d'achat est requise";
 		}
 
-		// Validation optionnelle du code-barres
 		if (
 			formData.barcode.trim() &&
 			!/^\d{8,13}$/.test(formData.barcode.trim())
@@ -140,12 +195,10 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				'Le code-barres doit contenir entre 8 et 13 chiffres';
 		}
 
-		// Validation optionnelle du prix
 		if (formData.purchasePrice && parseFloat(formData.purchasePrice) < 0) {
 			newErrors.purchasePrice = 'Le prix ne peut pas être négatif';
 		}
 
-		// Validation des dates
 		if (formData.expiryDate && formData.purchaseDate) {
 			const purchaseDate = new Date(formData.purchaseDate);
 			const expiryDate = new Date(formData.expiryDate);
@@ -164,7 +217,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	const handleInputChange = (field: keyof FormData, value: string) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 
-		// Effacer l'erreur du champ modifié
 		if (errors[field]) {
 			setErrors((prev) => ({ ...prev, [field]: undefined }));
 		}
@@ -179,7 +231,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			return;
 		}
 
-		// Vérifier que la catégorie sélectionnée existe
 		const selectedCategory = categories.find(
 			(cat) => cat.slug === formData.category
 		);
@@ -188,7 +239,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			return;
 		}
 
-		// Configuration des règles pour les champs optionnels
 		const optionalFields: Array<{
 			key: keyof FormData;
 			condition: (value: string | undefined) => boolean;
@@ -207,7 +257,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			{
 				key: 'expiryDate',
 				condition: (value) => Boolean(value),
-				// pas de transform nécessaire pour expiryDate
 			},
 			{
 				key: 'purchasePrice',
@@ -226,7 +275,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			},
 		];
 
-		// Construire submitData avec reduce
 		const submitData = optionalFields.reduce(
 			(acc, field) => {
 				const value = formData[field.key];
@@ -241,7 +289,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				return acc;
 			},
 			{
-				// Champs obligatoires de base
 				name: formData.name.trim(),
 				category: formData.category,
 				quantity: parseFloat(formData.quantity),
@@ -253,13 +300,21 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		try {
 			await onSubmit(submitData);
 		} catch (error: unknown) {
-			// L'erreur est gérée par le composant parent
 			console.error('Erreur lors de la soumission:', error);
 		}
 	};
 
-	// Déterminer si on affiche une alerte pour les données pré-remplies
-	const hasPrefilledData = defaultProductName || defaultBrand || defaultBarcode;
+	// Déterminer si on affiche les données enrichies
+	const hasEnrichedData =
+		enrichedProduct &&
+		(enrichedProduct.nutriscore ||
+			enrichedProduct.ecoScore ||
+			enrichedProduct.novaScore ||
+			enrichedProduct.nutrients ||
+			enrichedProduct.ingredients);
+
+	const hasPrefilledData =
+		defaultProductName || defaultBrand || defaultBarcode;
 
 	return (
 		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
@@ -272,14 +327,71 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
-				{/* Alerte pour les données pré-remplies */}
-				{hasPrefilledData && (
+				{/* NOUVEAU - Alerte pour les données enrichies OpenFoodFacts */}
+				{hasEnrichedData && (
+					<Alert className='border-blue-500/20 bg-blue-50/10'>
+						<Star className='size-4 text-blue-500' />
+						<AlertDescription className='flex flex-col text-neutral-300'>
+							<strong>Données OpenFoodFacts détectées :</strong>
+							<div className='flex flex-wrap gap-2 mt-2'>
+								{enrichedProduct?.nutriscore && (
+									<Badge
+										variant='outline'
+										className='bg-green-50 text-green-700 border-green-200'>
+										<Zap className='size-3 mr-1' />
+										Nutri-Score:{' '}
+										{enrichedProduct.nutriscore}
+									</Badge>
+								)}
+								{enrichedProduct?.ecoScore && (
+									<Badge
+										variant='outline'
+										className='bg-emerald-50 text-emerald-700 border-emerald-200'>
+										<Leaf className='size-3 mr-1' />
+										Eco-Score: {enrichedProduct.ecoScore}
+									</Badge>
+								)}
+								{enrichedProduct?.nutrients && (
+									<Badge
+										variant='outline'
+										className='bg-orange-50 text-orange-700 border-orange-200'>
+										Nutrition disponible
+									</Badge>
+								)}
+								{enrichedProduct?.ingredients && (
+									<Badge
+										variant='outline'
+										className='bg-purple-50 text-purple-700 border-purple-200'>
+										Ingrédients disponibles
+									</Badge>
+								)}
+							</div>
+							<span className='text-xs text-neutral-200 mt-2'>
+								Qualité des données :{' '}
+								{Math.round(
+									(enrichedProduct?.quality.completeness ||
+										0) * 100
+								)}
+								%
+							</span>
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{/* Alerte pour les données pré-remplies (comportement existant) */}
+				{hasPrefilledData && !hasEnrichedData && (
 					<Alert className='border-success-500/20 bg-success-50/10'>
 						<AlertDescription className='flex flex-col text-neutral-300'>
 							<strong>Données récupérées du scan :</strong>
-							{defaultProductName && <span> Nom: {defaultProductName}</span>}
-							{defaultBrand && <span> Marque: {defaultBrand}</span>}
-							{defaultBarcode && <span> Code-barre: {defaultBarcode}</span>}
+							{defaultProductName && (
+								<span> Nom: {defaultProductName}</span>
+							)}
+							{defaultBrand && (
+								<span> Marque: {defaultBrand}</span>
+							)}
+							{defaultBarcode && (
+								<span> Code-barre: {defaultBarcode}</span>
+							)}
 						</AlertDescription>
 					</Alert>
 				)}
@@ -307,11 +419,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
 									errors.name ? 'border-error-100' : ''
 								} ${
-									defaultProductName
+									defaultProductName || hasEnrichedData
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting || Boolean(defaultProductName)}
+								disabled={isSubmitting}
 							/>
 							{errors.name && (
 								<p className='text-sm text-error-100'>
@@ -333,11 +445,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								}
 								placeholder='Ex: Carrefour Bio'
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-									defaultBrand
+									defaultBrand || hasEnrichedData
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting || Boolean(formData.brand)}
+								disabled={isSubmitting}
 							/>
 						</div>
 
@@ -358,11 +470,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
 									errors.barcode ? 'border-error-100' : ''
 								} ${
-									defaultBarcode
+									defaultBarcode || hasEnrichedData
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting || Boolean(defaultBarcode)}
+								disabled={isSubmitting}
 							/>
 							{errors.barcode && (
 								<p className='text-sm text-error-100'>
@@ -655,10 +767,16 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							</div>
 						</div>
 
-						{/* Notes */}
+						{/* Notes - Avec contenu enrichi automatique */}
 						<div className='space-y-2'>
 							<Label htmlFor='notes' className='text-neutral-300'>
 								Note
+								{hasEnrichedData && (
+									<span className='text-xs text-blue-500 ml-2'>
+										(pré-remplie avec les données
+										OpenFoodFacts)
+									</span>
+								)}
 							</Label>
 							<Textarea
 								id='notes'
@@ -668,7 +786,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								}
 								placeholder='Ajoutez une note sur ce produit...'
 								rows={3}
-								className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200'
+								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+									hasEnrichedData
+										? 'bg-blue-50/5 border-blue-500/20'
+										: ''
+								}`}
 								disabled={isSubmitting}
 							/>
 						</div>

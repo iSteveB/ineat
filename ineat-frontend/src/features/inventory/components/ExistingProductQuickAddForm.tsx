@@ -6,6 +6,10 @@ import {
 	MapPin,
 	Euro,
 	Loader2,
+	Star,
+	Leaf,
+	Zap,
+	Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,18 +23,22 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
-import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
 	ProductSearchResult,
 	QuickAddFormData,
 } from '@/services/inventoryService';
+import { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
+import ScoreBadge from '@/components/common/ScoreBadge';
 
 interface ExistingProductQuickAddFormProps {
 	product: ProductSearchResult;
 	onSubmit: (data: QuickAddFormData) => Promise<void>;
 	onCancel: () => void;
 	isSubmitting?: boolean;
+	// NOUVEAU - Données enrichies optionnelles depuis OpenFoodFacts
+	enrichedData?: OpenFoodFactsMapping | null;
 }
 
 // Lieux de stockage prédéfinis
@@ -43,7 +51,6 @@ const STORAGE_LOCATIONS = [
 	{ value: 'autre', label: 'Autre' },
 ];
 
-// Fonction pour formater une date au format yyyy-MM-dd
 const formatDate = (date: Date): string => {
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -51,7 +58,6 @@ const formatDate = (date: Date): string => {
 	return `${year}-${month}-${day}`;
 };
 
-// Fonction pour ajouter des jours à une date
 const addDays = (date: Date, days: number): Date => {
 	const result = new Date(date);
 	result.setDate(result.getDate() + days);
@@ -60,12 +66,11 @@ const addDays = (date: Date, days: number): Date => {
 
 /**
  * Composant pour ajouter rapidement un produit existant à l'inventaire
- * Utilisé dans AddManualProductPage quand un produit est sélectionné depuis la recherche
+ * Maintenant avec support des données enrichies OpenFoodFacts
  */
 export const ExistingProductQuickAddForm: React.FC<
 	ExistingProductQuickAddFormProps
-> = ({ product, onSubmit, onCancel, isSubmitting = false }) => {
-	// États du formulaire
+> = ({ product, onSubmit, onCancel, isSubmitting = false, enrichedData }) => {
 	const [quantity, setQuantity] = useState('1');
 	const [purchaseDate, setPurchaseDate] = useState(formatDate(new Date()));
 	const [expiryDate, setExpiryDate] = useState('');
@@ -77,7 +82,7 @@ export const ExistingProductQuickAddForm: React.FC<
 	// Fonction pour calculer une date de péremption par défaut selon la catégorie
 	const getSuggestedExpiryDate = (categorySlug: string): string => {
 		const today = new Date();
-		let daysToAdd = 7; // Par défaut, 1 semaine
+		let daysToAdd = 7;
 
 		if (categorySlug.includes('frais') || categorySlug.includes('viande')) {
 			daysToAdd = 3;
@@ -94,11 +99,73 @@ export const ExistingProductQuickAddForm: React.FC<
 	};
 
 	useEffect(() => {
-		// Suggérer une date de péremption basée sur la catégorie du produit
 		if (product.category?.slug) {
 			setExpiryDate(getSuggestedExpiryDate(product.category.slug));
 		}
 	}, [product]);
+
+	// NOUVEAU - Pré-remplir les notes avec les données enrichies
+	useEffect(() => {
+		if (enrichedData) {
+			console.log(
+				'Données enrichies disponibles pour le produit existant:',
+				{
+					nutriscore: enrichedData.nutriscore,
+					ecoScore: enrichedData.ecoScore,
+					novaScore: enrichedData.novaScore,
+					hasNutrients: !!enrichedData.nutrients,
+					hasIngredients: !!enrichedData.ingredients,
+					quality: Math.round(
+						enrichedData.quality.completeness * 100
+					),
+				}
+			);
+
+			const enrichedNotes = [];
+
+			if (enrichedData.nutriscore) {
+				enrichedNotes.push(`Nutri-Score: ${enrichedData.nutriscore}`);
+			}
+
+			if (enrichedData.ecoScore) {
+				enrichedNotes.push(`Eco-Score: ${enrichedData.ecoScore}`);
+			}
+
+			if (enrichedData.novaScore) {
+				const novaLabels = {
+					GROUP_1: 'Non transformé',
+					GROUP_2: 'Ingrédients transformés',
+					GROUP_3: 'Transformé',
+					GROUP_4: 'Ultra-transformé',
+				};
+				enrichedNotes.push(`${novaLabels[enrichedData.novaScore]}`);
+			}
+
+			if (enrichedData.nutrients) {
+				const nutrients = enrichedData.nutrients;
+				const nutritionInfo = [];
+
+				if (nutrients.energy)
+					nutritionInfo.push(`${nutrients.energy} kcal`);
+				if (nutrients.proteins)
+					nutritionInfo.push(`${nutrients.proteins}g protéines`);
+				if (nutrients.carbohydrates)
+					nutritionInfo.push(`${nutrients.carbohydrates}g glucides`);
+				if (nutrients.fats)
+					nutritionInfo.push(`${nutrients.fats}g lipides`);
+
+				if (nutritionInfo.length > 0) {
+					enrichedNotes.push(
+						`Nutrition: ${nutritionInfo.join(', ')}`
+					);
+				}
+			}
+
+			if (enrichedNotes.length > 0) {
+				setNotes(enrichedNotes.join(' • '));
+			}
+		}
+	}, [enrichedData]);
 
 	// Validation du formulaire
 	const validate = (): boolean => {
@@ -120,7 +187,6 @@ export const ExistingProductQuickAddForm: React.FC<
 			newErrors.purchasePrice = 'Le prix doit être un nombre positif';
 		}
 
-		// Validation des dates
 		if (expiryDate && purchaseDate) {
 			const purchaseDateObj = new Date(purchaseDate);
 			const expiryDateObj = new Date(expiryDate);
@@ -140,7 +206,7 @@ export const ExistingProductQuickAddForm: React.FC<
 		if (!validate()) return;
 
 		const data: QuickAddFormData = {
-			productId: product.id, // IMPORTANT: Inclure le productId
+			productId: product.id,
 			quantity: parseFloat(quantity),
 			purchaseDate,
 			expiryDate: expiryDate || undefined,
@@ -164,7 +230,7 @@ export const ExistingProductQuickAddForm: React.FC<
 		if (errors[field]) {
 			setErrors((prev) => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const { [field]: removed, ...rest } = prev;
+				const { [field]: _, ...rest } = prev;
 				return rest;
 			});
 		}
@@ -172,12 +238,18 @@ export const ExistingProductQuickAddForm: React.FC<
 
 	return (
 		<div className='space-y-6'>
-
-			{/* Carte du produit sélectionné */}
+			{/* Carte du produit sélectionné avec données enrichies */}
 			<Card className='p-4 bg-primary-50/50 border-primary-100'>
 				<div className='flex items-center space-x-4'>
 					<div className='size-16 rounded-lg overflow-hidden bg-neutral-50 flex-shrink-0'>
-						{product.imageUrl ? (
+						{/* Priorité à l'image enrichie d'OpenFoodFacts */}
+						{enrichedData?.imageUrl ? (
+							<img
+								src={enrichedData.imageUrl}
+								alt={product.name}
+								className='size-full object-cover'
+							/>
+						) : product.imageUrl ? (
 							<img
 								src={product.imageUrl}
 								alt={product.name}
@@ -203,14 +275,84 @@ export const ExistingProductQuickAddForm: React.FC<
 						</p>
 					</div>
 					<div className='flex items-center space-x-2'>
-						{product.nutriscore && (
-							<NutriScoreBadge score={product.nutriscore} />
+						{/* Utiliser les scores enrichis en priorité, sinon ceux du produit */}
+						{(enrichedData?.nutriscore || product.nutriscore) && (
+							<ScoreBadge
+								type='nutri'
+								score={
+									enrichedData?.nutriscore ||
+									product.nutriscore!
+								}
+							/>
 						)}
-						{product.ecoScore && (
-							<EcoScoreBadge score={product.ecoScore} />
+						{(enrichedData?.ecoScore || product.ecoScore) && (
+							<ScoreBadge
+								type='eco'
+								score={
+									enrichedData?.ecoScore || product.ecoScore!
+								}
+							/>
+						)}
+						{enrichedData?.novaScore && (
+							<Badge
+								variant='outline'
+								className='bg-purple-50 text-purple-700 border-purple-200'>
+								Nova{' '}
+								{enrichedData.novaScore.replace('GROUP_', '')}
+							</Badge>
 						)}
 					</div>
 				</div>
+
+				{/* NOUVEAU - Indicateur de données enrichies */}
+				{enrichedData && (
+					<div className='mt-4 pt-4 border-t border-primary-200'>
+						<Alert className='border-blue-500/20 bg-blue-50/10'>
+							<Star className='size-4 text-blue-500' />
+							<AlertDescription>
+								<div className='flex items-center justify-between'>
+									<span className='text-sm text-neutral-300'>
+										<strong>
+											Données OpenFoodFacts détectées
+										</strong>
+									</span>
+									<span className='text-xs text-neutral-200'>
+										{Math.round(
+											enrichedData.quality.completeness *
+												100
+										)}
+										% complet
+									</span>
+								</div>
+								<div className='flex flex-wrap gap-2 mt-2'>
+									{enrichedData.nutrients && (
+										<Badge
+											variant='outline'
+											className='bg-orange-50 text-orange-700 border-orange-200'>
+											<Zap className='size-3 mr-1' />
+											Nutrition
+										</Badge>
+									)}
+									{enrichedData.ingredients && (
+										<Badge
+											variant='outline'
+											className='bg-green-50 text-green-700 border-green-200'>
+											<Leaf className='size-3 mr-1' />
+											Ingrédients
+										</Badge>
+									)}
+									{enrichedData.quality.hasImage && (
+										<Badge
+											variant='outline'
+											className='bg-purple-50 text-purple-700 border-purple-200'>
+											Image HD
+										</Badge>
+									)}
+								</div>
+							</AlertDescription>
+						</Alert>
+					</div>
+				)}
 			</Card>
 
 			{/* Formulaire d'ajout rapide */}
@@ -379,17 +521,38 @@ export const ExistingProductQuickAddForm: React.FC<
 					</div>
 				</div>
 
-				{/* Notes */}
+				{/* Notes avec données enrichies pré-remplies */}
 				<div className='space-y-2'>
-					<Label htmlFor='notes'>Notes</Label>
+					<Label htmlFor='notes' className='flex items-center gap-2'>
+						Notes
+						{enrichedData && (
+							<>
+								<Info className='size-3 text-blue-500' />
+								<span className='text-xs text-blue-500'>
+									(pré-remplies avec OpenFoodFacts)
+								</span>
+							</>
+						)}
+					</Label>
 					<Textarea
 						id='notes'
-						rows={3}
+						rows={enrichedData ? 4 : 3}
 						placeholder='Informations complémentaires...'
 						value={notes}
 						onChange={(e) => setNotes(e.target.value)}
 						disabled={isSubmitting}
+						className={
+							enrichedData
+								? 'bg-blue-50/5 border-blue-500/20 focus:border-blue-500/50'
+								: ''
+						}
 					/>
+					{enrichedData && notes && (
+						<p className='text-xs text-neutral-200'>
+							Notes générées automatiquement depuis OpenFoodFacts
+							• Vous pouvez les modifier
+						</p>
+					)}
 				</div>
 
 				{/* Boutons d'action */}

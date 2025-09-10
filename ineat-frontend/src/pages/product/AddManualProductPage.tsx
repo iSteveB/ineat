@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Package, Plus, Search, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Package, Plus, Search, AlertCircle, ArrowLeft, Star } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,6 +19,7 @@ import {
 	type ProductAddedWithBudgetResult,
 } from '@/services/inventoryService';
 import type { AddInventoryItemData } from '@/schemas';
+import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 
 type PageState = 'search' | 'quick-add' | 'manual-add';
 
@@ -26,15 +27,16 @@ const AddManualProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	// États locaux simplifiés
+	// États locaux
 	const [pageState, setPageState] = useState<PageState>('search');
 	const [searchQuery, setSearchQuery] = useState<string>('');
-	const [searchResults, setSearchResults] = useState<ProductSearchResult[]>(
-		[]
-	);
-	const [selectedProduct, setSelectedProduct] =
-		useState<ProductSearchResult | null>(null);
+	const [searchResults, setSearchResults] = useState<ProductSearchResult[]>([]);
+	const [selectedProduct, setSelectedProduct] = useState<ProductSearchResult | null>(null);
 	const [isSearching, setIsSearching] = useState<boolean>(false);
+	
+	// NOUVEAU - État pour les données enrichies OpenFoodFacts
+	const [enrichedProductData, setEnrichedProductData] = useState<OpenFoodFactsMapping | null>(null);
+	const [scannedBarcode, setScannedBarcode] = useState<string>('');
 
 	// Récupération des catégories
 	const { data: categories = [] } = useQuery({
@@ -44,10 +46,7 @@ const AddManualProductPage: React.FC = () => {
 	});
 
 	// Fonction pour gérer le succès avec feedback budgétaire
-	const handleProductAddedSuccess = (
-		result: ProductAddedWithBudgetResult
-	): void => {
-		// Affichage de la notification selon le type
+	const handleProductAddedSuccess = (result: ProductAddedWithBudgetResult): void => {
 		switch (result.type) {
 			case 'success':
 				toast.success(result.message);
@@ -66,24 +65,17 @@ const AddManualProductPage: React.FC = () => {
 				break;
 		}
 
-		// Si une dépense a été créée, rafraîchir les données budget
 		if (result.shouldRefreshBudget) {
 			queryClient.invalidateQueries({ queryKey: ['budget', 'current'] });
 			queryClient.invalidateQueries({ queryKey: ['budget', 'stats'] });
 		}
 
-		// Invalider l'inventaire pour afficher le nouveau produit
 		queryClient.invalidateQueries({ queryKey: ['inventory'] });
-
-		// Redirection vers l'inventaire
 		navigate({ to: '/app/inventory' });
 	};
 
 	// Fonction pour gérer les erreurs
-	const handleProductAddedError = (
-		error: Error,
-		productName?: string
-	): void => {
+	const handleProductAddedError = (error: Error, productName?: string): void => {
 		toast.error(
 			error.message ||
 				`Erreur lors de l'ajout${
@@ -134,23 +126,25 @@ const AddManualProductPage: React.FC = () => {
 		}
 	};
 
-	// Gestion de la sélection d'un produit
+	// Gestion de la sélection d'un produit existant
 	const handleSelectProduct = (product: ProductSearchResult): void => {
 		console.log('Produit sélectionné:', product);
 		setSelectedProduct(product);
 		setPageState('quick-add');
+		
+		// NOUVEAU - Réinitialiser les données enrichies car ce n'est pas un scan
+		setEnrichedProductData(null);
+		setScannedBarcode('');
 	};
 
-	// Gestion de l'ajout rapide avec le bon type
+	// Gestion de l'ajout rapide
 	const handleQuickAdd = async (data: QuickAddFormData): Promise<void> => {
 		console.log('Ajout rapide avec données:', data);
 		await quickAddMutation.mutateAsync(data);
 	};
 
 	// Gestion de l'ajout manuel
-	const handleManualAdd = async (
-		data: AddInventoryItemData
-	): Promise<void> => {
+	const handleManualAdd = async (data: AddInventoryItemData): Promise<void> => {
 		console.log('Ajout manuel avec données:', data);
 		await manualAddMutation.mutateAsync(data);
 	};
@@ -160,23 +154,55 @@ const AddManualProductPage: React.FC = () => {
 		setSearchQuery('');
 		setSearchResults([]);
 		setSelectedProduct(null);
+		setEnrichedProductData(null);
+		setScannedBarcode('');
 		setPageState('search');
 	};
 
 	// Passer au formulaire complet
 	const handleSwitchToManualAdd = (): void => {
 		setPageState('manual-add');
+		// Garder les données enrichies et le code-barre s'ils existent
 	};
 
 	// Retour à la recherche
 	const handleBackToSearch = (): void => {
 		setSelectedProduct(null);
+		setEnrichedProductData(null);
+		setScannedBarcode('');
 		setPageState('search');
+	};
+
+	// NOUVEAU - Préparer les props pour le formulaire manuel
+	const getManualFormProps = () => {
+		const baseProps = {
+			categories,
+			onSubmit: handleManualAdd,
+			onCancel: handleBackToSearch,
+			isSubmitting: manualAddMutation.isPending,
+		};
+
+		// Si on a des données enrichies, les utiliser
+		if (enrichedProductData) {
+			return {
+				...baseProps,
+				enrichedProduct: enrichedProductData,
+				// Les noms seront extraits depuis enrichedProduct dans le composant
+				defaultBarcode: scannedBarcode,
+			};
+		}
+
+		// Sinon, utiliser les données de recherche basique
+		return {
+			...baseProps,
+			defaultProductName: searchQuery,
+			defaultBarcode: scannedBarcode,
+		};
 	};
 
 	return (
 		<div className='min-h-screen bg-neutral-50'>
-			{/* ===== HEADER ===== */}
+			{/* HEADER */}
 			<div className='relative overflow-hidden bg-neutral-50 border-b border-neutral-100 shadow-sm'>
 				<div className='absolute top-0 right-0 size-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
@@ -232,8 +258,7 @@ const AddManualProductPage: React.FC = () => {
 							</CardHeader>
 							<CardContent className='p-6 pt-0 space-y-3'>
 								<p className='text-sm text-neutral-200'>
-									Commencez par rechercher si le produit
-									existe déjà dans notre base de données
+									Commencez par rechercher si le produit existe déjà dans notre base de données
 								</p>
 								<ProductSearchBar
 									onSearch={handleSearch}
@@ -245,8 +270,7 @@ const AddManualProductPage: React.FC = () => {
 						</Card>
 
 						{/* Résultats de recherche */}
-						{(searchResults.length > 0 ||
-							(searchQuery && !isSearching)) && (
+						{(searchResults.length > 0 || (searchQuery && !isSearching)) && (
 							<ProductSearchResults
 								results={searchResults}
 								onSelectProduct={handleSelectProduct}
@@ -256,23 +280,20 @@ const AddManualProductPage: React.FC = () => {
 						)}
 
 						{/* Message si aucun résultat */}
-						{searchResults.length === 0 &&
-							searchQuery &&
-							!isSearching && (
-								<Alert className='border-warning-50/20 bg-warning-50/10 text-neutral-300'>
-									<AlertCircle className='size-4 text-warning-50' />
-									<AlertDescription>
-										Aucun produit trouvé pour "{searchQuery}
-										".{' '}
-										<Button
-											variant='link'
-											className='px-1 h-auto font-medium text-success-50 hover:text-success-50/90'
-											onClick={handleSwitchToManualAdd}>
-											Créer ce produit
-										</Button>
-									</AlertDescription>
-								</Alert>
-							)}
+						{searchResults.length === 0 && searchQuery && !isSearching && (
+							<Alert className='border-warning-50/20 bg-warning-50/10 text-neutral-300'>
+								<AlertCircle className='size-4 text-warning-50' />
+								<AlertDescription>
+									Aucun produit trouvé pour "{searchQuery}".{' '}
+									<Button
+										variant='link'
+										className='px-1 h-auto font-medium text-success-50 hover:text-success-50/90'
+										onClick={handleSwitchToManualAdd}>
+										Créer ce produit
+									</Button>
+								</AlertDescription>
+							</Alert>
+						)}
 
 						{/* Aide initiale */}
 						{!searchQuery && (
@@ -287,10 +308,8 @@ const AddManualProductPage: React.FC = () => {
 												Commencez par rechercher
 											</h3>
 											<p className='text-sm text-neutral-200 max-w-md mx-auto'>
-												Tapez le nom, la marque ou le
-												code-barres du produit que vous
-												souhaitez ajouter. Si le produit
-												n'existe pas, vous pourrez le
+												Tapez le nom, la marque ou le code-barres du produit que vous
+												souhaitez ajouter. Si le produit n'existe pas, vous pourrez le
 												créer.
 											</p>
 										</div>
@@ -299,11 +318,8 @@ const AddManualProductPage: React.FC = () => {
 											<Button
 												variant='link'
 												className='text-success-50 hover:text-success-50/90'
-												onClick={
-													handleSwitchToManualAdd
-												}>
-												Créer directement un nouveau
-												produit
+												onClick={handleSwitchToManualAdd}>
+												Créer directement un nouveau produit
 											</Button>
 										</div>
 									</div>
@@ -330,20 +346,35 @@ const AddManualProductPage: React.FC = () => {
 								onSubmit={handleQuickAdd}
 								onCancel={handleBackToSearch}
 								isSubmitting={quickAddMutation.isPending}
+								enrichedData={enrichedProductData} // Passer les données enrichies
 							/>
 						</CardContent>
 					</Card>
 				)}
 
-				{/* État ajout manuel */}
+				{/* État ajout manuel avec données enrichies possibles */}
 				{pageState === 'manual-add' && (
-					<AddManualProductForm
-						categories={categories}
-						onSubmit={handleManualAdd}
-						onCancel={handleBackToSearch}
-						isSubmitting={manualAddMutation.isPending}
-						defaultProductName={searchQuery} // Utilise la recherche en cours
-					/>
+					<>
+						{/* NOUVEAU - Alerte si des données enrichies sont disponibles */}
+						{enrichedProductData && (
+							<Alert className='border-blue-500/20 bg-blue-50/10'>
+								<Star className='size-4 text-blue-500' />
+								<AlertDescription>
+									<strong className='text-blue-600'>
+										Données OpenFoodFacts détectées !
+									</strong>
+									<br />
+									<span className='text-neutral-300'>
+										Le formulaire sera pré-rempli avec les informations nutritionnelles 
+										et environnementales disponibles 
+										({Math.round(enrichedProductData.quality.completeness * 100)}% complet).
+									</span>
+								</AlertDescription>
+							</Alert>
+						)}
+						
+						<AddManualProductForm {...getManualFormProps()} />
+					</>
 				)}
 			</div>
 		</div>
