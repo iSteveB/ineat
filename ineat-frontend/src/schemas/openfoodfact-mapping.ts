@@ -78,18 +78,18 @@ export interface DataQualityInfo {
  */
 export interface OpenFoodFactsMapping {
 	// Scores
-	nutriscore: NutriScore | null;
-	ecoScore: EcoScore | null;
-	novaScore: NovaScore | null;
+	nutriscore: NutriScore | undefined;
+	ecoScore: EcoScore | undefined;
+	novaScore: NovaScore | undefined;
 
 	// Données nutritionnelles structurées
-	nutrients: NutrientMapping | null;
+	nutrients: NutrientMapping | undefined;
 
 	// Média
-	imageUrl: string | null;
+	imageUrl: string | undefined;
 
 	// Contenu
-	ingredients: string | null;
+	ingredients: string | undefined;
 
 	// Informations qualité
 	quality: DataQualityInfo;

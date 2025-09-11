@@ -205,12 +205,12 @@ export class OpenFoodFactsService {
 		);
 
 		return {
-			nutriscore,
-			ecoScore,
-			novaScore,
-			nutrients,
-			imageUrl,
-			ingredients,
+			nutriscore: nutriscore || undefined,
+			ecoScore: ecoScore || undefined,
+			novaScore: novaScore || undefined,
+			nutrients: nutrients || undefined,
+			imageUrl: imageUrl || undefined,
+			ingredients: ingredients || undefined,
 			quality,
 			mappedAt: new Date(),
 			sourceLanguage: config.preferredLanguage,
