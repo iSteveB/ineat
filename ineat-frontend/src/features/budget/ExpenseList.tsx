@@ -47,7 +47,7 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 	}
 
 	return (
-		<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-blue-50/50 shadow-xl'>
+		<Card className='relative pb-16 overflow-hidden border-0 bg-gradient-to-br from-white to-blue-50/50 shadow-xl'>
 			<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-indigo-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 			<CardHeader className='relative z-10'>
