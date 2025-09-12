@@ -11,7 +11,7 @@ import {
 	CheckCircle2,
 	Clock,
 } from 'lucide-react';
-import ScoreBadge from './ScoreBadge';
+import ScoreBadge from '@/components/common/ScoreBadge';
 
 interface InventoryItemWithStatus extends InventoryItem {
 	expiryStatus: ExpiryStatus;

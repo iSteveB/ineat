@@ -11,7 +11,7 @@ import {
 	Clock,
 	StickyNote,
 } from 'lucide-react';
-import ScoreBadge from './ScoreBadge';
+import ScoreBadge from '../../components/common/ScoreBadge';
 
 interface ProductCardProps {
 	item: InventoryItemWithStatus;

@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import type { StorageLocationFilter } from '@/schemas';
-import ProductCard from '@/components/common/ProductCard';
+import ProductCard from '@/features/product/ProductCard';
 import CategoryFilter from '@/components/common/CategoryFilter';
 import {
 	useInventoryItems,

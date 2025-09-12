@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import ProductItem from '@/components/common/ProductItem';
+import ProductItem from '@/features/product/ProductItem';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { InventoryItem, ExpiryStatus } from '@/schemas';
 import { calculateExpiryStatus } from '@/utils/dateHelpers';
