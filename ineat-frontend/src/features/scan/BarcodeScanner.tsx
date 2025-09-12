@@ -80,7 +80,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 			) {
 				userFriendlyMessage =
 					"Accès caméra refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.";
-			} else if (errorMessage.includes('NotFoundError')) {
+			} else if (errorMessage.includes('Requested device not found')) {
 				userFriendlyMessage = 'Aucune caméra trouvée sur cet appareil.';
 			} else if (errorMessage.includes('NotSupportedError')) {
 				userFriendlyMessage =
