@@ -77,6 +77,12 @@ export interface DataQualityInfo {
  * Résultat complet du mapping OpenFoodFacts vers notre format
  */
 export interface OpenFoodFactsMapping {
+	// Informations de base
+	id: string;
+	name: string;
+	brand?: string;
+	barcode: string;
+
 	// Scores
 	nutriscore: NutriScore | undefined;
 	ecoScore: EcoScore | undefined;

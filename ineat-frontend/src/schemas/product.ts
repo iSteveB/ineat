@@ -6,10 +6,10 @@ import {
 	EcoScoreSchema,
 	NovaScoreSchema,
 	ShortTextSchema,
-  NutriScore,
-  EcoScore,
-  NovaScore,
-  UnitType,
+	NutriScore,
+	EcoScore,
+	NovaScore,
+	UnitType,
 } from './base';
 import {
 	TimestampsSchema,
@@ -72,6 +72,10 @@ export const NutritionalInfoSchema = z.object({
 	salt: z.coerce
 		.number()
 		.min(0, 'Le sel ne peut pas être négatif')
+		.optional(), // g pour 100g
+	sodium: z.coerce
+		.number()
+		.min(0, 'Le sodium ne peut pas être négatif')
 		.optional(), // g pour 100g
 	fiber: z.coerce
 		.number()

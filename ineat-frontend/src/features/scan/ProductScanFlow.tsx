@@ -13,6 +13,7 @@ import { BarcodeScanner } from './BarcodeScanner';
 import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
 import { ExistingProductQuickAddForm } from '@/features/inventory/components/ExistingProductQuickAddForm';
 import type { Product } from '@/schemas/product';
+import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import type { AddInventoryItemData } from '@/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -37,7 +38,7 @@ type FlowStep = 'scan' | 'form' | 'not-found' | 'success';
  */
 interface FlowData {
 	scannedBarcode?: string;
-	offProductData?: Partial<Product>; // Données depuis OpenFoodFacts
+	offProductData?: Partial<Product>; // Données converties depuis OpenFoodFacts
 	existingProduct?: ProductSearchResult; // Produit existant trouvé en local
 	isNewProduct: boolean; // true = nouveau, false = existant
 }
@@ -71,6 +72,40 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 		queryFn: inventoryService.getCategories,
 		staleTime: 1000 * 60 * 60, // 1 heure
 	});
+
+	/**
+	 * Convertit un OpenFoodFactsMapping vers Partial<Product>
+	 */
+	const convertOffProductToPartialProduct = useCallback(
+		(offProduct: OpenFoodFactsMapping): Partial<Product> => {
+			return {
+				name: offProduct.name,
+				brand: offProduct.brand || undefined,
+				barcode: offProduct.barcode,
+				imageUrl: offProduct.imageUrl || undefined,
+				ingredients: offProduct.ingredients || undefined,
+				nutrients: offProduct.nutrients
+					? {
+							energy: offProduct.nutrients.energy || undefined,
+							proteins:
+								offProduct.nutrients.proteins || undefined,
+							carbohydrates:
+								offProduct.nutrients.carbohydrates || undefined,
+							fats: offProduct.nutrients.fats || undefined,
+							fiber: offProduct.nutrients.fiber || undefined,
+							sodium: offProduct.nutrients.sodium || undefined,
+							sugars: offProduct.nutrients.sugars || undefined,
+							salt: offProduct.nutrients.salt || undefined,
+					  }
+					: undefined,
+				// Propriétés spécifiques OpenFoodFacts
+				nutriscore: offProduct.nutriscore || undefined,
+				ecoScore: offProduct.ecoScore || undefined,
+				novaScore: offProduct.novaScore || undefined,
+			};
+		},
+		[]
+	);
 
 	/**
 	 * Vérification si un produit existe déjà en local
@@ -224,22 +259,29 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 	/**
 	 * Gestionnaire quand un produit est trouvé via scan/saisie dans OpenFoodFacts
+	 * SIGNATURE CORRIGÉE : Accepte maintenant un OpenFoodFactsMapping
 	 */
 	const handleProductFound = useCallback(
-	async (localProduct: Partial<Product>): Promise<void> => {
+		async (offProduct: OpenFoodFactsMapping): Promise<void> => {
+			console.log('Produit OpenFoodFacts trouvé:', offProduct);
 
-		setFlowData({
-			offProductData: localProduct,
-			scannedBarcode: localProduct.barcode,
-			isNewProduct: true,
-		});
+			// Convertir les données OpenFoodFacts vers le format Product
+			const productData = convertOffProductToPartialProduct(offProduct);
 
-		// Vérifier si existe en local
-		await checkIfProductExists(localProduct);
-		setCurrentStep('form');
-	},
-	[checkIfProductExists]
-);
+			console.log('Données converties:', productData);
+
+			setFlowData({
+				offProductData: productData,
+				scannedBarcode: productData.barcode,
+				isNewProduct: true,
+			});
+
+			// Vérifier si existe en local
+			await checkIfProductExists(productData);
+			setCurrentStep('form');
+		},
+		[convertOffProductToPartialProduct, checkIfProductExists]
+	);
 
 	/**
 	 * Gestionnaire quand un produit n'est pas trouvé dans OpenFoodFacts
@@ -398,43 +440,37 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 										</AlertDescription>
 									</Alert>
 								)}
-	
-									{/* Formulaire approprié */}
-									{flowData.isNewProduct ? (
-										<AddManualProductForm
-											categories={categories}
-											onSubmit={handleNewProductSubmit}
-											onCancel={handleBackToScan}
-											isSubmitting={
-												addManualProductMutation.isPending
-											}
-											defaultProductName={
-												flowData.offProductData?.name
-											}
-											defaultBrand={
-												flowData.offProductData?.brand
-											}
-											defaultBarcode={
-												flowData.scannedBarcode
-											}
-										/>
-									) : (
-										flowData.existingProduct && (
-											<ExistingProductQuickAddForm
-												product={
-													flowData.existingProduct
-												}
-												onSubmit={
-													handleExistingProductSubmit
-												}
-												onCancel={handleBackToScan}
-												isSubmitting={
-													addExistingProductMutation.isPending
-												}
-											/>
-										)
-									)}
-				
+
+							{/* Formulaire approprié */}
+							{flowData.isNewProduct ? (
+								<AddManualProductForm
+									categories={categories}
+									onSubmit={handleNewProductSubmit}
+									onCancel={handleBackToScan}
+									isSubmitting={
+										addManualProductMutation.isPending
+									}
+									defaultProductName={
+										flowData.offProductData?.name
+									}
+									defaultBrand={
+										flowData.offProductData?.brand
+									}
+									defaultBarcode={flowData.scannedBarcode}
+								/>
+							) : (
+								flowData.existingProduct && (
+									<ExistingProductQuickAddForm
+										product={flowData.existingProduct}
+										onSubmit={handleExistingProductSubmit}
+										onCancel={handleBackToScan}
+										isSubmitting={
+											addExistingProductMutation.isPending
+										}
+									/>
+								)
+							)}
+
 							{/* Erreurs des mutations */}
 							{(addManualProductMutation.error ||
 								addExistingProductMutation.error) && (

@@ -37,7 +37,7 @@ export class OpenFoodFactsService {
 
 	constructor(config?: Partial<OffApiConfig>) {
 		this.config = {
-			baseUrl: config?.baseUrl || 'https://world.openfoodfacts.org',
+			baseUrl: config?.baseUrl || 'https://world.openfoodfacts.net',
 			userAgent:
 				config?.userAgent || 'MonInventaire/1.0 (contact@monapp.com)',
 			timeout: config?.timeout || 10000, // 10 secondes
@@ -159,14 +159,16 @@ export class OpenFoodFactsService {
 		}
 
 		// Mapping enrichi
-		return this.mapToEnrichedProduct(offProduct, options);
+		return this.mapToEnrichedProduct(offProduct, barcode, options);
 	}
 
 	/**
 	 * NOUVELLE MÉTHODE - Mappe un produit OpenFoodFacts vers notre format enrichi
+	 * CORRIGÉ: Inclut maintenant les propriétés de base (name, brand, barcode)
 	 */
 	mapToEnrichedProduct(
 		offProduct: OffProduct,
+		barcode: string,
 		options: Partial<MappingOptions> = {}
 	): OpenFoodFactsMapping {
 		const defaultOptions: MappingOptions = {
@@ -178,6 +180,18 @@ export class OpenFoodFactsService {
 		};
 
 		const config = { ...defaultOptions, ...options };
+
+		// CORRECTION: Mapping des propriétés de base
+		const name =
+			offProduct.product_name ||
+			offProduct.product_name_fr ||
+			offProduct.product_name_en ||
+			'Produit scanné';
+
+		const brand = offProduct.brands || undefined;
+
+		// Utiliser le code-barre fourni ou celui du produit
+		const productBarcode = offProduct.code || barcode;
 
 		// Mapping des scores
 		const nutriscore = this.mapNutriScore(offProduct.nutriscore_grade);
@@ -205,6 +219,13 @@ export class OpenFoodFactsService {
 		);
 
 		return {
+			// AJOUT: Propriétés de base manquantes
+			id: productBarcode,
+			name: name,
+			brand: brand,
+			barcode: productBarcode,
+
+			// Propriétés enrichies existantes
 			nutriscore: nutriscore || undefined,
 			ecoScore: ecoScore || undefined,
 			novaScore: novaScore || undefined,
@@ -234,7 +255,8 @@ export class OpenFoodFactsService {
 
 			// ENRICHISSEMENT - Nouveaux champs (uniquement si la migration Prisma est appliquée)
 			// Scores
-			nutriscore: this.mapNutriScore(offProduct.nutriscore_grade) || undefined,
+			nutriscore:
+				this.mapNutriScore(offProduct.nutriscore_grade) || undefined,
 			ecoScore: this.mapEcoScore(offProduct.ecoscore_grade) || undefined,
 			novaScore: this.mapNovaScore(offProduct.nova_group) || undefined,
 
@@ -468,7 +490,7 @@ export class OpenFoodFactsService {
 			if (frontImage && 'rev' in frontImage && 'imgid' in frontImage) {
 				const folderPath = this.buildImageFolderPath(offProduct.code);
 				const sizeStr = size === 'full' ? 'full' : size;
-				return `https://images.openfoodfacts.org/images/products/${folderPath}/front_${language}.${frontImage.rev}.${sizeStr}.jpg`;
+				return `https://images.openfoodfacts.net/images/products/${folderPath}/front_${language}.${frontImage.rev}.${sizeStr}.jpg`;
 			}
 		}
 
