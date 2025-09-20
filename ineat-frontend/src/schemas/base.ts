@@ -19,12 +19,17 @@ export const NutriScoreSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
 export type NutriScore = z.infer<typeof NutriScoreSchema>;
 
 // Eco-score (A = meilleur impact environnemental, E = pire)
-export const EcoScoreSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
-export type EcoScore = z.infer<typeof EcoScoreSchema>;
+export const EcoscoreSchema = z.enum(['A', 'B', 'C', 'D', 'E']);
+export type Ecoscore = z.infer<typeof EcoscoreSchema>;
 
 // Nova score (degré de transformation des aliments)
-export const NovaScoreSchema = z.enum(['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4']);
-export type NovaScore = z.infer<typeof NovaScoreSchema>;
+export const NovascoreSchema = z.enum([
+	'GROUP_1',
+	'GROUP_2',
+	'GROUP_3',
+	'GROUP_4',
+]);
+export type Novascore = z.infer<typeof NovascoreSchema>;
 
 // Statut d'expiration
 export const ExpiryStatusSchema = z.enum([
@@ -135,7 +140,7 @@ export const calculateExpiryStatus = (
 /**
  * Convertit un NutriScore en valeur numérique (A=5, B=4, C=3, D=2, E=1)
  */
-export const nutriScoreToNumber = (score: NutriScore): number => {
+export const nutriscoreToNumber = (score: NutriScore): number => {
 	const mapping = { A: 5, B: 4, C: 3, D: 2, E: 1 };
 	return mapping[score];
 };

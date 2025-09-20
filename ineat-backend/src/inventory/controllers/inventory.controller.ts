@@ -364,7 +364,7 @@ export class InventoryController {
               enum: ['A', 'B', 'C', 'D', 'E'],
               nullable: true,
             },
-            ecoScore: {
+            ecoscore: {
               type: 'string',
               enum: ['A', 'B', 'C', 'D', 'E'],
               nullable: true,
@@ -457,7 +457,7 @@ export class InventoryController {
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,
               },
-              ecoScore: {
+              ecoscore: {
                 type: 'string',
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,
@@ -636,7 +636,7 @@ export class InventoryController {
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,
               },
-              ecoScore: {
+              ecoscore: {
                 type: 'string',
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,

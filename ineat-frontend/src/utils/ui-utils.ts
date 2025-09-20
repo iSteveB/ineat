@@ -343,7 +343,7 @@ export const formatQuantity = (quantity: number, unit: string): string => {
 // Re-export des fonctions utiles des schémas Zod pour éviter les imports multiples
 export {
 	calculateExpiryStatus,
-	nutriScoreToNumber,
+	nutriscoreToNumber,
 	numberToNutriScore,
 } from '@/schemas';
 

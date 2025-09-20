@@ -478,9 +478,9 @@ function InventoryItemCard({
 										Nutriscore {item.product.nutriscore}
 									</span>
 								)}
-								{item.product.ecoScore && (
+								{item.product.ecoscore && (
 									<span className='text-xs px-2 py-1 bg-success-50 text-neutral-50 rounded'>
-										Eco {item.product.ecoScore}
+										Eco {item.product.ecoscore}
 									</span>
 								)}
 							</div>

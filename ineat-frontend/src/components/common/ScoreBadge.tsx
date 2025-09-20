@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { NutriScore, EcoScore, NovaScore } from '@/schemas';
+import { NutriScore, Ecoscore, Novascore } from '@/schemas';
 
 interface ScoreBadgeProps {
 	type: 'nutri' | 'eco' | 'nova';
@@ -36,7 +36,7 @@ const SCORE_COLORS = {
 		text: 'text-neutral-50',
 		border: 'border-[#DC0B13]',
 	},
-	// Mapping pour NovaScore
+	// Mapping pour Novascore
 	GROUP_1: {
 		bg: 'bg-[#2E7D32]', // Vert foncé
 		text: 'text-neutral-50',
@@ -248,16 +248,16 @@ export const NutriScoreBadge: React.FC<{
 	<ScoreBadge type='nutri' score={score} size={size} className={className} />
 );
 
-export const EcoScoreBadge: React.FC<{
-	score: EcoScore;
+export const EcoscoreBadge: React.FC<{
+	score: Ecoscore;
 	size?: 'sm' | 'md' | 'lg';
 	className?: string;
 }> = ({ score, size, className }) => (
 	<ScoreBadge type='eco' score={score} size={size} className={className} />
 );
 
-export const NovaScoreBadge: React.FC<{
-	score: NovaScore;
+export const NovascoreBadge: React.FC<{
+	score: Novascore;
 	size?: 'sm' | 'md' | 'lg';
 	className?: string;
 }> = ({ score, size, className }) => (

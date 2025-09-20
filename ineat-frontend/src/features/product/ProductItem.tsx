@@ -201,16 +201,15 @@ const ProductItem: FC<ProductItemProps> = ({
 												</div>
 											)}
 										{showEcoscore &&
-											item.product.ecoScore && (
+											item.product.ecoscore && (
 												<div className='transform hover:scale-110 transition-transform duration-200'>
 													<ScoreBadge
 														type='eco'
 														score={
 															item.product
-																.ecoScore
+																.ecoscore
 														}
 														size='sm'
-														
 													/>
 												</div>
 											)}
@@ -294,11 +293,11 @@ const ProductItem: FC<ProductItemProps> = ({
 												/>
 											</div>
 										)}
-									{showEcoscore && item.product.ecoScore && (
+									{showEcoscore && item.product.ecoscore && (
 										<div className='transform hover:scale-110 transition-transform duration-200'>
 											<ScoreBadge
 												type='eco'
-												score={item.product.ecoScore}
+												score={item.product.ecoscore}
 												size='md'
 											/>
 										</div>

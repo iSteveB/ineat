@@ -120,17 +120,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 											size='md'
 										/>
 									)}
-									{item.product.ecoScore && (
+									{item.product.ecoscore && (
 										<ScoreBadge
 											type='eco'
-											score={item.product.ecoScore}
+											score={item.product.ecoscore}
 											size='md'
 										/>
 									)}
-									{item.product.novaScore && (
+									{item.product.novascore && (
 										<ScoreBadge
 											type='nova'
-											score={item.product.novaScore}
+											score={item.product.novascore}
 											size='md'
 										/>
 									)}

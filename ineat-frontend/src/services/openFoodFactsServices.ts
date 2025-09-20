@@ -25,7 +25,7 @@ import {
 	MAPPING_ERROR_MESSAGES,
 } from '@/schemas/openfoodfact-mapping';
 
-import { NutriScore, EcoScore, NovaScore } from '@/schemas/base';
+import { NutriScore, Ecoscore, Novascore } from '@/schemas/base';
 import { Product } from '@/schemas/product';
 
 /**
@@ -195,8 +195,8 @@ export class OpenFoodFactsService {
 
 		// Mapping des scores
 		const nutriscore = this.mapNutriScore(offProduct.nutriscore_grade);
-		const ecoScore = this.mapEcoScore(offProduct.ecoscore_grade);
-		const novaScore = this.mapNovaScore(offProduct.nova_group);
+		const ecoscore = this.mapEcoscore(offProduct.ecoscore_grade);
+		const novascore = this.mapNovascore(offProduct.nova_group);
 
 		// Mapping des nutriments
 		const nutrients = this.mapNutrients(offProduct.nutriments);
@@ -227,8 +227,8 @@ export class OpenFoodFactsService {
 
 			// Propriétés enrichies existantes
 			nutriscore: nutriscore || undefined,
-			ecoScore: ecoScore || undefined,
-			novaScore: novaScore || undefined,
+			ecoscore: ecoscore || undefined,
+			novascore: novascore || undefined,
 			nutrients: nutrients || undefined,
 			imageUrl: imageUrl || undefined,
 			ingredients: ingredients || undefined,
@@ -257,8 +257,8 @@ export class OpenFoodFactsService {
 			// Scores
 			nutriscore:
 				this.mapNutriScore(offProduct.nutriscore_grade) || undefined,
-			ecoScore: this.mapEcoScore(offProduct.ecoscore_grade) || undefined,
-			novaScore: this.mapNovaScore(offProduct.nova_group) || undefined,
+			ecoscore: this.mapEcoscore(offProduct.ecoscore_grade) || undefined,
+			novascore: this.mapNovascore(offProduct.nova_group) || undefined,
 
 			// Données nutritionnelles (JSON)
 			nutrients: this.mapNutrients(offProduct.nutriments) || undefined,
@@ -290,7 +290,7 @@ export class OpenFoodFactsService {
 	/**
 	 * Mappe les scores Eco-Score d'OpenFoodFacts vers nos enums
 	 */
-	private mapEcoScore(grade?: string): EcoScore | null {
+	private mapEcoscore(grade?: string): Ecoscore | null {
 		if (!grade) return null;
 
 		const normalized =
@@ -301,7 +301,7 @@ export class OpenFoodFactsService {
 	/**
 	 * Mappe les groupes Nova d'OpenFoodFacts vers nos enums
 	 */
-	private mapNovaScore(group?: number): NovaScore | null {
+	private mapNovascore(group?: number): Novascore | null {
 		if (!group || group < 1 || group > 4) return null;
 		return (
 			NOVA_SCORE_MAPPING[group as keyof typeof NOVA_SCORE_MAPPING] || null

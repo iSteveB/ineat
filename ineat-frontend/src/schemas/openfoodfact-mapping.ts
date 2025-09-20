@@ -3,7 +3,7 @@
  * Phase 2.2 - Création des types de transformation
  */
 
-import { NutriScore, EcoScore, NovaScore } from './base';
+import { NutriScore, Ecoscore, Novascore } from './base';
 
 // ===== TYPES POUR LES NUTRIMENTS =====
 
@@ -85,8 +85,8 @@ export interface OpenFoodFactsMapping {
 
 	// Scores
 	nutriscore: NutriScore | undefined;
-	ecoScore: EcoScore | undefined;
-	novaScore: NovaScore | undefined;
+	ecoscore: Ecoscore | undefined;
+	novascore: Novascore | undefined;
 
 	// Données nutritionnelles structurées
 	nutrients: NutrientMapping | undefined;
@@ -114,12 +114,12 @@ export type NutriScorePrismaMapping = {
 	[key in 'A' | 'B' | 'C' | 'D' | 'E']: NutriScore;
 };
 
-export type EcoScorePrismaMapping = {
-	[key in 'A' | 'B' | 'C' | 'D' | 'E']: EcoScore;
+export type EcoscorePrismaMapping = {
+	[key in 'A' | 'B' | 'C' | 'D' | 'E']: Ecoscore;
 };
 
-export type NovaScorePrismaMapping = {
-	[key in 1 | 2 | 3 | 4]: NovaScore;
+export type NovascorePrismaMapping = {
+	[key in 1 | 2 | 3 | 4]: Novascore;
 };
 
 // Constantes de mapping
@@ -131,19 +131,19 @@ export const NUTRI_SCORE_MAPPING: NutriScorePrismaMapping = {
 	E: 'E' as NutriScore,
 } as const;
 
-export const ECO_SCORE_MAPPING: EcoScorePrismaMapping = {
-	A: 'A' as EcoScore,
-	B: 'B' as EcoScore,
-	C: 'C' as EcoScore,
-	D: 'D' as EcoScore,
-	E: 'E' as EcoScore,
+export const ECO_SCORE_MAPPING: EcoscorePrismaMapping = {
+	A: 'A' as Ecoscore,
+	B: 'B' as Ecoscore,
+	C: 'C' as Ecoscore,
+	D: 'D' as Ecoscore,
+	E: 'E' as Ecoscore,
 } as const;
 
-export const NOVA_SCORE_MAPPING: NovaScorePrismaMapping = {
-	1: 'GROUP_1' as NovaScore,
-	2: 'GROUP_2' as NovaScore,
-	3: 'GROUP_3' as NovaScore,
-	4: 'GROUP_4' as NovaScore,
+export const NOVA_SCORE_MAPPING: NovascorePrismaMapping = {
+	1: 'GROUP_1' as Novascore,
+	2: 'GROUP_2' as Novascore,
+	3: 'GROUP_3' as Novascore,
+	4: 'GROUP_4' as Novascore,
 } as const;
 
 // ===== TYPES POUR LA VALIDATION =====

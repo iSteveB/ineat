@@ -72,9 +72,9 @@ export const AddInventoryItemSchema = z
 		category: z.string().min(1, 'La catégorie est obligatoire'), // Slug de la catégorie
 
 		// Scores nutritionnels et environnementaux
-		nutriscore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
-		ecoScore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
-		novaScore: z.enum(['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4']).optional(),
+		nutricore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
+		ecoscore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
+		novascore: z.enum(['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4']).optional(),
 
 		// Informations nutritionnelles (objet JSON)
 		nutrients: z.object({

@@ -118,14 +118,11 @@ const ProductDetailPage: FC = () => {
 			D: 'Qualités nutritionnelles insuffisantes',
 			E: 'Mauvaises qualités nutritionnelles',
 		};
-		return (
-			descriptions[score || ''] ||
-			'Information non disponible'
-		);
+		return descriptions[score || ''] || 'Information non disponible';
 	};
 
 	// Obtenir le texte descriptif de l'Eco-score
-	const getEcoScoreText = (score: string | undefined): string => {
+	const getEcoscoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
 			A: 'Impact environnemental faible',
 			B: 'Impact environnemental limité',
@@ -133,24 +130,17 @@ const ProductDetailPage: FC = () => {
 			D: 'Impact environnemental élevé',
 			E: 'Impact environnemental très élevé',
 		};
-		return (
-			descriptions[score || ''] ||
-			'Information non disponible'
-		);
+		return descriptions[score || ''] || 'Information non disponible';
 	};
 
-
-	const getNovaScoreText = (score: string | undefined): string => {
+	const getNovascoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
 			'1': 'Aliments non transformés ou transformés minimalement',
 			'2': 'Ingrédients culinaires transformés',
 			'3': 'Aliments transformés',
 			'4': 'Produits alimentaires et boissons ultra-transformés',
 		};
-		return (
-			descriptions[score || ''] ||
-			'Information non disponible'
-		);
+		return descriptions[score || ''] || 'Information non disponible';
 	};
 
 	// Formatage de l'unité
@@ -438,9 +428,9 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
-											inventoryItem.product.ecoScore
+											inventoryItem.product.ecoscore
 										)}`}>
-										{inventoryItem.product.ecoScore || '?'}
+										{inventoryItem.product.ecoscore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
@@ -448,8 +438,8 @@ const ProductDetailPage: FC = () => {
 										Eco-Score
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getEcoScoreText(
-											inventoryItem.product.ecoScore
+										{getEcoscoreText(
+											inventoryItem.product.ecoscore
 										)}
 									</p>
 								</div>
@@ -466,10 +456,9 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
-											inventoryItem.product.novaScore
+											inventoryItem.product.novascore
 										)}`}>
-										{inventoryItem.product.novaScore ||
-											'?'}
+										{inventoryItem.product.novascore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
@@ -477,8 +466,8 @@ const ProductDetailPage: FC = () => {
 										Nova-Score
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNovaScoreText(
-											inventoryItem.product.novaScore
+										{getNovascoreText(
+											inventoryItem.product.novascore
 										)}
 									</p>
 								</div>

@@ -52,8 +52,8 @@ type FormData = {
 
 	// Scores
 	nutriscore: string;
-	ecoScore: string;
-	novaScore: string;
+	ecoscore: string;
+	novascore: string;
 
 	// Nutriments (en string pour les inputs)
 	energy: string;
@@ -114,8 +114,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 		// initialisés vides
 		nutriscore: '',
-		ecoScore: '',
-		novaScore: '',
+		ecoscore: '',
+		novascore: '',
 		energy: '',
 		proteins: '',
 		carbohydrates: '',
@@ -186,13 +186,13 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						| 'D'
 						| 'E',
 				}),
-			...(formData.ecoScore &&
-				['A', 'B', 'C', 'D', 'E'].includes(formData.ecoScore) && {
-					ecoScore: formData.ecoScore as 'A' | 'B' | 'C' | 'D' | 'E',
+			...(formData.ecoscore &&
+				['A', 'B', 'C', 'D', 'E'].includes(formData.ecoscore) && {
+					ecoscore: formData.ecoscore as 'A' | 'B' | 'C' | 'D' | 'E',
 				}),
-			...(formData.novaScore &&
-				['1', '2', '3', '4'].includes(formData.novaScore) && {
-					novaScore: `GROUP_${formData.novaScore}` as
+			...(formData.novascore &&
+				['1', '2', '3', '4'].includes(formData.novascore) && {
+					novascore: `GROUP_${formData.novascore}` as
 						| 'GROUP_1'
 						| 'GROUP_2'
 						| 'GROUP_3'
@@ -246,9 +246,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			const autoNotes: string[] = [];
 			if (enrichedProduct.nutriscore)
 				autoNotes.push(`Nutri-Score: ${enrichedProduct.nutriscore}`);
-			if (enrichedProduct.ecoScore)
-				autoNotes.push(`Eco-Score: ${enrichedProduct.ecoScore}`);
-			if (enrichedProduct.novaScore) {
+			if (enrichedProduct.ecoscore)
+				autoNotes.push(`Eco-Score: ${enrichedProduct.ecoscore}`);
+			if (enrichedProduct.novascore) {
 				const novaLabels = {
 					GROUP_1: 'Non transformés',
 					GROUP_2: 'Ingrédients transformés',
@@ -258,8 +258,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				autoNotes.push(
 					`Nova: ${
 						novaLabels[
-							enrichedProduct.novaScore as keyof typeof novaLabels
-						] || enrichedProduct.novaScore
+							enrichedProduct.novascore as keyof typeof novaLabels
+						] || enrichedProduct.novascore
 					}`
 				);
 			}
@@ -277,9 +277,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 				// Pré-remplir les nouveaux champs
 				nutriscore: enrichedProduct.nutriscore || '',
-				ecoScore: enrichedProduct.ecoScore || '',
-				novaScore:
-					enrichedProduct.novaScore?.replace('GROUP_', '') || '',
+				ecoscore: enrichedProduct.ecoscore || '',
+				novascore:
+					enrichedProduct.novascore?.replace('GROUP_', '') || '',
 				energy: enrichedProduct.nutrients?.energy?.toString() || '',
 				proteins: enrichedProduct.nutrients?.proteins?.toString() || '',
 				carbohydrates:
@@ -367,8 +367,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	const hasEnrichedData =
 		enrichedProduct &&
 		(enrichedProduct.nutriscore ||
-			enrichedProduct.ecoScore ||
-			enrichedProduct.novaScore ||
+			enrichedProduct.ecoscore ||
+			enrichedProduct.novascore ||
 			enrichedProduct.nutrients ||
 			enrichedProduct.ingredients);
 
@@ -402,12 +402,12 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 										{enrichedProduct.nutriscore}
 									</Badge>
 								)}
-								{enrichedProduct?.ecoScore && (
+								{enrichedProduct?.ecoscore && (
 									<Badge
 										variant='outline'
 										className='bg-emerald-50 text-emerald-700 border-emerald-200'>
 										<Leaf className='size-3 mr-1' />
-										Eco-Score: {enrichedProduct.ecoScore}
+										Eco-Score: {enrichedProduct.ecoscore}
 									</Badge>
 								)}
 								{enrichedProduct?.nutrients && (
@@ -741,11 +741,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									Eco-Score
 								</Label>
 								<Select
-									value={formData.ecoScore}
+									value={formData.ecoscore}
 									onValueChange={(value) => {
 										if (!hasEnrichedData)
 											handleInputChange(
-												'ecoScore',
+												'ecoscore',
 												value
 											);
 									}}
@@ -798,11 +798,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									Nova Score
 								</Label>
 								<Select
-									value={formData.novaScore}
+									value={formData.novascore}
 									onValueChange={(value) => {
 										if (!hasEnrichedData)
 											handleInputChange(
-												'novaScore',
+												'novascore',
 												value
 											);
 									}}

@@ -100,8 +100,8 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 					: undefined,
 				// Propriétés spécifiques OpenFoodFacts
 				nutriscore: offProduct.nutriscore || undefined,
-				ecoScore: offProduct.ecoScore || undefined,
-				novaScore: offProduct.novaScore || undefined,
+				ecoscore: offProduct.ecoscore || undefined,
+				novascore: offProduct.novascore || undefined,
 			};
 		},
 		[]

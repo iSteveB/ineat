@@ -17,8 +17,8 @@ export interface ProductSearchResult {
 	name: string;
 	brand?: string;
 	nutriscore?: 'A' | 'B' | 'C' | 'D' | 'E';
-	ecoScore?: 'A' | 'B' | 'C' | 'D' | 'E';
-	novaScore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4'; // NOUVEAU
+	ecoscore?: 'A' | 'B' | 'C' | 'D' | 'E';
+	novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4'; // NOUVEAU
 	imageUrl?: string;
 	unitType: 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
 	barcode?: string;
@@ -70,8 +70,8 @@ export interface QuickAddFormDataWithCategory {
 
 	// Création rapide avec données enrichies
 	nutriscore?: 'A' | 'B' | 'C' | 'D' | 'E';
-	ecoScore?: 'A' | 'B' | 'C' | 'D' | 'E';
-	novaScore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4';
+	ecoscore?: 'A' | 'B' | 'C' | 'D' | 'E';
+	novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4';
 	nutrients?: {
 		energy?: number;
 		proteins?: number;
@@ -121,8 +121,8 @@ interface UnknownItemData {
 	product?: {
 		name?: string;
 		nutriscore?: string;
-		ecoScore?: string;
-		novaScore?: string;
+		ecoscore?: string;
+		novascore?: string;
 		imageUrl?: string;
 	};
 }
@@ -535,14 +535,15 @@ export function formatScoreForDisplay(
 		case 'ecoscore':
 			return score.toUpperCase(); // A, B, C, D, E
 
-		case 'novascore':
-			{ const novaLabels = {
+		case 'novascore': {
+			const novaLabels = {
 				GROUP_1: '1 - Non transformés',
 				GROUP_2: '2 - Ingrédients transformés',
 				GROUP_3: '3 - Transformés',
 				GROUP_4: '4 - Ultra-transformés',
 			};
-			return novaLabels[score as keyof typeof novaLabels] || score; }
+			return novaLabels[score as keyof typeof novaLabels] || score;
+		}
 
 		default:
 			return score;
@@ -556,8 +557,8 @@ export function formatScoreForDisplay(
  */
 export function calculateOverallNutritionalQuality(product: {
 	nutriscore?: string;
-	ecoScore?: string;
-	novaScore?: string;
+	ecoscore?: string;
+	novascore?: string;
 }): number {
 	let score = 50; // Score de base
 
@@ -573,16 +574,16 @@ export function calculateOverallNutritionalQuality(product: {
 	}
 
 	// Eco-Score (20% du poids)
-	if (product.ecoScore) {
+	if (product.ecoscore) {
 		const ecoscoreValues = { A: 100, B: 80, C: 60, D: 40, E: 20 };
 		score +=
-			(ecoscoreValues[product.ecoScore as keyof typeof ecoscoreValues] -
+			(ecoscoreValues[product.ecoscore as keyof typeof ecoscoreValues] -
 				50) *
 			0.2;
 	}
 
 	// Nova-Score (20% du poids, inversé car plus c'est bas, mieux c'est)
-	if (product.novaScore) {
+	if (product.novascore) {
 		const novaValues = {
 			GROUP_1: 100,
 			GROUP_2: 75,
@@ -590,7 +591,7 @@ export function calculateOverallNutritionalQuality(product: {
 			GROUP_4: 25,
 		};
 		score +=
-			(novaValues[product.novaScore as keyof typeof novaValues] - 50) *
+			(novaValues[product.novascore as keyof typeof novaValues] - 50) *
 			0.2;
 	}
 

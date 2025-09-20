@@ -123,10 +123,10 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 									size='sm'
 								/>
 							)}
-							{product.ecoScore && (
+							{product.ecoscore && (
 								<ScoreBadge
 									type='eco'
-									score={product.ecoScore}
+									score={product.ecoscore}
 									size='sm'
 								/>
 							)}

@@ -5,10 +5,10 @@ CREATE TYPE "ProfileType" AS ENUM ('FAMILY', 'STUDENT', 'SINGLE');
 CREATE TYPE "NutriScore" AS ENUM ('A', 'B', 'C', 'D', 'E');
 
 -- CreateEnum
-CREATE TYPE "NovaScore" AS ENUM ('A', 'B', 'C', 'D');
+CREATE TYPE "Novascore" AS ENUM ('A', 'B', 'C', 'D');
 
 -- CreateEnum
-CREATE TYPE "EcoScore" AS ENUM ('A', 'B', 'C', 'D', 'E');
+CREATE TYPE "Ecoscore" AS ENUM ('A', 'B', 'C', 'D', 'E');
 
 -- CreateEnum
 CREATE TYPE "UnitType" AS ENUM ('KG', 'G', 'L', 'ML', 'UNIT');
@@ -42,8 +42,8 @@ CREATE TABLE "Product" (
     "brand" TEXT NOT NULL,
     "categoryId" TEXT NOT NULL,
     "nutriscore" "NutriScore",
-    "ecoScore" "EcoScore",
-    "novaScore" "NovaScore",
+    "ecoscore" "Ecoscore",
+    "novascore" "Novascore",
     "unitType" "UnitType" NOT NULL,
     "nutrients" JSONB,
     "imageUrl" TEXT,

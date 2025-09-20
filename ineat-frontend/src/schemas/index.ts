@@ -9,8 +9,8 @@ export {
 	SubscriptionSchema,
 	UnitTypeSchema,
 	NutriScoreSchema,
-	EcoScoreSchema,
-	NovaScoreSchema,
+	EcoscoreSchema,
+	NovascoreSchema,
 	ExpiryStatusSchema,
 	RecipeDifficultySchema,
 	NotificationTypeSchema,
@@ -21,8 +21,8 @@ export {
 	type Subscription,
 	type UnitType,
 	type NutriScore,
-	type EcoScore,
-	type NovaScore,
+	type Ecoscore,
+	type Novascore,
 	type ExpiryStatus,
 	type RecipeDifficulty,
 	type NotificationType,
@@ -42,7 +42,7 @@ export {
 
 	// Utilitaires
 	calculateExpiryStatus,
-	nutriScoreToNumber,
+	nutriscoreToNumber,
 	numberToNutriScore,
 } from './base';
 

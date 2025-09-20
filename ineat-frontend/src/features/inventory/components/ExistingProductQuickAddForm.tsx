@@ -111,8 +111,8 @@ export const ExistingProductQuickAddForm: React.FC<
 				'Données enrichies disponibles pour le produit existant:',
 				{
 					nutriscore: enrichedData.nutriscore,
-					ecoScore: enrichedData.ecoScore,
-					novaScore: enrichedData.novaScore,
+					ecoscore: enrichedData.ecoscore,
+					novascore: enrichedData.novascore,
 					hasNutrients: !!enrichedData.nutrients,
 					hasIngredients: !!enrichedData.ingredients,
 					quality: Math.round(
@@ -127,18 +127,18 @@ export const ExistingProductQuickAddForm: React.FC<
 				enrichedNotes.push(`Nutri-Score: ${enrichedData.nutriscore}`);
 			}
 
-			if (enrichedData.ecoScore) {
-				enrichedNotes.push(`Eco-Score: ${enrichedData.ecoScore}`);
+			if (enrichedData.ecoscore) {
+				enrichedNotes.push(`Eco-Score: ${enrichedData.ecoscore}`);
 			}
 
-			if (enrichedData.novaScore) {
+			if (enrichedData.novascore) {
 				const novaLabels = {
 					GROUP_1: 'Non transformé',
 					GROUP_2: 'Ingrédients transformés',
 					GROUP_3: 'Transformé',
 					GROUP_4: 'Ultra-transformé',
 				};
-				enrichedNotes.push(`${novaLabels[enrichedData.novaScore]}`);
+				enrichedNotes.push(`${novaLabels[enrichedData.novascore]}`);
 			}
 
 			if (enrichedData.nutrients) {
@@ -285,20 +285,20 @@ export const ExistingProductQuickAddForm: React.FC<
 								}
 							/>
 						)}
-						{(enrichedData?.ecoScore || product.ecoScore) && (
+						{(enrichedData?.ecoscore || product.ecoscore) && (
 							<ScoreBadge
 								type='eco'
 								score={
-									enrichedData?.ecoScore || product.ecoScore!
+									enrichedData?.ecoscore || product.ecoscore!
 								}
 							/>
 						)}
-						{enrichedData?.novaScore && (
+						{enrichedData?.novascore && (
 							<Badge
 								variant='outline'
 								className='bg-purple-50 text-purple-700 border-purple-200'>
 								Nova{' '}
-								{enrichedData.novaScore.replace('GROUP_', '')}
+								{enrichedData.novascore.replace('GROUP_', '')}
 							</Badge>
 						)}
 					</div>

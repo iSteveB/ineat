@@ -274,10 +274,13 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					</div>
 					<div className='flex items-center space-x-2'>
 						{product.nutriscore && (
-							<ScoreBadge type='nutri' score={product.nutriscore} />
+							<ScoreBadge
+								type='nutri'
+								score={product.nutriscore}
+							/>
 						)}
-						{product.ecoScore && (
-							<ScoreBadge type='eco' score={product.ecoScore} />
+						{product.ecoscore && (
+							<ScoreBadge type='eco' score={product.ecoscore} />
 						)}
 					</div>
 				</div>
