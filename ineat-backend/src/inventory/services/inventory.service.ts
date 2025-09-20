@@ -517,16 +517,16 @@ export class InventoryService {
     }
 
     // Créer un nouveau produit avec tous les nouveaux champs
-    const nutritionalData = addProductDto.nutritionalInfo
+    const nutritionalData = addProductDto.nutrients
       ? {
-          energy: addProductDto.nutritionalInfo.energy,
-          carbohydrates: addProductDto.nutritionalInfo.carbohydrates,
-          sugars: addProductDto.nutritionalInfo.sugars,
-          proteins: addProductDto.nutritionalInfo.proteins,
-          fats: addProductDto.nutritionalInfo.fats,
-          saturatedFats: addProductDto.nutritionalInfo.saturatedFats,
-          fiber: addProductDto.nutritionalInfo.fiber,
-          salt: addProductDto.nutritionalInfo.salt,
+          energy: addProductDto.nutrients.energy,
+          carbohydrates: addProductDto.nutrients.carbohydrates,
+          sugars: addProductDto.nutrients.sugars,
+          proteins: addProductDto.nutrients.proteins,
+          fats: addProductDto.nutrients.fats,
+          saturatedFats: addProductDto.nutrients.saturatedFats,
+          fiber: addProductDto.nutrients.fiber,
+          salt: addProductDto.nutrients.salt,
         }
       : null;
 
@@ -642,7 +642,7 @@ export class InventoryService {
       novascore: product.novascore,
       ingredients: product.ingredients,
       imageUrl: product.imageUrl,
-      nutritionalInfo: product.nutrients
+      nutrients: product.nutrients
         ? {
             energy: product.nutrients.energy,
             carbohydrates: product.nutrients.carbohydrates,

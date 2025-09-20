@@ -315,7 +315,7 @@ export class AddManualProductDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => NutritionalInfoDto)
-  nutritionalInfo?: NutritionalInfoDto;
+  nutrients?: NutritionalInfoDto;
 }
 
 export class ProductCreatedResponseDto {
@@ -458,7 +458,7 @@ export class ProductCreatedResponseDto {
     type: NutritionalInfoDto,
   })
   @IsOptional()
-  nutritionalInfo?: NutritionalInfoDto;
+  nutrients?: NutritionalInfoDto;
 
   @ApiProperty({
     description: 'Date de création',

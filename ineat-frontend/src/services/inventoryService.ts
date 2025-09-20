@@ -11,14 +11,14 @@ import {
 	hasBudgetImpact,
 } from '@/schemas';
 
-// Types spécifiques au service (pas dans les schémas) - ENRICHIS avec nouveaux champs
+// Types spécifiques au service
 export interface ProductSearchResult {
 	id: string;
 	name: string;
 	brand?: string;
 	nutriscore?: 'A' | 'B' | 'C' | 'D' | 'E';
 	ecoscore?: 'A' | 'B' | 'C' | 'D' | 'E';
-	novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4'; // NOUVEAU
+	novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4';
 	imageUrl?: string;
 	unitType: 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
 	barcode?: string;
@@ -58,7 +58,7 @@ export interface QuickAddFormData {
 	notes?: string;
 }
 
-// Type pour QuickAdd avec création de produit (avec category) - ENRICHI
+// Type pour QuickAdd avec création de produit (avec category)
 export interface QuickAddFormDataWithCategory {
 	quantity: number;
 	category: string; // Obligatoire pour créer un nouveau produit
@@ -214,7 +214,7 @@ export const extractNotificationDataDefensive = (
 export const inventoryService = {
 	/**
 	 * Récupère l'inventaire complet de l'utilisateur avec filtres optionnels
-	 * ENRICHI - Support des nouveaux filtres par scores nutritionnels
+	 * Support des nouveaux filtres par scores nutritionnels
 	 */
 	async getInventory(filters?: InventoryFilters): Promise<InventoryItem[]> {
 		const searchParams = new URLSearchParams();
@@ -245,7 +245,7 @@ export const inventoryService = {
 
 	/**
 	 * Ajoute un produit manuellement à l'inventaire
-	 * ENRICHI - Support complet des nouveaux champs nutritionnels et environnementaux
+	 * Support complet des nouveaux champs nutritionnels et environnementaux
 	 * Utilisé pour créer un nouveau produit (scan + OpenFoodFacts ou saisie complète)
 	 * Retourne les informations budgétaires enrichies
 	 */

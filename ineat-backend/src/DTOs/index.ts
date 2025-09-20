@@ -9,6 +9,7 @@ export {
   UnitType,
   Nutriscore,
   Ecoscore,
+  Novascore,
 } from '../inventory/dto/add-manual-product.dto';
 
 // DTOs pour la recherche de produits

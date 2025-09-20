@@ -11,8 +11,7 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Nutriscore, Ecoscore, UnitType } from '../../DTOs';
-import { Novascore } from 'src/inventory/dto';
+import { Nutriscore, Ecoscore, UnitType, Novascore } from '../../DTOs';
 
 /**
  * DTO pour les paramètres de recherche
