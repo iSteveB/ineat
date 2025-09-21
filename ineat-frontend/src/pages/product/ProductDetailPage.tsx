@@ -92,7 +92,7 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
-	const getNutriscoreColors = (score: string | undefined) => {
+	const getScoreColors = (score: string | undefined) => {
 		switch (score) {
 			case 'A':
 				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
@@ -107,6 +107,31 @@ const ProductDetailPage: FC = () => {
 			default:
 				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-neutral-50';
 		}
+	};
+
+	const getGroupColor = (group: string | undefined) => {
+		switch (group) {
+			case 'GROUP_1':
+				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
+			case 'GROUP_2':
+				return 'bg-gradient-to-br from-lime-500 to-green-500 text-neutral-50';
+			case 'GROUP_3':
+				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
+			case 'GROUP_4':
+				return 'bg-gradient-to-br from-orange-500 to-red-500 text-neutral-50';
+			default:
+				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-neutral-50';
+		}
+	};
+
+	const getGroupScore = (group: string | undefined): string => {
+		const descriptions: Record<string, string> = {
+			GROUP_1: '1',
+			GROUP_2: '2',
+			GROUP_3: '3',
+			GROUP_4: '4',
+		};
+		return descriptions[group || ''] || 'Information non disponible';
 	};
 
 	// Obtenir le texte descriptif du Nutriscore
@@ -135,10 +160,10 @@ const ProductDetailPage: FC = () => {
 
 	const getNovascoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
-			'1': 'Aliments non transformés ou transformés minimalement',
-			'2': 'Ingrédients culinaires transformés',
-			'3': 'Aliments transformés',
-			'4': 'Produits alimentaires et boissons ultra-transformés',
+			GROUP_1: 'Aliments non transformés ou transformés minimalement',
+			GROUP_2: 'Ingrédients culinaires transformés',
+			GROUP_3: 'Aliments transformés',
+			GROUP_4: 'Produits et boissons ultra-transformés',
 		};
 		return descriptions[score || ''] || 'Information non disponible';
 	};
@@ -398,7 +423,7 @@ const ProductDetailPage: FC = () => {
 							<div className='flex items-center gap-4'>
 								<div className='relative'>
 									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
+										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
 											inventoryItem.product.nutriscore
 										)}`}>
 										{inventoryItem.product.nutriscore ||
@@ -407,7 +432,7 @@ const ProductDetailPage: FC = () => {
 								</div>
 								<div className='flex-1'>
 									<h3 className='font-bold text-gray-900 mb-1'>
-										Nutri-Score
+										Nutri-score
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
 										{getNutriscoreText(
@@ -427,7 +452,7 @@ const ProductDetailPage: FC = () => {
 							<div className='flex items-center gap-4'>
 								<div className='relative'>
 									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
+										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
 											inventoryItem.product.ecoscore
 										)}`}>
 										{inventoryItem.product.ecoscore || '?'}
@@ -435,7 +460,7 @@ const ProductDetailPage: FC = () => {
 								</div>
 								<div className='flex-1'>
 									<h3 className='font-bold text-gray-900 mb-1'>
-										Eco-Score
+										Eco-score
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
 										{getEcoscoreText(
@@ -447,7 +472,7 @@ const ProductDetailPage: FC = () => {
 						</CardContent>
 					</Card>
 
-					{/* Nova-Score */}
+					{/* Nova-Group */}
 					<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-yellow-50/50 shadow-xl'>
 						<div className='absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-100/30 to-orange-100/30 rounded-full blur-2xl -translate-y-8 translate-x-8' />
 
@@ -455,15 +480,15 @@ const ProductDetailPage: FC = () => {
 							<div className='flex items-center gap-4'>
 								<div className='relative'>
 									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
+										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getGroupColor(
 											inventoryItem.product.novascore
 										)}`}>
-										{inventoryItem.product.novascore || '?'}
+											{getGroupScore(inventoryItem.product.novascore) || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
 									<h3 className='font-bold text-gray-900 mb-1'>
-										Nova-Score
+										Groupe NOVA
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
 										{getNovascoreText(
