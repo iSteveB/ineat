@@ -1,6 +1,5 @@
-import { FC } from 'react';
+import type { FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { InventoryStats } from '@/schemas';
 
 import { InventoryWidget } from '@/features/inventory/components/InventoryWidget';
 import NutriscoreWidget from '@/features/nutriscore/NutriscoreWidget';
@@ -36,26 +35,6 @@ const Dashboard: FC = () => {
 		queryFn: () => inventoryService.getInventory({ expiringWithinDays: 7 }),
 	});
 
-	// Récupération des statistiques d'inventaire
-	const {
-		data: inventoryStats,
-		isLoading: isLoadingStats,
-		error: statsError,
-	} = useQuery({
-		queryKey: ['inventoryStats'],
-		queryFn: () => inventoryService.getInventoryStats(),
-	});
-
-	// Récupération de l'inventaire complet pour calculer les statistiques
-	const {
-		data: fullInventory = [],
-		isLoading: isLoadingInventory,
-		error: inventoryError,
-	} = useQuery({
-		queryKey: ['fullInventory'],
-		queryFn: () => inventoryService.getInventory(),
-	});
-
 	// ===== DONNÉES MOCKÉES CONFORMES AUX SCHÉMAS ZOD =====
 
 	// Données Nutriscore mockées
@@ -66,141 +45,11 @@ const Dashboard: FC = () => {
 
 	// ===== CALCULS DÉRIVÉS =====
 
-	// État de chargement global
-	const isLoading =
-		isLoadingRecent ||
-		isLoadingExpiring ||
-		isLoadingStats ||
-		isLoadingInventory;
+	// État de chargement global (pour les widgets autres que InventoryWidget)
+	const isLoading = isLoadingRecent || isLoadingExpiring;
 
 	// Gestion des erreurs
-	const error = recentError || expiringError || statsError || inventoryError;
-
-	// Calcul des statistiques d'inventaire par défaut si non disponibles
-	const defaultInventoryStats: InventoryStats = {
-		totalItems: fullInventory.length,
-		totalValue: 0,
-		totalQuantity: 0,
-		averageItemValue: 0,
-		expiryBreakdown: {
-			good: 0,
-			warning: 0,
-			critical: 0,
-			expired: 0,
-			unknown: 0,
-		},
-		categoryBreakdown: [],
-		storageBreakdown: {},
-		recentActivity: {
-			itemsAddedThisWeek: 0,
-			itemsConsumedThisWeek: 0,
-		},
-	};
-
-	// Fonction utilitaire pour s'assurer que les stats d'inventaire sont conformes
-	const ensureValidInventoryStats = (stats: unknown): InventoryStats => {
-		if (!stats || typeof stats !== 'object') {
-			return defaultInventoryStats;
-		}
-
-		const statsObj = stats as Record<string, unknown>;
-
-		// Validation type-safe de l'expiryBreakdown
-		const validateExpiryBreakdown = (breakdown: unknown) => {
-			if (!breakdown || typeof breakdown !== 'object') {
-				return defaultInventoryStats.expiryBreakdown;
-			}
-
-			const breakdownObj = breakdown as Record<string, unknown>;
-			return {
-				good:
-					typeof breakdownObj.good === 'number'
-						? breakdownObj.good
-						: 0,
-				warning:
-					typeof breakdownObj.warning === 'number'
-						? breakdownObj.warning
-						: 0,
-				critical:
-					typeof breakdownObj.critical === 'number'
-						? breakdownObj.critical
-						: 0,
-				expired:
-					typeof breakdownObj.expired === 'number'
-						? breakdownObj.expired
-						: 0,
-				unknown:
-					typeof breakdownObj.unknown === 'number'
-						? breakdownObj.unknown
-						: 0,
-			};
-		};
-
-		// Validation type-safe de recentActivity
-		const validateRecentActivity = (activity: unknown) => {
-			if (!activity || typeof activity !== 'object') {
-				return defaultInventoryStats.recentActivity;
-			}
-
-			const activityObj = activity as Record<string, unknown>;
-			return {
-				itemsAddedThisWeek:
-					typeof activityObj.itemsAddedThisWeek === 'number'
-						? activityObj.itemsAddedThisWeek
-						: 0,
-				itemsConsumedThisWeek:
-					typeof activityObj.itemsConsumedThisWeek === 'number'
-						? activityObj.itemsConsumedThisWeek
-						: 0,
-				averageDaysToConsumption:
-					typeof activityObj.averageDaysToConsumption === 'number'
-						? activityObj.averageDaysToConsumption
-						: undefined,
-			};
-		};
-
-		return {
-			totalItems:
-				typeof statsObj.totalItems === 'number'
-					? statsObj.totalItems
-					: defaultInventoryStats.totalItems,
-			totalValue:
-				typeof statsObj.totalValue === 'number'
-					? statsObj.totalValue
-					: defaultInventoryStats.totalValue,
-			totalQuantity:
-				typeof statsObj.totalQuantity === 'number'
-					? statsObj.totalQuantity
-					: defaultInventoryStats.totalQuantity,
-			averageItemValue:
-				typeof statsObj.averageItemValue === 'number'
-					? statsObj.averageItemValue
-					: defaultInventoryStats.averageItemValue,
-			expiryBreakdown: validateExpiryBreakdown(statsObj.expiryBreakdown),
-			categoryBreakdown: Array.isArray(statsObj.categoryBreakdown)
-				? statsObj.categoryBreakdown
-				: defaultInventoryStats.categoryBreakdown,
-			storageBreakdown:
-				statsObj.storageBreakdown &&
-				typeof statsObj.storageBreakdown === 'object'
-					? (statsObj.storageBreakdown as Record<
-							string,
-							{ count: number; percentage: number }
-					  >)
-					: defaultInventoryStats.storageBreakdown,
-			recentActivity: validateRecentActivity(statsObj.recentActivity),
-		};
-	};
-
-	const currentInventoryStats = ensureValidInventoryStats(inventoryStats);
-
-	// ===== CALCULS DÉRIVÉS =====
-
-	// Utiliser directement les statistiques de l'API
-	const criticalCount = currentInventoryStats.expiryBreakdown.critical;
-	const warningCount = currentInventoryStats.expiryBreakdown.warning;
-	const expiredCount = currentInventoryStats.expiryBreakdown.expired;
-	const soonExpiringCount = criticalCount + warningCount;
+	const error = recentError || expiringError;
 
 	// ===== GESTION DES ÉTATS =====
 
@@ -245,13 +94,7 @@ const Dashboard: FC = () => {
 			</header>
 
 			<div className='flex flex-col gap-6'>
-				{/* Widget Inventaire */}
-				<InventoryWidget
-					totalProducts={currentInventoryStats.totalItems}
-					soonExpiringCount={soonExpiringCount}
-					criticalCount={criticalCount}
-					expiredCount={expiredCount}
-				/>
+				<InventoryWidget />
 
 				{/* Widget Nutriscore */}
 				<NutriscoreWidget
