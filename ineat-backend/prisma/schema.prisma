@@ -38,21 +38,22 @@ enum Subscription {
 }
 
 model Product {
-  id         String      @id @default(uuid())
-  barcode    String?     @unique
-  name       String
-  brand      String?
-  category   Category    @relation(fields: [categoryId], references: [id])
-  categoryId String
-  nutriscore NutriScore?
-  ecoScore   EcoScore?
-  novaScore  NovaScore?
-  unitType   UnitType
-  nutrients  Json? // Structure : { carbohydrates: number, proteins: number, fats: number, salt: number }
-  imageUrl   String?
-  externalId String? // ID de référence dans OpenFoodFacts
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id          String      @id @default(uuid())
+  barcode     String?     @unique
+  name        String
+  brand       String?
+  category    Category    @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  nutriscore  NutriScore?
+  ecoscore    Ecoscore?
+  novascore   Novascore?
+  unitType    UnitType
+  ingredients String?
+  nutrients   Json? // Structure : { carbohydrates: number, proteins: number, fats: number, salt: number }
+  imageUrl    String?
+  externalId  String? // ID de référence dans OpenFoodFacts
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   inventoryItems    InventoryItem[]
   recipeIngredients RecipeIngredient[]
@@ -69,14 +70,14 @@ enum NutriScore {
   E
 }
 
-enum NovaScore {
-  A
-  B
-  C
-  D
+enum Novascore {
+  GROUP_1 // Nova group 1 - Aliments non transformés ou minimalement transformés
+  GROUP_2 // Nova group 2 - Ingrédients culinaires transformés
+  GROUP_3 // Nova group 3 - Aliments transformés  
+  GROUP_4 // Nova group 4 - Aliments ultra-transformés
 }
 
-enum EcoScore {
+enum Ecoscore {
   A
   B
   C

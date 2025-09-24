@@ -1,9 +1,10 @@
 // DTOs pour l'ajout de produit manuel
-export { 
-  AddManualProductDto, 
-  ProductCreatedResponseDto, 
+export {
+  AddManualProductDto,
+  ProductCreatedResponseDto,
   NutritionalInfoDto,
   UnitType,
-  NutriScore,
-  EcoScore,
+  Nutriscore,
+  Ecoscore,
+  Novascore,
 } from './add-manual-product.dto';

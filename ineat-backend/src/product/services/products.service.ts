@@ -119,7 +119,8 @@ export class ProductsService {
       name: product.name,
       brand: product.brand,
       nutriscore: product.nutriscore,
-      ecoScore: product.ecoScore,
+      ecoscore: product.ecoscore,
+      novascore: product.novascore,
       imageUrl: product.imageUrl,
       unitType: product.unitType,
       barcode: product.barcode,
@@ -166,7 +167,10 @@ export class ProductsService {
     if (product.nutriscore) {
       score += 0.1;
     }
-    if (product.ecoScore) {
+    if (product.ecoscore) {
+      score += 0.1;
+    }
+    if (product.novascore) {
       score += 0.1;
     }
     if (product.imageUrl) {

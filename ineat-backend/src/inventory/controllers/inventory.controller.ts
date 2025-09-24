@@ -183,6 +183,10 @@ export class InventoryController {
           notes: result.notes,
           nutriscore: result.nutriscore,
           ecoscore: result.ecoscore,
+          novascore: result.novascore,
+          ingredients: result.ingredients,
+          imageUrl: result.imageUrl,
+          nutrients: result.nutrients,
           createdAt: result.createdAt,
           updatedAt: result.updatedAt,
         },
@@ -364,7 +368,7 @@ export class InventoryController {
               enum: ['A', 'B', 'C', 'D', 'E'],
               nullable: true,
             },
-            ecoScore: {
+            ecoscore: {
               type: 'string',
               enum: ['A', 'B', 'C', 'D', 'E'],
               nullable: true,
@@ -457,7 +461,7 @@ export class InventoryController {
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,
               },
-              ecoScore: {
+              ecoscore: {
                 type: 'string',
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,
@@ -636,7 +640,7 @@ export class InventoryController {
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,
               },
-              ecoScore: {
+              ecoscore: {
                 type: 'string',
                 enum: ['A', 'B', 'C', 'D', 'E'],
                 nullable: true,

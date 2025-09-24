@@ -1,17 +1,15 @@
 // DTOs pour l'authentification
-export {
-  LoginDto,
-  RegisterDto,
-} from '../auth/dto/auth.dto';
+export { LoginDto, RegisterDto } from '../auth/dto/auth.dto';
 
 // DTOs pour l'ajout de produit manuel
-export { 
-  AddManualProductDto, 
-  ProductCreatedResponseDto, 
+export {
+  AddManualProductDto,
+  ProductCreatedResponseDto,
   NutritionalInfoDto,
   UnitType,
-  NutriScore,
-  EcoScore,
+  Nutriscore,
+  Ecoscore,
+  Novascore,
 } from '../inventory/dto/add-manual-product.dto';
 
 // DTOs pour la recherche de produits
@@ -21,12 +19,12 @@ export {
   CategoryInfoDto,
 } from '../product/dto/search-product.dto';
 
-export { 
+export {
   InventoryStatsDto,
   ExpiryBreakdownDto,
   CategoryBreakdownDto,
   StorageLocationDto,
-  RecentActivityDto 
+  RecentActivityDto,
 } from '../inventory/dto/inventory-stats.dto';
 
 export { QuickAddProductDto } from '../inventory/dto/quick-add-product.dto';

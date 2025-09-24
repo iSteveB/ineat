@@ -13,37 +13,62 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Euro, Loader2, PackagePlus } from 'lucide-react';
+import { Euro, Loader2, PackagePlus, Star, Leaf, Zap } from 'lucide-react';
 import type { Category, AddInventoryItemData, UnitType } from '@/schemas';
+import { AddInventoryItemSchema } from '@/schemas';
+import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { z } from 'zod';
 
 interface AddManualProductFormProps {
 	categories: Category[];
 	onSubmit: (data: AddInventoryItemData) => Promise<void>;
 	onCancel: () => void;
 	isSubmitting: boolean;
+	enrichedProduct?: OpenFoodFactsMapping | null;
 	defaultProductName?: string;
-	defaultBrand?: string; // Marque par défaut
+	defaultBrand?: string;
 	defaultBarcode?: string;
 }
 
-/**
- * Données du formulaire
- */
-interface FormData {
+// Type de formulaire basé sur le schéma Zod mais avec des chaînes pour l'interface
+type FormData = {
+	// Champs obligatoires
 	name: string;
-	brand: string;
-	barcode: string;
 	category: string;
 	quantity: string;
 	unitType: UnitType;
 	purchaseDate: string;
+
+	// Champs optionnels existants
+	brand: string;
+	barcode: string;
 	expiryDate: string;
 	purchasePrice: string;
 	storageLocation: string;
 	notes: string;
-}
+
+	// Scores
+	nutriscore: string;
+	ecoscore: string;
+	novascore: string;
+
+	// Nutriments (en string pour les inputs)
+	energy: string;
+	proteins: string;
+	carbohydrates: string;
+	fats: string;
+	sugars: string;
+	fiber: string;
+	salt: string;
+	saturatedFats: string;
+
+	// Contenu
+	ingredients: string;
+	imageUrl: string;
+};
 
 const UNIT_TYPE_OPTIONS = [
 	{ value: 'UNIT', label: 'Unité(s)' },
@@ -68,118 +93,260 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	onSubmit,
 	onCancel,
 	isSubmitting,
+	enrichedProduct,
 	defaultProductName = '',
-	defaultBrand = '', 
+	defaultBrand = '',
 	defaultBarcode = '',
 }) => {
 	const [formData, setFormData] = useState<FormData>({
+		// Champs existants
 		name: defaultProductName || '',
 		brand: defaultBrand || '',
 		barcode: defaultBarcode || '',
 		category: '',
-		quantity: '1', // Quantité par défaut
+		quantity: '1',
 		unitType: 'UNIT',
 		purchaseDate: format(new Date(), 'yyyy-MM-dd'),
 		expiryDate: '',
 		purchasePrice: '',
 		storageLocation: '',
 		notes: '',
+
+		// initialisés vides
+		nutriscore: '',
+		ecoscore: '',
+		novascore: '',
+		energy: '',
+		proteins: '',
+		carbohydrates: '',
+		fats: '',
+		sugars: '',
+		fiber: '',
+		salt: '',
+		saturatedFats: '',
+		ingredients: '',
+		imageUrl: '',
 	});
 
-	// État pour les erreurs de validation
-	const [errors, setErrors] = useState<
-		Partial<Record<keyof FormData, string>>
-	>({});
+	const [errors, setErrors] = useState<Record<string, string>>({});
 
-	// Mettre à jour les valeurs par défaut quand les props changent
-	useEffect(() => {
-	setFormData((prev) => {
-		const shouldUpdate = 
-			defaultProductName !== undefined || 
-			defaultBrand !== undefined || 
-			defaultBarcode !== undefined;
-
-		if (!shouldUpdate) return prev;
+	// Fonction de transformation des données du formulaire vers le schéma Zod
+	const transformFormDataToSchema = (
+		formData: FormData
+	): Partial<AddInventoryItemData> => {
+		// Construire l'objet nutrients seulement s'il y a des valeurs
+		const nutrients: Record<string, number> = {};
+		if (formData.energy && !isNaN(Number(formData.energy)))
+			nutrients.energy = Number(formData.energy);
+		if (formData.proteins && !isNaN(Number(formData.proteins)))
+			nutrients.proteins = Number(formData.proteins);
+		if (formData.carbohydrates && !isNaN(Number(formData.carbohydrates)))
+			nutrients.carbohydrates = Number(formData.carbohydrates);
+		if (formData.fats && !isNaN(Number(formData.fats)))
+			nutrients.fats = Number(formData.fats);
+		if (formData.sugars && !isNaN(Number(formData.sugars)))
+			nutrients.sugars = Number(formData.sugars);
+		if (formData.fiber && !isNaN(Number(formData.fiber)))
+			nutrients.fiber = Number(formData.fiber);
+		if (formData.salt && !isNaN(Number(formData.salt)))
+			nutrients.salt = Number(formData.salt);
+		if (formData.saturatedFats && !isNaN(Number(formData.saturatedFats)))
+			nutrients.saturatedFats = Number(formData.saturatedFats);
 
 		return {
-			...prev,
-			name: defaultProductName || prev.name,
-			brand: defaultBrand || prev.brand,
-			barcode: defaultBarcode || prev.barcode,
+			// Champs obligatoires
+			name: formData.name.trim(),
+			category: formData.category,
+			quantity: Number(formData.quantity),
+			unitType: formData.unitType,
+			purchaseDate: formData.purchaseDate,
+
+			// Champs optionnels avec transformation
+			...(formData.brand.trim() && { brand: formData.brand.trim() }),
+			...(formData.barcode.trim() && {
+				barcode: formData.barcode.trim(),
+			}),
+			...(formData.expiryDate && { expiryDate: formData.expiryDate }),
+			...(formData.purchasePrice &&
+				!isNaN(Number(formData.purchasePrice)) && {
+					purchasePrice: Number(formData.purchasePrice),
+				}),
+			...(formData.storageLocation.trim() && {
+				storageLocation: formData.storageLocation.trim(),
+			}),
+			...(formData.notes.trim() && { notes: formData.notes.trim() }),
+
+			// Scores
+			...(formData.nutriscore &&
+				['A', 'B', 'C', 'D', 'E'].includes(formData.nutriscore) && {
+					nutriscore: formData.nutriscore as
+						| 'A'
+						| 'B'
+						| 'C'
+						| 'D'
+						| 'E',
+				}),
+			...(formData.ecoscore &&
+				['A', 'B', 'C', 'D', 'E'].includes(formData.ecoscore) && {
+					ecoscore: formData.ecoscore as 'A' | 'B' | 'C' | 'D' | 'E',
+				}),
+			...(formData.novascore &&
+				['1', '2', '3', '4'].includes(formData.novascore) && {
+					novascore: `GROUP_${formData.novascore}` as
+						| 'GROUP_1'
+						| 'GROUP_2'
+						| 'GROUP_3'
+						| 'GROUP_4',
+				}),
+
+			// Nutrition et contenu
+			...(Object.keys(nutrients).length > 0 && { nutrients }),
+			...(formData.imageUrl.trim() && {
+				imageUrl: formData.imageUrl.trim(),
+			}),
+			...(formData.ingredients.trim() && {
+				ingredients: formData.ingredients.trim(),
+			}),
 		};
-	});
-}, [defaultProductName, defaultBrand, defaultBarcode]);
+	};
 
-	// Fonction de validation
-	const validateForm = (): boolean => {
-		const newErrors: Partial<Record<keyof FormData, string>> = {};
-
-		// Validation des champs requis
-		if (!formData.name.trim()) {
-			newErrors.name = 'Le nom du produit est requis';
-		}
-
-		if (!formData.category) {
-			newErrors.category = 'La catégorie est requise';
-		}
-
-		if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
-			newErrors.quantity = 'La quantité doit être supérieure à 0';
-		}
-
-		if (!formData.purchaseDate) {
-			newErrors.purchaseDate = "La date d'achat est requise";
-		}
-
-		// Validation optionnelle du code-barres
-		if (
-			formData.barcode.trim() &&
-			!/^\d{8,13}$/.test(formData.barcode.trim())
-		) {
-			newErrors.barcode =
-				'Le code-barres doit contenir entre 8 et 13 chiffres';
-		}
-
-		// Validation optionnelle du prix
-		if (formData.purchasePrice && parseFloat(formData.purchasePrice) < 0) {
-			newErrors.purchasePrice = 'Le prix ne peut pas être négatif';
-		}
-
-		// Validation des dates
-		if (formData.expiryDate && formData.purchaseDate) {
-			const purchaseDate = new Date(formData.purchaseDate);
-			const expiryDate = new Date(formData.expiryDate);
-
-			if (expiryDate <= purchaseDate) {
-				newErrors.expiryDate =
-					"La date de péremption doit être postérieure à la date d'achat";
+	// Validation avec Zod
+	const validateWithZod = (data: Partial<AddInventoryItemData>) => {
+		try {
+			AddInventoryItemSchema.parse(data);
+			setErrors({});
+			return true;
+		} catch (error) {
+			if (error instanceof z.ZodError) {
+				const zodErrors: Record<string, string> = {};
+				error.errors.forEach((err) => {
+					const field = err.path.join('.');
+					zodErrors[field] = err.message;
+				});
+				setErrors(zodErrors);
+				return false;
 			}
+			return false;
 		}
+	};
 
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
+	// Pré-remplissage avec les données enrichies d'OpenFoodFacts
+	useEffect(() => {
+		if (enrichedProduct) {
+			console.log(
+				'Pré-remplissage avec données enrichies:',
+				enrichedProduct
+			);
+
+			const productName =
+				enrichedProduct.name || defaultProductName || '';
+			const productBrand = enrichedProduct.brand || defaultBrand || '';
+
+			// Construire des notes automatiques
+			const autoNotes: string[] = [];
+			if (enrichedProduct.nutriscore)
+				autoNotes.push(`Nutri-Score: ${enrichedProduct.nutriscore}`);
+			if (enrichedProduct.ecoscore)
+				autoNotes.push(`Eco-Score: ${enrichedProduct.ecoscore}`);
+			if (enrichedProduct.novascore) {
+				const novaLabels = {
+					GROUP_1: 'Non transformés',
+					GROUP_2: 'Ingrédients transformés',
+					GROUP_3: 'Transformés',
+					GROUP_4: 'Ultra-transformés',
+				};
+				autoNotes.push(
+					`Nova: ${
+						novaLabels[
+							enrichedProduct.novascore as keyof typeof novaLabels
+						] || enrichedProduct.novascore
+					}`
+				);
+			}
+			if (enrichedProduct.nutrients)
+				autoNotes.push('Données nutritionnelles disponibles');
+
+			setFormData((prev) => ({
+				...prev,
+				name: productName || prev.name,
+				brand: productBrand || prev.brand,
+				barcode:
+					enrichedProduct.barcode || defaultBarcode || prev.barcode,
+				notes:
+					autoNotes.length > 0 ? autoNotes.join(' • ') : prev.notes,
+
+				// Pré-remplir les nouveaux champs
+				nutriscore: enrichedProduct.nutriscore || '',
+				ecoscore: enrichedProduct.ecoscore || '',
+				novascore:
+					enrichedProduct.novascore?.replace('GROUP_', '') || '',
+				energy: enrichedProduct.nutrients?.energy?.toString() || '',
+				proteins: enrichedProduct.nutrients?.proteins?.toString() || '',
+				carbohydrates:
+					enrichedProduct.nutrients?.carbohydrates?.toString() || '',
+				fats: enrichedProduct.nutrients?.fats?.toString() || '',
+				sugars: enrichedProduct.nutrients?.sugars?.toString() || '',
+				fiber: enrichedProduct.nutrients?.fiber?.toString() || '',
+				salt: enrichedProduct.nutrients?.salt?.toString() || '',
+				saturatedFats:
+					enrichedProduct.nutrients?.saturatedFats?.toString() || '',
+				ingredients: enrichedProduct.ingredients || '',
+				imageUrl: enrichedProduct.imageUrl || '',
+			}));
+		}
+	}, [enrichedProduct, defaultProductName, defaultBrand, defaultBarcode]);
+
+	// Mise à jour des valeurs par défaut
+	useEffect(() => {
+		setFormData((prev) => {
+			const shouldUpdate =
+				defaultProductName !== undefined ||
+				defaultBrand !== undefined ||
+				defaultBarcode !== undefined;
+			if (!shouldUpdate) return prev;
+
+			return {
+				...prev,
+				name: defaultProductName || prev.name,
+				brand: defaultBrand || prev.brand,
+				barcode: defaultBarcode || prev.barcode,
+			};
+		});
+	}, [defaultProductName, defaultBrand, defaultBarcode]);
+
+	// Validation du formulaire avec Zod
+	const validateForm = (): boolean => {
+		const transformedData = transformFormDataToSchema(formData);
+		return validateWithZod(transformedData);
 	};
 
 	// Gestionnaire de changement des champs
 	const handleInputChange = (field: keyof FormData, value: string) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 
-		// Effacer l'erreur du champ modifié
+		// Nettoyer l'erreur de ce champ
 		if (errors[field]) {
-			setErrors((prev) => ({ ...prev, [field]: undefined }));
+			setErrors((prev) => {
+				const newErrors = { ...prev };
+				delete newErrors[field];
+				return newErrors;
+			});
 		}
 	};
 
-	// Gestionnaire de soumission
+	// Soumission du formulaire avec validation Zod
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+
+		// Transformer et valider avec Zod
+		const transformedData = transformFormDataToSchema(formData);
 
 		if (!validateForm()) {
 			toast.error('Veuillez corriger les erreurs du formulaire');
 			return;
 		}
 
-		// Vérifier que la catégorie sélectionnée existe
+		// Vérification supplémentaire de la catégorie
 		const selectedCategory = categories.find(
 			(cat) => cat.slug === formData.category
 		);
@@ -188,78 +355,25 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			return;
 		}
 
-		// Configuration des règles pour les champs optionnels
-		const optionalFields: Array<{
-			key: keyof FormData;
-			condition: (value: string | undefined) => boolean;
-			transform?: (value: string) => string | number;
-		}> = [
-			{
-				key: 'brand',
-				condition: (value) => Boolean(value?.trim()),
-				transform: (value) => value.trim(),
-			},
-			{
-				key: 'barcode',
-				condition: (value) => Boolean(value?.trim()),
-				transform: (value) => value.trim(),
-			},
-			{
-				key: 'expiryDate',
-				condition: (value) => Boolean(value),
-				// pas de transform nécessaire pour expiryDate
-			},
-			{
-				key: 'purchasePrice',
-				condition: (value) => Boolean(value && parseFloat(value) > 0),
-				transform: (value) => parseFloat(value),
-			},
-			{
-				key: 'storageLocation',
-				condition: (value) => Boolean(value?.trim()),
-				transform: (value) => value.trim(),
-			},
-			{
-				key: 'notes',
-				condition: (value) => Boolean(value?.trim()),
-				transform: (value) => value.trim(),
-			},
-		];
-
-		// Construire submitData avec reduce
-		const submitData = optionalFields.reduce(
-			(acc, field) => {
-				const value = formData[field.key];
-
-				if (field.condition(value)) {
-					const finalValue = field.transform
-						? field.transform(value as string)
-						: value;
-					return { ...acc, [field.key]: finalValue };
-				}
-
-				return acc;
-			},
-			{
-				// Champs obligatoires de base
-				name: formData.name.trim(),
-				category: formData.category,
-				quantity: parseFloat(formData.quantity),
-				unitType: formData.unitType,
-				purchaseDate: formData.purchaseDate,
-			} as AddInventoryItemData
-		);
+		console.log('Données validées avec Zod:', transformedData);
 
 		try {
-			await onSubmit(submitData);
+			await onSubmit(transformedData as AddInventoryItemData);
 		} catch (error: unknown) {
-			// L'erreur est gérée par le composant parent
 			console.error('Erreur lors de la soumission:', error);
 		}
 	};
 
-	// Déterminer si on affiche une alerte pour les données pré-remplies
-	const hasPrefilledData = defaultProductName || defaultBrand || defaultBarcode;
+	const hasEnrichedData =
+		enrichedProduct &&
+		(enrichedProduct.nutriscore ||
+			enrichedProduct.ecoscore ||
+			enrichedProduct.novascore ||
+			enrichedProduct.nutrients ||
+			enrichedProduct.ingredients);
+
+	const hasPrefilledData =
+		defaultProductName || defaultBrand || defaultBarcode;
 
 	return (
 		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
@@ -272,14 +386,71 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
-				{/* Alerte pour les données pré-remplies */}
-				{hasPrefilledData && (
+				{/* Alerte données enrichies */}
+				{hasEnrichedData && (
+					<Alert className='border-blue-500/20 bg-blue-50/10'>
+						<Star className='size-4 text-blue-500' />
+						<AlertDescription className='flex flex-col text-neutral-300'>
+							<strong>Données OpenFoodFacts détectées :</strong>
+							<div className='flex flex-wrap gap-2 mt-2'>
+								{enrichedProduct?.nutriscore && (
+									<Badge
+										variant='outline'
+										className='bg-green-50 text-green-700 border-green-200'>
+										<Zap className='size-3 mr-1' />
+										Nutri-Score:{' '}
+										{enrichedProduct.nutriscore}
+									</Badge>
+								)}
+								{enrichedProduct?.ecoscore && (
+									<Badge
+										variant='outline'
+										className='bg-emerald-50 text-emerald-700 border-emerald-200'>
+										<Leaf className='size-3 mr-1' />
+										Eco-Score: {enrichedProduct.ecoscore}
+									</Badge>
+								)}
+								{enrichedProduct?.nutrients && (
+									<Badge
+										variant='outline'
+										className='bg-orange-50 text-orange-700 border-orange-200'>
+										Nutrition disponible
+									</Badge>
+								)}
+								{enrichedProduct?.ingredients && (
+									<Badge
+										variant='outline'
+										className='bg-purple-50 text-purple-700 border-purple-200'>
+										Ingrédients disponibles
+									</Badge>
+								)}
+							</div>
+							<span className='text-xs text-neutral-200 mt-2'>
+								Qualité:{' '}
+								{Math.round(
+									(enrichedProduct?.quality.completeness ||
+										0) * 100
+								)}
+								% • Données pré-remplies et en lecture seule
+							</span>
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{/* Alerte données pré-remplies */}
+				{hasPrefilledData && !hasEnrichedData && (
 					<Alert className='border-success-500/20 bg-success-50/10'>
 						<AlertDescription className='flex flex-col text-neutral-300'>
 							<strong>Données récupérées du scan :</strong>
-							{defaultProductName && <span> Nom: {defaultProductName}</span>}
-							{defaultBrand && <span> Marque: {defaultBrand}</span>}
-							{defaultBarcode && <span> Code-barre: {defaultBarcode}</span>}
+							{defaultProductName && (
+								<span>Nom: {defaultProductName}</span>
+							)}
+							{defaultBrand && (
+								<span>Marque: {defaultBrand}</span>
+							)}
+							{defaultBarcode && (
+								<span>Code-barre: {defaultBarcode}</span>
+							)}
 						</AlertDescription>
 					</Alert>
 				)}
@@ -291,7 +462,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							Informations de base
 						</h3>
 
-						{/* Nom du produit */}
 						<div className='space-y-2'>
 							<Label htmlFor='name' className='text-neutral-300'>
 								Nom du produit{' '}
@@ -305,22 +475,21 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								}
 								placeholder='Ex: Pommes Golden'
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-									errors.name ? 'border-error-100' : ''
+									errors['name'] ? 'border-error-100' : ''
 								} ${
-									defaultProductName
+									defaultProductName || hasEnrichedData
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting || Boolean(defaultProductName)}
+								disabled={isSubmitting}
 							/>
-							{errors.name && (
+							{errors['name'] && (
 								<p className='text-sm text-error-100'>
-									{errors.name}
+									{errors['name']}
 								</p>
 							)}
 						</div>
 
-						{/* Marque */}
 						<div className='space-y-2'>
 							<Label htmlFor='brand' className='text-neutral-300'>
 								Marque
@@ -333,15 +502,14 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								}
 								placeholder='Ex: Carrefour Bio'
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-									defaultBrand
+									defaultBrand || hasEnrichedData
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting || Boolean(formData.brand)}
+								disabled={isSubmitting}
 							/>
 						</div>
 
-						{/* Code-barres */}
 						<div className='space-y-2'>
 							<Label
 								htmlFor='barcode'
@@ -356,17 +524,17 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								}
 								placeholder='Ex: 3560070057047'
 								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-									errors.barcode ? 'border-error-100' : ''
+									errors['barcode'] ? 'border-error-100' : ''
 								} ${
-									defaultBarcode
+									defaultBarcode || hasEnrichedData
 										? 'bg-success-50/5 border-success-500/20'
 										: ''
 								}`}
-								disabled={isSubmitting || Boolean(defaultBarcode)}
+								disabled={isSubmitting}
 							/>
-							{errors.barcode && (
+							{errors['barcode'] && (
 								<p className='text-sm text-error-100'>
-									{errors.barcode}
+									{errors['barcode']}
 								</p>
 							)}
 							<p className='text-xs text-neutral-200'>
@@ -374,7 +542,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							</p>
 						</div>
 
-						{/* Catégorie */}
 						<div className='space-y-2'>
 							<Label
 								htmlFor='category'
@@ -384,13 +551,13 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							</Label>
 							<Select
 								value={formData.category}
-								onValueChange={(value) => {
-									handleInputChange('category', value);
-								}}
+								onValueChange={(value) =>
+									handleInputChange('category', value)
+								}
 								disabled={isSubmitting}>
 								<SelectTrigger
-									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-										errors.category
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 ${
+										errors['category']
 											? 'border-error-100'
 											: ''
 									}`}>
@@ -402,22 +569,20 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 											Chargement...
 										</SelectItem>
 									) : (
-										categories.map((category) => {
-											return (
-												<SelectItem
-													key={category.id}
-													value={category.slug}
-													className='text-neutral-300 hover:bg-neutral-100'>
-													{category.name}
-												</SelectItem>
-											);
-										})
+										categories.map((category) => (
+											<SelectItem
+												key={category.id}
+												value={category.slug}
+												className='text-neutral-300 hover:bg-neutral-100'>
+												{category.name}
+											</SelectItem>
+										))
 									)}
 								</SelectContent>
 							</Select>
-							{errors.category && (
+							{errors['category'] && (
 								<p className='text-sm text-error-100'>
-									{errors.category}
+									{errors['category']}
 								</p>
 							)}
 						</div>
@@ -430,9 +595,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						<h3 className='text-md font-medium text-neutral-300'>
 							Quantité et unité
 						</h3>
-
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-							{/* Quantité */}
 							<div className='space-y-2'>
 								<Label
 									htmlFor='quantity'
@@ -454,20 +617,19 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									}
 									placeholder='Ex: 1.5'
 									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-										errors.quantity
+										errors['quantity']
 											? 'border-error-100'
 											: ''
 									}`}
 									disabled={isSubmitting}
 								/>
-								{errors.quantity && (
+								{errors['quantity'] && (
 									<p className='text-sm text-error-100'>
-										{errors.quantity}
+										{errors['quantity']}
 									</p>
 								)}
 							</div>
 
-							{/* Type d'unité */}
 							<div className='space-y-2'>
 								<Label
 									htmlFor='unitType'
@@ -501,14 +663,529 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 
 					<Separator className='bg-neutral-200/20' />
 
+					{/* Scores */}
+					<div className='space-y-4'>
+						<h3 className='text-md font-medium text-neutral-300'>
+							Scores nutritionnels et environnementaux
+							{hasEnrichedData && (
+								<span className='text-xs text-blue-500 ml-2 font-normal'>
+									(données OpenFoodFacts)
+								</span>
+							)}
+						</h3>
+						<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+							{/* Nutri-Score */}
+							<div className='space-y-2'>
+								<Label
+									htmlFor='nutriscore'
+									className='text-neutral-300'>
+									<Zap className='inline size-3 mr-1' />
+									Nutri-Score
+								</Label>
+								<Select
+									value={formData.nutriscore}
+									onValueChange={(value) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'nutriscore',
+												value
+											);
+									}}
+									disabled={
+										isSubmitting || !!hasEnrichedData
+									}>
+									<SelectTrigger
+										className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 ${
+											hasEnrichedData
+												? 'bg-blue-50/5 border-blue-500/20'
+												: ''
+										}`}>
+										<SelectValue placeholder='Sélectionnez un score' />
+									</SelectTrigger>
+									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
+										<SelectItem
+											value='A'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											A - Très bonne qualité
+										</SelectItem>
+										<SelectItem
+											value='B'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											B - Bonne qualité
+										</SelectItem>
+										<SelectItem
+											value='C'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											C - Qualité moyenne
+										</SelectItem>
+										<SelectItem
+											value='D'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											D - Mauvaise qualité
+										</SelectItem>
+										<SelectItem
+											value='E'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											E - Très mauvaise qualité
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* Eco-Score */}
+							<div className='space-y-2'>
+								<Label
+									htmlFor='ecoscore'
+									className='text-neutral-300'>
+									<Leaf className='inline size-3 mr-1' />
+									Eco-Score
+								</Label>
+								<Select
+									value={formData.ecoscore}
+									onValueChange={(value) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'ecoscore',
+												value
+											);
+									}}
+									disabled={
+										isSubmitting || !!hasEnrichedData
+									}>
+									<SelectTrigger
+										className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 ${
+											hasEnrichedData
+												? 'bg-blue-50/5 border-blue-500/20'
+												: ''
+										}`}>
+										<SelectValue placeholder='Sélectionnez un score' />
+									</SelectTrigger>
+									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
+										<SelectItem
+											value='A'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											A - Très faible impact
+										</SelectItem>
+										<SelectItem
+											value='B'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											B - Faible impact
+										</SelectItem>
+										<SelectItem
+											value='C'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											C - Impact modéré
+										</SelectItem>
+										<SelectItem
+											value='D'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											D - Impact élevé
+										</SelectItem>
+										<SelectItem
+											value='E'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											E - Impact très élevé
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* Nova-Score */}
+							<div className='space-y-2'>
+								<Label
+									htmlFor='novascore'
+									className='text-neutral-300'>
+									Nova Score
+								</Label>
+								<Select
+									value={formData.novascore}
+									onValueChange={(value) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'novascore',
+												value
+											);
+									}}
+									disabled={
+										isSubmitting || !!hasEnrichedData
+									}>
+									<SelectTrigger
+										className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 ${
+											hasEnrichedData
+												? 'bg-blue-50/5 border-blue-500/20'
+												: ''
+										}`}>
+										<SelectValue placeholder='Niveau de transformation' />
+									</SelectTrigger>
+									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
+										<SelectItem
+											value='1'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											1 - Non transformés
+										</SelectItem>
+										<SelectItem
+											value='2'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											2 - Ingrédients transformés
+										</SelectItem>
+										<SelectItem
+											value='3'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											3 - Transformés
+										</SelectItem>
+										<SelectItem
+											value='4'
+											className='text-neutral-300 hover:bg-neutral-100'>
+											4 - Ultra-transformés
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+					</div>
+
+					<Separator className='bg-neutral-200/20' />
+
+					{/* Informations nutritionnelles */}
+					<div className='space-y-4'>
+						<h3 className='text-md font-medium text-neutral-300'>
+							Informations nutritionnelles (pour 100g)
+							{hasEnrichedData && (
+								<span className='text-xs text-blue-500 ml-2 font-normal'>
+									(données OpenFoodFacts)
+								</span>
+							)}
+						</h3>
+
+						{/* Macronutriments principaux */}
+						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+							<div className='space-y-2'>
+								<Label
+									htmlFor='energy'
+									className='text-neutral-300'>
+									Énergie (kcal)
+								</Label>
+								<Input
+									id='energy'
+									type='number'
+									step='1'
+									min='0'
+									value={formData.energy}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'energy',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 245'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label
+									htmlFor='proteins'
+									className='text-neutral-300'>
+									Protéines (g)
+								</Label>
+								<Input
+									id='proteins'
+									type='number'
+									step='0.1'
+									min='0'
+									value={formData.proteins}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'proteins',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 12.5'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label
+									htmlFor='carbohydrates'
+									className='text-neutral-300'>
+									Glucides (g)
+								</Label>
+								<Input
+									id='carbohydrates'
+									type='number'
+									step='0.1'
+									min='0'
+									value={formData.carbohydrates}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'carbohydrates',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 58.7'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label
+									htmlFor='fats'
+									className='text-neutral-300'>
+									Lipides (g)
+								</Label>
+								<Input
+									id='fats'
+									type='number'
+									step='0.1'
+									min='0'
+									value={formData.fats}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'fats',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 3.2'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+						</div>
+
+						{/* Nutriments secondaires */}
+						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+							<div className='space-y-2'>
+								<Label
+									htmlFor='sugars'
+									className='text-neutral-300'>
+									dont Sucres (g)
+								</Label>
+								<Input
+									id='sugars'
+									type='number'
+									step='0.1'
+									min='0'
+									value={formData.sugars}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'sugars',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 2.1'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label
+									htmlFor='fiber'
+									className='text-neutral-300'>
+									Fibres (g)
+								</Label>
+								<Input
+									id='fiber'
+									type='number'
+									step='0.1'
+									min='0'
+									value={formData.fiber}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'fiber',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 1.8'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label
+									htmlFor='salt'
+									className='text-neutral-300'>
+									Sel (g)
+								</Label>
+								<Input
+									id='salt'
+									type='number'
+									step='0.01'
+									min='0'
+									value={formData.salt}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'salt',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 0.89'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label
+									htmlFor='saturatedFats'
+									className='text-neutral-300'>
+									Graisses sat. (g)
+								</Label>
+								<Input
+									id='saturatedFats'
+									type='number'
+									step='0.1'
+									min='0'
+									value={formData.saturatedFats}
+									onChange={(e) => {
+										if (!hasEnrichedData)
+											handleInputChange(
+												'saturatedFats',
+												e.target.value
+											);
+									}}
+									placeholder='Ex: 0.7'
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+										hasEnrichedData
+											? 'bg-blue-50/5 border-blue-500/20'
+											: ''
+									}`}
+									disabled={isSubmitting || !!hasEnrichedData}
+								/>
+							</div>
+						</div>
+					</div>
+
+					<Separator className='bg-neutral-200/20' />
+
+					{/* Ingrédients et image */}
+					<div className='space-y-4'>
+						<h3 className='text-md font-medium text-neutral-300'>
+							Contenu et média
+							{hasEnrichedData && (
+								<span className='text-xs text-blue-500 ml-2 font-normal'>
+									(données OpenFoodFacts)
+								</span>
+							)}
+						</h3>
+
+						<div className='space-y-2'>
+							<Label
+								htmlFor='ingredients'
+								className='text-neutral-300'>
+								Liste des ingrédients
+							</Label>
+							<Textarea
+								id='ingredients'
+								value={formData.ingredients}
+								onChange={(e) => {
+									if (!hasEnrichedData)
+										handleInputChange(
+											'ingredients',
+											e.target.value
+										);
+								}}
+								placeholder='Ex: Farine de blé, eau, levure, sel...'
+								rows={4}
+								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+									hasEnrichedData
+										? 'bg-blue-50/5 border-blue-500/20'
+										: ''
+								}`}
+								disabled={isSubmitting || !!hasEnrichedData}
+							/>
+							<p className='text-xs text-neutral-200'>
+								Listez les ingrédients par ordre décroissant de
+								quantité
+							</p>
+						</div>
+
+						<div className='space-y-2'>
+							<Label
+								htmlFor='imageUrl'
+								className='text-neutral-300'>
+								Image du produit (URL)
+							</Label>
+							<Input
+								id='imageUrl'
+								type='url'
+								value={formData.imageUrl}
+								onChange={(e) => {
+									if (!hasEnrichedData)
+										handleInputChange(
+											'imageUrl',
+											e.target.value
+										);
+								}}
+								placeholder='Ex: https://example.com/image.jpg'
+								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+									errors['imageUrl'] ? 'border-error-100' : ''
+								} ${
+									hasEnrichedData
+										? 'bg-blue-50/5 border-blue-500/20'
+										: ''
+								}`}
+								disabled={isSubmitting || !!hasEnrichedData}
+							/>
+							{errors['imageUrl'] && (
+								<p className='text-sm text-error-100'>
+									{errors['imageUrl']}
+								</p>
+							)}
+							<p className='text-xs text-neutral-200'>
+								URL de l'image du produit (JPG, PNG, WebP)
+							</p>
+						</div>
+					</div>
+
+					<Separator className='bg-neutral-200/20' />
+
 					{/* Dates */}
 					<div className='space-y-4'>
 						<h3 className='text-md font-medium text-neutral-300'>
 							Dates
 						</h3>
-
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-							{/* Date d'achat */}
 							<div className='space-y-2'>
 								<Label
 									htmlFor='purchaseDate'
@@ -526,21 +1203,20 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 											e.target.value
 										)
 									}
-									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-										errors.purchaseDate
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 ${
+										errors['purchaseDate']
 											? 'border-error-100'
 											: ''
 									}`}
 									disabled={isSubmitting}
 								/>
-								{errors.purchaseDate && (
+								{errors['purchaseDate'] && (
 									<p className='text-sm text-error-100'>
-										{errors.purchaseDate}
+										{errors['purchaseDate']}
 									</p>
 								)}
 							</div>
 
-							{/* Date de péremption */}
 							<div className='space-y-2'>
 								<Label
 									htmlFor='expiryDate'
@@ -557,16 +1233,16 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 											e.target.value
 										)
 									}
-									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-										errors.expiryDate
+									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 ${
+										errors['expiryDate']
 											? 'border-error-100'
 											: ''
 									}`}
 									disabled={isSubmitting}
 								/>
-								{errors.expiryDate && (
+								{errors['expiryDate'] && (
 									<p className='text-sm text-error-100'>
-										{errors.expiryDate}
+										{errors['expiryDate']}
 									</p>
 								)}
 							</div>
@@ -582,7 +1258,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						</h3>
 
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-							{/* Prix d'achat avec indication budget */}
 							<div className='space-y-2'>
 								<Label
 									htmlFor='purchasePrice'
@@ -607,20 +1282,19 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 									}
 									placeholder='Ex: 2.50'
 									className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
-										errors.purchasePrice
+										errors['purchasePrice']
 											? 'border-error-100'
 											: ''
 									}`}
 									disabled={isSubmitting}
 								/>
-								{errors.purchasePrice && (
+								{errors['purchasePrice'] && (
 									<p className='text-sm text-error-100'>
-										{errors.purchasePrice}
+										{errors['purchasePrice']}
 									</p>
 								)}
 							</div>
 
-							{/* Lieu de stockage */}
 							<div className='space-y-2'>
 								<Label
 									htmlFor='storageLocation'
@@ -655,10 +1329,14 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							</div>
 						</div>
 
-						{/* Notes */}
 						<div className='space-y-2'>
 							<Label htmlFor='notes' className='text-neutral-300'>
-								Note
+								Notes
+								{hasEnrichedData && (
+									<span className='text-xs text-blue-500 ml-2'>
+										(pré-remplies avec OpenFoodFacts)
+									</span>
+								)}
 							</Label>
 							<Textarea
 								id='notes'
@@ -668,7 +1346,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 								}
 								placeholder='Ajoutez une note sur ce produit...'
 								rows={3}
-								className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200'
+								className={`bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 ${
+									hasEnrichedData
+										? 'bg-blue-50/5 border-blue-500/20'
+										: ''
+								}`}
 								disabled={isSubmitting}
 							/>
 						</div>

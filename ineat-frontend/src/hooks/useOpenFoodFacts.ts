@@ -1,18 +1,18 @@
 import { useState, useCallback } from 'react';
 import { openFoodFactsService } from '@/services/openFoodFactsServices';
+import { OffError } from '@/schemas/openfoodfact';
 import {
-	OffProduct,
-	OffError,
-	OFF_MINIMAL_FIELDS,
-} from '@/schemas/openfoodfact';
-import { Product } from '@/schemas/product';
+	OpenFoodFactsMapping,
+	MappingOptions,
+	QUALITY_THRESHOLDS,
+} from '@/schemas/openfoodfact-mapping';
 
 /**
  * État de la requête OpenFoodFacts
  */
 interface UseOpenFoodFactsState {
-	data: OffProduct | null;
-	localProduct: Partial<Product> | null;
+	// Données produit complètes
+	product: OpenFoodFactsMapping | null;
 	loading: boolean;
 	error: OffError | null;
 }
@@ -22,18 +22,21 @@ interface UseOpenFoodFactsState {
  */
 interface UseOpenFoodFactsResult {
 	// État
-	data: OffProduct | null;
-	localProduct: Partial<Product> | null;
+	product: OpenFoodFactsMapping | null;
 	loading: boolean;
 	error: OffError | null;
 
 	// Actions
-	searchByBarcode: (barcode: string, fields?: string[]) => Promise<void>;
-	getImageUrl: (
-		size?: '100' | '200' | '400' | 'full',
-		language?: string
-	) => string | null;
-	getCategoryString: () => string;
+	searchByBarcode: (
+		barcode: string,
+		options?: Partial<MappingOptions>
+	) => Promise<void>;
+
+	searchProduct: (
+		barcode: string,
+		options?: Partial<MappingOptions>
+	) => Promise<OpenFoodFactsMapping | null>;
+
 	reset: () => void;
 }
 
@@ -42,31 +45,37 @@ interface UseOpenFoodFactsResult {
  *
  * @example
  * ```tsx
- * const { searchByBarcode, data, localProduct, loading, error } = useOpenFoodFacts();
+ * const { searchByBarcode, product, loading, error } = useOpenFoodFacts();
  *
  * const handleSearch = async () => {
- *   await searchByBarcode('3017624010701');
- *   if (localProduct) {
- *     // Utiliser localProduct pour pré-remplir le formulaire
+ *   await searchByBarcode('3017624010701', {
+ *     preferredLanguage: 'fr',
+ *     requireImage: true
+ *   });
+ *
+ *   if (product) {
+ *     console.log('Nutriscore:', product.nutriscore);
+ *     console.log('Ingrédients:', product.ingredients);
+ *     console.log('Qualité:', product.quality.completeness);
  *   }
  * };
  * ```
  */
 export const useOpenFoodFacts = (): UseOpenFoodFactsResult => {
 	const [state, setState] = useState<UseOpenFoodFactsState>({
-		data: null,
-		localProduct: null,
+		product: null,
 		loading: false,
 		error: null,
 	});
 
 	/**
 	 * Recherche un produit par code-barre
-	 * @param barcode Code-barre du produit
-	 * @param fields Champs spécifiques à récupérer (optionnel)
 	 */
 	const searchByBarcode = useCallback(
-		async (barcode: string, fields?: string[]): Promise<void> => {
+		async (
+			barcode: string,
+			options: Partial<MappingOptions> = {}
+		): Promise<void> => {
 			setState((prev) => ({
 				...prev,
 				loading: true,
@@ -74,28 +83,30 @@ export const useOpenFoodFacts = (): UseOpenFoodFactsResult => {
 			}));
 
 			try {
-				const offProduct =
-					await openFoodFactsService.getProductByBarcode(
+				const product =
+					await openFoodFactsService.getEnrichedProductByBarcode(
 						barcode,
-						fields || [...OFF_MINIMAL_FIELDS]
+						{
+							preferredLanguage: 'fr',
+							requireMinimalNutrients: false,
+							requireImage: false,
+							requireIngredients: false,
+							qualityThreshold: QUALITY_THRESHOLDS.MINIMAL,
+							...options,
+						}
 					);
 
-				if (offProduct) {
-					const mappedProduct =
-						openFoodFactsService.mapToLocalProduct(offProduct);
+				if (product) {
 					setState((prev) => ({
 						...prev,
-						data: offProduct,
-						localProduct: mappedProduct,
+						product,
 						loading: false,
 						error: null,
 					}));
 				} else {
-					// Produit non trouvé
 					setState((prev) => ({
 						...prev,
-						data: null,
-						localProduct: null,
+						product: null,
 						loading: false,
 						error: {
 							type: 'PRODUCT_NOT_FOUND',
@@ -106,8 +117,7 @@ export const useOpenFoodFacts = (): UseOpenFoodFactsResult => {
 			} catch (error: unknown) {
 				setState((prev) => ({
 					...prev,
-					data: null,
-					localProduct: null,
+					product: null,
 					loading: false,
 					error: error as OffError,
 				}));
@@ -117,44 +127,39 @@ export const useOpenFoodFacts = (): UseOpenFoodFactsResult => {
 	);
 
 	/**
-	 * Récupère l'URL de l'image du produit actuel
-	 * @param size Taille souhaitée
-	 * @param language Langue préférée
-	 * @returns URL de l'image ou null
+	 * Recherche qui retourne directement le produit
 	 */
-	const getImageUrl = useCallback(
-		(
-			size: '100' | '200' | '400' | 'full' = '400',
-			language: string = 'fr'
-		): string | null => {
-			if (!state.data) return null;
-
-			return openFoodFactsService.getProductImageUrl(
-				state.data,
-				size,
-				language
-			);
+	const searchProduct = useCallback(
+		async (
+			barcode: string,
+			options: Partial<MappingOptions> = {}
+		): Promise<OpenFoodFactsMapping | null> => {
+			try {
+				return await openFoodFactsService.getEnrichedProductByBarcode(
+					barcode,
+					{
+						preferredLanguage: 'fr',
+						requireMinimalNutrients: false,
+						requireImage: false,
+						requireIngredients: false,
+						qualityThreshold: QUALITY_THRESHOLDS.MINIMAL,
+						...options,
+					}
+				);
+			} catch (error: unknown) {
+				console.error('Erreur recherche produit:', error);
+				throw error;
+			}
 		},
-		[state.data]
+		[]
 	);
-
-	/**
-	 * Récupère la catégorie principale comme string
-	 * @returns Catégorie formatée ou '-'
-	 */
-	const getCategoryString = useCallback((): string => {
-		if (!state.data) return '-';
-
-		return openFoodFactsService.getMainCategoryString(state.data);
-	}, [state.data]);
 
 	/**
 	 * Remet à zéro l'état du hook
 	 */
 	const reset = useCallback((): void => {
 		setState({
-			data: null,
-			localProduct: null,
+			product: null,
 			loading: false,
 			error: null,
 		});
@@ -162,62 +167,48 @@ export const useOpenFoodFacts = (): UseOpenFoodFactsResult => {
 
 	return {
 		// État
-		data: state.data,
-		localProduct: state.localProduct,
+		product: state.product,
 		loading: state.loading,
 		error: state.error,
 
 		// Actions
 		searchByBarcode,
-		getImageUrl,
-		getCategoryString,
+		searchProduct,
 		reset,
 	};
 };
 
 /**
  * Hook simplifié pour une recherche unique
- * Utile quand on veut juste faire une recherche ponctuelle
- *
- * @example
- * ```tsx
- * const searchProduct = useOpenFoodFactsSearch();
- *
- * const handleScan = async (barcode: string) => {
- *   const result = await searchProduct(barcode);
- *   if (result.success) {
- *     console.log(result.localProduct);
- *   } else {
- *     console.error(result.error);
- *   }
- * };
- * ```
  */
 export const useOpenFoodFactsSearch = () => {
 	return useCallback(
 		async (
 			barcode: string,
-			fields?: string[]
+			options: Partial<MappingOptions> = {}
 		): Promise<{
 			success: boolean;
-			data?: OffProduct;
-			localProduct?: Partial<Product>;
+			product?: OpenFoodFactsMapping;
 			error?: OffError;
 		}> => {
 			try {
-				const offProduct =
-					await openFoodFactsService.getProductByBarcode(
+				const product =
+					await openFoodFactsService.getEnrichedProductByBarcode(
 						barcode,
-						fields
+						{
+							preferredLanguage: 'fr',
+							requireMinimalNutrients: false,
+							requireImage: false,
+							requireIngredients: false,
+							qualityThreshold: QUALITY_THRESHOLDS.MINIMAL,
+							...options,
+						}
 					);
 
-				if (offProduct) {
-					const mappedProduct =
-						openFoodFactsService.mapToLocalProduct(offProduct);
+				if (product) {
 					return {
 						success: true,
-						data: offProduct,
-						localProduct: mappedProduct,
+						product,
 					};
 				} else {
 					return {

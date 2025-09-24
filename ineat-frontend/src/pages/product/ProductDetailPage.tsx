@@ -8,9 +8,6 @@ import {
 	ShoppingCart,
 	Trash2,
 	Edit3,
-	Star,
-	Leaf,
-	Zap,
 	AlertTriangle,
 	CheckCircle2,
 	Clock,
@@ -27,6 +24,8 @@ import {
 	formatDate,
 	formatRelativeDate,
 } from '@/utils/dateHelpers';
+import { NutritionInfoCard } from '@/features/product/NutritionInfoCard';
+import { IngredientsCard } from '@/features/product/IngredientsCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -93,8 +92,7 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
-	// Obtenir la classe CSS pour le Nutriscore
-	const getNutriscoreColors = (score: string | undefined) => {
+	const getScoreColors = (score: string | undefined) => {
 		switch (score) {
 			case 'A':
 				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
@@ -111,6 +109,31 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
+	const getGroupColor = (group: string | undefined) => {
+		switch (group) {
+			case 'GROUP_1':
+				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
+			case 'GROUP_2':
+				return 'bg-gradient-to-br from-lime-500 to-green-500 text-neutral-50';
+			case 'GROUP_3':
+				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
+			case 'GROUP_4':
+				return 'bg-gradient-to-br from-orange-500 to-red-500 text-neutral-50';
+			default:
+				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-neutral-50';
+		}
+	};
+
+	const getGroupScore = (group: string | undefined): string => {
+		const descriptions: Record<string, string> = {
+			GROUP_1: '1',
+			GROUP_2: '2',
+			GROUP_3: '3',
+			GROUP_4: '4',
+		};
+		return descriptions[group || ''] || 'Information non disponible';
+	};
+
 	// Obtenir le texte descriptif du Nutriscore
 	const getNutriscoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
@@ -120,14 +143,11 @@ const ProductDetailPage: FC = () => {
 			D: 'Qualités nutritionnelles insuffisantes',
 			E: 'Mauvaises qualités nutritionnelles',
 		};
-		return (
-			descriptions[score || ''] ||
-			'Information nutritionnelle non disponible'
-		);
+		return descriptions[score || ''] || 'Information non disponible';
 	};
 
 	// Obtenir le texte descriptif de l'Eco-score
-	const getEcoScoreText = (score: string | undefined): string => {
+	const getEcoscoreText = (score: string | undefined): string => {
 		const descriptions: Record<string, string> = {
 			A: 'Impact environnemental faible',
 			B: 'Impact environnemental limité',
@@ -135,10 +155,17 @@ const ProductDetailPage: FC = () => {
 			D: 'Impact environnemental élevé',
 			E: 'Impact environnemental très élevé',
 		};
-		return (
-			descriptions[score || ''] ||
-			'Information environnementale non disponible'
-		);
+		return descriptions[score || ''] || 'Information non disponible';
+	};
+
+	const getNovascoreText = (score: string | undefined): string => {
+		const descriptions: Record<string, string> = {
+			GROUP_1: 'Aliments non transformés ou transformés minimalement',
+			GROUP_2: 'Ingrédients culinaires transformés',
+			GROUP_3: 'Aliments transformés',
+			GROUP_4: 'Produits et boissons ultra-transformés',
+		};
+		return descriptions[score || ''] || 'Information non disponible';
 	};
 
 	// Formatage de l'unité
@@ -284,7 +311,6 @@ const ProductDetailPage: FC = () => {
 
 					<CardContent className='p-6'>
 						<div className='flex flex-col gap-6'>
-							{' '}
 							{/* Image du produit */}
 							<div className='flex-shrink-0'>
 								<div className='relative'>
@@ -314,6 +340,7 @@ const ProductDetailPage: FC = () => {
 									</div>
 								</div>
 							</div>
+
 							{/* Informations principales (Titre, Marque) */}
 							<div className='flex-1 space-y-4'>
 								<div>
@@ -327,6 +354,7 @@ const ProductDetailPage: FC = () => {
 									)}
 								</div>
 							</div>
+
 							{/* Quantité et lieu de stockage */}
 							<div className='flex flex-wrap gap-4'>
 								<div className='flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl'>
@@ -353,6 +381,7 @@ const ProductDetailPage: FC = () => {
 									</div>
 								)}
 							</div>
+
 							{/* Date d'expiration */}
 							{inventoryItem.expiryDate && (
 								<div className='space-y-3'>
@@ -394,19 +423,16 @@ const ProductDetailPage: FC = () => {
 							<div className='flex items-center gap-4'>
 								<div className='relative'>
 									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
+										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
 											inventoryItem.product.nutriscore
 										)}`}>
 										{inventoryItem.product.nutriscore ||
 											'?'}
 									</div>
-									<div className='absolute -top-1 -right-1 size-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg'>
-										<Zap className='size-3 text-neutral-50' />
-									</div>
 								</div>
 								<div className='flex-1'>
 									<h3 className='font-bold text-gray-900 mb-1'>
-										Nutri-Score
+										Nutri-score
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
 										{getNutriscoreText(
@@ -426,22 +452,47 @@ const ProductDetailPage: FC = () => {
 							<div className='flex items-center gap-4'>
 								<div className='relative'>
 									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getNutriscoreColors(
-											inventoryItem.product.ecoScore
+										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
+											inventoryItem.product.ecoscore
 										)}`}>
-										{inventoryItem.product.ecoScore || '?'}
-									</div>
-									<div className='absolute -top-1 -right-1 size-6 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full flex items-center justify-center shadow-lg'>
-										<Leaf className='size-3 text-neutral-50' />
+										{inventoryItem.product.ecoscore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
 									<h3 className='font-bold text-gray-900 mb-1'>
-										Eco-Score
+										Eco-score
 									</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getEcoScoreText(
-											inventoryItem.product.ecoScore
+										{getEcoscoreText(
+											inventoryItem.product.ecoscore
+										)}
+									</p>
+								</div>
+							</div>
+						</CardContent>
+					</Card>
+
+					{/* Nova-Group */}
+					<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-yellow-50/50 shadow-xl'>
+						<div className='absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-100/30 to-orange-100/30 rounded-full blur-2xl -translate-y-8 translate-x-8' />
+
+						<CardContent className='p-6'>
+							<div className='flex items-center gap-4'>
+								<div className='relative'>
+									<div
+										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getGroupColor(
+											inventoryItem.product.novascore
+										)}`}>
+											{getGroupScore(inventoryItem.product.novascore) || '?'}
+									</div>
+								</div>
+								<div className='flex-1'>
+									<h3 className='font-bold text-gray-900 mb-1'>
+										Groupe NOVA
+									</h3>
+									<p className='text-sm text-gray-600 leading-relaxed'>
+										{getNovascoreText(
+											inventoryItem.product.novascore
 										)}
 									</p>
 								</div>
@@ -451,126 +502,19 @@ const ProductDetailPage: FC = () => {
 				</div>
 
 				{/* ===== INFORMATIONS NUTRITIONNELLES ===== */}
-				{inventoryItem.product.nutrients &&
-					Object.keys(inventoryItem.product.nutrients).length > 0 && (
-						<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-orange-50/50 shadow-xl'>
-							<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-100/30 to-yellow-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+				{inventoryItem.product.nutrients && (
+					<NutritionInfoCard
+						nutrients={inventoryItem.product.nutrients}
+						unitType={inventoryItem.product.unitType}
+					/>
+				)}
 
-							<CardContent className='p-6'>
-								<div className='flex items-center gap-3 mb-6'>
-									<div className='p-2 rounded-xl bg-orange-50 border border-orange-200'>
-										<Star className='size-5 text-orange-600' />
-									</div>
-									<div>
-										<h3 className='font-bold text-gray-900'>
-											Valeurs nutritionnelles
-										</h3>
-										<p className='text-sm text-gray-600'>
-											Pour 100{' '}
-											{inventoryItem.product.unitType ===
-												'L' ||
-											inventoryItem.product.unitType ===
-												'ML'
-												? 'mL'
-												: 'g'}
-										</p>
-									</div>
-								</div>
-
-								<div className='grid grid-cols-2 md:grid-cols-3 gap-4'>
-									{inventoryItem.product.nutrients.energy !==
-										undefined && (
-										<div className='bg-gradient-to-r from-red-50 to-orange-50 border border-red-100 rounded-xl p-4'>
-											<div className='text-2xl font-bold text-red-700 mb-1'>
-												{
-													inventoryItem.product
-														.nutrients.energy
-												}
-											</div>
-											<div className='text-sm font-medium text-red-600'>
-												kcal
-											</div>
-											<div className='text-xs text-gray-600 mt-1'>
-												Énergie
-											</div>
-										</div>
-									)}
-
-									{inventoryItem.product.nutrients.fats !==
-										undefined && (
-										<div className='bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-100 rounded-xl p-4'>
-											<div className='text-2xl font-bold text-yellow-700 mb-1'>
-												{
-													inventoryItem.product
-														.nutrients.fats
-												}
-											</div>
-											<div className='text-sm font-medium text-yellow-600'>
-												g
-											</div>
-											<div className='text-xs text-gray-600 mt-1'>
-												Matières grasses
-											</div>
-										</div>
-									)}
-
-									{inventoryItem.product.nutrients
-										.carbohydrates !== undefined && (
-										<div className='bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4'>
-											<div className='text-2xl font-bold text-blue-700 mb-1'>
-												{
-													inventoryItem.product
-														.nutrients.carbohydrates
-												}
-											</div>
-											<div className='text-sm font-medium text-blue-600'>
-												g
-											</div>
-											<div className='text-xs text-gray-600 mt-1'>
-												Glucides
-											</div>
-										</div>
-									)}
-
-									{inventoryItem.product.nutrients
-										.proteins !== undefined && (
-										<div className='bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl p-4'>
-											<div className='text-2xl font-bold text-green-700 mb-1'>
-												{
-													inventoryItem.product
-														.nutrients.proteins
-												}
-											</div>
-											<div className='text-sm font-medium text-green-600'>
-												g
-											</div>
-											<div className='text-xs text-gray-600 mt-1'>
-												Protéines
-											</div>
-										</div>
-									)}
-
-									{inventoryItem.product.nutrients.salt !==
-										undefined && (
-										<div className='bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4'>
-											<div className='text-2xl font-bold text-purple-700 mb-1'>
-												{
-													inventoryItem.product
-														.nutrients.salt
-												}
-											</div>
-											<div className='text-sm font-medium text-purple-600'>
-												g
-											</div>
-											<div className='text-xs text-gray-600 mt-1'>
-												Sel
-											</div>
-										</div>
-									)}
-								</div>
-							</CardContent>
-						</Card>
-					)}
+				{/* ===== LISTE DES INGRÉDIENTS ===== */}
+				{inventoryItem.product.ingredients && (
+					<IngredientsCard
+						ingredients={inventoryItem.product.ingredients}
+					/>
+				)}
 
 				{/* ===== INFORMATIONS D'ACHAT ===== */}
 				<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-blue-50/50 shadow-xl'>

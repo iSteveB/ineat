@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NutriScore, EcoScore, UnitType } from '../../DTOs';
+import { Nutriscore, Ecoscore, UnitType, Novascore } from '../../DTOs';
 
 /**
  * DTO pour les paramètres de recherche
@@ -107,23 +107,33 @@ export class ProductSearchResultDto {
 
   @ApiPropertyOptional({
     description: 'Nutri-Score du produit',
-    enum: NutriScore,
-    example: NutriScore.B,
+    enum: Nutriscore,
+    example: Nutriscore.B,
     nullable: true,
   })
   @IsOptional()
-  @IsEnum(NutriScore)
-  nutriscore?: NutriScore | null;
+  @IsEnum(Nutriscore)
+  nutriscore?: Nutriscore | null;
 
   @ApiPropertyOptional({
     description: 'Eco-Score du produit',
-    enum: EcoScore,
-    example: EcoScore.B,
+    enum: Ecoscore,
+    example: Ecoscore.B,
     nullable: true,
   })
   @IsOptional()
-  @IsEnum(EcoScore)
-  ecoScore?: EcoScore | null;
+  @IsEnum(Ecoscore)
+  ecoscore?: Ecoscore | null;
+
+  @ApiPropertyOptional({
+    description: 'Groupe NOVA du produit',
+    enum: Novascore,
+    example: Novascore.GROUP_2,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsEnum(Novascore)
+  novascore?: Novascore | null;
 
   @ApiPropertyOptional({
     description: 'URL de l\'image du produit',

@@ -2,8 +2,6 @@ import type { FC } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { InventoryItem, ExpiryStatus } from '@/schemas';
 import { formatRelativeDate } from '@/utils/dateHelpers';
-import { NutriScoreBadge } from '@/components/common/NutriScoreBadge';
-import { EcoScoreBadge } from '@/components/common/EcoScoreBadge';
 import {
 	MapPin,
 	Package,
@@ -13,6 +11,7 @@ import {
 	CheckCircle2,
 	Clock,
 } from 'lucide-react';
+import ScoreBadge from '@/components/common/ScoreBadge';
 
 interface InventoryItemWithStatus extends InventoryItem {
 	expiryStatus: ExpiryStatus;
@@ -191,7 +190,8 @@ const ProductItem: FC<ProductItemProps> = ({
 										{showNutriscore &&
 											item.product.nutriscore && (
 												<div className='transform hover:scale-110 transition-transform duration-200'>
-													<NutriScoreBadge
+													<ScoreBadge
+														type='nutri'
 														score={
 															item.product
 																.nutriscore
@@ -201,12 +201,13 @@ const ProductItem: FC<ProductItemProps> = ({
 												</div>
 											)}
 										{showEcoscore &&
-											item.product.ecoScore && (
+											item.product.ecoscore && (
 												<div className='transform hover:scale-110 transition-transform duration-200'>
-													<EcoScoreBadge
+													<ScoreBadge
+														type='eco'
 														score={
 															item.product
-																.ecoScore
+																.ecoscore
 														}
 														size='sm'
 													/>
@@ -283,7 +284,8 @@ const ProductItem: FC<ProductItemProps> = ({
 									{showNutriscore &&
 										item.product.nutriscore && (
 											<div className='transform hover:scale-110 transition-transform duration-200'>
-												<NutriScoreBadge
+												<ScoreBadge
+													type='nutri'
 													score={
 														item.product.nutriscore
 													}
@@ -291,10 +293,11 @@ const ProductItem: FC<ProductItemProps> = ({
 												/>
 											</div>
 										)}
-									{showEcoscore && item.product.ecoScore && (
+									{showEcoscore && item.product.ecoscore && (
 										<div className='transform hover:scale-110 transition-transform duration-200'>
-											<EcoScoreBadge
-												score={item.product.ecoScore}
+											<ScoreBadge
+												type='eco'
+												score={item.product.ecoscore}
 												size='md'
 											/>
 										</div>

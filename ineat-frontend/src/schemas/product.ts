@@ -3,13 +3,13 @@ import {
 	UuidSchema,
 	UnitTypeSchema,
 	NutriScoreSchema,
-	EcoScoreSchema,
-	NovaScoreSchema,
+	EcoscoreSchema,
+	NovascoreSchema,
 	ShortTextSchema,
-  NutriScore,
-  EcoScore,
-  NovaScore,
-  UnitType,
+	NutriScore,
+	Ecoscore,
+	Novascore,
+	UnitType,
 } from './base';
 import {
 	TimestampsSchema,
@@ -73,6 +73,10 @@ export const NutritionalInfoSchema = z.object({
 		.number()
 		.min(0, 'Le sel ne peut pas être négatif')
 		.optional(), // g pour 100g
+	sodium: z.coerce
+		.number()
+		.min(0, 'Le sodium ne peut pas être négatif')
+		.optional(), // g pour 100g
 	fiber: z.coerce
 		.number()
 		.min(0, 'Les fibres ne peuvent pas être négatives')
@@ -97,10 +101,11 @@ export const ProductSchema = z
 		category: CategorySchema,
 		unitType: UnitTypeSchema,
 		nutriscore: NutriScoreSchema.optional(),
-		ecoScore: EcoScoreSchema.optional(),
-		novaScore: NovaScoreSchema.optional(),
+		ecoscore: EcoscoreSchema.optional(),
+		novascore: NovascoreSchema.optional(),
 		imageUrl: z.string().url("URL d'image invalide").optional(),
 		externalId: z.string().optional(), // ID OpenFoodFacts
+		ingredients: z.string().optional(),
 		nutrients: NutritionalInfoSchema.optional(),
 	})
 	.merge(TimestampsSchema);
@@ -136,10 +141,11 @@ export const CreateProductSchema = z.object({
 	category: z.string().min(1, 'La catégorie est obligatoire'), // Slug de la catégorie
 	unitType: UnitTypeSchema,
 	nutriscore: NutriScoreSchema.optional(),
-	ecoScore: EcoScoreSchema.optional(),
-	novaScore: NovaScoreSchema.optional(),
+	ecoscore: EcoscoreSchema.optional(),
+	novascore: NovascoreSchema.optional(),
 	imageUrl: z.string().url("URL d'image invalide").optional(),
 	nutrients: NutritionalInfoSchema.optional(),
+	ingredients: z.string().optional(),
 });
 export type CreateProductData = z.infer<typeof CreateProductSchema>;
 
@@ -155,7 +161,7 @@ export const ProductFiltersSchema = z.object({
 	categoryId: UuidSchema.optional(),
 	brand: z.string().optional(),
 	nutriscore: z.array(NutriScoreSchema).optional(),
-	ecoScore: z.array(EcoScoreSchema).optional(),
+	ecoscore: z.array(EcoscoreSchema).optional(),
 	hasImage: z.boolean().optional(),
 	unitType: z.array(UnitTypeSchema).optional(),
 });
@@ -254,15 +260,15 @@ export const mapOpenFoodFactsProduct = (
 	// Normaliser l'ecoscore
 	const ecoscore = ofProduct.ecoscore_grade?.toUpperCase();
 	const validEcoscore = ['A', 'B', 'C', 'D', 'E'].includes(ecoscore || '')
-		? (ecoscore as EcoScore)
+		? (ecoscore as Ecoscore)
 		: undefined;
 
 	// Normaliser le nova score
-	const novaScore = ofProduct.nova_group
+	const novascore = ofProduct.nova_group
 		? ['1', '2', '3', '4'].includes(ofProduct.nova_group)
 			? (['A', 'B', 'C', 'D'][
 					parseInt(ofProduct.nova_group) - 1
-			  ] as NovaScore)
+			  ] as Novascore)
 			: undefined
 		: undefined;
 
@@ -272,8 +278,8 @@ export const mapOpenFoodFactsProduct = (
 		category: categoryId,
 		unitType: 'UNIT', // Par défaut, peut être modifié par l'utilisateur
 		nutriscore: validNutriscore,
-		ecoScore: validEcoscore,
-		novaScore: novaScore,
+		ecoscore: validEcoscore,
+		novascore: novascore,
 		imageUrl: ofProduct.image_url,
 		nutrients: ofProduct.nutriments
 			? {

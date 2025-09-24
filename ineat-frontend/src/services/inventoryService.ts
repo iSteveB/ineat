@@ -11,16 +11,33 @@ import {
 	hasBudgetImpact,
 } from '@/schemas';
 
-// Types spécifiques au service (pas dans les schémas)
+// Types spécifiques au service
 export interface ProductSearchResult {
 	id: string;
 	name: string;
 	brand?: string;
 	nutriscore?: 'A' | 'B' | 'C' | 'D' | 'E';
-	ecoScore?: 'A' | 'B' | 'C' | 'D' | 'E';
+	ecoscore?: 'A' | 'B' | 'C' | 'D' | 'E';
+	novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4';
 	imageUrl?: string;
 	unitType: 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
 	barcode?: string;
+
+	// Nutrition
+	nutrients?: {
+		energy?: number;
+		proteins?: number;
+		carbohydrates?: number;
+		fats?: number;
+		sugars?: number;
+		fiber?: number;
+		salt?: number;
+		saturatedFats?: number;
+	};
+
+	// Contenu
+	ingredients?: string;
+
 	category: {
 		id: string;
 		name: string;
@@ -50,6 +67,23 @@ export interface QuickAddFormDataWithCategory {
 	purchasePrice?: number;
 	storageLocation?: string;
 	notes?: string;
+
+	// Création rapide avec données enrichies
+	nutriscore?: 'A' | 'B' | 'C' | 'D' | 'E';
+	ecoscore?: 'A' | 'B' | 'C' | 'D' | 'E';
+	novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4';
+	nutrients?: {
+		energy?: number;
+		proteins?: number;
+		carbohydrates?: number;
+		fats?: number;
+		sugars?: number;
+		fiber?: number;
+		salt?: number;
+		saturatedFats?: number;
+	};
+	imageUrl?: string;
+	ingredients?: string;
 }
 
 // Type pour les réponses d'API (version simplifiée d'InventoryItem)
@@ -86,6 +120,10 @@ interface UnknownItemData {
 	name?: string;
 	product?: {
 		name?: string;
+		nutriscore?: string;
+		ecoscore?: string;
+		novascore?: string;
+		imageUrl?: string;
 	};
 }
 
@@ -176,6 +214,7 @@ export const extractNotificationDataDefensive = (
 export const inventoryService = {
 	/**
 	 * Récupère l'inventaire complet de l'utilisateur avec filtres optionnels
+	 * Support des nouveaux filtres par scores nutritionnels
 	 */
 	async getInventory(filters?: InventoryFilters): Promise<InventoryItem[]> {
 		const searchParams = new URLSearchParams();
@@ -195,6 +234,9 @@ export const inventoryService = {
 			);
 		}
 
+		// FILTRES pour les scores (si disponibles dans InventoryFilters)
+		// Note: Ces filtres peuvent être ajoutés si le schéma InventoryFilters les supporte
+
 		const queryString = searchParams.toString();
 		const endpoint = `/inventory${queryString ? `?${queryString}` : ''}`;
 
@@ -203,6 +245,7 @@ export const inventoryService = {
 
 	/**
 	 * Ajoute un produit manuellement à l'inventaire
+	 * Support complet des nouveaux champs nutritionnels et environnementaux
 	 * Utilisé pour créer un nouveau produit (scan + OpenFoodFacts ou saisie complète)
 	 * Retourne les informations budgétaires enrichies
 	 */
@@ -225,6 +268,23 @@ export const inventoryService = {
 		if (!productData.quantity || productData.quantity <= 0) {
 			throw new Error('La quantité doit être supérieure à 0');
 		}
+
+		// Vérification des nouveaux champs
+		if (productData.nutrients) {
+			// Validation optionnelle des valeurs nutritionnelles
+			Object.entries(productData.nutrients).forEach(([key, value]) => {
+				if (typeof value === 'number' && value < 0) {
+					throw new Error(
+						`La valeur nutritionnelle ${key} ne peut pas être négative`
+					);
+				}
+			});
+		}
+
+		if (productData.imageUrl && !isValidUrl(productData.imageUrl)) {
+			throw new Error("URL d'image invalide");
+		}
+
 		const response = await apiClient.post<AddProductResponse>(
 			'/inventory/products',
 			productData
@@ -276,6 +336,7 @@ export const inventoryService = {
 		if (!data.quantity || data.quantity <= 0) {
 			throw new Error('La quantité doit être supérieure à 0');
 		}
+
 		const response = await apiClient.post<AddProductResponse>(
 			'/inventory/products/quick-add',
 			data
@@ -335,17 +396,24 @@ export const inventoryService = {
 
 	/**
 	 * Recherche des produits dans la base de données
+	 * ENRICHI - Les résultats incluent maintenant les nouveaux champs nutritionnels
 	 * @param query Terme de recherche (minimum 2 caractères)
 	 * @param limit Nombre maximum de résultats (défaut: 10)
-	 * @returns Liste des produits correspondants
+	 * @param includeNutritionalData Inclure les données nutritionnelles dans les résultats
+	 * @returns Liste des produits correspondants avec données enrichies
 	 */
 	async searchProducts(
 		query: string,
-		limit: number = 10
+		limit: number = 10,
+		includeNutritionalData: boolean = true
 	): Promise<ProductSearchResult[]> {
 		const searchParams = new URLSearchParams();
 		searchParams.append('q', query);
 		searchParams.append('limit', limit.toString());
+
+		if (includeNutritionalData) {
+			searchParams.append('includeNutritionalData', 'true');
+		}
 
 		const endpoint = `/products/search?${searchParams.toString()}`;
 
@@ -353,9 +421,32 @@ export const inventoryService = {
 	},
 
 	/**
+	 * Recherche des produits par score nutritionnel
+	 * NOUVEAU - Permet de filtrer par Nutri-Score, Eco-Score, ou Nova-Score
+	 * @param scoreType Type de score ('nutriscore' | 'ecoscore' | 'novascore')
+	 * @param scoreValue Valeur du score recherchée
+	 * @param limit Nombre maximum de résultats
+	 * @returns Liste des produits correspondants
+	 */
+	async searchProductsByScore(
+		scoreType: 'nutriscore' | 'ecoscore' | 'novascore',
+		scoreValue: string,
+		limit: number = 20
+	): Promise<ProductSearchResult[]> {
+		const searchParams = new URLSearchParams();
+		searchParams.append('scoreType', scoreType);
+		searchParams.append('scoreValue', scoreValue);
+		searchParams.append('limit', limit.toString());
+
+		const endpoint = `/products/search/by-score?${searchParams.toString()}`;
+
+		return await apiClient.get<ProductSearchResult[]>(endpoint);
+	},
+
+	/**
 	 * Récupère un produit par son ID
 	 * @param productId ID du produit
-	 * @returns Détails du produit
+	 * @returns Détails du produit avec toutes les données enrichies
 	 */
 	async getProductById(productId: string): Promise<Product> {
 		return await apiClient.get<Product>(`/products/${productId}`);
@@ -371,6 +462,7 @@ export const inventoryService = {
 
 	/**
 	 * Récupère les statistiques de l'inventaire
+	 * ENRICHI - Peut inclure des statistiques sur les scores nutritionnels
 	 */
 	async getInventoryStats(): Promise<InventoryStats> {
 		return await apiClient.get<InventoryStats>('/inventory/stats');
@@ -389,4 +481,119 @@ export const inventoryService = {
 
 		return await apiClient.get<InventoryItem[]>(endpoint);
 	},
+
+	/**
+	 * Récupère des suggestions nutritionnelles basées sur l'inventaire
+	 * Analyse l'inventaire actuel et propose des améliorations nutritionnelles
+	 * @returns Suggestions d'amélioration nutritionnelle
+	 */
+	async getNutritionalSuggestions(): Promise<{
+		recommendations: Array<{
+			type: 'nutriscore' | 'ecoscore' | 'nova' | 'balance';
+			message: string;
+			priority: 'low' | 'medium' | 'high';
+			suggestedProducts?: ProductSearchResult[];
+		}>;
+		currentProfile: {
+			averageNutriscore?: string;
+			averageEcoscore?: string;
+			ultraProcessedPercentage?: number;
+		};
+	}> {
+		return await apiClient.get('/inventory/nutritional-suggestions');
+	},
 };
+
+/**
+ * Validation d'URL
+ * @param urlString URL à valider
+ * @returns true si l'URL est valide
+ */
+function isValidUrl(urlString: string): boolean {
+	try {
+		new URL(urlString);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/**
+ * Formatage des scores pour l'affichage
+ * @param score Score à formater
+ * @param scoreType Type de score
+ * @returns Score formaté avec label
+ */
+export function formatScoreForDisplay(
+	score: string | undefined,
+	scoreType: 'nutriscore' | 'ecoscore' | 'novascore'
+): string | null {
+	if (!score) return null;
+
+	switch (scoreType) {
+		case 'nutriscore':
+		case 'ecoscore':
+			return score.toUpperCase(); // A, B, C, D, E
+
+		case 'novascore': {
+			const novaLabels = {
+				GROUP_1: '1 - Non transformés',
+				GROUP_2: '2 - Ingrédients transformés',
+				GROUP_3: '3 - Transformés',
+				GROUP_4: '4 - Ultra-transformés',
+			};
+			return novaLabels[score as keyof typeof novaLabels] || score;
+		}
+
+		default:
+			return score;
+	}
+}
+
+/**
+ * Calcul de la qualité nutritionnelle globale
+ * @param product Produit avec ses scores
+ * @returns Score de qualité global (0-100)
+ */
+export function calculateOverallNutritionalQuality(product: {
+	nutriscore?: string;
+	ecoscore?: string;
+	novascore?: string;
+}): number {
+	let score = 50; // Score de base
+
+	// Nutri-Score (30% du poids)
+	if (product.nutriscore) {
+		const nutriscoreValues = { A: 100, B: 80, C: 60, D: 40, E: 20 };
+		score +=
+			(nutriscoreValues[
+				product.nutriscore as keyof typeof nutriscoreValues
+			] -
+				50) *
+			0.3;
+	}
+
+	// Eco-Score (20% du poids)
+	if (product.ecoscore) {
+		const ecoscoreValues = { A: 100, B: 80, C: 60, D: 40, E: 20 };
+		score +=
+			(ecoscoreValues[product.ecoscore as keyof typeof ecoscoreValues] -
+				50) *
+			0.2;
+	}
+
+	// Nova-Score (20% du poids, inversé car plus c'est bas, mieux c'est)
+	if (product.novascore) {
+		const novaValues = {
+			GROUP_1: 100,
+			GROUP_2: 75,
+			GROUP_3: 50,
+			GROUP_4: 25,
+		};
+		score +=
+			(novaValues[product.novascore as keyof typeof novaValues] - 50) *
+			0.2;
+	}
+
+	return Math.max(0, Math.min(100, Math.round(score)));
+}

@@ -1,8 +1,19 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsEnum, IsISO8601, Min, ValidateNested, IsUUID, Matches } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+  IsISO8601,
+  Min,
+  ValidateNested,
+  IsUUID,
+  Matches,
+  IsUrl,
+} from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// Enums correspondant au schéma Prisma
 export enum UnitType {
   KG = 'KG',
   G = 'G',
@@ -11,7 +22,7 @@ export enum UnitType {
   UNIT = 'UNIT',
 }
 
-export enum NutriScore {
+export enum Nutriscore {
   A = 'A',
   B = 'B',
   C = 'C',
@@ -19,7 +30,7 @@ export enum NutriScore {
   E = 'E',
 }
 
-export enum EcoScore {
+export enum Ecoscore {
   A = 'A',
   B = 'B',
   C = 'C',
@@ -27,8 +38,25 @@ export enum EcoScore {
   E = 'E',
 }
 
-// DTO pour les informations nutritionnelles
+export enum Novascore {
+  GROUP_1 = 'GROUP_1', // Nova group 1 - Aliments non transformés ou minimalement transformés
+  GROUP_2 = 'GROUP_2',
+  GROUP_3 = 'GROUP_3',
+  GROUP_4 = 'GROUP_4', // Nova group 4 - Aliments ultra-transformés
+}
+
 export class NutritionalInfoDto {
+  @ApiPropertyOptional({
+    description: 'Énergie pour 100g/100ml (en kcal)',
+    example: 250,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: "L'énergie doit être un nombre valide" })
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
+  @Min(0, { message: "L'énergie ne peut pas être négative" })
+  energy?: number;
+
   @ApiPropertyOptional({
     description: 'Quantité de glucides pour 100g/100ml',
     example: 12.5,
@@ -36,9 +64,20 @@ export class NutritionalInfoDto {
   })
   @IsOptional()
   @IsNumber({}, { message: 'Les glucides doivent être un nombre valide' })
-  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
   @Min(0, { message: 'Les glucides ne peuvent pas être négatifs' })
   carbohydrates?: number;
+
+  @ApiPropertyOptional({
+    description: 'Quantité de sucres pour 100g/100ml',
+    example: 8.2,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Les sucres doivent être un nombre valide' })
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
+  @Min(0, { message: 'Les sucres ne peuvent pas être négatifs' })
+  sugars?: number;
 
   @ApiPropertyOptional({
     description: 'Quantité de protéines pour 100g/100ml',
@@ -47,7 +86,7 @@ export class NutritionalInfoDto {
   })
   @IsOptional()
   @IsNumber({}, { message: 'Les protéines doivent être un nombre valide' })
-  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
   @Min(0, { message: 'Les protéines ne peuvent pas être négatives' })
   proteins?: number;
 
@@ -58,9 +97,34 @@ export class NutritionalInfoDto {
   })
   @IsOptional()
   @IsNumber({}, { message: 'Les lipides doivent être un nombre valide' })
-  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
   @Min(0, { message: 'Les lipides ne peuvent pas être négatifs' })
   fats?: number;
+
+  @ApiPropertyOptional({
+    description: 'Quantité de graisses saturées pour 100g/100ml',
+    example: 1.5,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber(
+    {},
+    { message: 'Les graisses saturées doivent être un nombre valide' },
+  )
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
+  @Min(0, { message: 'Les graisses saturées ne peuvent pas être négatives' })
+  saturatedFats?: number;
+
+  @ApiPropertyOptional({
+    description: 'Quantité de fibres pour 100g/100ml',
+    example: 2.3,
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber({}, { message: 'Les fibres doivent être un nombre valide' })
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
+  @Min(0, { message: 'Les fibres ne peuvent pas être négatives' })
+  fiber?: number;
 
   @ApiPropertyOptional({
     description: 'Quantité de sel pour 100g/100ml',
@@ -69,12 +133,11 @@ export class NutritionalInfoDto {
   })
   @IsOptional()
   @IsNumber({}, { message: 'Le sel doit être un nombre valide' })
-  @Transform(({ value }) => value ? parseFloat(value) : undefined)
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
   @Min(0, { message: 'Le sel ne peut pas être négatif' })
   salt?: number;
 }
 
-// DTO principal pour l'ajout d'un produit manuel
 export class AddManualProductDto {
   @ApiProperty({
     description: 'Nom du produit',
@@ -103,7 +166,8 @@ export class AddManualProductDto {
   @IsOptional()
   @IsString({ message: 'Le code-barres doit être une chaîne de caractères' })
   @Matches(/^(\d{8}|\d{12,14})$/, {
-    message: 'Le code-barres doit contenir 8, 12, 13 ou 14 chiffres (format EAN-8, UPC-A, EAN-13, etc.)'
+    message:
+      'Le code-barres doit contenir 8, 12, 13 ou 14 chiffres (format EAN-8, UPC-A, EAN-13, etc.)',
   })
   @Transform(({ value }) => value?.trim() || null)
   barcode?: string;
@@ -127,19 +191,24 @@ export class AddManualProductDto {
   quantity: number;
 
   @ApiProperty({
-    description: 'Type d\'unité pour la quantité',
+    description: "Type d'unité pour la quantité",
     example: UnitType.KG,
     enum: UnitType,
   })
-  @IsEnum(UnitType, { message: 'Le type d\'unité doit être valide (KG, G, L, ML, UNIT)' })
+  @IsEnum(UnitType, {
+    message: "Le type d'unité doit être valide (KG, G, L, ML, UNIT)",
+  })
   unitType: UnitType;
 
   @ApiProperty({
-    description: 'Date d\'achat du produit',
+    description: "Date d'achat du produit",
     example: '2024-01-15',
     format: 'date',
   })
-  @IsISO8601({}, { message: 'La date d\'achat doit être une date valide (format ISO 8601)' })
+  @IsISO8601(
+    {},
+    { message: "La date d'achat doit être une date valide (format ISO 8601)" },
+  )
   purchaseDate: string;
 
   @ApiPropertyOptional({
@@ -148,18 +217,24 @@ export class AddManualProductDto {
     format: 'date',
   })
   @IsOptional()
-  @IsISO8601({}, { message: 'La date de péremption doit être une date valide (format ISO 8601)' })
+  @IsISO8601(
+    {},
+    {
+      message:
+        'La date de péremption doit être une date valide (format ISO 8601)',
+    },
+  )
   expiryDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Prix d\'achat du produit',
-    example: 3.50,
+    description: "Prix d'achat du produit",
+    example: 3.5,
     minimum: 0,
   })
   @IsOptional()
-  @IsNumber({}, { message: 'Le prix d\'achat doit être un nombre valide' })
-  @Transform(({ value }) => value ? parseFloat(value) : undefined)
-  @Min(0, { message: 'Le prix d\'achat ne peut pas être négatif' })
+  @IsNumber({}, { message: "Le prix d'achat doit être un nombre valide" })
+  @Transform(({ value }) => (value ? parseFloat(value) : undefined))
+  @Min(0, { message: "Le prix d'achat ne peut pas être négatif" })
   purchasePrice?: number;
 
   @ApiPropertyOptional({
@@ -167,7 +242,9 @@ export class AddManualProductDto {
     example: 'refrigerateur',
   })
   @IsOptional()
-  @IsString({ message: 'Le lieu de stockage doit être une chaîne de caractères' })
+  @IsString({
+    message: 'Le lieu de stockage doit être une chaîne de caractères',
+  })
   @Transform(({ value }) => value?.trim() || null)
   storageLocation?: string;
 
@@ -182,21 +259,54 @@ export class AddManualProductDto {
 
   @ApiPropertyOptional({
     description: 'Score nutritionnel Nutri-Score',
-    example: NutriScore.B,
-    enum: NutriScore,
+    example: Nutriscore.B,
+    enum: Nutriscore,
   })
   @IsOptional()
-  @IsEnum(NutriScore, { message: 'Le Nutri-Score doit être valide (A, B, C, D, E)' })
-  nutriscore?: NutriScore;
+  @IsEnum(Nutriscore, {
+    message: 'Le Nutri-Score doit être valide (A, B, C, D, E)',
+  })
+  nutriscore?: Nutriscore;
 
   @ApiPropertyOptional({
     description: 'Score environnemental Eco-Score',
-    example: EcoScore.A,
-    enum: EcoScore,
+    example: Ecoscore.A,
+    enum: Ecoscore,
   })
   @IsOptional()
-  @IsEnum(EcoScore, { message: 'L\'Eco-Score doit être valide (A, B, C, D, E)' })
-  ecoscore?: EcoScore;
+  @IsEnum(Ecoscore, { message: "L'Eco-Score doit être valide (A, B, C, D, E)" })
+  ecoscore?: Ecoscore;
+
+  @ApiPropertyOptional({
+    description: 'Score NOVA de transformation alimentaire',
+    example: Novascore.GROUP_2,
+    enum: Novascore,
+  })
+  @IsOptional()
+  @IsEnum(Novascore, {
+    message:
+      'Le NOVA Score doit être valide (GROUP_1, GROUP_2, GROUP_3, GROUP_4)',
+  })
+  novascore?: Novascore;
+
+  @ApiPropertyOptional({
+    description: 'Liste des ingrédients du produit',
+    example: 'Pommes (95%), sucre, acide citrique, arôme naturel',
+  })
+  @IsOptional()
+  @IsString({
+    message: 'Les ingrédients doivent être une chaîne de caractères',
+  })
+  @Transform(({ value }) => value?.trim() || null)
+  ingredients?: string;
+
+  @ApiPropertyOptional({
+    description: "URL de l'image du produit",
+    example: 'https://example.com/pommes-golden.jpg',
+  })
+  @IsOptional()
+  @IsUrl({}, { message: "L'URL de l'image doit être valide" })
+  imageUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Informations nutritionnelles détaillées',
@@ -205,13 +315,12 @@ export class AddManualProductDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => NutritionalInfoDto)
-  nutritionalInfo?: NutritionalInfoDto;
+  nutrients?: NutritionalInfoDto;
 }
 
-// DTO pour la réponse après création
 export class ProductCreatedResponseDto {
   @ApiProperty({
-    description: 'Identifiant unique de l\'élément d\'inventaire',
+    description: "Identifiant unique de l'élément d'inventaire",
     example: 'e7a3c4b2-8f1d-4e2a-9b7c-3f5e8d1a6c9b',
   })
   @IsUUID()
@@ -255,7 +364,7 @@ export class ProductCreatedResponseDto {
   quantity: number;
 
   @ApiProperty({
-    description: 'Type d\'unité',
+    description: "Type d'unité",
     example: UnitType.KG,
     enum: UnitType,
   })
@@ -263,7 +372,7 @@ export class ProductCreatedResponseDto {
   unitType: UnitType;
 
   @ApiProperty({
-    description: 'Date d\'achat',
+    description: "Date d'achat",
     example: '2024-01-15T00:00:00.000Z',
   })
   @IsISO8601()
@@ -278,8 +387,8 @@ export class ProductCreatedResponseDto {
   expiryDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Prix d\'achat',
-    example: 3.50,
+    description: "Prix d'achat",
+    example: 3.5,
   })
   @IsOptional()
   @IsNumber()
@@ -303,21 +412,53 @@ export class ProductCreatedResponseDto {
 
   @ApiPropertyOptional({
     description: 'Score Nutri-Score',
-    example: NutriScore.B,
-    enum: NutriScore,
+    example: Nutriscore.B,
+    enum: Nutriscore,
   })
   @IsOptional()
-  @IsEnum(NutriScore)
-  nutriscore?: NutriScore;
+  @IsEnum(Nutriscore)
+  nutriscore?: Nutriscore;
 
   @ApiPropertyOptional({
     description: 'Score Eco-Score',
-    example: EcoScore.A,
-    enum: EcoScore,
+    example: Ecoscore.A,
+    enum: Ecoscore,
   })
   @IsOptional()
-  @IsEnum(EcoScore)
-  ecoscore?: EcoScore;
+  @IsEnum(Ecoscore)
+  ecoscore?: Ecoscore;
+
+  @ApiPropertyOptional({
+    description: 'Score NOVA de transformation alimentaire',
+    example: Novascore.GROUP_2,
+    enum: Novascore,
+  })
+  @IsOptional()
+  @IsEnum(Novascore)
+  novascore?: Novascore;
+
+  @ApiPropertyOptional({
+    description: 'Liste des ingrédients du produit',
+    example: 'Pommes (95%), sucre, acide citrique, arôme naturel',
+  })
+  @IsOptional()
+  @IsString()
+  ingredients?: string;
+
+  @ApiPropertyOptional({
+    description: "URL de l'image du produit",
+    example: 'https://example.com/pommes-golden.jpg',
+  })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @ApiPropertyOptional({
+    description: 'Informations nutritionnelles détaillées',
+    type: NutritionalInfoDto,
+  })
+  @IsOptional()
+  nutrients?: NutritionalInfoDto;
 
   @ApiProperty({
     description: 'Date de création',

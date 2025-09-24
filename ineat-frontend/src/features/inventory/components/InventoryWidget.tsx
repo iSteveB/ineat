@@ -7,24 +7,47 @@ import {
 	ArrowRight,
 } from 'lucide-react';
 import type { FC } from 'react';
+import { useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Link } from '@tanstack/react-router';
+import {
+	useInventoryItems,
+	useInventoryLoading,
+	useInventoryError,
+	useInventoryActions,
+} from '@/stores/inventoryStore';
 
 interface InventoryWidgetProps {
-	totalProducts: number;
-	soonExpiringCount: number;
-	criticalCount: number;
-	expiredCount: number;
+	// Props optionnelles pour la compatibilité, mais on utilisera les données du store
+	totalProducts?: number;
+	soonExpiringCount?: number;
+	criticalCount?: number;
+	expiredCount?: number;
 }
 
-export const InventoryWidget: FC<InventoryWidgetProps> = ({
-	totalProducts,
-	soonExpiringCount,
-	criticalCount,
-	expiredCount,
-}) => {
+export const InventoryWidget: FC<InventoryWidgetProps> = () => {
+	// Utiliser les mêmes hooks que l'InventoryPage pour assurer la cohérence
+	const items = useInventoryItems();
+	const isLoading = useInventoryLoading();
+	const error = useInventoryError();
+	const { fetchInventoryItems } = useInventoryActions();
+
+	// Récupérer les données à l'initialisation du composant
+	useEffect(() => {
+		fetchInventoryItems();
+	}, [fetchInventoryItems]);
+
+	// Calculer les statistiques directement depuis les items
+	const totalProducts = items.length;
+	
+	// Calculer les comptes par statut d'expiration
+	const expiredCount = items.filter(item => item.expiryStatus === 'EXPIRED').length;
+	const criticalCount = items.filter(item => item.expiryStatus === 'CRITICAL').length;
+	const warningCount = items.filter(item => item.expiryStatus === 'WARNING').length;
+	const soonExpiringCount = criticalCount + warningCount;
+
 	// Calculer le statut global de l'inventaire
-	const getInventoryStatus = () => {
+	const getInventoryStatus = (): string => {
 		if (expiredCount > 0) return 'critical';
 		if (criticalCount > 0) return 'warning';
 		if (soonExpiringCount > 0) return 'attention';
@@ -82,11 +105,64 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 
 	const colors = getStatusColors(status);
 
+	// Affichage pendant le chargement
+	if (isLoading) {
+		return (
+			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
+				<div className='absolute top-0 right-0 size-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />
+				
+				<CardHeader className='pb-4'>
+					<CardTitle className='flex items-center justify-between text-gray-800'>
+						<div className='flex items-center gap-3'>
+							<div className='p-2 rounded-xl bg-gray-100 border border-gray-200'>
+								<Package className='size-5 text-gray-400' />
+							</div>
+							<span className='font-semibold'>Inventaire</span>
+						</div>
+					</CardTitle>
+				</CardHeader>
+
+				<CardContent className='space-y-6'>
+					<div className='flex items-center justify-center h-20'>
+						<div className='size-8 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600' />
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
+	// Affichage en cas d'erreur
+	if (error) {
+		return (
+			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
+				<div className='absolute top-0 right-0 size-24 bg-gradient-to-br from-red-100/20 to-orange-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />
+				
+				<CardHeader className='pb-4'>
+					<CardTitle className='flex items-center justify-between text-gray-800'>
+						<div className='flex items-center gap-3'>
+							<div className='p-2 rounded-xl bg-red-50 border border-red-200'>
+								<Package className='size-5 text-red-600' />
+							</div>
+							<span className='font-semibold'>Inventaire</span>
+						</div>
+					</CardTitle>
+				</CardHeader>
+
+				<CardContent className='space-y-6'>
+					<div className='text-center py-4'>
+						<p className='text-sm text-red-600'>Erreur lors du chargement</p>
+						<p className='text-xs text-gray-500 mt-1'>{error}</p>
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
+
 	return (
 		<Link to='/app/inventory' className='block group'>
 			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-[1.02]'>
 				{/* Effet de brillance en arrière-plan */}
-				<div className='absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />
+				<div className='absolute top-0 right-0 size-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />
 
 				<CardHeader className='pb-4'>
 					<CardTitle className='flex items-center justify-between text-gray-800'>

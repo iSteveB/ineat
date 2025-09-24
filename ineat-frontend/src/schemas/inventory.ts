@@ -71,7 +71,28 @@ export const AddInventoryItemSchema = z
 			.optional(),
 		category: z.string().min(1, 'La catégorie est obligatoire'), // Slug de la catégorie
 
-		// Informations d'inventaire
+		// Scores nutritionnels et environnementaux
+		nutricore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
+		ecoscore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
+		novascore: z.enum(['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4']).optional(),
+
+		// Informations nutritionnelles (objet JSON)
+		nutrients: z.object({
+			energy: z.number().min(0).optional(), // kcal pour 100g
+			proteins: z.number().min(0).optional(), // g pour 100g
+			carbohydrates: z.number().min(0).optional(), // g pour 100g
+			fats: z.number().min(0).optional(), // g pour 100g
+			sugars: z.number().min(0).optional(), // g pour 100g
+			fiber: z.number().min(0).optional(), // g pour 100g
+			salt: z.number().min(0).optional(), // g pour 100g
+			saturatedFats: z.number().min(0).optional(), // g pour 100g
+		}).optional(),
+
+		// Contenu et média
+		imageUrl: z.string().url('URL d\'image invalide').optional(),
+		ingredients: z.string().max(2000, 'La liste des ingrédients ne peut pas dépasser 2000 caractères').optional(),
+
+		// Informations d'inventaire (existantes)
 		quantity: QuantitySchema,
 		unitType: z.enum(['KG', 'G', 'L', 'ML', 'UNIT']),
 		purchaseDate: DateInputSchema.refine((date) => {
