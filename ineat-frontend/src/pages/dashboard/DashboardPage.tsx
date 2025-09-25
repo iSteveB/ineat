@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { InventoryWidget } from '@/features/inventory/components/InventoryWidget';
+import { InventoryWidget } from '@/features/inventory/InventoryWidget';
 import NutriscoreWidget from '@/features/nutriscore/NutriscoreWidget';
 import { BudgetWidget } from '@/features/budget/BudgetWidget';
 import { RecentProductsWidget } from '@/features/product/RecentProductsWidget';
