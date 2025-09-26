@@ -19,6 +19,31 @@ export class PrismaService
   // Etablit la connexion à la base de données
   async onModuleInit() {
     await this.$connect();
+
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        console.log('🔄 Running database migrations...');
+        const { exec } = require('child_process');
+        await new Promise((resolve, reject) => {
+          exec(
+            'npx prisma migrate deploy',
+            (error: any, stdout: any, stderr: any) => {
+              if (error) {
+                console.error('❌ Migration failed:', error);
+                reject(error);
+              } else {
+                console.log('✅ Migrations completed successfully');
+                console.log(stdout);
+                resolve(stdout);
+              }
+            },
+          );
+        });
+      } catch (error) {
+        console.error('❌ Failed to run migrations:', error);
+        throw error;
+      }
+    }
   }
 
   // Ferme proprement la connexion à la base de données
