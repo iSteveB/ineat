@@ -16,8 +16,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 import { ProductSearchBar } from '@/features/product/ProductSearchBar';
 import { ProductSearchResults } from '@/features/product/ProductSearchResult';
-import { ExistingProductQuickAddForm } from '@/features/inventory/ExistingProductQuickAddForm';
-import { AddManualProductForm } from '@/features/inventory/AddManualProductForm';
+import { ExistingProductQuickAddForm } from '@/features/inventory/form/ExistingProductQuickAddForm';
+import { AddManualProductForm } from '@/features/inventory/form/AddManualProductForm';
 
 import {
 	inventoryService,

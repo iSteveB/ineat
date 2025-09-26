@@ -10,8 +10,8 @@ import {
 	ExternalLink,
 } from 'lucide-react';
 import { BarcodeScanner } from './BarcodeScanner';
-import { AddManualProductForm } from '@/features/inventory/AddManualProductForm';
-import { ExistingProductQuickAddForm } from '@/features/inventory/ExistingProductQuickAddForm';
+import { AddManualProductForm } from '@/features/inventory/form/AddManualProductForm';
+import { ExistingProductQuickAddForm } from '@/features/inventory/form/ExistingProductQuickAddForm';
 import type { Product } from '@/schemas/product';
 import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import type { AddInventoryItemData } from '@/schemas';
@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AddOFFProductForm } from '../inventory/AddOFFProductForm';
+import { AddOFFProductForm } from '../inventory/form/AddOFFProductForm';
 
 type FlowStep = 'scan' | 'form' | 'not-found' | 'success';
 
