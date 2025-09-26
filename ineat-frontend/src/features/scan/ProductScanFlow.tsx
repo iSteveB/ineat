@@ -10,8 +10,8 @@ import {
 	ExternalLink,
 } from 'lucide-react';
 import { BarcodeScanner } from './BarcodeScanner';
-import { AddManualProductForm } from '@/features/inventory/components/AddManualProductForm';
-import { ExistingProductQuickAddForm } from '@/features/inventory/components/ExistingProductQuickAddForm';
+import { AddManualProductForm } from '@/features/inventory/form/AddManualProductForm';
+import { ExistingProductQuickAddForm } from '@/features/inventory/form/ExistingProductQuickAddForm';
 import type { Product } from '@/schemas/product';
 import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import type { AddInventoryItemData } from '@/schemas';
@@ -30,17 +30,22 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AddOFFProductForm } from '../inventory/form/AddOFFProductForm';
 
 type FlowStep = 'scan' | 'form' | 'not-found' | 'success';
 
 /**
- * Données minimales pour orchestrer le flow
+ * Données enrichies pour orchestrer le flow
  */
 interface FlowData {
 	scannedBarcode?: string;
-	offProductData?: Partial<Product>; // Données converties depuis OpenFoodFacts
-	existingProduct?: ProductSearchResult; // Produit existant trouvé en local
-	isNewProduct: boolean; // true = nouveau, false = existant
+	// Données OpenFoodFacts enrichies (avec scores, nutriments, etc.)
+	enrichedProductData?: OpenFoodFactsMapping;
+	// Données converties au format Product (pour compatibilité)
+	offProductData?: Partial<Product>;
+	// Produit existant trouvé en local
+	existingProduct?: ProductSearchResult;
+	isNewProduct: boolean;
 }
 
 interface ProductScanFlowProps {
@@ -259,19 +264,20 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 	/**
 	 * Gestionnaire quand un produit est trouvé via scan/saisie dans OpenFoodFacts
-	 * SIGNATURE CORRIGÉE : Accepte maintenant un OpenFoodFactsMapping
+	 * Accepte maintenant un OpenFoodFactsMapping avec toutes les données enrichies
 	 */
 	const handleProductFound = useCallback(
 		async (offProduct: OpenFoodFactsMapping): Promise<void> => {
 			console.log('Produit OpenFoodFacts trouvé:', offProduct);
 
-			// Convertir les données OpenFoodFacts vers le format Product
+			// Convertir les données OpenFoodFacts vers le format Product (pour compatibilité)
 			const productData = convertOffProductToPartialProduct(offProduct);
-
 			console.log('Données converties:', productData);
 
+			// Stocker à la fois les données enrichies ET les données converties
 			setFlowData({
-				offProductData: productData,
+				enrichedProductData: offProduct, // ✨ NOUVEAU: Données enrichies complètes
+				offProductData: productData, // Données converties (compatibilité)
 				scannedBarcode: productData.barcode,
 				isNewProduct: true,
 			});
@@ -443,21 +449,35 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 							{/* Formulaire approprié */}
 							{flowData.isNewProduct ? (
-								<AddManualProductForm
-									categories={categories}
-									onSubmit={handleNewProductSubmit}
-									onCancel={handleBackToScan}
-									isSubmitting={
-										addManualProductMutation.isPending
-									}
-									defaultProductName={
-										flowData.offProductData?.name
-									}
-									defaultBrand={
-										flowData.offProductData?.brand
-									}
-									defaultBarcode={flowData.scannedBarcode}
-								/>
+								flowData.enrichedProductData ? (
+									<AddOFFProductForm
+										categories={categories}
+										onSubmit={handleNewProductSubmit}
+										onCancel={handleBackToScan}
+										isSubmitting={
+											addManualProductMutation.isPending
+										}
+										enrichedProduct={
+											flowData.enrichedProductData
+										}
+									/>
+								) : (
+									<AddManualProductForm
+										categories={categories}
+										onSubmit={handleNewProductSubmit}
+										onCancel={handleBackToScan}
+										isSubmitting={
+											addManualProductMutation.isPending
+										}
+										defaultProductName={
+											flowData.offProductData?.name
+										}
+										defaultBrand={
+											flowData.offProductData?.brand
+										}
+										defaultBarcode={flowData.scannedBarcode}
+									/>
+								)
 							) : (
 								flowData.existingProduct && (
 									<ExistingProductQuickAddForm
