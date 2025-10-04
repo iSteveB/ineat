@@ -172,7 +172,14 @@ export type AddExistingProductToInventoryData = z.infer<
 export const UpdateInventoryItemSchema = z.object({
 	quantity: QuantitySchema.optional(),
 	expiryDate: DateInputSchema.optional(),
+	purchaseDate: DateInputSchema.refine((date) => {
+		const parsed = new Date(date);
+		const now = new Date();
+		now.setHours(23, 59, 59, 999);
+		return parsed <= now;
+	}, "La date d'achat ne peut pas être dans le futur").optional(),
 	purchasePrice: PriceSchema.optional(),
+	unitType: z.enum(['KG', 'G', 'L', 'ML', 'UNIT']).optional(),
 	storageLocation: z
 		.string()
 		.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
