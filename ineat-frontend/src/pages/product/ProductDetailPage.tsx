@@ -1,4 +1,4 @@
-import { useEffect, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import {
 	ArrowLeft,
@@ -26,15 +26,22 @@ import {
 } from '@/utils/dateHelpers';
 import { NutritionInfoCard } from '@/features/product/NutritionInfoCard';
 import { IngredientsCard } from '@/features/product/IngredientsCard';
+import { EditInventoryItemModal } from '@/features/inventory/EditInventoryItemModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { UpdateInventoryItemData } from '@/schemas';
 
 const ProductDetailPage: FC = () => {
 	const { productId } = useParams({ from: '/app/inventory/$productId' });
 	const navigate = useNavigate();
 	const items = useInventoryItems();
 	const isLoading = useInventoryLoading();
-	const { fetchInventoryItems, removeInventoryItem } = useInventoryActions();
+	const { fetchInventoryItems, removeInventoryItem, updateInventoryItem } =
+		useInventoryActions();
+
+	// État pour le modal de modification
+	const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+	const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
 	// Charger les données au montage du composant si elles ne sont pas déjà chargées
 	useEffect(() => {
@@ -188,8 +195,41 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
+	// Gérer l'ouverture du modal de modification
+	const handleOpenEditModal = (): void => {
+		setIsEditModalOpen(true);
+	};
+
+	// Gérer la fermeture du modal de modification
+	const handleCloseEditModal = (): void => {
+		setIsEditModalOpen(false);
+	};
+
+	// Gérer la mise à jour du produit
+	const handleUpdateProduct = async (
+		updates: UpdateInventoryItemData
+	): Promise<void> => {
+		if (!inventoryItem) return;
+
+		setIsUpdating(true);
+
+		try {
+			await updateInventoryItem(inventoryItem.id, updates);
+			toast.success('Produit mis à jour avec succès');
+			setIsEditModalOpen(false);
+		} catch (error) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+			} else {
+				toast.error('Erreur lors de la mise à jour du produit');
+			}
+		} finally {
+			setIsUpdating(false);
+		}
+	};
+
 	// Supprimer le produit
-	const handleDelete = async () => {
+	const handleDelete = async (): Promise<void> => {
 		if (!inventoryItem) return;
 
 		if (
@@ -483,7 +523,9 @@ const ProductDetailPage: FC = () => {
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getGroupColor(
 											inventoryItem.product.novascore
 										)}`}>
-											{getGroupScore(inventoryItem.product.novascore) || '?'}
+										{getGroupScore(
+											inventoryItem.product.novascore
+										) || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
@@ -592,6 +634,7 @@ const ProductDetailPage: FC = () => {
 				{/* ===== ACTIONS ===== */}
 				<div className='flex gap-4 pb-8'>
 					<Button
+						onClick={handleOpenEditModal}
 						variant='outline'
 						className='flex-1 h-12 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-transparent'>
 						<Edit3 className='size-4 mr-2' />
@@ -606,6 +649,15 @@ const ProductDetailPage: FC = () => {
 					</Button>
 				</div>
 			</div>
+
+			{/* ===== MODAL DE MODIFICATION ===== */}
+			<EditInventoryItemModal
+				item={inventoryItem}
+				isOpen={isEditModalOpen}
+				onClose={handleCloseEditModal}
+				onSubmit={handleUpdateProduct}
+				isSubmitting={isUpdating}
+			/>
 		</div>
 	);
 };
