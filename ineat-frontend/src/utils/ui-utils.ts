@@ -1,6 +1,8 @@
 // ===== IMPORTS SCHÉMAS ZOD =====
 import {
 	NutriScore,
+	Ecoscore,
+	Novascore,
 	ExpiryStatus,
 	calculateExpiryStatus,
 } from '@/schemas';
@@ -145,46 +147,85 @@ export const getBudgetBackgroundClass = (percentage: number): string => {
 	return 'bg-error-100';
 };
 
-// ===== COULEURS NUTRISCORE =====
+// ===== COULEURS SCORE =====
 
 /**
- * Obtient la classe de couleur de texte associée au Nutriscore
+ * Obtient la classe de couleur de texte associée au Score
  */
-export const getNutriscoreTextColor = (score: NutriScore): string => {
+export const getScoreTextColor = (score: NutriScore): string => {
 	switch (score) {
 		case 'A':
-			return 'text-nutriscore-a';
+			return 'text-score-a';
 		case 'B':
-			return 'text-nutriscore-b';
+			return 'text-score-b';
 		case 'C':
-			return 'text-nutriscore-c';
+			return 'text-score-c';
 		case 'D':
-			return 'text-nutriscore-d';
+			return 'text-score-d';
 		case 'E':
-			return 'text-nutriscore-e';
+			return 'text-score-e';
 		default:
 			return 'text-neutral-300';
 	}
 };
 
 /**
- * Obtient la classe de couleur de fond associée au Nutriscore
+ * Obtient la classe de couleur de fond associée au Score
  */
-export const getNutriscoreBackgroundColor = (score: NutriScore): string => {
+export const getScoreBackgroundColor = (score: NutriScore): string => {
 	switch (score) {
 		case 'A':
-			return 'bg-nutriscore-a';
+			return 'bg-score-a';
 		case 'B':
-			return 'bg-nutriscore-b';
+			return 'bg-score-b';
 		case 'C':
-			return 'bg-nutriscore-c';
+			return 'bg-score-c';
 		case 'D':
-			return 'bg-nutriscore-d';
+			return 'bg-score-d';
 		case 'E':
-			return 'bg-nutriscore-e';
+			return 'bg-score-e';
 		default:
 			return 'bg-neutral-200';
 	}
+};
+
+// ===== FONCTIONS DE CONVERSION DES SCORES =====
+
+/**
+ * Convertit un EcoScore en valeur numérique (A=5, B=4, C=3, D=2, E=1)
+ */
+export const ecoscoreToNumber = (score: Ecoscore): number => {
+	const mapping = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+	return mapping[score];
+};
+
+/**
+ * Convertit une valeur numérique en EcoScore
+ */
+export const numberToEcoscore = (value: number): Ecoscore => {
+	if (value >= 4.5) return 'A';
+	if (value >= 3.5) return 'B';
+	if (value >= 2.5) return 'C';
+	if (value >= 1.5) return 'D';
+	return 'E';
+};
+
+/**
+ * Convertit un NovaScore en valeur numérique (A=4, B=3, C=2, D=1)
+ */
+export const novascoreToNumber = (score: Novascore): number => {
+	const mapping = { GROUP_1: 4, GROUP_2: 3, GROUP_3: 2, GROUP_4: 1 };
+	return mapping[score];
+};
+
+/**
+ * Convertit une valeur numérique en Novascore
+ */
+export const numberToNovascore = (value: number): Novascore => {
+	if (value >= 3.5) return 'GROUP_1';
+	if (value >= 2.5) return 'GROUP_2';
+	if (value >= 1.5) return 'GROUP_3';
+	return 'GROUP_4';
 };
 
 // ===== COULEURS STATUT D'EXPIRATION =====

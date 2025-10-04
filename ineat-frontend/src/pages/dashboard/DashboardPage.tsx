@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { InventoryWidget } from '@/features/inventory/InventoryWidget';
-import NutriscoreWidget from '@/features/nutriscore/NutriscoreWidget';
+import ScoreWidget from '@/features/score/ScoreWidget';
 import { BudgetWidget } from '@/features/budget/BudgetWidget';
 import { RecentProductsWidget } from '@/features/product/RecentProductsWidget';
 import { ExpiringProductsWidget } from '@/features/product/ExpiringProductsWidget';
@@ -14,6 +14,16 @@ const Dashboard: FC = () => {
 	const { user } = useAuthStore();
 
 	// ===== RÉCUPÉRATION DES DONNÉES =====
+
+	// Récupération de l'inventaire complet pour le ScoreWidget
+	const {
+		data: fullInventory = [],
+		isLoading: isLoadingInventory,
+		error: inventoryError,
+	} = useQuery({
+		queryKey: ['fullInventory'],
+		queryFn: () => inventoryService.getInventory(),
+	});
 
 	// Récupération des produits récents (5 derniers)
 	const {
@@ -35,21 +45,14 @@ const Dashboard: FC = () => {
 		queryFn: () => inventoryService.getInventory({ expiringWithinDays: 7 }),
 	});
 
-	// ===== DONNÉES MOCKÉES CONFORMES AUX SCHÉMAS ZOD =====
-
-	// Données Nutriscore mockées
-	const nutriscoreData = {
-		averageScore: 2.8, // Score numérique (A=5, B=4, C=3, D=2, E=1)
-		variation: 2.7, // Variation en pourcentage depuis le mois dernier
-	};
-
 	// ===== CALCULS DÉRIVÉS =====
 
-	// État de chargement global (pour les widgets autres que InventoryWidget)
-	const isLoading = isLoadingRecent || isLoadingExpiring;
+	// État de chargement global
+	const isLoading =
+		isLoadingInventory || isLoadingRecent || isLoadingExpiring;
 
 	// Gestion des erreurs
-	const error = recentError || expiringError;
+	const error = inventoryError || recentError || expiringError;
 
 	// ===== GESTION DES ÉTATS =====
 
@@ -96,11 +99,8 @@ const Dashboard: FC = () => {
 			<div className='flex flex-col gap-6'>
 				<InventoryWidget />
 
-				{/* Widget Nutriscore */}
-				<NutriscoreWidget
-					averageScore={nutriscoreData.averageScore}
-					variation={nutriscoreData.variation}
-				/>
+				{/* Widget Score avec données réelles */}
+				<ScoreWidget inventory={fullInventory} />
 
 				{/* Widget Budget */}
 				<BudgetWidget />
