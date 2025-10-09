@@ -327,7 +327,7 @@ const PersonalInfoPage = () => {
 											className='sr-only'
 										/>
 										<span className='text-2xl mb-2'>
-											👤
+											💤
 										</span>
 										<span className='font-medium text-neutral-300'>
 											Seul
