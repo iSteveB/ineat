@@ -18,7 +18,6 @@ import {
 	User,
 	Save,
 	Loader2,
-	Camera,
 	Edit3,
 	AlertCircle,
 } from 'lucide-react';
@@ -50,7 +49,7 @@ const PersonalInfoPage = () => {
 				firstName: user.firstName || '',
 				lastName: user.lastName || '',
 				email: user.email || '',
-				emailConfirmation: user.email || '',
+				emailConfirmation: '',
 				profileType: (user.profileType || 'SINGLE') as ProfileType,
 			});
 		}
@@ -159,10 +158,10 @@ const PersonalInfoPage = () => {
 			<div className='px-6 py-6 space-y-6'>
 				{/* ===== SECTION PHOTO DE PROFIL ===== */}
 				<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-neutral-50 to-neutral-100/50 shadow-xl'>
-					<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-success-50/20 to-primary-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+					<div className='absolute top-0 right-0 size-32 bg-gradient-to-br from-success-50/20 to-primary-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 					<CardContent className='p-6 flex flex-col items-center justify-center gap-4'>
 						<div
-							className='relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg cursor-pointer group transition-all duration-300 hover:shadow-xl'
+							className='relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl'
 							onClick={handleAvatarClick}>
 							{/* Photo de profil */}
 							{user?.avatarUrl ? (
@@ -180,13 +179,6 @@ const PersonalInfoPage = () => {
 									)}
 								</span>
 							)}
-
-							{/* Overlay d'édition */}
-							<div className='absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center'>
-								<div className='bg-white/20 backdrop-blur-sm rounded-full p-2 transform scale-75 group-hover:scale-100 transition-all duration-300'>
-									<Camera className='size-5 text-white' />
-								</div>
-							</div>
 						</div>
 
 						{/* Informations utilisateur */}
