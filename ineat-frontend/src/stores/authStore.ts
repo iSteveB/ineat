@@ -6,7 +6,8 @@ import {
 	User,
 	LoginCredentials,
 	RegisterData,
-	AuthResponse
+	AuthResponse,
+	ProfileType,
 } from '@/schemas';
 
 // ===== IMPORTS SERVICES =====
@@ -15,6 +16,7 @@ import {
 	isValidUser,
 	extractUserFromAuthResponse,
 } from '../services/authService';
+import { userService } from '../services/userService';
 
 // ===== INTERFACE DU STORE D'AUTHENTIFICATION =====
 interface AuthState {
@@ -36,6 +38,14 @@ interface AuthState {
 	setError: (error: string | null) => void;
 	setUser: (user: User) => void;
 	clearUser: () => void;
+
+	// ===== ACTIONS DE GESTION DU PROFIL =====
+	updatePersonalInfo: (data: {
+		firstName: string;
+		lastName: string;
+		email: string;
+		profileType: ProfileType;
+	}) => Promise<void>;
 
 	// ===== UTILITAIRES =====
 	isUserPremium: () => boolean;
@@ -292,6 +302,51 @@ export const useAuthStore = create<AuthState>()(
 							error instanceof Error
 								? error.message
 								: 'Erreur lors du traitement du callback OAuth',
+					});
+					throw error;
+				}
+			},
+
+			// ===== ACTIONS DE GESTION DU PROFIL =====
+
+			/**
+			 * Met à jour les informations personnelles de l'utilisateur
+			 */
+			updatePersonalInfo: async (data: {
+				firstName: string;
+				lastName: string;
+				email: string;
+				profileType: ProfileType;
+			}) => {
+				try {
+					set({ isLoading: true, error: null });
+
+					// Appel au service pour mettre à jour les informations
+					const updatedUser = await userService.updatePersonalInfo(
+						data
+					);
+
+					// Validation de l'utilisateur mis à jour
+					if (!isValidUser(updatedUser)) {
+						throw new Error(
+							'Données utilisateur mises à jour invalides'
+						);
+					}
+
+					// Mise à jour du state avec les nouvelles informations
+					set({
+						user: updatedUser,
+						isAuthenticated: true,
+						isLoading: false,
+						error: null,
+					});
+				} catch (error) {
+					set({
+						isLoading: false,
+						error:
+							error instanceof Error
+								? error.message
+								: 'Une erreur est survenue lors de la mise à jour du profil',
 					});
 					throw error;
 				}

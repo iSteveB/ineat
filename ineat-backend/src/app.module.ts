@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { ProductsModule } from './product/products.module';
 import { BudgetModule } from './budget/budget.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { BudgetModule } from './budget/budget.module';
     InventoryModule,
     ProductsModule,
     BudgetModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
