@@ -40,6 +40,7 @@ const PersonalInfoPage = () => {
 		lastName: '',
 		email: '',
 		emailConfirmation: '',
+		emailConfirmation: '',
 		profileType: (user?.profileType || 'SINGLE') as ProfileType,
 	});
 
