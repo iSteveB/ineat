@@ -14,7 +14,7 @@ import { AuthController } from './controllers/auth.controller';
 import { OAuthController } from './controllers/oauth.controller';
 
 // Services
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 
 @Module({
   imports: [

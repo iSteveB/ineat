@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
-import { RegisterDto, SafeUserDto } from './dto/auth.dto';
+import { PrismaService } from '../../prisma/prisma.service';
+import { RegisterDto, SafeUserDto } from '../dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
 import { User } from '@prisma/client';
@@ -184,7 +184,7 @@ export class AuthService {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...result } = user;
-    
+
     // Retourner dans le format d'API response standardisé
     return {
       success: true,

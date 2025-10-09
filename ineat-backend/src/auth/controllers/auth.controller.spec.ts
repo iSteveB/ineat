@@ -1,7 +1,7 @@
 // src/auth/controllers/auth.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../services/auth.service';
 import { BadRequestException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as authDtos from '../dto/auth.dto';
