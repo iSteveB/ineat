@@ -13,6 +13,7 @@ model User {
   passwordHash String
   firstName    String
   lastName     String
+  avatarUrl    String?
   profileType  ProfileType
   preferences  Json // Stocke les préférences en JSON (restrictions alimentaires, allergies, etc.)
   createdAt    DateTime     @default(now())
