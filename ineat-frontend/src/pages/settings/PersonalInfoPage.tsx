@@ -163,7 +163,7 @@ const PersonalInfoPage = () => {
 					<div className='absolute top-0 right-0 size-32 bg-gradient-to-br from-success-50/20 to-primary-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 					<CardContent className='p-6 flex flex-col items-center justify-center gap-4'>
 						<div
-							className='relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl'
+							className='relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl cursor-pointer'
 							onClick={handleAvatarClick}>
 							{/* Photo de profil */}
 							{user?.avatarUrl ? (
