@@ -21,7 +21,11 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { AvatarService } from './avatar.service';
-import { UpdateAvatarDto, AvatarUpdatedResponseDto } from './dto/update-avatar.dto';
+import {
+  UpdateAvatarDto,
+  AvatarUpdatedResponseDto,
+  CloudinaryUploadParamsDto,
+} from './dto/update-avatar.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request as ExpressRequest } from 'express';
 
@@ -42,28 +46,19 @@ export class AvatarController {
   constructor(private readonly avatarService: AvatarService) {}
 
   /**
-   * Génère une signature pour l'upload sécurisé d'un avatar
+   * Génère les paramètres pour l'upload sécurisé d'un avatar
    */
   @Get('upload-signature')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Générer une signature d\'upload',
+    summary: "Générer les paramètres d'upload",
     description:
-      'Génère une signature sécurisée pour permettre l\'upload direct d\'un avatar vers Cloudinary depuis le client',
+      "Génère les paramètres nécessaires pour permettre l'upload direct d'un avatar vers Cloudinary depuis le client",
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Signature générée avec succès',
-    schema: {
-      type: 'object',
-      properties: {
-        signature: { type: 'string', example: 'a1b2c3d4e5f6...' },
-        timestamp: { type: 'number', example: 1234567890 },
-        cloudName: { type: 'string', example: 'your-cloud-name' },
-        apiKey: { type: 'string', example: '123456789012345' },
-        folder: { type: 'string', example: 'avatars/user-id-123' },
-      },
-    },
+    description: 'Paramètres générés avec succès',
+    type: CloudinaryUploadParamsDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -73,13 +68,9 @@ export class AvatarController {
     status: HttpStatus.NOT_FOUND,
     description: 'Utilisateur non trouvé',
   })
-  async getUploadSignature(@Request() req: AuthenticatedRequest): Promise<{
-    signature: string;
-    timestamp: number;
-    cloudName: string;
-    apiKey: string;
-    folder: string;
-  }> {
+  async getUploadSignature(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<CloudinaryUploadParamsDto> {
     const userId = req.user.id;
     return this.avatarService.generateAvatarUploadSignature(userId);
   }
@@ -90,9 +81,9 @@ export class AvatarController {
   @Patch()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Mettre à jour l\'avatar',
+    summary: "Mettre à jour l'avatar",
     description:
-      'Met à jour l\'URL de l\'avatar de l\'utilisateur après l\'upload vers Cloudinary. Supprime automatiquement l\'ancien avatar.',
+      "Met à jour l'URL de l'avatar de l'utilisateur après l'upload vers Cloudinary. Supprime automatiquement l'ancien avatar.",
   })
   @ApiBody({ type: UpdateAvatarDto })
   @ApiResponse({
@@ -126,9 +117,9 @@ export class AvatarController {
   @Delete()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Supprimer l\'avatar',
+    summary: "Supprimer l'avatar",
     description:
-      'Supprime l\'avatar de l\'utilisateur de Cloudinary et retire l\'URL de la base de données',
+      "Supprime l'avatar de l'utilisateur de Cloudinary et retire l'URL de la base de données",
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -142,7 +133,7 @@ export class AvatarController {
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'L\'utilisateur n\'a pas d\'avatar',
+    description: "L'utilisateur n'a pas d'avatar",
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -152,7 +143,9 @@ export class AvatarController {
     status: HttpStatus.NOT_FOUND,
     description: 'Utilisateur non trouvé',
   })
-  async deleteAvatar(@Request() req: AuthenticatedRequest): Promise<{ message: string }> {
+  async deleteAvatar(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<{ message: string }> {
     const userId = req.user.id;
     return this.avatarService.deleteAvatar(userId);
   }
@@ -163,9 +156,9 @@ export class AvatarController {
   @Get('optimized')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Obtenir l\'URL optimisée de l\'avatar',
+    summary: "Obtenir l'URL optimisée de l'avatar",
     description:
-      'Retourne l\'URL de l\'avatar avec transformations optimisées (cercle, centré sur le visage, taille personnalisée)',
+      "Retourne l'URL de l'avatar avec transformations optimisées (cercle, centré sur le visage, taille personnalisée)",
   })
   @ApiQuery({
     name: 'size',
@@ -176,14 +169,15 @@ export class AvatarController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'URL de l\'avatar optimisé',
+    description: "URL de l'avatar optimisé",
     schema: {
       type: 'object',
       properties: {
         avatarUrl: {
           type: 'string',
           nullable: true,
-          example: 'https://res.cloudinary.com/demo/image/upload/c_fill,g_face,h_150,r_max,w_150/avatars/user_123.jpg',
+          example:
+            'https://res.cloudinary.com/demo/image/upload/c_fill,g_face,h_150,r_max,w_150/avatars/user_123.jpg',
         },
       },
     },

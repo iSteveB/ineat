@@ -5,7 +5,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
+import {
+  UpdateAvatarDto,
+  CloudinaryUploadParamsDto,
+} from './dto/update-avatar.dto';
 
 @Injectable()
 export class AvatarService {
@@ -15,17 +18,13 @@ export class AvatarService {
   ) {}
 
   /**
-   * Génère une signature pour un upload sécurisé d'avatar
+   * Génère les paramètres pour un upload sécurisé côté client
    * @param userId - ID de l'utilisateur
-   * @returns Signature et paramètres pour l'upload Cloudinary
+   * @returns Paramètres pour l'upload Cloudinary
    */
-  async generateAvatarUploadSignature(userId: string): Promise<{
-    signature: string;
-    timestamp: number;
-    cloudName: string;
-    apiKey: string;
-    folder: string;
-  }> {
+  async generateAvatarUploadSignature(
+    userId: string,
+  ): Promise<CloudinaryUploadParamsDto> {
     // Vérifier que l'utilisateur existe
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -35,10 +34,8 @@ export class AvatarService {
       throw new NotFoundException('Utilisateur non trouvé');
     }
 
-    // Générer la signature pour le dossier avatars avec l'ID utilisateur
-    return this.cloudinaryService.generateUploadSignature(
-      `avatars/${userId}`,
-    );
+    // Retourner les paramètres pour l'upload avec preset
+    return this.cloudinaryService.generateUploadParams(`avatars/${userId}`);
   }
 
   /**
@@ -69,17 +66,13 @@ export class AvatarService {
 
     // Valider que l'URL provient bien de Cloudinary
     if (!avatarUrl.includes('cloudinary.com')) {
-      throw new BadRequestException(
-        'L\'URL doit provenir de Cloudinary',
-      );
+      throw new BadRequestException("L'URL doit provenir de Cloudinary");
     }
 
     // Si l'utilisateur avait déjà un avatar, le supprimer de Cloudinary
     if (user.avatarUrl && user.avatarUrl !== avatarUrl) {
       try {
-        const publicId = this.cloudinaryService.extractPublicId(
-          user.avatarUrl,
-        );
+        const publicId = this.cloudinaryService.extractPublicId(user.avatarUrl);
         await this.cloudinaryService.deleteImage(publicId);
       } catch (error) {
         // Si la suppression échoue, on continue quand même (l'ancien avatar reste sur Cloudinary)
@@ -120,14 +113,12 @@ export class AvatarService {
     }
 
     if (!user.avatarUrl) {
-      throw new BadRequestException('L\'utilisateur n\'a pas d\'avatar');
+      throw new BadRequestException("L'utilisateur n'a pas d'avatar");
     }
 
     // Supprimer l'image de Cloudinary
     try {
-      const publicId = this.cloudinaryService.extractPublicId(
-        user.avatarUrl,
-      );
+      const publicId = this.cloudinaryService.extractPublicId(user.avatarUrl);
       await this.cloudinaryService.deleteImage(publicId);
     } catch (error) {
       throw new BadRequestException(

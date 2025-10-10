@@ -1,15 +1,46 @@
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import { CLOUDINARY } from './cloudinary.provider';
 
 @Injectable()
 export class CloudinaryService {
   constructor(
-    @Inject(CLOUDINARY) private readonly cloudinary: typeof import('cloudinary').v2,
+    @Inject(CLOUDINARY)
+    private readonly cloudinary: typeof import('cloudinary').v2,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
-   * Génère une signature pour un upload sécurisé côté client
+   * Génère les paramètres pour un upload avec preset (méthode recommandée)
+   * @param folder - Dossier de destination dans Cloudinary (ex: 'avatars', 'recipes')
+   * @returns Objet contenant les paramètres nécessaires pour l'upload
+   */
+  generateUploadParams(folder: string): {
+    cloudName: string;
+    uploadPreset: string;
+    folder: string;
+  } {
+    // Récupérer le upload preset depuis les variables d'environnement
+    const uploadPreset = this.configService.get<string>(
+      'CLOUDINARY_UPLOAD_PRESET',
+    );
+
+    if (!uploadPreset) {
+      throw new BadRequestException(
+        "CLOUDINARY_UPLOAD_PRESET non configuré dans les variables d'environnement",
+      );
+    }
+
+    return {
+      cloudName: this.cloudinary.config().cloud_name as string,
+      uploadPreset,
+      folder,
+    };
+  }
+
+  /**
+   * Génère une signature pour un upload sécurisé côté client (méthode alternative)
    * @param folder - Dossier de destination dans Cloudinary (ex: 'avatars', 'recipes')
    * @returns Objet contenant la signature et les paramètres nécessaires
    */
@@ -57,16 +88,16 @@ export class CloudinaryService {
         folder,
         resource_type: 'image' as const,
         public_id: publicId,
-        transformation: [
-          { quality: 'auto' },
-          { fetch_format: 'auto' },
-        ],
+        transformation: [{ quality: 'auto' }, { fetch_format: 'auto' }],
       };
 
       this.cloudinary.uploader
         .upload_stream(
           uploadOptions,
-          (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+          (
+            error: UploadApiErrorResponse | undefined,
+            result: UploadApiResponse | undefined,
+          ) => {
             if (error) {
               reject(
                 new BadRequestException(
