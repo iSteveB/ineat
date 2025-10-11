@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronLeft, AlertTriangle, Leaf, Save, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -12,6 +12,8 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { userService } from '@/services/userService';
+import { toast } from 'sonner';
 
 // Liste des allergènes communs
 const allergens = [
@@ -46,6 +48,31 @@ const DietaryRestrictionsPage = () => {
 	const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
 	const [selectedDiets, setSelectedDiets] = useState<string[]>([]);
 	const [isSaving, setIsSaving] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+
+	// Charger les préférences au montage du composant
+	useEffect(() => {
+		const loadDietaryRestrictions = async () => {
+			try {
+				setIsLoading(true);
+				const preferences = await userService.getDietaryRestrictions();
+				setSelectedAllergens(preferences.allergens || []);
+				setSelectedDiets(preferences.diets || []);
+			} catch (error) {
+				console.error(
+					'Erreur lors du chargement des préférences:',
+					error
+				);
+				toast.error(
+					'Impossible de charger vos préférences alimentaires.'
+				);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		loadDietaryRestrictions();
+	}, []);
 
 	// Gestionnaires d'événements
 	const toggleSelection = (
@@ -60,18 +87,31 @@ const DietaryRestrictionsPage = () => {
 	};
 
 	// Fonction de sauvegarde
-	const savePreferences = () => {
-		setIsSaving(true);
-		console.log('Allergènes:', selectedAllergens);
-		console.log('Régimes:', selectedDiets);
-		// Simuler un appel API
-		setTimeout(() => {
-			// Ici, on appelle notre API pour sauvegarder les préférences
-			// apiClient.updateDietaryPreferences({ allergens: selectedAllergens, diets: selectedDiets });
+	const savePreferences = async () => {
+		try {
+			setIsSaving(true);
+			await userService.updateDietaryRestrictions({
+				allergens: selectedAllergens,
+				diets: selectedDiets,
+			});
+
+			toast.success('Vos préférences alimentaires ont été enregistrées.');
+		} catch (error) {
+			console.error('Erreur lors de la sauvegarde:', error);
+			toast.error('Impossible de sauvegarder vos préférences.');
+		} finally {
 			setIsSaving(false);
-			// Afficher un toast de succès
-		}, 1000);
+		}
 	};
+
+	// Afficher un loader pendant le chargement initial
+	if (isLoading) {
+		return (
+			<div className='min-h-screen bg-gradient-to-br from-neutral-50 to-info-50/30 flex items-center justify-center'>
+				<Loader2 className='size-8 animate-spin text-neutral-200' />
+			</div>
+		);
+	}
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-neutral-50 to-info-50/30'>
