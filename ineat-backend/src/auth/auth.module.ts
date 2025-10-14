@@ -16,6 +16,10 @@ import { OAuthController } from './controllers/oauth.controller';
 // Services
 import { AuthService } from './services/auth.service';
 
+// Guards
+import { AdminGuard } from './guards/admin.guard';
+import { PremiumGuard } from './guards/premium.guard';
+
 @Module({
   imports: [
     PrismaModule,
@@ -42,7 +46,10 @@ import { AuthService } from './services/auth.service';
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
+    // Guards
+    AdminGuard,
+    PremiumGuard,
   ],
-  exports: [AuthService],
+  exports: [AuthService, AdminGuard, PremiumGuard],
 })
 export class AuthModule {}
