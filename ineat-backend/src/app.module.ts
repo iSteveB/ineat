@@ -11,6 +11,7 @@ import { BudgetModule } from './budget/budget.module';
 import { UserModule } from './user/user.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ReceiptModule } from './receipt/receipt.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     UserModule,
     CloudinaryModule,
     AvatarModule,
+    ReceiptModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
