@@ -46,13 +46,13 @@ function mapDocumentTypeToPrisma(type: DocumentType): PrismaDocumentType {
  * DTO pour créer un receipt
  */
 export interface CreateReceiptDto {
-  userId: string;
-  documentType: DocumentType;
-  fileBuffer: Buffer;
-  fileName: string;
-  storeName?: string;
-  storeLocation?: string;
-}
+    userId: string;
+    documentType: DocumentType;
+    fileBuffer: Buffer;
+    fileName: string;
+    merchantName?: string;
+    merchantAddress?: string;
+  }
 
 /**
  * Service de gestion des receipts
@@ -119,8 +119,8 @@ export class ReceiptService {
             dto.documentType !== DocumentType.RECEIPT_IMAGE
               ? uploadResult.secureUrl
               : null,
-          storeName: dto.storeName,
-          storeLocation: dto.storeLocation,
+         // storeName: dto.storeName,
+          //storeLocation: dto.storeLocation,
         },
       });
 

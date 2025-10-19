@@ -269,10 +269,10 @@ model Receipt {
   
   // Informations extraites (dénormalisées pour performance)
   merchantName  String?
+  merchantLocation String?
+  merchantAddress String?
   totalAmount   Float?
   purchaseDate  DateTime?
-  storeName     String?
-  storeLocation String?
   
   // Métadonnées spécifiques factures drive
   invoiceNumber String?       // Numéro de facture

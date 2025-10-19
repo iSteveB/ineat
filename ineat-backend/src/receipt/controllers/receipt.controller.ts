@@ -127,8 +127,8 @@ export class ReceiptController {
       documentType: dto.documentType,
       fileBuffer: file.buffer,
       fileName: file.originalname,
-      storeName: dto.storeName,
-      storeLocation: dto.storeLocation,
+      merchantName: dto.merchantName,
+      merchantAddress: dto.merchantAddress,
     });
 
     return {

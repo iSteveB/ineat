@@ -1,9 +1,9 @@
 /**
  * DTOs pour le module Receipt
- * 
+ *
  * Data Transfer Objects pour la validation et la transformation des données
  * des requêtes et réponses de l'API Receipt/Invoice
- * 
+ *
  * @module receipt/dto/receipt.dto
  */
 
@@ -41,23 +41,23 @@ export class UploadReceiptDto {
 
   @ApiPropertyOptional({
     description: 'Nom du magasin (optionnel, pour pré-remplissage)',
-    example: 'Carrefour',
+    example: 'Carrefour Market',
     maxLength: 255,
   })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  storeName?: string;
+  merchantName?: string;
 
   @ApiPropertyOptional({
-    description: 'Localisation du magasin (optionnel)',
-    example: 'Paris 15ème',
+    description: 'Adresse du magasin (optionnel)',
+    example: '123 Rue de la République, 75015 Paris',
     maxLength: 255,
   })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  storeLocation?: string;
+  merchantAddress?: string;
 }
 
 /**
@@ -93,7 +93,7 @@ export class ReceiptItemDto {
 
   @ApiPropertyOptional({
     description: 'Prix total de la ligne en euros',
-    example: 2.50,
+    example: 2.5,
     minimum: 0,
   })
   @IsOptional()
@@ -130,7 +130,7 @@ export class ReceiptItemDto {
 
   @ApiPropertyOptional({
     description: 'Réduction appliquée en euros',
-    example: 0.50,
+    example: 0.5,
   })
   @IsOptional()
   @IsNumber()
@@ -166,29 +166,13 @@ export class ReceiptDataDto {
   totalAmount: number | null;
 
   @ApiPropertyOptional({
-    description: 'Montant total des taxes en euros',
-    example: 4.12,
-  })
-  @IsOptional()
-  @IsNumber()
-  taxAmount: number | null;
-
-  @ApiPropertyOptional({
-    description: 'Date de l\'achat',
+    description: "Date de l'achat",
     example: '2025-10-14T14:30:00Z',
   })
   @IsOptional()
   @IsDate()
   @Type(() => Date)
   purchaseDate: Date | null;
-
-  @ApiPropertyOptional({
-    description: 'Devise',
-    example: 'EUR',
-  })
-  @IsOptional()
-  @IsString()
-  currency: string | null;
 
   @ApiProperty({
     description: 'Liste des articles détectés',
@@ -245,7 +229,7 @@ export class OcrResultDto {
   data?: ReceiptDataDto;
 
   @ApiPropertyOptional({
-    description: 'Message d\'erreur en cas d\'échec',
+    description: "Message d'erreur en cas d'échec",
     example: 'Image de mauvaise qualité',
   })
   @IsOptional()
@@ -333,7 +317,7 @@ export class ReceiptStatusDto {
   ocrResult?: OcrResultDto;
 
   @ApiPropertyOptional({
-    description: 'Message d\'erreur (si échec)',
+    description: "Message d'erreur (si échec)",
     example: 'Format de fichier non supporté',
   })
   @IsOptional()
@@ -382,7 +366,7 @@ export class UpdateReceiptItemDto {
 
   @ApiPropertyOptional({
     description: 'Nouveau prix unitaire',
-    example: 1.30,
+    example: 1.3,
     minimum: 0,
   })
   @IsOptional()

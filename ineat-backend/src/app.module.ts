@@ -12,11 +12,15 @@ import { UserModule } from './user/user.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ReceiptModule } from './receipt/receipt.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    BullModule.forRoot({
+      redis: process.env.REDIS_URL,
     }),
     PrismaModule,
     AuthModule,
