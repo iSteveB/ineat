@@ -18,9 +18,13 @@ import { BullModule } from '@nestjs/bull';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
     BullModule.forRoot({
       redis: process.env.REDIS_URL,
+    }),
+    BullModule.registerQueue({
+      name: 'receipt-processing',
     }),
     PrismaModule,
     AuthModule,
