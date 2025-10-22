@@ -77,12 +77,12 @@ export class ReceiptValidationController {
   })
   @ApiParam({
     name: 'itemId',
-    description: "ID de l'item du ticket à valider",
+    description: 'ID de l\'item du ticket à valider',
     type: 'string',
     format: 'uuid',
   })
   @ApiBody({
-    description: "Données de validation de l'item",
+    description: 'Données de validation de l\'item',
     type: ValidateReceiptItemDto,
   })
   @ApiResponse({
@@ -131,17 +131,11 @@ export class ReceiptValidationController {
     const { receiptId, itemId } = params;
     const userId = req.user.id;
 
-    this.logger.log(
-      `Validation de l'item ${itemId} du ticket ${receiptId} par l'utilisateur ${userId}`,
-    );
+    this.logger.log(`Validation de l'item ${itemId} du ticket ${receiptId} par l'utilisateur ${userId}`);
 
     try {
       // 1. Vérifier que l'item existe et appartient à l'utilisateur
-      const existingItem = await this.findReceiptItem(
-        receiptId,
-        itemId,
-        userId,
-      );
+      const existingItem = await this.findReceiptItem(receiptId, itemId, userId);
 
       // 2. Gérer le produit (existant ou nouveau)
       const productId = await this.handleProduct(validationData);
@@ -158,32 +152,26 @@ export class ReceiptValidationController {
         success: true,
         data: this.mapItemToResponseDto(updatedItem),
         message: 'Item validé avec succès',
-        meta:
-          productId !== existingItem.productId
-            ? {
-                productAssociated: true,
-                productId,
-                newProductCreated: !validationData.productId,
-              }
-            : undefined,
+        meta: productId !== existingItem.productId 
+          ? { 
+              productAssociated: true,
+              productId,
+              newProductCreated: !validationData.productId 
+            }
+          : undefined,
       };
 
       this.logger.log(`Item ${itemId} validé avec succès`);
       return response;
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la validation de l'item ${itemId}: ${error.message}`,
-        error.stack,
-      );
 
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
+    } catch (error) {
+      this.logger.error(`Erreur lors de la validation de l'item ${itemId}: ${error.message}`, error.stack);
+      
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
-
-      throw new BadRequestException("Erreur lors de la validation de l'item");
+      
+      throw new BadRequestException('Erreur lors de la validation de l\'item');
     }
   }
 
@@ -192,11 +180,7 @@ export class ReceiptValidationController {
   /**
    * Trouve et vérifie l'existence d'un item de ticket
    */
-  private async findReceiptItem(
-    receiptId: string,
-    itemId: string,
-    userId: string,
-  ) {
+  private async findReceiptItem(receiptId: string, itemId: string, userId: string) {
     // Vérifier que le ticket appartient à l'utilisateur
     const receipt = await this.prisma.receipt.findFirst({
       where: {
@@ -227,9 +211,7 @@ export class ReceiptValidationController {
   /**
    * Gère l'association ou la création d'un produit
    */
-  private async handleProduct(
-    validationData: ValidateReceiptItemDto,
-  ): Promise<string | null> {
+  private async handleProduct(validationData: ValidateReceiptItemDto): Promise<string | null> {
     // Si un productId est fourni, vérifier qu'il existe
     if (validationData.productId) {
       const existingProduct = await this.prisma.product.findUnique({
@@ -263,9 +245,7 @@ export class ReceiptValidationController {
     });
 
     if (!category) {
-      throw new BadRequestException(
-        `Catégorie '${productData.categorySlug}' non trouvée`,
-      );
+      throw new BadRequestException(`Catégorie '${productData.categorySlug}' non trouvée`);
     }
 
     // Vérifier l'unicité du code-barres si fourni
@@ -275,9 +255,7 @@ export class ReceiptValidationController {
       });
 
       if (existingProduct) {
-        throw new BadRequestException(
-          'Un produit avec ce code-barres existe déjà',
-        );
+        throw new BadRequestException('Un produit avec ce code-barres existe déjà');
       }
     }
 
@@ -293,9 +271,7 @@ export class ReceiptValidationController {
       },
     });
 
-    this.logger.log(
-      `Nouveau produit créé: ${newProduct.name} (${newProduct.id})`,
-    );
+    this.logger.log(`Nouveau produit créé: ${newProduct.name} (${newProduct.id})`);
     return newProduct;
   }
 
@@ -309,32 +285,18 @@ export class ReceiptValidationController {
   ) {
     const updateData: any = {
       ...(productId && { productId }),
-      ...(validationData.detectedName && {
-        detectedName: validationData.detectedName,
-      }),
+      ...(validationData.detectedName && { detectedName: validationData.detectedName }),
       ...(validationData.quantity && { quantity: validationData.quantity }),
-      ...(validationData.unitPrice !== undefined && {
-        unitPrice: validationData.unitPrice,
-      }),
-      ...(validationData.totalPrice !== undefined && {
-        totalPrice: validationData.totalPrice,
-      }),
-      ...(validationData.confidence !== undefined && {
-        confidence: validationData.confidence,
-      }),
-      ...(validationData.categoryGuess && {
-        category: validationData.categoryGuess, // ✅ Mapper categoryGuess → category
-      }),
-      ...(validationData.validated !== undefined && {
-        validated: validationData.validated,
-      }),
+      ...(validationData.unitPrice !== undefined && { unitPrice: validationData.unitPrice }),
+      ...(validationData.totalPrice !== undefined && { totalPrice: validationData.totalPrice }),
+      ...(validationData.confidence !== undefined && { confidence: validationData.confidence }),
+      ...(validationData.categoryGuess && { categoryGuess: validationData.categoryGuess }),
+      ...(validationData.validated !== undefined && { validated: validationData.validated }),
       // Informations d'inventaire (stockées pour usage ultérieur)
-      ...(validationData.expiryDate && {
-        expiryDate: new Date(validationData.expiryDate),
+      ...(validationData.expiryDate && { 
+        expiryDate: new Date(validationData.expiryDate) 
       }),
-      ...(validationData.storageLocation && {
-        storageLocation: validationData.storageLocation,
-      }),
+      ...(validationData.storageLocation && { storageLocation: validationData.storageLocation }),
       ...(validationData.notes && { notes: validationData.notes }),
     };
 
@@ -363,7 +325,7 @@ export class ReceiptValidationController {
       totalPrice: item.totalPrice,
       confidence: item.confidence,
       validated: item.validated,
-      categoryGuess: item.category, 
+      categoryGuess: item.categoryGuess,
       expiryDate: item.expiryDate?.toISOString(),
       storageLocation: item.storageLocation,
       notes: item.notes,
