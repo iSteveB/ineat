@@ -19,6 +19,15 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequiresPremium } from '../../auth/decorators/requires-premium.decorator';
 import { PremiumGuard } from '../../auth/guards/premium.guard';
 import { PrismaService } from '../../prisma/prisma.service';
+import {
+  ReceiptResultsDto,
+  ReceiptResultsResponseDto,
+  ReceiptResultsParamsDto,
+  ReceiptMetadataDto,
+  ReceiptItemWithProductDto,
+  ValidationStatsDto,
+  AssociatedProductDto,
+} from '../dto/receipt-results.dto';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -26,76 +35,6 @@ interface AuthenticatedRequest extends Request {
     email: string;
     role: string;
   };
-}
-
-// ===== DTOs =====
-
-export class ReceiptMetadataDto {
-  id: string;
-  status: string;
-  imageUrl: string | null;
-  totalAmount: number | null;
-  purchaseDate: string | null;
-  merchantName: string | null;
-  merchantAddress: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export class AssociatedProductDto {
-  id: string;
-  name: string;
-  brand: string | null;
-  barcode: string | null;
-  unitType: string;
-  imageUrl: string | null;
-  nutriscore: string | null;
-  ecoScore: string | null;
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-}
-
-export class ReceiptItemWithProductDto {
-  id: string;
-  productId: string | null;
-  detectedName: string;
-  quantity: number;
-  unitPrice: number | null;
-  totalPrice: number | null;
-  confidence: number;
-  validated: boolean;
-  categoryGuess: string | null;
-  expiryDate: string | null;
-  storageLocation: string | null;
-  notes: string | null;
-  createdAt: string;
-  updatedAt: string;
-  product: AssociatedProductDto | null;
-}
-
-export class ValidationStatsDto {
-  totalItems: number;
-  validatedItems: number;
-  validationProgress: number;
-  itemsWithProducts: number;
-  itemsNeedingNewProducts: number;
-  averageConfidence: number;
-  readyForInventory: boolean;
-}
-
-export class ReceiptResultsDto {
-  receipt: ReceiptMetadataDto;
-  items: ReceiptItemWithProductDto[];
-  stats: ValidationStatsDto;
-}
-
-export class ReceiptResultsResponseDto {
-  success: boolean;
-  data: ReceiptResultsDto;
-  message: string;
 }
 
 /**
@@ -118,7 +57,7 @@ export class ReceiptResultsController {
   @UseGuards(PremiumGuard)
   @RequiresPremium()
   @ApiOperation({
-    summary: "Récupérer les résultats détaillés d'un ticket",
+    summary: 'Récupérer les résultats détaillés d\'un ticket',
     description: `
       Récupère tous les résultats détaillés d'un ticket de caisse avec :
       
@@ -144,24 +83,44 @@ export class ReceiptResultsController {
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description: 'Ticket non trouvé',
+    schema: {
+      example: {
+        statusCode: 404,
+        message: 'Ticket non trouvé ou non autorisé',
+        error: 'Not Found',
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Ticket pas encore traité ou en erreur',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Ticket en cours de traitement, résultats pas encore disponibles',
+        error: 'Bad Request',
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
     description: 'Accès premium requis',
+    schema: {
+      example: {
+        statusCode: 403,
+        message: 'Premium subscription required',
+        error: 'Forbidden',
+      },
+    },
   })
   async getReceiptResults(
     @Req() req: AuthenticatedRequest,
-    @Param('receiptId') receiptId: string, // ← Directement sans DTO
+    @Param() params: ReceiptResultsParamsDto,
   ): Promise<ReceiptResultsResponseDto> {
+    const { receiptId } = params;
     const userId = req.user.id;
 
-    this.logger.log(
-      `Récupération des résultats du ticket ${receiptId} pour l'utilisateur ${userId}`,
-    );
+    this.logger.log(`Récupération des résultats du ticket ${receiptId} pour l'utilisateur ${userId}`);
 
     try {
       // Récupérer le ticket avec tous ses items et produits associés
@@ -183,28 +142,25 @@ export class ReceiptResultsController {
         message: this.buildResultsMessage(receipt.status, resultsDto.stats),
       };
 
-      this.logger.log(
-        `Résultats du ticket ${receiptId} récupérés: ${resultsDto.items.length} items`,
-      );
+      this.logger.log(`Résultats du ticket ${receiptId} récupérés: ${resultsDto.items.length} items`);
       return response;
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de la récupération des résultats du ticket ${receiptId}: ${error.message}`,
-        error.stack,
-      );
 
+    } catch (error) {
+      this.logger.error(`Erreur lors de la récupération des résultats du ticket ${receiptId}: ${error.message}`, error.stack);
+      
       if (error instanceof NotFoundException) {
         throw error;
       }
-
-      throw new NotFoundException(
-        'Erreur lors de la récupération des résultats du ticket',
-      );
+      
+      throw new NotFoundException('Erreur lors de la récupération des résultats du ticket');
     }
   }
 
   // ===== MÉTHODES PRIVÉES =====
 
+  /**
+   * Trouve le ticket avec tous les détails nécessaires
+   */
   private async findReceiptWithFullDetails(receiptId: string, userId: string) {
     const receipt = await this.prisma.receipt.findFirst({
       where: {
@@ -221,7 +177,7 @@ export class ReceiptResultsController {
             },
           },
           orderBy: {
-            createdAt: 'asc',
+            createdAt: 'asc', // Ordre de détection
           },
         },
       },
@@ -234,20 +190,24 @@ export class ReceiptResultsController {
     return receipt;
   }
 
+  /**
+   * Valide que le ticket est dans un état permettant la lecture des résultats
+   */
   private validateReceiptStatus(receipt: any): void {
     if (receipt.status === 'PROCESSING') {
-      throw new NotFoundException(
-        'Ticket en cours de traitement, résultats pas encore disponibles',
-      );
+      throw new NotFoundException('Ticket en cours de traitement, résultats pas encore disponibles');
     }
 
     if (receipt.status === 'FAILED') {
-      throw new NotFoundException(
-        'Erreur lors du traitement du ticket, aucun résultat disponible',
-      );
+      throw new NotFoundException('Erreur lors du traitement du ticket, aucun résultat disponible');
     }
+
+    // COMPLETED et VALIDATED sont OK
   }
 
+  /**
+   * Mappe les métadonnées du ticket
+   */
   private mapReceiptMetadata(receipt: any): ReceiptMetadataDto {
     return {
       id: receipt.id,
@@ -255,16 +215,17 @@ export class ReceiptResultsController {
       imageUrl: receipt.imageUrl,
       totalAmount: receipt.totalAmount,
       purchaseDate: receipt.purchaseDate?.toISOString() || null,
-      merchantName: receipt.merchantName,
-      merchantAddress: receipt.merchantAddress,
+      storeName: receipt.storeName,
+      storeLocation: receipt.storeLocation,
       createdAt: receipt.createdAt.toISOString(),
       updatedAt: receipt.updatedAt.toISOString(),
     };
   }
 
-  private async mapReceiptItems(
-    items: any[],
-  ): Promise<ReceiptItemWithProductDto[]> {
+  /**
+   * Mappe les items du ticket avec leurs produits associés
+   */
+  private async mapReceiptItems(items: any[]): Promise<ReceiptItemWithProductDto[]> {
     return items.map((item) => ({
       id: item.id,
       productId: item.productId,
@@ -274,7 +235,7 @@ export class ReceiptResultsController {
       totalPrice: item.totalPrice,
       confidence: item.confidence,
       validated: item.validated,
-      categoryGuess: item.category, // ✅ Mapper category → categoryGuess pour le frontend
+      categoryGuess: item.categoryGuess,
       expiryDate: item.expiryDate?.toISOString() || null,
       storageLocation: item.storageLocation,
       notes: item.notes,
@@ -284,6 +245,9 @@ export class ReceiptResultsController {
     }));
   }
 
+  /**
+   * Mappe un produit associé
+   */
   private mapAssociatedProduct(product: any): AssociatedProductDto {
     return {
       id: product.id,
@@ -302,20 +266,20 @@ export class ReceiptResultsController {
     };
   }
 
+  /**
+   * Calcule les statistiques de validation
+   */
   private calculateValidationStats(items: any[]): ValidationStatsDto {
     const totalItems = items.length;
     const validatedItems = items.filter((item) => item.validated).length;
     const itemsWithProducts = items.filter((item) => item.productId).length;
     const itemsNeedingNewProducts = totalItems - itemsWithProducts;
-
-    const totalConfidence = items.reduce(
-      (sum, item) => sum + (item.confidence || 0),
-      0,
-    );
+    
+    // Calcul de la confiance moyenne
+    const totalConfidence = items.reduce((sum, item) => sum + (item.confidence || 0), 0);
     const averageConfidence = totalItems > 0 ? totalConfidence / totalItems : 0;
-
-    const validationProgress =
-      totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
+    
+    const validationProgress = totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
     const readyForInventory = totalItems > 0 && validatedItems === totalItems;
 
     return {
@@ -324,19 +288,19 @@ export class ReceiptResultsController {
       validationProgress,
       itemsWithProducts,
       itemsNeedingNewProducts,
-      averageConfidence: Math.round(averageConfidence * 1000) / 1000,
+      averageConfidence: Math.round(averageConfidence * 1000) / 1000, // 3 décimales
       readyForInventory,
     };
   }
 
-  private buildResultsMessage(
-    status: string,
-    stats: ValidationStatsDto,
-  ): string {
+  /**
+   * Construit le message des résultats
+   */
+  private buildResultsMessage(status: string, stats: ValidationStatsDto): string {
     const { totalItems, validatedItems, readyForInventory } = stats;
 
     if (status === 'COMPLETED') {
-      return "Ticket traité et ajouté à l'inventaire avec succès";
+      return 'Ticket traité et ajouté à l\'inventaire avec succès';
     }
 
     if (readyForInventory) {

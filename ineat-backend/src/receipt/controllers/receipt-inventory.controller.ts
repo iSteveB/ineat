@@ -24,11 +24,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequiresPremium } from '../../auth/decorators/requires-premium.decorator';
 import { PremiumGuard } from '../../auth/guards/premium.guard';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  ReceiptToInventoryService,
-  ValidatedReceiptItem,
-  ReceiptToInventoryResult,
-} from '../services/receipt-to-inventory.service';
+import { ReceiptToInventoryService, ValidatedReceiptItem, ReceiptToInventoryResult } from '../services/receipt-to-inventory.service';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -45,8 +41,7 @@ interface AuthenticatedRequest extends Request {
  */
 export class AddReceiptToInventoryDto {
   @ApiPropertyOptional({
-    description:
-      "Date d'achat personnalisée (ISO 8601). Par défaut: maintenant",
+    description: 'Date d\'achat personnalisée (ISO 8601). Par défaut: maintenant',
     example: '2024-10-22T10:00:00.000Z',
     format: 'date-time',
   })
@@ -64,7 +59,7 @@ export class AddReceiptToInventoryDto {
   autoCreateProducts?: boolean;
 
   @ApiPropertyOptional({
-    description: "Forcer l'ajout même en cas d'erreurs mineures",
+    description: 'Forcer l\'ajout même en cas d\'erreurs mineures',
     example: false,
     default: false,
   })
@@ -89,13 +84,13 @@ export class ReceiptParamsDto {
  */
 export class AddReceiptToInventoryResponseDto {
   @ApiProperty({
-    description: "Indique si l'opération a réussi",
+    description: 'Indique si l\'opération a réussi',
     example: true,
   })
   success: boolean;
 
   @ApiProperty({
-    description: "Résultat détaillé de l'ajout à l'inventaire",
+    description: 'Résultat détaillé de l\'ajout à l\'inventaire',
     example: {
       addedItems: [
         {
@@ -124,7 +119,7 @@ export class AddReceiptToInventoryResponseDto {
 
   @ApiProperty({
     description: 'Message de confirmation',
-    example: "5 produits ajoutés à l'inventaire avec succès",
+    example: '5 produits ajoutés à l\'inventaire avec succès',
   })
   message: string;
 }
@@ -152,7 +147,7 @@ export class ReceiptInventoryController {
   @UseGuards(PremiumGuard)
   @RequiresPremium()
   @ApiOperation({
-    summary: "Ajouter un ticket validé à l'inventaire",
+    summary: 'Ajouter un ticket validé à l\'inventaire',
     description: `
       Ajoute automatiquement tous les items validés d'un ticket à l'inventaire de l'utilisateur.
       
@@ -168,18 +163,18 @@ export class ReceiptInventoryController {
   })
   @ApiParam({
     name: 'receiptId',
-    description: "ID du ticket de caisse à ajouter à l'inventaire",
+    description: 'ID du ticket de caisse à ajouter à l\'inventaire',
     type: 'string',
     format: 'uuid',
   })
   @ApiBody({
-    description: "Options pour l'ajout à l'inventaire",
+    description: 'Options pour l\'ajout à l\'inventaire',
     type: AddReceiptToInventoryDto,
     required: false,
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: "Items ajoutés à l'inventaire avec succès",
+    description: 'Items ajoutés à l\'inventaire avec succès',
     type: AddReceiptToInventoryResponseDto,
   })
   @ApiResponse({
@@ -217,14 +212,13 @@ export class ReceiptInventoryController {
   })
   async addReceiptToInventory(
     @Req() req: AuthenticatedRequest,
-    @Param('receiptId') receiptId: string, // ✅ Extraire directement sans DTO
+    @Param() params: ReceiptParamsDto,
     @Body() options: AddReceiptToInventoryDto = {},
   ): Promise<AddReceiptToInventoryResponseDto> {
+    const { receiptId } = params;
     const userId = req.user.id;
 
-    this.logger.log(
-      `Ajout du ticket ${receiptId} à l'inventaire pour l'utilisateur ${userId}`,
-    );
+    this.logger.log(`Ajout du ticket ${receiptId} à l'inventaire pour l'utilisateur ${userId}`);
 
     try {
       // 1. Vérifier que le ticket existe et appartient à l'utilisateur
@@ -233,52 +227,23 @@ export class ReceiptInventoryController {
       // 2. Récupérer les items validés du ticket
       const validatedItems = await this.getValidatedReceiptItems(receiptId);
 
-      this.logger.log(
-        `📋 ${validatedItems.length} items validés trouvés dans le ticket ${receiptId}`,
-      );
-      this.logger.debug(
-        `Items validés: ${JSON.stringify(
-          validatedItems.map((i) => ({
-            id: i.id,
-            detectedName: i.detectedName,
-            validated: i.validated,
-            category: i.category,
-            productId: i.productId,
-          })),
-        )}`,
-      );
-
       if (validatedItems.length === 0) {
-        throw new BadRequestException(
-          "Aucun item validé trouvé dans ce ticket. Veuillez d'abord valider les items.",
-        );
+        throw new BadRequestException('Aucun item validé trouvé dans ce ticket. Veuillez d\'abord valider les items.');
       }
 
       // 3. Convertir les items en format attendu par le service
       const itemsToAdd = await this.convertItemsForInventory(validatedItems);
-      this.logger.debug(
-        `Items convertis pour le service: ${JSON.stringify(
-          itemsToAdd.map((i) => ({
-            productId: i.productId,
-            productName: i.productData?.name,
-            categorySlug: i.productData?.categorySlug,
-          })),
-        )}`,
-      );
 
       // 4. Ajouter à l'inventaire via le service
-      const result =
-        await this.receiptToInventoryService.addReceiptItemsToInventory(
-          userId,
-          itemsToAdd,
-          {
-            purchaseDate: options.purchaseDate
-              ? new Date(options.purchaseDate)
-              : undefined,
-            autoCreateProducts: options.autoCreateProducts ?? true,
-            forcedAdd: options.forcedAdd ?? false,
-          },
-        );
+      const result = await this.receiptToInventoryService.addReceiptItemsToInventory(
+        userId,
+        itemsToAdd,
+        {
+          purchaseDate: options.purchaseDate ? new Date(options.purchaseDate) : undefined,
+          autoCreateProducts: options.autoCreateProducts ?? true,
+          forcedAdd: options.forcedAdd ?? false,
+        },
+      );
 
       // 5. Marquer le ticket comme traité
       await this.markReceiptAsProcessed(receiptId);
@@ -290,26 +255,17 @@ export class ReceiptInventoryController {
         message: this.buildSuccessMessage(result),
       };
 
-      this.logger.log(
-        `Ticket ${receiptId} traité: ${result.summary.successfulItems}/${result.summary.totalItemsProcessed} items ajoutés`,
-      );
+      this.logger.log(`Ticket ${receiptId} traité: ${result.summary.successfulItems}/${result.summary.totalItemsProcessed} items ajoutés`);
       return response;
-    } catch (error) {
-      this.logger.error(
-        `Erreur lors de l'ajout du ticket ${receiptId} à l'inventaire: ${error.message}`,
-        error.stack,
-      );
 
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
+    } catch (error) {
+      this.logger.error(`Erreur lors de l'ajout du ticket ${receiptId} à l'inventaire: ${error.message}`, error.stack);
+      
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
-
-      throw new BadRequestException(
-        "Erreur lors de l'ajout du ticket à l'inventaire",
-      );
+      
+      throw new BadRequestException('Erreur lors de l\'ajout du ticket à l\'inventaire');
     }
   }
 
@@ -355,30 +311,9 @@ export class ReceiptInventoryController {
   }
 
   /**
-   * Mappe une catégorie frontend vers un slug Prisma valide
-   */
-  private mapCategoryToSlug(category: string | null): string {
-    // Mapping des catégories du frontend vers les slugs de la base
-    const categoryMap: Record<string, string> = {
-      'Fruits & Légumes': 'fruits-et-legumes',
-      'Viandes & Poissons': 'viandes-et-poissons',
-      'Produits laitiers': 'produits-laitiers',
-      'Épicerie salée': 'epicerie-salée',
-      'Épicerie sucrée': 'epicerie-sucrée',
-      Boissons: 'boissons',
-      Surgelés: 'surgelés',
-      Autre: 'autres',
-    };
-
-    return categoryMap[category || ''] || 'autres';
-  }
-
-  /**
    * Convertit les items de ticket en format pour le service d'inventaire
    */
-  private async convertItemsForInventory(
-    receiptItems: any[],
-  ): Promise<ValidatedReceiptItem[]> {
+  private async convertItemsForInventory(receiptItems: any[]): Promise<ValidatedReceiptItem[]> {
     return receiptItems.map((item) => {
       const converted: ValidatedReceiptItem = {
         quantity: item.quantity,
@@ -398,7 +333,7 @@ export class ReceiptInventoryController {
           name: item.detectedName,
           brand: undefined, // Pas forcément détecté dans le ticket
           barcode: undefined, // Pas forcément détecté dans le ticket
-          categorySlug: this.mapCategoryToSlug(item.category), // ✅ Mapper la catégorie
+          categorySlug: item.categoryGuess || 'other', // Catégorie par défaut
           unitType: 'UNIT', // Type par défaut, pourrait être amélioré
         };
       }
@@ -414,7 +349,7 @@ export class ReceiptInventoryController {
     await this.prisma.receipt.update({
       where: { id: receiptId },
       data: {
-        status: 'COMPLETED',
+        status: 'COMPLETED', // Assurez-vous que ce statut existe dans votre enum
       },
     });
   }
@@ -424,9 +359,9 @@ export class ReceiptInventoryController {
    */
   private buildSuccessMessage(result: ReceiptToInventoryResult): string {
     const { summary, budgetImpact } = result;
-
+    
     let message = `${summary.successfulItems} produit(s) ajouté(s) à votre inventaire`;
-
+    
     if (summary.failedItems > 0) {
       message += ` (${summary.failedItems} échec(s))`;
     }
