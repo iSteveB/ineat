@@ -2,6 +2,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react-swc';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import fs from 'fs';
 import { homedir } from 'os';
 import type { ServerOptions } from 'vite';
@@ -42,7 +43,15 @@ export default defineConfig(({ mode }) => {
 	}
 
 	return {
-		plugins: [react(), tailwindcss()],
+		plugins: [
+			tanstackRouter({	
+				routesDirectory: './src/routes',
+				generatedRouteTree: './src/routeTree.gen.ts',
+				autoCodeSplitting: true,
+			}),
+			react(),
+			tailwindcss(),
+		],
 
 		// Configuration du serveur de développement
 		server: {
