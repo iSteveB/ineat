@@ -348,8 +348,8 @@ export function getConfidenceLevel(
  */
 export function getConfidenceColor(
 	confidence: number
-): 'default' | 'secondary' | 'warning' {
+): 'default' | 'secondary' | 'destructive' {
 	if (confidence >= CONFIDENCE_THRESHOLDS.HIGH) return 'default';
 	if (confidence >= CONFIDENCE_THRESHOLDS.MEDIUM) return 'secondary';
-	return 'warning';
+	return 'destructive';
 }

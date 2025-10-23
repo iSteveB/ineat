@@ -1,592 +1,507 @@
-/**
- * Service de gestion des tickets de caisse (receipts)
- *
- * Workflow complet :
- * 1. Upload photo ticket → Cloudinary + Tesseract OCR
- * 2. Analyse LLM OpenAI → Suggestions EAN avec vérification internet
- * 3. Validation utilisateur → Phase 1 (bien identifiés) puis Phase 2 (problèmes)
- * 4. Ajout à l'inventaire → Enrichissement OpenFoodFacts
- */
+import { apiClient } from '../lib/api-client';
 
-import type {
-	ReceiptAnalysis,
-	UploadReceiptResponse,
-	ValidateProductPayload,
-	AddToInventoryPayload,
-	CreateManualProductPayload,
-	BackendProduct,
-} from '@/schemas/receipt';
-import { normalizeBackendProduct } from '@/schemas/receipt';
-
-// ===== TYPES COMPLÉMENTAIRES =====
+// ===== TYPES POUR LES TICKETS =====
 
 /**
- * Réponse du polling de statut
+ * Statut d'un ticket de caisse
  */
-export interface ReceiptStatusResponse {
-	receiptId: string;
-	status: 'uploading' | 'analyzing' | 'completed' | 'error';
-	progress: number;
-	currentStep: 'upload' | 'ocr' | 'llm' | 'enrichment' | 'done';
-	estimatedTimeRemaining: number | null;
-	errorMessage: string | null;
+export type ReceiptStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'VALIDATED';
+
+/**
+ * Ordre de tri pour l'historique
+ */
+export type ReceiptSortOrder =
+	| 'NEWEST'
+	| 'OLDEST'
+	| 'AMOUNT_HIGH'
+	| 'AMOUNT_LOW';
+
+/**
+ * Filtre de statut pour l'historique
+ */
+export type ReceiptStatusFilter =
+	| 'ALL'
+	| 'PROCESSING'
+	| 'COMPLETED'
+	| 'FAILED'
+	| 'VALIDATED';
+
+/**
+ * Type d'unité pour les produits
+ */
+export type UnitType = 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
+
+// ===== INTERFACES POUR LES RÉPONSES API =====
+
+/**
+ * Réponse après upload d'un ticket
+ */
+export interface ReceiptUploadResponse {
+	success: boolean;
+	data: {
+		receiptId: string;
+		status: ReceiptStatus;
+		estimatedTime: number;
+	};
+	message: string;
 }
 
 /**
- * Résultat de recherche manuelle OpenFoodFacts
+ * Informations de statut d'un ticket
  */
-export interface ProductSearchResult {
-	ean: string;
-	name: string;
-	brand: string;
-	image: string | null;
-	nutriScore: string | null;
-	categories: string[];
+export interface ReceiptStatusData {
+	id: string;
+	status: ReceiptStatus;
+	imageUrl: string;
+	totalAmount?: number | null;
+	purchaseDate?: string | null;
+	storeName?: string | null;
+	storeLocation?: string | null;
+	totalItems: number;
+	validatedItems: number;
+	validationProgress: number;
+	readyForInventory: boolean;
+	addedToInventory: boolean;
+	createdAt: string;
+	updatedAt: string;
+	estimatedTimeRemaining?: number | null;
+	errorMessage?: string | null;
+}
+
+/**
+ * Réponse pour le statut d'un ticket
+ */
+export interface ReceiptStatusResponse {
+	success: boolean;
+	data: ReceiptStatusData;
+	message: string;
+}
+
+/**
+ * Item de ticket détecté
+ */
+export interface ReceiptItem {
+	id: string;
+	productId?: string | null;
+	detectedName: string;
+	quantity: number;
+	unitPrice?: number | null;
+	totalPrice?: number | null;
+	confidence: number;
+	validated: boolean;
+	categoryGuess?: string | null;
+	expiryDate?: string | null;
+	storageLocation?: string | null;
+	notes?: string | null;
+	createdAt: string;
+	updatedAt: string;
+	product?: {
+		id: string;
+		name: string;
+		brand?: string | null;
+		barcode?: string | null;
+		unitType: UnitType;
+		imageUrl?: string | null;
+		nutriscore?: string | null;
+		ecoScore?: string | null;
+		category: {
+			id: string;
+			name: string;
+			slug: string;
+		};
+	} | null;
+}
+
+/**
+ * Métadonnées d'un ticket
+ */
+export interface ReceiptMetadata {
+	id: string;
+	status: ReceiptStatus;
+	imageUrl: string;
+	totalAmount?: number | null;
+	purchaseDate?: string | null;
+	storeName?: string | null;
+	storeLocation?: string | null;
+	createdAt: string;
+	updatedAt: string;
+}
+
+/**
+ * Statistiques de validation
+ */
+export interface ValidationStats {
+	totalItems: number;
+	validatedItems: number;
+	validationProgress: number;
+	itemsWithProducts: number;
+	itemsNeedingNewProducts: number;
+	averageConfidence: number;
+	readyForInventory: boolean;
+}
+
+/**
+ * Résultats complets d'un ticket
+ */
+export interface ReceiptResults {
+	receipt: ReceiptMetadata;
+	items: ReceiptItem[];
+	stats: ValidationStats;
+}
+
+/**
+ * Réponse pour les résultats d'un ticket
+ */
+export interface ReceiptResultsResponse {
+	success: boolean;
+	data: ReceiptResults;
+	message: string;
+}
+
+/**
+ * Item dans l'historique
+ */
+export interface ReceiptHistoryItem {
+	id: string;
+	status: ReceiptStatus;
+	imageUrl: string;
+	totalAmount?: number | null;
+	purchaseDate?: string | null;
+	storeName?: string | null;
+	storeLocation?: string | null;
+	totalItems: number;
+	validatedItems: number;
+	validationProgress: number;
+	addedToInventory: boolean;
+	createdAt: string;
+	updatedAt: string;
+}
+
+/**
+ * Métadonnées de pagination
+ */
+export interface PaginationMeta {
+	currentPage: number;
+	pageSize: number;
+	totalItems: number;
+	totalPages: number;
+	hasNextPage: boolean;
+	hasPreviousPage: boolean;
+}
+
+/**
+ * Statistiques de l'historique
+ */
+export interface ReceiptHistoryStats {
+	totalReceipts: number;
+	completedReceipts: number;
+	pendingValidation: number;
+	failedReceipts: number;
+	totalAmount: number;
+	averageAmount: number;
+	totalItemsAdded: number;
+	firstReceiptDate?: string | null;
+	lastReceiptDate?: string | null;
+}
+
+/**
+ * Historique complet des tickets
+ */
+export interface ReceiptHistory {
+	receipts: ReceiptHistoryItem[];
+	pagination: PaginationMeta;
+	stats: ReceiptHistoryStats;
+}
+
+/**
+ * Réponse pour l'historique des tickets
+ */
+export interface ReceiptHistoryResponse {
+	success: boolean;
+	data: ReceiptHistory;
+	message: string;
+}
+
+// ===== INTERFACES POUR LES REQUÊTES =====
+
+/**
+ * Données pour valider un item de ticket
+ */
+export interface ValidateReceiptItemData {
+	productId?: string;
+	newProduct?: {
+		name: string;
+		brand?: string;
+		barcode?: string;
+		categorySlug: string;
+		imageUrl?: string;
+		unitType: UnitType;
+	};
+	detectedName?: string;
+	quantity?: number;
+	unitPrice?: number;
+	totalPrice?: number;
+	validated?: boolean;
+	confidence?: number;
+	categoryGuess?: string;
+	expiryDate?: string;
+	storageLocation?: string;
+	notes?: string;
+}
+
+/**
+ * Options pour l'ajout à l'inventaire
+ */
+export interface AddReceiptToInventoryOptions {
+	purchaseDate?: string;
+	autoCreateProducts?: boolean;
+	forcedAdd?: boolean;
+}
+
+/**
+ * Résultat de l'ajout à l'inventaire
+ */
+export interface ReceiptToInventoryResult {
+	addedItems: Array<{
+		id: string;
+		productName: string;
+		quantity: number;
+		totalPrice?: number;
+	}>;
+	failedItems: Array<{
+		productName: string;
+		error: string;
+	}>;
+	budgetImpact: {
+		totalAmount: number;
+		expenseCreated: boolean;
+		budgetId?: string;
+		remainingBudget?: number;
+		warningMessage?: string;
+	};
+	summary: {
+		totalItemsProcessed: number;
+		successfulItems: number;
+		failedItems: number;
+		totalAmountSpent: number;
+	};
+}
+
+/**
+ * Réponse pour l'ajout à l'inventaire
+ */
+export interface AddReceiptToInventoryResponse {
+	success: boolean;
+	data: ReceiptToInventoryResult;
+	message: string;
 }
 
 /**
  * Filtres pour l'historique
  */
 export interface ReceiptHistoryFilters {
-	startDate?: string;
-	endDate?: string;
+	page?: number;
+	limit?: number;
+	status?: ReceiptStatusFilter;
+	sortBy?: ReceiptSortOrder;
+	dateFrom?: string;
+	dateTo?: string;
+	storeName?: string;
 	minAmount?: number;
 	maxAmount?: number;
-	merchantName?: string;
-	limit?: number;
-	offset?: number;
 }
 
-/**
- * Item de l'historique
- */
-export interface ReceiptHistoryItem {
-	receiptId: string;
-	merchantName: string | null;
-	purchaseDate: string | null;
-	totalAmount: number | null;
-	productsCount: number;
-	validatedProductsCount: number;
-	imageUrl: string;
-	createdAt: string;
-}
+// ===== SERVICE PRINCIPAL =====
 
 /**
- * Réponse de l'historique
+ * Service pour gérer les tickets de caisse
+ * Centralise tous les appels API liés aux tickets
  */
-export interface ReceiptHistoryResponse {
-	receipts: ReceiptHistoryItem[];
-	total: number;
-	limit: number;
-	offset: number;
-}
-
-/**
- * Réponse brute du backend pour l'analyse
- */
-interface BackendReceiptAnalysis {
-	id?: string;
-	receiptId?: string;
-	merchantName?: string | null;
-	purchaseDate?: string | null;
-	totalAmount?: number | null;
-	confidence?: number;
-	ocrConfidence?: number;
-	processingTime?: number;
-	createdAt?: string;
-	items?: BackendProduct[];
-	products?: BackendProduct[];
-}
-
-// ===== SERVICE =====
-
-/**
- * URL de base de l'API
- */
-const API_URL = `${import.meta.env.VITE_API_URL}/api`;
-
-/**
- * Service de gestion des tickets de caisse
- */
-class ReceiptService {
+export const receiptService = {
 	/**
-	 * Upload un ticket de caisse pour traitement OCR + LLM
-	 *
-	 * @param file - Fichier image du ticket
-	 * @returns Réponse avec le receiptId pour suivre le traitement
-	 * @throws Error si l'upload échoue ou si le fichier est invalide
+	 * Upload un fichier de ticket de caisse
 	 */
-	async uploadReceipt(file: File): Promise<UploadReceiptResponse> {
+	async uploadReceipt(file: File): Promise<ReceiptUploadResponse> {
+		// Validation du fichier côté client
+		if (!file) {
+			throw new Error('Aucun fichier sélectionné');
+		}
+
+		// Vérifier le type de fichier
+		if (!file.type.startsWith('image/')) {
+			throw new Error('Le fichier doit être une image');
+		}
+
+		// Vérifier la taille (max 10MB)
+		const maxSize = 10 * 1024 * 1024; // 10MB
+		if (file.size > maxSize) {
+			throw new Error("L'image ne doit pas dépasser 10MB");
+		}
+
+		// Créer FormData pour l'upload
+		const formData = new FormData();
+		formData.append('image', file);
+
 		try {
-			// Validation côté client
-			const maxSize = 5 * 1024 * 1024; // 5MB
-			if (file.size > maxSize) {
-				throw new Error('Le fichier est trop volumineux (maximum 5MB)');
-			}
-
-			const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-			if (!allowedTypes.includes(file.type)) {
-				throw new Error(
-					'Format de fichier non supporté (formats acceptés: JPEG, PNG, WEBP)'
-				);
-			}
-
-			// Création du FormData
-			const formData = new FormData();
-			formData.append('file', file);
-			formData.append('documentType', 'receipt_image'); 
-
-			const response = await fetch(`${API_URL}/receipt/upload`, {
+			// Note : apiClient gère automatiquement le Content-Type pour FormData
+			const response = await fetch('/api/receipt/upload', {
 				method: 'POST',
 				credentials: 'include',
 				body: formData,
 			});
 
 			if (!response.ok) {
-				let errorMessage = "Erreur lors de l'upload";
-
-				try {
-					const errorData = await response.json();
-					errorMessage = errorData.message || errorMessage;
-
-					// Détection d'erreur Cloudinary spécifique
-					if (
-						errorMessage.includes('Cloudinary') ||
-						errorMessage.includes('Invalid Signature')
-					) {
-						throw new Error(
-							'⚠️ Erreur de configuration Cloudinary côté serveur.\n' +
-								'Veuillez vérifier les credentials dans le .env backend.'
-						);
-					}
-				} catch {
-					// Si on ne peut pas parser le JSON, utiliser le message par défaut
-				}
-
-				throw new Error(errorMessage);
+				const errorData = await response.json().catch(() => null);
+				throw new Error(
+					errorData?.message || "Erreur lors de l'upload"
+				);
 			}
 
-			const data = await response.json();
-
-			return {
-				receiptId: data.data?.receiptId || data.receiptId || data.id,
-			};
+			return await response.json();
 		} catch (error) {
-			console.error('Erreur upload receipt:', error);
-			if (error instanceof Error) {
-				throw error;
-			}
-			throw new Error("Erreur lors de l'upload du ticket");
+			console.error('Erreur upload ticket:', error);
+			throw error;
 		}
-	}
+	},
 
 	/**
-	 * Récupère le statut en temps réel d'un ticket en cours de traitement
-	 *
-	 * Utilisé pour le polling pendant l'analyse (Tesseract + LLM)
-	 *
-	 * @param receiptId - ID du ticket
-	 * @returns Statut actuel avec progression
+	 * Récupère le statut d'un ticket
 	 */
 	async getReceiptStatus(receiptId: string): Promise<ReceiptStatusResponse> {
-		const response = await fetch(`${API_URL}/receipt/${receiptId}/status`, {
-			method: 'GET',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
-
-		if (!response.ok) {
-			let errorMessage = 'Erreur lors de la récupération du statut';
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-
-		const data = await response.json();
-		console.log('📊 Status response:', data);
-
-		// Extraire les données (support multiple formats de réponse)
-		const responseData = data.data || data;
-
-		// Mapper le statut backend (PROCESSING, COMPLETED, FAILED) vers frontend
-		const backendStatus = responseData.status;
-		let mappedStatus: 'uploading' | 'analyzing' | 'completed' | 'error';
-
-		switch (backendStatus) {
-			case 'PENDING':
-			case 'PROCESSING':
-				mappedStatus = 'analyzing';
-				break;
-			case 'COMPLETED':
-			case 'VALIDATED':
-				mappedStatus = 'completed';
-				break;
-			case 'FAILED':
-				mappedStatus = 'error';
-				break;
-			default:
-				mappedStatus = 'analyzing';
-		}
-
-		return {
-			receiptId: responseData.receiptId || responseData.id || receiptId,
-			status: mappedStatus,
-			progress: responseData.progress || 50,
-			currentStep: responseData.currentStep || 'ocr',
-			estimatedTimeRemaining: responseData.estimatedTimeRemaining || null,
-			errorMessage: responseData.errorMessage || null,
-		};
-	}
-
-	/**
-	 * Récupère les résultats complets d'un ticket traité
-	 *
-	 * Contient les métadonnées du ticket et tous les produits détectés
-	 * avec leurs suggestions EAN vérifiées par le LLM
-	 *
-	 * @param receiptId - ID du ticket
-	 * @returns Analyse complète avec produits et suggestions EAN
-	 */
-	async getReceiptAnalysis(receiptId: string): Promise<ReceiptAnalysis> {
-		const response = await fetch(
-			`${API_URL}/receipt/${receiptId}/analysis`,
-			{
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
+		return await apiClient.get<ReceiptStatusResponse>(
+			`/receipt/${receiptId}/status`
 		);
-
-		if (!response.ok) {
-			let errorMessage = 'Erreur lors de la récupération des résultats';
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-
-		const data = await response.json();
-		console.log('📊 Analysis response:', data);
-
-		// Extraire les données brutes (support multiple formats)
-		const rawAnalysis: BackendReceiptAnalysis = data.data || data;
-
-		// Normaliser la réponse vers le format attendu par le frontend
-		return this.normalizeAnalysisResponse(rawAnalysis, receiptId);
-	}
+	},
 
 	/**
-	 * Normalise la réponse brute du backend vers ReceiptAnalysis
+	 * Récupère les résultats détaillés d'un ticket
 	 */
-	private normalizeAnalysisResponse(
-		raw: BackendReceiptAnalysis,
+	async getReceiptResults(
 		receiptId: string
-	): ReceiptAnalysis {
-		// Les produits peuvent être dans 'items' ou 'products'
-		const rawProducts: BackendProduct[] = raw.items || raw.products || [];
-
-		// Normaliser chaque produit avec la fonction helper
-		const normalizedProducts = rawProducts.map((product) =>
-			normalizeBackendProduct(product)
+	): Promise<ReceiptResultsResponse> {
+		return await apiClient.get<ReceiptResultsResponse>(
+			`/receipt/${receiptId}/results`
 		);
-
-		return {
-			receiptId: raw.receiptId || raw.id || receiptId,
-			merchantName: raw.merchantName ?? null,
-			purchaseDate: raw.purchaseDate ?? null,
-			totalAmount: raw.totalAmount ?? null,
-			confidence: raw.confidence ?? raw.ocrConfidence ?? 0.5,
-			products: normalizedProducts,
-			createdAt: raw.createdAt,
-			processingTime: raw.processingTime,
-		};
-	}
+	},
 
 	/**
-	 * Valide un produit avec un code EAN sélectionné
-	 *
-	 * Appelé quand l'utilisateur sélectionne un EAN parmi les suggestions
-	 *
-	 * @param payload - receiptId, productId, eanCode
+	 * Met à jour un item de ticket (validation/correction)
 	 */
-	async validateProduct(payload: ValidateProductPayload): Promise<void> {
-		const { receiptId, productId, eanCode } = payload;
-
-		const response = await fetch(
-			`${API_URL}/receipt/${receiptId}/products/${productId}/validate`,
-			{
-				method: 'PUT',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ eanCode }),
-			}
-		);
-
-		if (!response.ok) {
-			let errorMessage = 'Erreur lors de la validation du produit';
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-	}
-
-	/**
-	 * Recherche manuelle de produits sur OpenFoodFacts
-	 *
-	 * Utilisé en Phase 2 quand l'utilisateur veut chercher manuellement
-	 *
-	 * @param query - Terme de recherche (ex: "Orangina 33cl")
-	 * @returns Liste de produits correspondants
-	 */
-	async searchProducts(query: string): Promise<ProductSearchResult[]> {
-		const response = await fetch(
-			`${API_URL}/products/search?q=${encodeURIComponent(query)}`,
-			{
-				method: 'GET',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
-		);
-
-		if (!response.ok) {
-			let errorMessage = 'Erreur lors de la recherche';
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-
-		const data = await response.json();
-		return data.results || data.data || [];
-	}
-
-	/**
-	 * Crée manuellement un produit frais sans code-barres
-	 *
-	 * Utilisé pour les fruits, légumes, produits en vrac
-	 *
-	 * @param receiptId - ID du ticket
-	 * @param productId - ID du produit détecté à remplacer
-	 * @param payload - Données du produit à créer
-	 */
-	async createManualProduct(
+	async updateReceiptItem(
 		receiptId: string,
-		productId: string,
-		payload: CreateManualProductPayload
-	): Promise<void> {
-		const response = await fetch(
-			`${API_URL}/receipt/${receiptId}/products/${productId}/create-manual`,
-			{
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify(payload),
-			}
-		);
-
-		if (!response.ok) {
-			let errorMessage = 'Erreur lors de la création du produit';
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-	}
+		itemId: string,
+		data: ValidateReceiptItemData
+	): Promise<{ success: boolean; data: ReceiptItem; message: string }> {
+		return await apiClient.put<{
+			success: boolean;
+			data: ReceiptItem;
+			message: string;
+		}>(`/receipt/${receiptId}/items/${itemId}`, data);
+	},
 
 	/**
-	 * Ignore un produit détecté
-	 *
-	 * Le produit ne sera pas ajouté à l'inventaire
-	 *
-	 * @param receiptId - ID du ticket
-	 * @param productId - ID du produit à ignorer
+	 * Ajoute un ticket validé à l'inventaire
 	 */
-	async skipProduct(receiptId: string, productId: string): Promise<void> {
-		const response = await fetch(
-			`${API_URL}/receipt/${receiptId}/products/${productId}/skip`,
-			{
-				method: 'PUT',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-			}
+	async addReceiptToInventory(
+		receiptId: string,
+		options: AddReceiptToInventoryOptions = {}
+	): Promise<AddReceiptToInventoryResponse> {
+		return await apiClient.post<AddReceiptToInventoryResponse>(
+			`/receipt/${receiptId}/add-to-inventory`,
+			options
 		);
-
-		if (!response.ok) {
-			let errorMessage = "Erreur lors de l'ignorage du produit";
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-	}
+	},
 
 	/**
-	 * Ajoute tous les produits validés du ticket à l'inventaire
-	 *
-	 * Étape finale après validation de tous les produits
-	 * Enrichit automatiquement les produits via OpenFoodFacts
-	 *
-	 * @param payload - receiptId et liste des produits à ajouter
-	 */
-	async addToInventory(payload: AddToInventoryPayload): Promise<void> {
-		const { receiptId, products } = payload;
-
-		const response = await fetch(
-			`${API_URL}/receipt/${receiptId}/add-to-inventory`,
-			{
-				method: 'POST',
-				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ products }),
-			}
-		);
-
-		if (!response.ok) {
-			let errorMessage =
-				"Erreur lors de l'ajout des produits à l'inventaire";
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
-
-			throw new Error(errorMessage);
-		}
-	}
-
-	/**
-	 * Récupère l'historique des tickets scannés
-	 *
-	 * Avec filtres optionnels (dates, montant, magasin)
-	 *
-	 * @param filters - Filtres optionnels
-	 * @returns Liste paginée des tickets
+	 * Récupère l'historique des tickets avec filtres
 	 */
 	async getReceiptHistory(
 		filters: ReceiptHistoryFilters = {}
 	): Promise<ReceiptHistoryResponse> {
-		// Construction des query params
-		const params = new URLSearchParams();
+		// Construire les paramètres de query
+		const searchParams = new URLSearchParams();
 
-		if (filters.startDate) {
-			params.append('startDate', filters.startDate);
-		}
-		if (filters.endDate) {
-			params.append('endDate', filters.endDate);
-		}
-		if (filters.minAmount !== undefined) {
-			params.append('minAmount', filters.minAmount.toString());
-		}
-		if (filters.maxAmount !== undefined) {
-			params.append('maxAmount', filters.maxAmount.toString());
-		}
-		if (filters.merchantName) {
-			params.append('merchantName', filters.merchantName);
-		}
-		if (filters.limit !== undefined) {
-			params.append('limit', filters.limit.toString());
-		}
-		if (filters.offset !== undefined) {
-			params.append('offset', filters.offset.toString());
-		}
-
-		const queryString = params.toString();
-		const url = `${API_URL}/receipt/history${
-			queryString ? `?${queryString}` : ''
-		}`;
-
-		const response = await fetch(url, {
-			method: 'GET',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-			},
+		Object.entries(filters).forEach(([key, value]) => {
+			if (value !== undefined && value !== null && value !== '') {
+				searchParams.append(key, value.toString());
+			}
 		});
 
-		if (!response.ok) {
-			let errorMessage = "Erreur lors de la récupération de l'historique";
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
-			}
+		const queryString = searchParams.toString();
+		const endpoint = queryString
+			? `/receipt/history?${queryString}`
+			: '/receipt/history';
 
-			throw new Error(errorMessage);
-		}
-
-		const data = await response.json();
-		return data.data || data;
-	}
+		return await apiClient.get<ReceiptHistoryResponse>(endpoint);
+	},
 
 	/**
-	 * Supprime un ticket et tous ses produits détectés
-	 *
-	 * @param receiptId - ID du ticket à supprimer
+	 * Utilitaire : Vérifie si un ticket est prêt pour l'ajout à l'inventaire
 	 */
-	async deleteReceipt(receiptId: string): Promise<void> {
-		const response = await fetch(`${API_URL}/receipt/${receiptId}`, {
-			method: 'DELETE',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		});
+	isReadyForInventory(status: ReceiptStatusData): boolean {
+		return status.readyForInventory && status.status === 'VALIDATED';
+	},
 
-		if (!response.ok) {
-			let errorMessage = 'Erreur lors de la suppression du ticket';
-			try {
-				const errorData = await response.json();
-				errorMessage = errorData.message || errorMessage;
-			} catch {
-				// Ignore parsing error
+	/**
+	 * Utilitaire : Obtient le message d'état approprié
+	 */
+	getStatusMessage(status: ReceiptStatusData): string {
+		switch (status.status) {
+			case 'PROCESSING': {
+				const timeLeft = status.estimatedTimeRemaining;
+				return timeLeft
+					? `Traitement en cours... (~${timeLeft}s restantes)`
+					: 'Traitement en cours...';
 			}
 
-			throw new Error(errorMessage);
-		}
-	}
-}
+			case 'COMPLETED':
+				return "Ticket traité et ajouté à l'inventaire";
 
-// Export de l'instance singleton
-export const receiptService = new ReceiptService();
+			case 'FAILED':
+				return status.errorMessage || 'Erreur lors du traitement';  
+
+			case 'VALIDATED':
+				if (status.readyForInventory) {
+					return "Prêt à être ajouté à l'inventaire";
+				} else {
+					return `Validation en cours (${status.validatedItems}/${status.totalItems} items)`;
+				}
+
+			default:
+				return 'Statut inconnu';
+		}
+	},
+
+	/**
+	 * Utilitaire : Formate le montant pour l'affichage
+	 */
+	formatAmount(amount?: number | null): string {
+		if (!amount) return 'N/A';
+		return new Intl.NumberFormat('fr-FR', {
+			style: 'currency',
+			currency: 'EUR',
+		}).format(amount);
+	},
+
+	/**
+	 * Utilitaire : Formate la date relative
+	 */
+	formatRelativeDate(dateString: string): string {
+		const date = new Date(dateString);
+		const now = new Date();
+		const diffMs = now.getTime() - date.getTime();
+		const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+		if (diffDays === 0) {
+			return "Aujourd'hui";
+		} else if (diffDays === 1) {
+			return 'Hier';
+		} else if (diffDays < 7) {
+			return `Il y a ${diffDays} jours`;
+		} else {
+			return date.toLocaleDateString('fr-FR');
+		}
+	},
+};
+
+export default receiptService;

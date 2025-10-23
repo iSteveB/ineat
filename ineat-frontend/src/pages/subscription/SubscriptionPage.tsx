@@ -40,7 +40,7 @@ interface SubscriptionPlan {
   limitations?: string[];
   popular?: boolean;
   buttonText: string;
-  buttonVariant: 'outline';
+  buttonVariant: 'default' | 'outline';
 }
 
 // ===== DONNÉES DES PLANS =====
@@ -86,7 +86,7 @@ const subscriptionPlans: SubscriptionPlan[] = [
     ],
     popular: true,
     buttonText: 'Commencer Premium',
-    buttonVariant: 'outline',
+    buttonVariant: 'default',
   },
 ];
 
