@@ -8,7 +8,8 @@ const AddProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
-	const isPremiumUser = user?.subscription === 'PREMIUM';
+	const isPremiumUser =
+		user?.subscription === 'PREMIUM' || user?.subscription === 'ADMIN';
 
 	/**
 	 * Utilitaire pour obtenir les initiales de l'utilisateur
@@ -86,10 +87,9 @@ const AddProductPage: React.FC = () => {
 						to={
 							isPremiumUser
 								? '/app/inventory/add/receipt'
-								: '/app/upgrade'
+								: '/app/subscription'
 						}
 						isPremium={true}
-						isDisabled={!isPremiumUser}
 					/>
 
 					{/* Importer une facture Drive */}
@@ -100,10 +100,9 @@ const AddProductPage: React.FC = () => {
 						to={
 							isPremiumUser
 								? '/app/inventory/add/drive'
-								: '/app/upgrade'
+								: '/app/subscription'
 						}
 						isPremium={true}
-						isDisabled={!isPremiumUser}
 					/>
 
 					{/* Ajouter manuellement */}
