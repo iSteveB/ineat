@@ -46,26 +46,26 @@ export interface ButtonProps
 	asChild?: boolean;
 }
 
-function Button({
-	className,
-	variant,
-	size,
-	fullWidth,
-	asChild = false,
-	...props
-}: ButtonProps) {
-	const Comp = asChild ? Slot : 'button';
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+	(
+		{ className, variant, size, fullWidth, asChild = false, ...props },
+		ref
+	) => {
+		const Comp = asChild ? Slot : 'button';
 
-	return (
-		<Comp
-			data-slot='button'
-			className={cn(
-				buttonVariants({ variant, size, fullWidth, className })
-			)}
-			{...props}
-		/>
-	);
-}
+		return (
+			<Comp
+				ref={ref}
+				data-slot='button'
+				className={cn(
+					buttonVariants({ variant, size, fullWidth, className })
+				)}
+				{...props}
+			/>
+		);
+	}
+);
+Button.displayName = 'Button';
 
 // eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants };
