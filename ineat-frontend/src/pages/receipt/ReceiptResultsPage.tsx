@@ -50,7 +50,7 @@ interface ModalsState {
 
 /**
  * Page des résultats d'un ticket scanné
- * 
+ *
  * Fonctionnalités :
  * - Affichage du résumé du ticket
  * - Liste des items détectés avec filtres
@@ -58,7 +58,7 @@ interface ModalsState {
  * - Association de produits
  * - Validation et ajout à l'inventaire
  * - Gestion des erreurs
- * 
+ *
  * @example
  * Route: /app/receipts/:receiptId/results
  */
@@ -70,7 +70,9 @@ export const ReceiptResultsPage: React.FC = () => {
 
 	// ===== STORE =====
 
-	const clearActiveReceipt = useReceiptStore((state) => state.clearActiveReceipt);
+	const clearActiveReceipt = useReceiptStore(
+		(state) => state.clearActiveReceipt
+	);
 
 	// ===== STATE =====
 
@@ -168,7 +170,11 @@ export const ReceiptResultsPage: React.FC = () => {
 					notes: data.notes,
 				};
 
-				await receiptService.updateReceiptItem(receiptId, itemId, updateData);
+				await receiptService.updateReceiptItem(
+					receiptId,
+					itemId,
+					updateData
+				);
 
 				// Recharger les données
 				await loadReceiptData();
@@ -191,7 +197,9 @@ export const ReceiptResultsPage: React.FC = () => {
 	const handleToggleValidation = useCallback(
 		async (itemId: string, validated: boolean) => {
 			try {
-				await receiptService.updateReceiptItem(receiptId, itemId, { validated });
+				await receiptService.updateReceiptItem(receiptId, itemId, {
+					validated,
+				});
 
 				// Mettre à jour localement
 				setPageState((prev) => ({
@@ -201,7 +209,9 @@ export const ReceiptResultsPage: React.FC = () => {
 					),
 				}));
 
-				toast.success(validated ? 'Article validé' : 'Validation annulée');
+				toast.success(
+					validated ? 'Article validé' : 'Validation annulée'
+				);
 			} catch (error) {
 				const errorMessage =
 					error instanceof Error
@@ -243,32 +253,39 @@ export const ReceiptResultsPage: React.FC = () => {
 	/**
 	 * Recherche des produits (pour le modal)
 	 */
-	const handleSearchProducts = useCallback(async (query: string): Promise<Product[]> => {
-		try {
-			// Utiliser inventoryService pour rechercher les produits
-			const results = await inventoryService.searchProducts(query, 10, false);
-			
-			// Convertir ProductSearchResult en Product
-			return results.map((result) => ({
-				id: result.id,
-				name: result.name,
-				brand: result.brand,
-				barcode: result.barcode,
-				category: result.category,
-				unitType: result.unitType,
-				nutriscore: result.nutriscore,
-				ecoscore: result.ecoscore,
-				novascore: result.novascore,
-				imageUrl: result.imageUrl,
-				ingredients: result.ingredients,
-				nutrients: result.nutrients,
-				createdAt: new Date().toISOString(), // Placeholder
-				updatedAt: new Date().toISOString(), // Placeholder
-			}));
-		} catch {
-			throw new Error('Erreur lors de la recherche');
-		}
-	}, []);
+	const handleSearchProducts = useCallback(
+		async (query: string): Promise<Product[]> => {
+			try {
+				// Utiliser inventoryService pour rechercher les produits
+				const results = await inventoryService.searchProducts(
+					query,
+					10,
+					false
+				);
+
+				// Convertir ProductSearchResult en Product
+				return results.map((result) => ({
+					id: result.id,
+					name: result.name,
+					brand: result.brand,
+					barcode: result.barcode,
+					category: result.category,
+					unitType: result.unitType,
+					nutriscore: result.nutriscore,
+					ecoscore: result.ecoscore,
+					novascore: result.novascore,
+					imageUrl: result.imageUrl,
+					ingredients: result.ingredients,
+					nutrients: result.nutrients,
+					createdAt: new Date().toISOString(), // Placeholder
+					updatedAt: new Date().toISOString(), // Placeholder
+				}));
+			} catch {
+				throw new Error('Erreur lors de la recherche');
+			}
+		},
+		[]
+	);
 
 	// ===== HANDLERS - INVENTAIRE =====
 
@@ -291,7 +308,7 @@ export const ReceiptResultsPage: React.FC = () => {
 		try {
 			await receiptService.addReceiptToInventory(receiptId);
 
-			toast.success('Articles ajoutés à l\'inventaire avec succès !');
+			toast.success("Articles ajoutés à l'inventaire avec succès !");
 
 			// Rediriger vers l'inventaire après un court délai
 			setTimeout(() => {
@@ -336,7 +353,8 @@ export const ReceiptResultsPage: React.FC = () => {
 		progress:
 			pageState.items.length > 0
 				? Math.round(
-						(pageState.items.filter((item) => item.validated).length /
+						(pageState.items.filter((item) => item.validated)
+							.length /
 							pageState.items.length) *
 							100
 				  )
@@ -352,20 +370,19 @@ export const ReceiptResultsPage: React.FC = () => {
 	 * Rendu de l'en-tête
 	 */
 	const renderHeader = () => (
-		<div className="flex items-center justify-between mb-6">
-			<div className="flex items-center gap-3">
+		<div className='flex items-center justify-between mb-6'>
+			<div className='flex items-center gap-3'>
 				<Button
-					variant="ghost"
-					size="sm"
+					variant='ghost'
+					size='sm'
 					onClick={() => navigate({ to: '/app/inventory' })}
-					className="p-2"
-					disabled={pageState.isSaving}
-				>
-					<ArrowLeft className="size-4" />
+					className='p-2'
+					disabled={pageState.isSaving}>
+					<ArrowLeft className='size-4' />
 				</Button>
 				<div>
-					<h1 className="text-2xl font-bold">Résultats du scan</h1>
-					<p className="text-sm text-muted-foreground">
+					<h1 className='text-2xl font-bold'>Résultats du scan</h1>
+					<p className='text-sm text-muted-foreground'>
 						Vérifiez et validez les articles détectés
 					</p>
 				</div>
@@ -380,30 +397,29 @@ export const ReceiptResultsPage: React.FC = () => {
 		const hasValidatedItems = stats.validated > 0;
 
 		return (
-			<div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t p-4 -mx-4">
-				<div className="container max-w-4xl mx-auto">
+			<div className='sticky bottom-0 bg-background/95 backdrop-blur-sm border-t p-4 -mx-4'>
+				<div className='container max-w-4xl mx-auto'>
 					<Button
-						size="lg"
-						className="w-full"
+						size='lg'
+						className='w-full'
 						onClick={handleAddToInventory}
-						disabled={!hasValidatedItems || pageState.isSaving}
-					>
+						disabled={!hasValidatedItems || pageState.isSaving}>
 						{pageState.isSaving ? (
 							<>
-								<Loader2 className="size-5 mr-2 animate-spin" />
+								<Loader2 className='size-5 mr-2 animate-spin' />
 								Ajout en cours...
 							</>
 						) : (
 							<>
-								<ShoppingCart className="size-5 mr-2" />
-								Ajouter {stats.validated} article{stats.validated > 1 ? 's' : ''} à
-								l'inventaire
+								<ShoppingCart className='size-5 mr-2' />
+								Ajouter {stats.validated} article
+								{stats.validated > 1 ? 's' : ''} à l'inventaire
 							</>
 						)}
 					</Button>
 
 					{!hasValidatedItems && (
-						<p className="text-center text-sm text-muted-foreground mt-2">
+						<p className='text-center text-sm text-muted-foreground mt-2'>
 							Validez au moins un article pour continuer
 						</p>
 					)}
@@ -417,10 +433,10 @@ export const ReceiptResultsPage: React.FC = () => {
 	// Loading
 	if (pageState.isLoading) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="max-w-4xl mx-auto">
-					<div className="flex items-center justify-center py-12">
-						<Loader2 className="size-8 animate-spin text-primary" />
+			<div className='container mx-auto px-4 py-8'>
+				<div className='max-w-4xl mx-auto'>
+					<div className='flex items-center justify-center py-12'>
+						<Loader2 className='size-8 animate-spin text-primary' />
 					</div>
 				</div>
 			</div>
@@ -430,22 +446,21 @@ export const ReceiptResultsPage: React.FC = () => {
 	// Erreur
 	if (pageState.error || !pageState.receipt) {
 		return (
-			<div className="container mx-auto px-4 py-8">
-				<div className="max-w-4xl mx-auto">
+			<div className='container mx-auto px-4 py-8'>
+				<div className='max-w-4xl mx-auto'>
 					{renderHeader()}
 
-					<Alert variant="destructive">
-						<AlertTriangle className="size-4" />
+					<Alert variant='warning'>
+						<AlertTriangle className='size-4' />
 						<AlertDescription>
 							{pageState.error || 'Ticket introuvable'}
 						</AlertDescription>
 					</Alert>
 
-					<div className="mt-4">
+					<div className='mt-4'>
 						<Button
-							variant="outline"
-							onClick={() => navigate({ to: '/app/inventory' })}
-						>
+							variant='outline'
+							onClick={() => navigate({ to: '/app/inventory' })}>
 							Retour à l'inventaire
 						</Button>
 					</div>
@@ -455,18 +470,18 @@ export const ReceiptResultsPage: React.FC = () => {
 	}
 
 	return (
-		<div className="container mx-auto px-4 py-8 pb-24">
-			<div className="max-w-4xl mx-auto space-y-6">
+		<div className='container mx-auto px-4 py-8 pb-24'>
+			<div className='max-w-4xl mx-auto space-y-6'>
 				{/* Header */}
 				{renderHeader()}
 
 				{/* Message de succès si tous validés */}
 				{stats.readyForInventory && (
-					<Alert className="border-green-500 bg-green-50">
-						<CheckCircle2 className="size-4 text-green-600" />
-						<AlertDescription className="text-green-800">
-							Tous les articles sont validés ! Vous pouvez les ajouter à votre
-							inventaire.
+					<Alert className='border-green-500 bg-green-50'>
+						<CheckCircle2 className='size-4 text-green-600' />
+						<AlertDescription className='text-green-800'>
+							Tous les articles sont validés ! Vous pouvez les
+							ajouter à votre inventaire.
 						</AlertDescription>
 					</Alert>
 				)}

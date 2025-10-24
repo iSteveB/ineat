@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsEnum, IsDateString, IsInt, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 // ===== ENUMS =====
@@ -38,7 +45,7 @@ export class ReceiptHistoryQueryDto {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    description: 'Nombre d\'éléments par page',
+    description: "Nombre d'éléments par page",
     example: 20,
     minimum: 1,
     maximum: 100,
@@ -96,7 +103,7 @@ export class ReceiptHistoryQueryDto {
   })
   @IsOptional()
   @Transform(({ value }) => value?.trim())
-  storeName?: string;
+  merchantName?: string;
 
   @ApiPropertyOptional({
     description: 'Montant minimum du ticket',
@@ -140,7 +147,7 @@ export class ReceiptHistoryItemDto {
   status: string;
 
   @ApiProperty({
-    description: 'URL de l\'image du ticket (miniature)',
+    description: "URL de l'image du ticket (miniature)",
     example: 'https://storage.example.com/receipts/ticket123_thumb.jpg',
   })
   imageUrl: string;
@@ -153,7 +160,7 @@ export class ReceiptHistoryItemDto {
   totalAmount?: number | null;
 
   @ApiPropertyOptional({
-    description: 'Date d\'achat détectée',
+    description: "Date d'achat détectée",
     format: 'date-time',
     example: '2024-10-22T10:30:00.000Z',
     nullable: true,
@@ -165,23 +172,23 @@ export class ReceiptHistoryItemDto {
     example: 'Carrefour Market',
     nullable: true,
   })
-  storeName?: string | null;
+  merchantName?: string | null;
 
   @ApiPropertyOptional({
-    description: 'Lieu du magasin',
-    example: 'Paris 15ème',
+    description: 'Adresse du magasin',
+    example: '15ème Rue de Paris',
     nullable: true,
   })
-  storeLocation?: string | null;
+  merchantAddress?: string | null;
 
   @ApiProperty({
-    description: 'Nombre total d\'items détectés',
+    description: "Nombre total d'items détectés",
     example: 5,
   })
   totalItems: number;
 
   @ApiProperty({
-    description: 'Nombre d\'items validés',
+    description: "Nombre d'items validés",
     example: 5,
   })
   validatedItems: number;
@@ -195,7 +202,7 @@ export class ReceiptHistoryItemDto {
   validationProgress: number;
 
   @ApiProperty({
-    description: 'Indique si le ticket a été ajouté à l\'inventaire',
+    description: "Indique si le ticket a été ajouté à l'inventaire",
     example: true,
   })
   addedToInventory: boolean;
@@ -226,13 +233,13 @@ export class PaginationMetaDto {
   currentPage: number;
 
   @ApiProperty({
-    description: 'Nombre d\'éléments par page',
+    description: "Nombre d'éléments par page",
     example: 20,
   })
   pageSize: number;
 
   @ApiProperty({
-    description: 'Nombre total d\'éléments',
+    description: "Nombre total d'éléments",
     example: 45,
   })
   totalItems: number;
@@ -297,7 +304,7 @@ export class ReceiptHistoryStatsDto {
   averageAmount: number;
 
   @ApiProperty({
-    description: 'Nombre total d\'items ajoutés à l\'inventaire',
+    description: "Nombre total d'items ajoutés à l'inventaire",
     example: 180,
   })
   totalItemsAdded: number;
@@ -347,7 +354,7 @@ export class ReceiptHistoryDto {
  */
 export class ReceiptHistoryResponseDto {
   @ApiProperty({
-    description: 'Indique si l\'opération a réussi',
+    description: "Indique si l'opération a réussi",
     example: true,
   })
   success: boolean;

@@ -320,7 +320,7 @@ export const ProductSearchModal: React.FC<ProductSearchModalProps> = ({
 		// Erreur
 		if (searchResult.error) {
 			return (
-				<Alert variant='destructive'>
+				<Alert variant='warning'>
 					<AlertCircle className='size-4' />
 					<AlertDescription>{searchResult.error}</AlertDescription>
 				</Alert>

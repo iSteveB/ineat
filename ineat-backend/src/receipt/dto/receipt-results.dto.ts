@@ -7,7 +7,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  */
 export class ReceiptItemDto {
   @ApiProperty({
-    description: 'ID de l\'item de ticket',
+    description: "ID de l'item de ticket",
     format: 'uuid',
     example: 'b2c3d4e5-f6g7-8901-bcde-f23456789012',
   })
@@ -22,7 +22,7 @@ export class ReceiptItemDto {
   productId?: string | null;
 
   @ApiProperty({
-    description: 'Nom du produit détecté par l\'OCR',
+    description: "Nom du produit détecté par l'OCR",
     example: 'LAIT DEMI-ECREME 1L',
   })
   detectedName: string;
@@ -56,20 +56,20 @@ export class ReceiptItemDto {
   confidence: number;
 
   @ApiProperty({
-    description: 'Indique si l\'item a été validé par l\'utilisateur',
+    description: "Indique si l'item a été validé par l'utilisateur",
     example: false,
   })
   validated: boolean;
 
   @ApiPropertyOptional({
-    description: 'Catégorie devinée par l\'algorithme',
+    description: "Catégorie devinée par l'algorithme",
     example: 'dairy-products',
     nullable: true,
   })
   categoryGuess?: string | null;
 
   @ApiPropertyOptional({
-    description: 'Date d\'expiration estimée/saisie pour l\'inventaire',
+    description: "Date d'expiration estimée/saisie pour l'inventaire",
     format: 'date-time',
     example: '2024-12-31T23:59:59.000Z',
     nullable: true,
@@ -84,14 +84,14 @@ export class ReceiptItemDto {
   storageLocation?: string | null;
 
   @ApiPropertyOptional({
-    description: 'Notes additionnelles sur l\'item',
+    description: "Notes additionnelles sur l'item",
     example: 'Produit en promotion',
     nullable: true,
   })
   notes?: string | null;
 
   @ApiProperty({
-    description: 'Date de création de l\'item',
+    description: "Date de création de l'item",
     format: 'date-time',
     example: '2024-10-22T10:05:00.000Z',
   })
@@ -136,14 +136,14 @@ export class AssociatedProductDto {
   barcode?: string | null;
 
   @ApiProperty({
-    description: 'Type d\'unité',
+    description: "Type d'unité",
     enum: ['KG', 'G', 'L', 'ML', 'UNIT'],
     example: 'L',
   })
   unitType: string;
 
   @ApiPropertyOptional({
-    description: 'URL de l\'image du produit',
+    description: "URL de l'image du produit",
     example: 'https://images.openfoodfacts.org/product.jpg',
     nullable: true,
   })
@@ -212,7 +212,7 @@ export class ReceiptMetadataDto {
   status: string;
 
   @ApiProperty({
-    description: 'URL de l\'image du ticket',
+    description: "URL de l'image du ticket",
     example: 'https://storage.example.com/receipts/ticket123.jpg',
   })
   imageUrl: string;
@@ -225,7 +225,7 @@ export class ReceiptMetadataDto {
   totalAmount?: number | null;
 
   @ApiPropertyOptional({
-    description: 'Date d\'achat détectée',
+    description: "Date d'achat détectée",
     format: 'date-time',
     example: '2024-10-22T10:30:00.000Z',
     nullable: true,
@@ -237,14 +237,14 @@ export class ReceiptMetadataDto {
     example: 'Carrefour Market',
     nullable: true,
   })
-  storeName?: string | null;
+  merchantName?: string | null;
 
   @ApiPropertyOptional({
-    description: 'Lieu du magasin détecté',
-    example: 'Paris 15ème',
+    description: 'Adresse du magasin détectée',
+    example: '15ème Rue de Paris',
     nullable: true,
   })
-  storeLocation?: string | null;
+  merchantAddress?: string | null;
 
   @ApiProperty({
     description: 'Date de création du ticket',
@@ -264,13 +264,13 @@ export class ReceiptMetadataDto {
  */
 export class ValidationStatsDto {
   @ApiProperty({
-    description: 'Nombre total d\'items détectés',
+    description: "Nombre total d'items détectés",
     example: 5,
   })
   totalItems: number;
 
   @ApiProperty({
-    description: 'Nombre d\'items validés',
+    description: "Nombre d'items validés",
     example: 3,
   })
   validatedItems: number;
@@ -284,13 +284,13 @@ export class ValidationStatsDto {
   validationProgress: number;
 
   @ApiProperty({
-    description: 'Nombre d\'items avec produits associés',
+    description: "Nombre d'items avec produits associés",
     example: 2,
   })
   itemsWithProducts: number;
 
   @ApiProperty({
-    description: 'Nombre d\'items nécessitant la création de nouveaux produits',
+    description: "Nombre d'items nécessitant la création de nouveaux produits",
     example: 3,
   })
   itemsNeedingNewProducts: number;
@@ -304,7 +304,8 @@ export class ValidationStatsDto {
   averageConfidence: number;
 
   @ApiProperty({
-    description: 'Indique si tous les items sont prêts pour l\'ajout à l\'inventaire',
+    description:
+      "Indique si tous les items sont prêts pour l'ajout à l'inventaire",
     example: false,
   })
   readyForInventory: boolean;
@@ -338,7 +339,7 @@ export class ReceiptResultsDto {
  */
 export class ReceiptResultsResponseDto {
   @ApiProperty({
-    description: 'Indique si l\'opération a réussi',
+    description: "Indique si l'opération a réussi",
     example: true,
   })
   success: boolean;
