@@ -55,8 +55,8 @@ export interface ReceiptStatusData {
 	imageUrl: string;
 	totalAmount?: number | null;
 	purchaseDate?: string | null;
-	storeName?: string | null;
-	storeLocation?: string | null;
+	merchantName?: string | null;
+	merchantAddress?: string | null;
 	totalItems: number;
 	validatedItems: number;
 	validationProgress: number;
@@ -121,8 +121,8 @@ export interface ReceiptMetadata {
 	imageUrl: string;
 	totalAmount?: number | null;
 	purchaseDate?: string | null;
-	storeName?: string | null;
-	storeLocation?: string | null;
+	merchantName?: string | null;
+	merchantAddress?: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
@@ -167,8 +167,8 @@ export interface ReceiptHistoryItem {
 	imageUrl: string;
 	totalAmount?: number | null;
 	purchaseDate?: string | null;
-	storeName?: string | null;
-	storeLocation?: string | null;
+	merchantName?: string | null;
+	merchantAddress?: string | null;
 	totalItems: number;
 	validatedItems: number;
 	validationProgress: number;

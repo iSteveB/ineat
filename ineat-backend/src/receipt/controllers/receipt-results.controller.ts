@@ -57,7 +57,7 @@ export class ReceiptResultsController {
   @UseGuards(PremiumGuard)
   @RequiresPremium()
   @ApiOperation({
-    summary: 'Récupérer les résultats détaillés d\'un ticket',
+    summary: "Récupérer les résultats détaillés d'un ticket",
     description: `
       Récupère tous les résultats détaillés d'un ticket de caisse avec :
       
@@ -97,7 +97,8 @@ export class ReceiptResultsController {
     schema: {
       example: {
         statusCode: 400,
-        message: 'Ticket en cours de traitement, résultats pas encore disponibles',
+        message:
+          'Ticket en cours de traitement, résultats pas encore disponibles',
         error: 'Bad Request',
       },
     },
@@ -120,7 +121,9 @@ export class ReceiptResultsController {
     const { receiptId } = params;
     const userId = req.user.id;
 
-    this.logger.log(`Récupération des résultats du ticket ${receiptId} pour l'utilisateur ${userId}`);
+    this.logger.log(
+      `Récupération des résultats du ticket ${receiptId} pour l'utilisateur ${userId}`,
+    );
 
     try {
       // Récupérer le ticket avec tous ses items et produits associés
@@ -142,17 +145,23 @@ export class ReceiptResultsController {
         message: this.buildResultsMessage(receipt.status, resultsDto.stats),
       };
 
-      this.logger.log(`Résultats du ticket ${receiptId} récupérés: ${resultsDto.items.length} items`);
+      this.logger.log(
+        `Résultats du ticket ${receiptId} récupérés: ${resultsDto.items.length} items`,
+      );
       return response;
-
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération des résultats du ticket ${receiptId}: ${error.message}`, error.stack);
-      
+      this.logger.error(
+        `Erreur lors de la récupération des résultats du ticket ${receiptId}: ${error.message}`,
+        error.stack,
+      );
+
       if (error instanceof NotFoundException) {
         throw error;
       }
-      
-      throw new NotFoundException('Erreur lors de la récupération des résultats du ticket');
+
+      throw new NotFoundException(
+        'Erreur lors de la récupération des résultats du ticket',
+      );
     }
   }
 
@@ -195,14 +204,16 @@ export class ReceiptResultsController {
    */
   private validateReceiptStatus(receipt: any): void {
     if (receipt.status === 'PROCESSING') {
-      throw new NotFoundException('Ticket en cours de traitement, résultats pas encore disponibles');
+      throw new NotFoundException(
+        'Ticket en cours de traitement, résultats pas encore disponibles',
+      );
     }
 
     if (receipt.status === 'FAILED') {
-      throw new NotFoundException('Erreur lors du traitement du ticket, aucun résultat disponible');
+      throw new NotFoundException(
+        'Erreur lors du traitement du ticket, aucun résultat disponible',
+      );
     }
-
-    // COMPLETED et VALIDATED sont OK
   }
 
   /**
@@ -215,8 +226,8 @@ export class ReceiptResultsController {
       imageUrl: receipt.imageUrl,
       totalAmount: receipt.totalAmount,
       purchaseDate: receipt.purchaseDate?.toISOString() || null,
-      storeName: receipt.storeName,
-      storeLocation: receipt.storeLocation,
+      merchantName: receipt.merchantName,
+      merchantAddress: receipt.merchantAddress,
       createdAt: receipt.createdAt.toISOString(),
       updatedAt: receipt.updatedAt.toISOString(),
     };
@@ -225,7 +236,9 @@ export class ReceiptResultsController {
   /**
    * Mappe les items du ticket avec leurs produits associés
    */
-  private async mapReceiptItems(items: any[]): Promise<ReceiptItemWithProductDto[]> {
+  private async mapReceiptItems(
+    items: any[],
+  ): Promise<ReceiptItemWithProductDto[]> {
     return items.map((item) => ({
       id: item.id,
       productId: item.productId,
@@ -274,12 +287,16 @@ export class ReceiptResultsController {
     const validatedItems = items.filter((item) => item.validated).length;
     const itemsWithProducts = items.filter((item) => item.productId).length;
     const itemsNeedingNewProducts = totalItems - itemsWithProducts;
-    
+
     // Calcul de la confiance moyenne
-    const totalConfidence = items.reduce((sum, item) => sum + (item.confidence || 0), 0);
+    const totalConfidence = items.reduce(
+      (sum, item) => sum + (item.confidence || 0),
+      0,
+    );
     const averageConfidence = totalItems > 0 ? totalConfidence / totalItems : 0;
-    
-    const validationProgress = totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
+
+    const validationProgress =
+      totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
     const readyForInventory = totalItems > 0 && validatedItems === totalItems;
 
     return {
@@ -296,11 +313,14 @@ export class ReceiptResultsController {
   /**
    * Construit le message des résultats
    */
-  private buildResultsMessage(status: string, stats: ValidationStatsDto): string {
+  private buildResultsMessage(
+    status: string,
+    stats: ValidationStatsDto,
+  ): string {
     const { totalItems, validatedItems, readyForInventory } = stats;
 
     if (status === 'COMPLETED') {
-      return 'Ticket traité et ajouté à l\'inventaire avec succès';
+      return "Ticket traité et ajouté à l'inventaire avec succès";
     }
 
     if (readyForInventory) {

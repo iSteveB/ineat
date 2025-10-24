@@ -408,7 +408,7 @@ export const ReceiptScanPage: React.FC = () => {
 	 */
 	const renderErrorStep = () => (
 		<div className='space-y-4'>
-			<Alert variant='destructive'>
+			<Alert variant='warning'>
 				<AlertTriangle className='size-4' />
 				<AlertDescription>
 					{state.uploadError || 'Une erreur est survenue'}

@@ -209,7 +209,7 @@ export const ReceiptProcessingLoader: React.FC<ReceiptProcessingLoaderProps> = (
 	const renderHeader = () => {
 		const StatusIcon = status?.status === 'FAILED' ? XCircle : Loader2;
 		const iconClassName = status?.status === 'FAILED' 
-			? 'text-destructive' 
+			? 'text-red-400' 
 			: 'text-primary animate-spin';
 
 		return (
@@ -325,10 +325,10 @@ export const ReceiptProcessingLoader: React.FC<ReceiptProcessingLoaderProps> = (
 
 		return (
 			<div className="space-y-2 text-sm">
-				{status.storeName && (
+				{status.merchantName && (
 					<div className="flex items-center justify-between">
 						<span className="text-muted-foreground">Magasin :</span>
-						<span className="font-medium">{status.storeName}</span>
+						<span className="font-medium">{status.merchantName}</span>
 					</div>
 				)}
 
@@ -365,7 +365,7 @@ export const ReceiptProcessingLoader: React.FC<ReceiptProcessingLoaderProps> = (
 		const errorMessage = status?.errorMessage || error?.message || 'Une erreur est survenue';
 
 		return (
-			<Alert variant="destructive">
+			<Alert variant="warning">
 				<AlertTriangle className="size-4" />
 				<AlertDescription>{errorMessage}</AlertDescription>
 			</Alert>
