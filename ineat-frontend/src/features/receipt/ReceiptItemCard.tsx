@@ -131,7 +131,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 
 		if (confidence >= CONFIDENCE_THRESHOLDS.HIGH) {
 			return (
-				<Badge variant='ghost' className='gap-1 bg-green-600'>
+				<Badge variant='success' className='gap-1 bg-green-600'>
 					<TrendingUp className='size-3' />
 					Confiance élevée
 				</Badge>
@@ -148,7 +148,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 		}
 
 		return (
-			<Badge variant='warning' className='gap-1'>
+			<Badge variant='error' className='gap-1'>
 				<AlertCircle className='size-3' />
 				Confiance faible
 			</Badge>
@@ -319,7 +319,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 				<div className='flex items-center gap-2 pt-3 border-t'>
 					<Button
 						size='sm'
-						variant={item.validated ? 'outline' : 'default'}
+						variant={item.validated ? 'outline' : 'primary'}
 						onClick={handleToggleValidation}
 						disabled={disabled}
 						className='flex-1'>
