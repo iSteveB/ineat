@@ -148,6 +148,14 @@ export class ReceiptResultsController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: 'Ticket pas encore traité ou en erreur',
+    schema: {
+      example: {
+        statusCode: 400,
+        message:
+          'Ticket en cours de traitement, résultats pas encore disponibles',
+        error: 'Bad Request',
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
@@ -262,6 +270,9 @@ export class ReceiptResultsController {
     };
   }
 
+  /**
+   * Mappe les items du ticket avec leurs produits associés
+   */
   private async mapReceiptItems(
     items: any[],
   ): Promise<ReceiptItemWithProductDto[]> {
@@ -308,6 +319,7 @@ export class ReceiptResultsController {
     const itemsWithProducts = items.filter((item) => item.productId).length;
     const itemsNeedingNewProducts = totalItems - itemsWithProducts;
 
+    // Calcul de la confiance moyenne
     const totalConfidence = items.reduce(
       (sum, item) => sum + (item.confidence || 0),
       0,
@@ -329,6 +341,9 @@ export class ReceiptResultsController {
     };
   }
 
+  /**
+   * Construit le message des résultats
+   */
   private buildResultsMessage(
     status: string,
     stats: ValidationStatsDto,

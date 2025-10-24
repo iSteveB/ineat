@@ -148,7 +148,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 		}
 
 		return (
-			<Badge variant='error' className='gap-1'>
+			<Badge variant='warning' className='gap-1'>
 				<AlertCircle className='size-3' />
 				Confiance faible
 			</Badge>
