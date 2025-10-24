@@ -14,8 +14,8 @@ import {
 	Camera,
 	Clock,
 } from 'lucide-react';
-import { ReceiptCamera } from '@/features/inventory/receipt/ReceiptCamera';
-import { ReceiptProcessingLoader } from '@/features/inventory/receipt/ReceiptProcessingLoader';
+import { ReceiptCamera } from '@/features/receipt/ReceiptCamera';
+import { ReceiptProcessingLoader } from '@/features/receipt/ReceiptProcessingLoader';
 import { receiptService } from '@/services/receiptService';
 import { useUser } from '@/hooks/useAuth';
 import { useReceiptStore } from '@/stores/receiptStore';
@@ -203,7 +203,7 @@ export const ReceiptScanPage: React.FC = () => {
 			// Rediriger vers les résultats après un court délai
 			setTimeout(() => {
 				navigate({
-					to: '/app/receipts/$receiptId/results',
+					to: '/app/receipt/$receiptId/results',
 					params: { receiptId: data.id },
 				});
 			}, 1500);

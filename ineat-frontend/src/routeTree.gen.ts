@@ -17,23 +17,23 @@ import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
 import { Route as AuthCallbackRouteImport } from './routes/_auth/callback'
-import { Route as AppReceiptsRouteRouteImport } from './routes/app/receipts/route'
 import { Route as AppSubscriptionIndexRouteImport } from './routes/app/subscription/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/app/settings/index'
 import { Route as AppRecipesIndexRouteImport } from './routes/app/recipes/index'
+import { Route as AppReceiptIndexRouteImport } from './routes/app/receipt/index'
 import { Route as AppProfileIndexRouteImport } from './routes/app/profile/index'
 import { Route as AppNotificationsIndexRouteImport } from './routes/app/notifications/index'
 import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/index'
 import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
 import { Route as AppRecipesSuggestionsRouteImport } from './routes/app/recipes/suggestions'
 import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$recipeId'
-import { Route as AppReceiptsHistoryRouteImport } from './routes/app/receipts/history'
+import { Route as AppReceiptHistoryRouteImport } from './routes/app/receipt/history'
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
 import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
 import { Route as AppSettingsDietRestrictionsIndexRouteImport } from './routes/app/settings/diet-restrictions/index'
 import { Route as AppInventoryAddIndexRouteImport } from './routes/app/inventory/add/index'
-import { Route as AppReceiptsReceiptIdResultsRouteImport } from './routes/app/receipts/$receiptId.results'
+import { Route as AppReceiptReceiptIdResultsRouteImport } from './routes/app/receipt/$receiptId.results'
 import { Route as AppInventoryAddSearchRouteImport } from './routes/app/inventory/add/search'
 import { Route as AppInventoryAddScanRouteImport } from './routes/app/inventory/add/scan'
 import { Route as AppInventoryAddReceiptRouteImport } from './routes/app/inventory/add/receipt'
@@ -79,11 +79,6 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/callback',
   getParentRoute: () => AuthRouteRoute,
 } as any)
-const AppReceiptsRouteRoute = AppReceiptsRouteRouteImport.update({
-  id: '/receipts',
-  path: '/receipts',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppSubscriptionIndexRoute = AppSubscriptionIndexRouteImport.update({
   id: '/subscription/',
   path: '/subscription/',
@@ -97,6 +92,11 @@ const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
 const AppRecipesIndexRoute = AppRecipesIndexRouteImport.update({
   id: '/recipes/',
   path: '/recipes/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppReceiptIndexRoute = AppReceiptIndexRouteImport.update({
+  id: '/receipt/',
+  path: '/receipt/',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppProfileIndexRoute = AppProfileIndexRouteImport.update({
@@ -129,10 +129,10 @@ const AppRecipesRecipeIdRoute = AppRecipesRecipeIdRouteImport.update({
   path: '/recipes/$recipeId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppReceiptsHistoryRoute = AppReceiptsHistoryRouteImport.update({
-  id: '/history',
-  path: '/history',
-  getParentRoute: () => AppReceiptsRouteRoute,
+const AppReceiptHistoryRoute = AppReceiptHistoryRouteImport.update({
+  id: '/receipt/history',
+  path: '/receipt/history',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
   id: '/inventory/$productId',
@@ -162,11 +162,11 @@ const AppInventoryAddIndexRoute = AppInventoryAddIndexRouteImport.update({
   path: '/inventory/add/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppReceiptsReceiptIdResultsRoute =
-  AppReceiptsReceiptIdResultsRouteImport.update({
-    id: '/$receiptId/results',
-    path: '/$receiptId/results',
-    getParentRoute: () => AppReceiptsRouteRoute,
+const AppReceiptReceiptIdResultsRoute =
+  AppReceiptReceiptIdResultsRouteImport.update({
+    id: '/receipt/$receiptId/results',
+    path: '/receipt/$receiptId/results',
+    getParentRoute: () => AppRouteRoute,
   } as any)
 const AppInventoryAddSearchRoute = AppInventoryAddSearchRouteImport.update({
   id: '/inventory/add/search',
@@ -197,20 +197,20 @@ const AppInventoryAddDriveRoute = AppInventoryAddDriveRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
-  '/app/receipts': typeof AppReceiptsRouteRouteWithChildren
   '/callback': typeof AuthCallbackRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/receipts/history': typeof AppReceiptsHistoryRoute
+  '/app/receipt/history': typeof AppReceiptHistoryRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
   '/app/notifications': typeof AppNotificationsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
+  '/app/receipt': typeof AppReceiptIndexRoute
   '/app/recipes': typeof AppRecipesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
   '/app/subscription': typeof AppSubscriptionIndexRoute
@@ -219,7 +219,7 @@ export interface FileRoutesByFullPath {
   '/app/inventory/add/receipt': typeof AppInventoryAddReceiptRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
-  '/app/receipts/$receiptId/results': typeof AppReceiptsReceiptIdResultsRoute
+  '/app/receipt/$receiptId/results': typeof AppReceiptReceiptIdResultsRoute
   '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
@@ -227,20 +227,20 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app/receipts': typeof AppReceiptsRouteRouteWithChildren
   '/callback': typeof AuthCallbackRoute
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/receipts/history': typeof AppReceiptsHistoryRoute
+  '/app/receipt/history': typeof AppReceiptHistoryRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
   '/app/notifications': typeof AppNotificationsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
+  '/app/receipt': typeof AppReceiptIndexRoute
   '/app/recipes': typeof AppRecipesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
   '/app/subscription': typeof AppSubscriptionIndexRoute
@@ -249,7 +249,7 @@ export interface FileRoutesByTo {
   '/app/inventory/add/receipt': typeof AppInventoryAddReceiptRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
-  '/app/receipts/$receiptId/results': typeof AppReceiptsReceiptIdResultsRoute
+  '/app/receipt/$receiptId/results': typeof AppReceiptReceiptIdResultsRoute
   '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
@@ -260,20 +260,20 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/app': typeof AppRouteRouteWithChildren
-  '/app/receipts': typeof AppReceiptsRouteRouteWithChildren
   '/_auth/callback': typeof AuthCallbackRoute
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/receipts/history': typeof AppReceiptsHistoryRoute
+  '/app/receipt/history': typeof AppReceiptHistoryRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget/': typeof AppBudgetIndexRoute
   '/app/inventory/': typeof AppInventoryIndexRoute
   '/app/notifications/': typeof AppNotificationsIndexRoute
   '/app/profile/': typeof AppProfileIndexRoute
+  '/app/receipt/': typeof AppReceiptIndexRoute
   '/app/recipes/': typeof AppRecipesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
   '/app/subscription/': typeof AppSubscriptionIndexRoute
@@ -282,7 +282,7 @@ export interface FileRoutesById {
   '/app/inventory/add/receipt': typeof AppInventoryAddReceiptRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
-  '/app/receipts/$receiptId/results': typeof AppReceiptsReceiptIdResultsRoute
+  '/app/receipt/$receiptId/results': typeof AppReceiptReceiptIdResultsRoute
   '/app/inventory/add/': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/personal-info/': typeof AppSettingsPersonalInfoIndexRoute
@@ -293,20 +293,20 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
-    | '/app/receipts'
     | '/callback'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/receipts/history'
+    | '/app/receipt/history'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
     | '/app/inventory'
     | '/app/notifications'
     | '/app/profile'
+    | '/app/receipt'
     | '/app/recipes'
     | '/app/settings'
     | '/app/subscription'
@@ -315,7 +315,7 @@ export interface FileRouteTypes {
     | '/app/inventory/add/receipt'
     | '/app/inventory/add/scan'
     | '/app/inventory/add/search'
-    | '/app/receipts/$receiptId/results'
+    | '/app/receipt/$receiptId/results'
     | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
     | '/app/settings/personal-info'
@@ -323,20 +323,20 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/app/receipts'
     | '/callback'
     | '/forgot-password'
     | '/login'
     | '/register'
     | '/app'
     | '/app/inventory/$productId'
-    | '/app/receipts/history'
+    | '/app/receipt/history'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
     | '/app/inventory'
     | '/app/notifications'
     | '/app/profile'
+    | '/app/receipt'
     | '/app/recipes'
     | '/app/settings'
     | '/app/subscription'
@@ -345,7 +345,7 @@ export interface FileRouteTypes {
     | '/app/inventory/add/receipt'
     | '/app/inventory/add/scan'
     | '/app/inventory/add/search'
-    | '/app/receipts/$receiptId/results'
+    | '/app/receipt/$receiptId/results'
     | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
     | '/app/settings/personal-info'
@@ -355,20 +355,20 @@ export interface FileRouteTypes {
     | '/'
     | '/_auth'
     | '/app'
-    | '/app/receipts'
     | '/_auth/callback'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/receipts/history'
+    | '/app/receipt/history'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget/'
     | '/app/inventory/'
     | '/app/notifications/'
     | '/app/profile/'
+    | '/app/receipt/'
     | '/app/recipes/'
     | '/app/settings/'
     | '/app/subscription/'
@@ -377,7 +377,7 @@ export interface FileRouteTypes {
     | '/app/inventory/add/receipt'
     | '/app/inventory/add/scan'
     | '/app/inventory/add/search'
-    | '/app/receipts/$receiptId/results'
+    | '/app/receipt/$receiptId/results'
     | '/app/inventory/add/'
     | '/app/settings/diet-restrictions/'
     | '/app/settings/personal-info/'
@@ -448,13 +448,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof AuthRouteRoute
     }
-    '/app/receipts': {
-      id: '/app/receipts'
-      path: '/receipts'
-      fullPath: '/app/receipts'
-      preLoaderRoute: typeof AppReceiptsRouteRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/app/subscription/': {
       id: '/app/subscription/'
       path: '/subscription'
@@ -474,6 +467,13 @@ declare module '@tanstack/react-router' {
       path: '/recipes'
       fullPath: '/app/recipes'
       preLoaderRoute: typeof AppRecipesIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/receipt/': {
+      id: '/app/receipt/'
+      path: '/receipt'
+      fullPath: '/app/receipt'
+      preLoaderRoute: typeof AppReceiptIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/app/profile/': {
@@ -518,12 +518,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRecipesRecipeIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/receipts/history': {
-      id: '/app/receipts/history'
-      path: '/history'
-      fullPath: '/app/receipts/history'
-      preLoaderRoute: typeof AppReceiptsHistoryRouteImport
-      parentRoute: typeof AppReceiptsRouteRoute
+    '/app/receipt/history': {
+      id: '/app/receipt/history'
+      path: '/receipt/history'
+      fullPath: '/app/receipt/history'
+      preLoaderRoute: typeof AppReceiptHistoryRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/app/inventory/$productId': {
       id: '/app/inventory/$productId'
@@ -560,12 +560,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryAddIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/receipts/$receiptId/results': {
-      id: '/app/receipts/$receiptId/results'
-      path: '/$receiptId/results'
-      fullPath: '/app/receipts/$receiptId/results'
-      preLoaderRoute: typeof AppReceiptsReceiptIdResultsRouteImport
-      parentRoute: typeof AppReceiptsRouteRoute
+    '/app/receipt/$receiptId/results': {
+      id: '/app/receipt/$receiptId/results'
+      path: '/receipt/$receiptId/results'
+      fullPath: '/app/receipt/$receiptId/results'
+      preLoaderRoute: typeof AppReceiptReceiptIdResultsRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/app/inventory/add/search': {
       id: '/app/inventory/add/search'
@@ -623,29 +623,17 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
-interface AppReceiptsRouteRouteChildren {
-  AppReceiptsHistoryRoute: typeof AppReceiptsHistoryRoute
-  AppReceiptsReceiptIdResultsRoute: typeof AppReceiptsReceiptIdResultsRoute
-}
-
-const AppReceiptsRouteRouteChildren: AppReceiptsRouteRouteChildren = {
-  AppReceiptsHistoryRoute: AppReceiptsHistoryRoute,
-  AppReceiptsReceiptIdResultsRoute: AppReceiptsReceiptIdResultsRoute,
-}
-
-const AppReceiptsRouteRouteWithChildren =
-  AppReceiptsRouteRoute._addFileChildren(AppReceiptsRouteRouteChildren)
-
 interface AppRouteRouteChildren {
-  AppReceiptsRouteRoute: typeof AppReceiptsRouteRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
+  AppReceiptHistoryRoute: typeof AppReceiptHistoryRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesSuggestionsRoute: typeof AppRecipesSuggestionsRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
   AppInventoryIndexRoute: typeof AppInventoryIndexRoute
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
+  AppReceiptIndexRoute: typeof AppReceiptIndexRoute
   AppRecipesIndexRoute: typeof AppRecipesIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
   AppSubscriptionIndexRoute: typeof AppSubscriptionIndexRoute
@@ -654,6 +642,7 @@ interface AppRouteRouteChildren {
   AppInventoryAddReceiptRoute: typeof AppInventoryAddReceiptRoute
   AppInventoryAddScanRoute: typeof AppInventoryAddScanRoute
   AppInventoryAddSearchRoute: typeof AppInventoryAddSearchRoute
+  AppReceiptReceiptIdResultsRoute: typeof AppReceiptReceiptIdResultsRoute
   AppInventoryAddIndexRoute: typeof AppInventoryAddIndexRoute
   AppSettingsDietRestrictionsIndexRoute: typeof AppSettingsDietRestrictionsIndexRoute
   AppSettingsPersonalInfoIndexRoute: typeof AppSettingsPersonalInfoIndexRoute
@@ -661,15 +650,16 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppReceiptsRouteRoute: AppReceiptsRouteRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
+  AppReceiptHistoryRoute: AppReceiptHistoryRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesSuggestionsRoute: AppRecipesSuggestionsRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
   AppInventoryIndexRoute: AppInventoryIndexRoute,
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,
+  AppReceiptIndexRoute: AppReceiptIndexRoute,
   AppRecipesIndexRoute: AppRecipesIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
   AppSubscriptionIndexRoute: AppSubscriptionIndexRoute,
@@ -678,6 +668,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppInventoryAddReceiptRoute: AppInventoryAddReceiptRoute,
   AppInventoryAddScanRoute: AppInventoryAddScanRoute,
   AppInventoryAddSearchRoute: AppInventoryAddSearchRoute,
+  AppReceiptReceiptIdResultsRoute: AppReceiptReceiptIdResultsRoute,
   AppInventoryAddIndexRoute: AppInventoryAddIndexRoute,
   AppSettingsDietRestrictionsIndexRoute: AppSettingsDietRestrictionsIndexRoute,
   AppSettingsPersonalInfoIndexRoute: AppSettingsPersonalInfoIndexRoute,
