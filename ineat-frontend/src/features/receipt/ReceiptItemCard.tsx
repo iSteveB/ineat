@@ -131,7 +131,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 
 		if (confidence >= CONFIDENCE_THRESHOLDS.HIGH) {
 			return (
-				<Badge variant='default' className='gap-1 bg-green-600'>
+				<Badge variant='ghost' className='gap-1 bg-green-600'>
 					<TrendingUp className='size-3' />
 					Confiance élevée
 				</Badge>

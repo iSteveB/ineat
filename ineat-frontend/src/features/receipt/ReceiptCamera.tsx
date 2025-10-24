@@ -251,7 +251,7 @@ export const ReceiptCamera: React.FC<ReceiptCameraProps> = ({
 				{showCamera && (
 					<Button
 						onClick={triggerCamera}
-						variant='default'
+						variant='ghost'
 						className='w-full h-16'
 						disabled={isLoading}>
 						<Camera className='size-5 mr-2' />
