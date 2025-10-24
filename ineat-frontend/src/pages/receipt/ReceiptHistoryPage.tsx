@@ -489,7 +489,7 @@ export const ReceiptHistoryPage: React.FC = () => {
 				<div className='max-w-6xl mx-auto'>
 					{renderHeader()}
 
-					<Alert variant='destructive'>
+					<Alert variant='warning'>
 						<AlertTriangle className='size-4' />
 						<AlertDescription>{pageState.error}</AlertDescription>
 					</Alert>

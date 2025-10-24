@@ -119,7 +119,7 @@ export class ReceiptHistoryController {
     example: '2024-10-31T23:59:59.000Z',
   })
   @ApiQuery({
-    name: 'storeName',
+    name: 'merchantName',
     description: 'Filtrer par nom de magasin (recherche partielle)',
     required: false,
     type: String,
@@ -229,9 +229,9 @@ export class ReceiptHistoryController {
     }
 
     // Filtre par nom de magasin
-    if (query.storeName) {
-      where.storeName = {
-        contains: query.storeName,
+    if (query.merchantName) {
+      where.merchantName = {
+        contains: query.merchantName,
         mode: 'insensitive',
       };
     }
@@ -378,8 +378,8 @@ export class ReceiptHistoryController {
       imageUrl: receipt.imageUrl,
       totalAmount: receipt.totalAmount,
       purchaseDate: receipt.purchaseDate?.toISOString() || null,
-      storeName: receipt.storeName,
-      storeLocation: receipt.storeLocation,
+      merchantName: receipt.merchantName,
+      merchantAddress: receipt.merchantAddress,
       totalItems,
       validatedItems,
       validationProgress,

@@ -143,18 +143,18 @@ export const ReceiptSummary: React.FC<ReceiptSummaryProps> = ({
 
 			<CardContent className="space-y-4">
 				{/* Informations du magasin */}
-				{receipt.storeName && (
+				{receipt.merchantName && (
 					<div className="flex items-start gap-3">
 						<div className="flex items-center justify-center size-10 rounded-lg bg-primary/10 text-primary">
 							<Store className="size-5" />
 						</div>
 						<div className="flex-1 min-w-0">
 							<p className="text-sm text-muted-foreground">Magasin</p>
-							<p className="font-medium">{receipt.storeName}</p>
-							{receipt.storeLocation && (
+							<p className="font-medium">{receipt.merchantName}</p>
+							{receipt.merchantAddress && (
 								<div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
 									<MapPin className="size-3" />
-									{receipt.storeLocation}
+									{receipt.merchantAddress}
 								</div>
 							)}
 						</div>

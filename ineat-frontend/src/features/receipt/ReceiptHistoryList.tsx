@@ -144,7 +144,7 @@ export const ReceiptHistoryList: React.FC<ReceiptHistoryListProps> = ({
 				);
 			case 'FAILED':
 				return (
-					<Badge variant="destructive" className="gap-1">
+					<Badge variant="warning" className="gap-1">
 						<XCircle className="size-3" />
 						Échec
 					</Badge>
@@ -225,11 +225,11 @@ export const ReceiptHistoryList: React.FC<ReceiptHistoryListProps> = ({
 								<div className="flex items-start justify-between gap-2">
 									<div>
 										<h3 className="font-semibold">
-											{receipt.storeName || 'Magasin inconnu'}
+											{receipt.merchantName || 'Magasin inconnu'}
 										</h3>
-										{receipt.storeLocation && (
+										{receipt.merchantAddress && (
 											<p className="text-sm text-muted-foreground">
-												{receipt.storeLocation}
+												{receipt.merchantAddress}
 											</p>
 										)}
 									</div>
@@ -322,7 +322,7 @@ export const ReceiptHistoryList: React.FC<ReceiptHistoryListProps> = ({
 										variant="outline"
 										onClick={() => handleDeleteReceipt(receipt.id)}
 										disabled={disabled}
-										className="text-destructive hover:bg-destructive/10"
+										className="text-red-400 hover:bg-red-400/10"
 									>
 										<Trash2 className="size-4 mr-1" />
 										Supprimer

@@ -280,7 +280,7 @@ export const ReceiptCamera: React.FC<ReceiptCameraProps> = ({
 		if (!error) return null;
 
 		return (
-			<Alert variant='destructive'>
+			<Alert variant='warning'>
 				<AlertTriangle className='size-4' />
 				<AlertDescription>{error}</AlertDescription>
 			</Alert>

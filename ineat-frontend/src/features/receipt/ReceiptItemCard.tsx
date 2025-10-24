@@ -148,7 +148,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 		}
 
 		return (
-			<Badge variant='destructive' className='gap-1'>
+			<Badge variant='warning' className='gap-1'>
 				<AlertCircle className='size-3' />
 				Confiance faible
 			</Badge>
@@ -343,7 +343,7 @@ export const ReceiptItemCard: React.FC<ReceiptItemCardProps> = ({
 							variant='outline'
 							onClick={handleDelete}
 							disabled={disabled || isDeleting}
-							className='text-destructive hover:bg-destructive/10'>
+							className='text-red-400 hover:bg-red-400/10'>
 							<Trash2 className='size-4' />
 						</Button>
 					)}

@@ -293,7 +293,7 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 				<form onSubmit={handleSubmit} className="space-y-4">
 					{/* Erreur globale */}
 					{error && (
-						<Alert variant="destructive">
+						<Alert variant="warning">
 							<AlertCircle className="size-4" />
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
@@ -302,7 +302,7 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 					{/* Nom du produit */}
 					<div className="space-y-2">
 						<Label htmlFor="detectedName">
-							Nom du produit <span className="text-destructive">*</span>
+							Nom du produit <span className="text-red-400">*</span>
 						</Label>
 						<Input
 							id="detectedName"
@@ -318,7 +318,7 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 						<div className="space-y-2">
 							<Label htmlFor="quantity">
-								Quantité <span className="text-destructive">*</span>
+								Quantité <span className="text-red-400">*</span>
 							</Label>
 							<Input
 								id="quantity"

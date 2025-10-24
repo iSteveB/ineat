@@ -205,7 +205,7 @@ export const ReceiptItemDeleteDialog: React.FC<ReceiptItemDeleteDialogProps> = (
       <AlertDialogContent className="max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Trash2 className="size-5 text-destructive" />
+            <Trash2 className="size-5 text-red-400" />
             Supprimer cet item ?
           </AlertDialogTitle>
           <AlertDialogDescription>
@@ -226,7 +226,7 @@ export const ReceiptItemDeleteDialog: React.FC<ReceiptItemDeleteDialogProps> = (
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isLoading}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="bg-red-400 text-red-400-foreground hover:bg-red-400/90"
           >
             {isLoading ? (
               <div className="flex items-center gap-2">
