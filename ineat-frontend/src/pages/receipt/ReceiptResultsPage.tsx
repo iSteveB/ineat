@@ -1,183 +1,372 @@
-import { useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import { ReceiptSummary } from '@/features/receipt/ReceiptSummary';
-import { ProductCardConfident } from '@/features/receipt/ProductCardConfident';
-import { Phase1Actions } from '@/features/receipt/Phase1Actions';
 import {
-	useReceiptStore,
-	receiptSelectors,
-	useScanStatistics,
-} from '@/stores/receiptStore';
+	ArrowLeft,
+	Loader2,
+	AlertTriangle,
+	CheckCircle2,
+	ShoppingCart,
+} from 'lucide-react';
+import { ReceiptSummary } from '@/features/receipt/ReceiptSummary';
+import { ReceiptItemsList } from '@/features/receipt/ReceiptItemsList';
+import { EditReceiptItemModal } from '@/features/receipt/EditReceiptItemModal';
+import { ProductSearchModal } from '@/features/receipt/ProductSearchModal';
+import { receiptService } from '@/services/receiptService';
+import { useReceiptStore } from '@/stores/receiptStore';
+import type {
+	ReceiptItem,
+	ReceiptMetadata,
+	ValidateReceiptItemData,
+} from '@/services/receiptService';
+import type { Product } from '@/schemas/product';
+import type { EditFormData } from '@/features/receipt/EditReceiptItemModal';
+import { inventoryService } from '@/services/inventoryService';
+
+// ===== TYPES =====
+
+/**
+ * État de la page
+ */
+interface PageState {
+	receipt: ReceiptMetadata | null;
+	items: ReceiptItem[];
+	isLoading: boolean;
+	isSaving: boolean;
+	error: string | null;
+}
+
+/**
+ * État des modals
+ */
+interface ModalsState {
+	editItem: ReceiptItem | null;
+	searchItem: ReceiptItem | null;
+}
+
+// ===== COMPOSANT =====
 
 /**
  * Page des résultats d'un ticket scanné
- *
- * Workflow :
- * 1. Affiche Phase 1 (produits bien identifiés)
- * 2. User valide/ignore chaque produit
- * 3. Passe à Phase 2 (produits problématiques)
- * 4. User gère les cas difficiles
- * 5. Ajout à l'inventaire
+ * 
+ * Fonctionnalités :
+ * - Affichage du résumé du ticket
+ * - Liste des items détectés avec filtres
+ * - Édition des items
+ * - Association de produits
+ * - Validation et ajout à l'inventaire
+ * - Gestion des erreurs
+ * 
+ * @example
+ * Route: /app/receipts/:receiptId/results
  */
-export const ReceiptResultsPage = () => {
-	// ===== HOOKS =====
+export const ReceiptResultsPage: React.FC = () => {
+	// ===== NAVIGATION =====
+
 	const navigate = useNavigate();
 	const { receiptId } = useParams({ strict: false }) as { receiptId: string };
 
 	// ===== STORE =====
-	const status = useReceiptStore(receiptSelectors.status);
-	const analysis = useReceiptStore(receiptSelectors.analysis);
-	const error = useReceiptStore(receiptSelectors.error);
-	const currentPhase = useReceiptStore(receiptSelectors.currentPhase);
-	const phase1Products = useReceiptStore(receiptSelectors.phase1Products);
-	const phase2Products = useReceiptStore(receiptSelectors.phase2Products);
-	const isPhase1Complete = useReceiptStore(receiptSelectors.isPhase1Complete);
-	const canAddToInventory = useReceiptStore(
-		receiptSelectors.canAddToInventory
-	);
 
-	const selectEan = useReceiptStore((s) => s.selectEan);
-	const skipProduct = useReceiptStore((s) => s.skipProduct);
-	const validatePhase1 = useReceiptStore((s) => s.validatePhase1);
-	const goToPhase2 = useReceiptStore((s) => s.goToPhase2);
-	const addToInventory = useReceiptStore((s) => s.addToInventory);
-	const reset = useReceiptStore((s) => s.reset);
+	const clearActiveReceipt = useReceiptStore((state) => state.clearActiveReceipt);
 
-	const stats = useScanStatistics();
+	// ===== STATE =====
+
+	const [pageState, setPageState] = useState<PageState>({
+		receipt: null,
+		items: [],
+		isLoading: true,
+		isSaving: false,
+		error: null,
+	});
+
+	const [modalsState, setModalsState] = useState<ModalsState>({
+		editItem: null,
+		searchItem: null,
+	});
+
+	// ===== CHARGEMENT DES DONNÉES =====
+
+	/**
+	 * Charge les données complètes du ticket
+	 */
+	const loadReceiptData = useCallback(async () => {
+		setPageState((prev) => ({ ...prev, isLoading: true, error: null }));
+
+		try {
+			const response = await receiptService.getReceiptResults(receiptId);
+
+			setPageState({
+				receipt: response.data.receipt,
+				items: response.data.items,
+				isLoading: false,
+				isSaving: false,
+				error: null,
+			});
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Erreur lors du chargement des données';
+
+			setPageState((prev) => ({
+				...prev,
+				isLoading: false,
+				error: errorMessage,
+			}));
+
+			toast.error(errorMessage);
+		}
+	}, [receiptId]);
 
 	// ===== EFFETS =====
 
 	/**
-	 * Vérifier qu'on a bien des résultats
+	 * Charge les données du ticket au montage
 	 */
 	useEffect(() => {
-		if (status !== 'results' || !analysis) {
-			// Pas de résultats, retour à l'inventaire
-			navigate({ to: '/app/inventory' });
+		if (receiptId) {
+			loadReceiptData();
 		}
-	}, [status, analysis, navigate]);
-
-	/**
-	 * Vérifier que le receiptId correspond
-	 */
-	useEffect(() => {
-		if (analysis && analysis.receiptId !== receiptId) {
-			navigate({ to: '/app/inventory' });
-		}
-	}, [analysis, receiptId, navigate]);
+	}, [receiptId, loadReceiptData]);
 
 	/**
 	 * Cleanup au démontage
 	 */
 	useEffect(() => {
 		return () => {
-			// Ne pas reset si on est juste en train de naviguer entre phases
-			// Le reset se fait après addToInventory() ou annulation explicite
+			clearActiveReceipt();
 		};
+	}, [clearActiveReceipt]);
+
+	// ===== HANDLERS - ITEMS =====
+
+	/**
+	 * Ouvre le modal d'édition pour un item
+	 */
+	const handleEditItem = useCallback((item: ReceiptItem) => {
+		setModalsState((prev) => ({ ...prev, editItem: item }));
 	}, []);
 
-	// ===== HANDLERS =====
+	/**
+	 * Sauvegarde les modifications d'un item
+	 */
+	const handleSaveItem = useCallback(
+		async (itemId: string, data: Partial<EditFormData>) => {
+			try {
+				// Convertir EditFormData en ValidateReceiptItemData
+				const updateData: ValidateReceiptItemData = {
+					detectedName: data.detectedName,
+					quantity: data.quantity,
+					unitPrice: data.unitPrice ?? undefined,
+					totalPrice: data.totalPrice ?? undefined,
+					categoryGuess: data.categoryGuess,
+					expiryDate: data.expiryDate,
+					storageLocation: data.storageLocation,
+					notes: data.notes,
+				};
+
+				await receiptService.updateReceiptItem(receiptId, itemId, updateData);
+
+				// Recharger les données
+				await loadReceiptData();
+
+				toast.success('Article modifié avec succès');
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: 'Erreur lors de la modification';
+				throw new Error(errorMessage);
+			}
+		},
+		[receiptId, loadReceiptData]
+	);
 
 	/**
-	 * Sélectionne un code EAN pour un produit
+	 * Toggle la validation d'un item
 	 */
-	const handleSelectEan = (productId: string, eanCode: string) => {
-		selectEan(productId, eanCode);
-	};
+	const handleToggleValidation = useCallback(
+		async (itemId: string, validated: boolean) => {
+			try {
+				await receiptService.updateReceiptItem(receiptId, itemId, { validated });
+
+				// Mettre à jour localement
+				setPageState((prev) => ({
+					...prev,
+					items: prev.items.map((item) =>
+						item.id === itemId ? { ...item, validated } : item
+					),
+				}));
+
+				toast.success(validated ? 'Article validé' : 'Validation annulée');
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: 'Erreur lors de la validation';
+				toast.error(errorMessage);
+			}
+		},
+		[receiptId]
+	);
+
+	// ===== HANDLERS - PRODUITS =====
 
 	/**
-	 * Ignore un produit
+	 * Associe un produit à un item
 	 */
-	const handleSkipProduct = (productId: string) => {
-		skipProduct(productId);
-	};
+	const handleSelectProduct = useCallback(
+		async (itemId: string, product: Product) => {
+			try {
+				await receiptService.updateReceiptItem(receiptId, itemId, {
+					productId: product.id,
+				});
+
+				// Recharger les données
+				await loadReceiptData();
+
+				toast.success('Produit associé avec succès');
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: "Erreur lors de l'association";
+				throw new Error(errorMessage);
+			}
+		},
+		[receiptId, loadReceiptData]
+	);
 
 	/**
-	 * Valide Phase 1 et passe à Phase 2
+	 * Recherche des produits (pour le modal)
 	 */
-	const handleValidatePhase1 = () => {
+	const handleSearchProducts = useCallback(async (query: string): Promise<Product[]> => {
 		try {
-			validatePhase1();
-
-			if (phase2Products.length === 0) {
-				// Pas de Phase 2, on peut ajouter directement
-				toast.info('Tous les produits sont validés !');
-			} else {
-				toast.success(
-					`Phase 1 terminée ! ${phase2Products.length} produits nécessitent votre attention.`
-				);
-			}
-		} catch (err) {
-			if (err instanceof Error) {
-				toast.error(err.message);
-			}
+			// Utiliser inventoryService pour rechercher les produits
+			const results = await inventoryService.searchProducts(query, 10, false);
+			
+			// Convertir ProductSearchResult en Product
+			return results.map((result) => ({
+				id: result.id,
+				name: result.name,
+				brand: result.brand,
+				barcode: result.barcode,
+				category: result.category,
+				unitType: result.unitType,
+				nutriscore: result.nutriscore,
+				ecoscore: result.ecoscore,
+				novascore: result.novascore,
+				imageUrl: result.imageUrl,
+				ingredients: result.ingredients,
+				nutrients: result.nutrients,
+				createdAt: new Date().toISOString(), // Placeholder
+				updatedAt: new Date().toISOString(), // Placeholder
+			}));
+		} catch {
+			throw new Error('Erreur lors de la recherche');
 		}
-	};
+	}, []);
+
+	// ===== HANDLERS - INVENTAIRE =====
 
 	/**
-	 * Passe directement à Phase 2 (si l'user veut)
+	 * Ajoute tous les items validés à l'inventaire
 	 */
-	const handleGoToPhase2 = () => {
-		goToPhase2();
-	};
+	const handleAddToInventory = useCallback(async () => {
+		if (!pageState.receipt) return;
 
-	/**
-	 * Ajoute tous les produits validés à l'inventaire
-	 */
-	const handleAddToInventory = async () => {
+		// Vérifier qu'il y a des items validés
+		const validatedItems = pageState.items.filter((item) => item.validated);
+
+		if (validatedItems.length === 0) {
+			toast.error('Veuillez valider au moins un article');
+			return;
+		}
+
+		setPageState((prev) => ({ ...prev, isSaving: true }));
+
 		try {
-			await addToInventory();
-			toast.success("Produits ajoutés à l'inventaire avec succès !");
+			await receiptService.addReceiptToInventory(receiptId);
 
-			// Redirection après succès
+			toast.success('Articles ajoutés à l\'inventaire avec succès !');
+
+			// Rediriger vers l'inventaire après un court délai
 			setTimeout(() => {
 				navigate({ to: '/app/inventory' });
 			}, 1500);
-		} catch (err) {
-			if (err instanceof Error) {
-				toast.error(err.message);
-			}
+		} catch (error) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Erreur lors de l'ajout à l'inventaire";
+
+			toast.error(errorMessage);
+
+			setPageState((prev) => ({ ...prev, isSaving: false }));
 		}
-	};
+	}, [receiptId, pageState.receipt, pageState.items, navigate]);
+
+	// ===== HANDLERS - MODALS =====
 
 	/**
-	 * Annule et retourne à l'inventaire
+	 * Ferme le modal d'édition
 	 */
-	const handleCancel = () => {
-		reset();
-		navigate({ to: '/app/inventory' });
+	const handleCloseEditModal = useCallback(() => {
+		setModalsState((prev) => ({ ...prev, editItem: null }));
+	}, []);
+
+	/**
+	 * Ferme le modal de recherche
+	 */
+	const handleCloseSearchModal = useCallback(() => {
+		setModalsState((prev) => ({ ...prev, searchItem: null }));
+	}, []);
+
+	// ===== CALCULS =====
+
+	/**
+	 * Calcule les statistiques
+	 */
+	const stats = {
+		total: pageState.items.length,
+		validated: pageState.items.filter((item) => item.validated).length,
+		progress:
+			pageState.items.length > 0
+				? Math.round(
+						(pageState.items.filter((item) => item.validated).length /
+							pageState.items.length) *
+							100
+				  )
+				: 0,
+		readyForInventory:
+			pageState.items.length > 0 &&
+			pageState.items.every((item) => item.validated),
 	};
 
 	// ===== RENDU DES SECTIONS =====
 
 	/**
-	 * En-tête avec navigation
+	 * Rendu de l'en-tête
 	 */
 	const renderHeader = () => (
-		<div className='flex items-center justify-between mb-6'>
-			<div className='flex items-center gap-3'>
+		<div className="flex items-center justify-between mb-6">
+			<div className="flex items-center gap-3">
 				<Button
-					variant='ghost'
-					size='sm'
-					onClick={handleCancel}
-					className='p-2'>
-					<ArrowLeft className='size-4' />
+					variant="ghost"
+					size="sm"
+					onClick={() => navigate({ to: '/app/inventory' })}
+					className="p-2"
+					disabled={pageState.isSaving}
+				>
+					<ArrowLeft className="size-4" />
 				</Button>
 				<div>
-					<h1 className='text-2xl font-bold'>
-						{currentPhase === 1
-							? 'Phase 1 : Validation'
-							: 'Phase 2 : Problèmes'}
-					</h1>
-					<p className='text-sm text-muted-foreground'>
-						{currentPhase === 1
-							? 'Sélectionnez le bon code EAN pour chaque produit'
-							: 'Gérez les produits difficiles à identifier'}
+					<h1 className="text-2xl font-bold">Résultats du scan</h1>
+					<p className="text-sm text-muted-foreground">
+						Vérifiez et validez les articles détectés
 					</p>
 				</div>
 			</div>
@@ -185,119 +374,53 @@ export const ReceiptResultsPage = () => {
 	);
 
 	/**
-	 * Rendu de Phase 1
+	 * Rendu du bouton d'ajout à l'inventaire
 	 */
-	const renderPhase1 = () => {
-		if (!analysis) return null;
+	const renderAddToInventoryButton = () => {
+		const hasValidatedItems = stats.validated > 0;
 
 		return (
-			<div className='space-y-6'>
-				{/* Résumé du ticket */}
-				<ReceiptSummary analysis={analysis} />
-
-				{/* Message d'encouragement */}
-				{phase1Products.length > 0 && (
-					<Alert>
-						<CheckCircle2 className='size-4' />
-						<AlertDescription>
-							<strong>
-								{phase1Products.length} produits bien identifiés
-							</strong>{' '}
-							avec des suggestions de codes EAN. Sélectionnez le
-							bon code pour chaque produit.
-						</AlertDescription>
-					</Alert>
-				)}
-
-				{/* Liste des produits Phase 1 */}
-				<div className='space-y-4'>
-					{phase1Products.map((product) => (
-						<ProductCardConfident
-							key={product.id}
-							product={product}
-							onSelectEan={(ean) =>
-								handleSelectEan(product.id, ean)
-							}
-							onSkip={() => handleSkipProduct(product.id)}
-						/>
-					))}
-				</div>
-
-				{/* Actions Phase 1 */}
-				<Phase1Actions
-					totalProducts={phase1Products.length}
-					validatedCount={stats.validatedCount}
-					isComplete={isPhase1Complete}
-					hasPhase2={phase2Products.length > 0}
-					onValidate={handleValidatePhase1}
-					onSkipToPhase2={handleGoToPhase2}
-				/>
-			</div>
-		);
-	};
-
-	/**
-	 * Rendu de Phase 2
-	 */
-	const renderPhase2 = () => {
-		if (!analysis) return null;
-
-		return (
-			<div className='space-y-6'>
-				{/* Résumé du ticket */}
-				<ReceiptSummary analysis={analysis} />
-
-				{/* Message Phase 2 */}
-				<Alert variant='default'>
-					<AlertTriangle className='size-4' />
-					<AlertDescription>
-						Ces produits nécessitent une attention particulière.
-						Vous pouvez rechercher manuellement, scanner un
-						code-barres, ou créer un produit frais.
-					</AlertDescription>
-				</Alert>
-
-				{/* Liste des produits Phase 2 */}
-				<div className='space-y-4'>
-					{phase2Products.map((product) => (
-						<Card key={product.id}>
-							<CardContent className='p-4'>
-								<p className='font-medium'>{product.name}</p>
-								<p className='text-sm text-muted-foreground'>
-									Quantité : {product.quantity || 1} • Prix :{' '}
-									{product.totalPrice?.toFixed(2)}€
-								</p>
-								<p className='text-xs text-orange-600 mt-2'>
-									Phase 2 : Produit difficile à identifier
-								</p>
-								{/* TODO: Actions Phase 2 (recherche, scan, création manuelle) */}
-							</CardContent>
-						</Card>
-					))}
-				</div>
-
-				{/* Bouton ajout inventaire */}
-				{canAddToInventory && (
+			<div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t p-4 -mx-4">
+				<div className="container max-w-4xl mx-auto">
 					<Button
-						size='lg'
-						className='w-full'
-						onClick={handleAddToInventory}>
-						Ajouter {stats.validatedCount} produits à l'inventaire
+						size="lg"
+						className="w-full"
+						onClick={handleAddToInventory}
+						disabled={!hasValidatedItems || pageState.isSaving}
+					>
+						{pageState.isSaving ? (
+							<>
+								<Loader2 className="size-5 mr-2 animate-spin" />
+								Ajout en cours...
+							</>
+						) : (
+							<>
+								<ShoppingCart className="size-5 mr-2" />
+								Ajouter {stats.validated} article{stats.validated > 1 ? 's' : ''} à
+								l'inventaire
+							</>
+						)}
 					</Button>
-				)}
+
+					{!hasValidatedItems && (
+						<p className="text-center text-sm text-muted-foreground mt-2">
+							Validez au moins un article pour continuer
+						</p>
+					)}
+				</div>
 			</div>
 		);
 	};
 
 	// ===== RENDU PRINCIPAL =====
 
-	// Chargement
-	if (status === 'analyzing' || !analysis) {
+	// Loading
+	if (pageState.isLoading) {
 		return (
-			<div className='container mx-auto px-4 py-8'>
-				<div className='max-w-4xl mx-auto'>
-					<div className='flex items-center justify-center py-12'>
-						<Loader2 className='size-8 animate-spin text-primary' />
+			<div className="container mx-auto px-4 py-8">
+				<div className="max-w-4xl mx-auto">
+					<div className="flex items-center justify-center py-12">
+						<Loader2 className="size-8 animate-spin text-primary" />
 					</div>
 				</div>
 			</div>
@@ -305,21 +428,24 @@ export const ReceiptResultsPage = () => {
 	}
 
 	// Erreur
-	if (status === 'error' || error) {
+	if (pageState.error || !pageState.receipt) {
 		return (
-			<div className='container mx-auto px-4 py-8'>
-				<div className='max-w-4xl mx-auto'>
+			<div className="container mx-auto px-4 py-8">
+				<div className="max-w-4xl mx-auto">
 					{renderHeader()}
 
-					<Alert variant='error'>
-						<AlertTriangle className='size-4' />
+					<Alert variant="destructive">
+						<AlertTriangle className="size-4" />
 						<AlertDescription>
-							{error || 'Une erreur est survenue'}
+							{pageState.error || 'Ticket introuvable'}
 						</AlertDescription>
 					</Alert>
 
-					<div className='mt-4 space-x-2'>
-						<Button variant='outline' onClick={handleCancel}>
+					<div className="mt-4">
+						<Button
+							variant="outline"
+							onClick={() => navigate({ to: '/app/inventory' })}
+						>
 							Retour à l'inventaire
 						</Button>
 					</div>
@@ -329,13 +455,61 @@ export const ReceiptResultsPage = () => {
 	}
 
 	return (
-		<div className='container mx-auto px-4 py-8'>
-			<div className='max-w-4xl mx-auto'>
+		<div className="container mx-auto px-4 py-8 pb-24">
+			<div className="max-w-4xl mx-auto space-y-6">
+				{/* Header */}
 				{renderHeader()}
 
-				{/* Afficher Phase 1 ou Phase 2 */}
-				{currentPhase === 1 ? renderPhase1() : renderPhase2()}
+				{/* Message de succès si tous validés */}
+				{stats.readyForInventory && (
+					<Alert className="border-green-500 bg-green-50">
+						<CheckCircle2 className="size-4 text-green-600" />
+						<AlertDescription className="text-green-800">
+							Tous les articles sont validés ! Vous pouvez les ajouter à votre
+							inventaire.
+						</AlertDescription>
+					</Alert>
+				)}
+
+				{/* Résumé du ticket */}
+				<ReceiptSummary
+					receipt={pageState.receipt}
+					totalItems={stats.total}
+					validatedItems={stats.validated}
+					validationProgress={stats.progress}
+					readyForInventory={stats.readyForInventory}
+				/>
+
+				{/* Liste des items */}
+				<ReceiptItemsList
+					items={pageState.items}
+					onEditItem={handleEditItem}
+					onToggleValidation={handleToggleValidation}
+					disabled={pageState.isSaving}
+					showFilters={true}
+				/>
+
+				{/* Bouton d'ajout à l'inventaire */}
+				{renderAddToInventoryButton()}
 			</div>
+
+			{/* Modal d'édition */}
+			<EditReceiptItemModal
+				item={modalsState.editItem}
+				open={modalsState.editItem !== null}
+				onClose={handleCloseEditModal}
+				onSave={handleSaveItem}
+			/>
+
+			{/* Modal de recherche de produit */}
+			<ProductSearchModal
+				itemName={modalsState.searchItem?.detectedName || ''}
+				itemId={modalsState.searchItem?.id || ''}
+				open={modalsState.searchItem !== null}
+				onClose={handleCloseSearchModal}
+				onSelectProduct={handleSelectProduct}
+				searchProducts={handleSearchProducts}
+			/>
 		</div>
 	);
 };

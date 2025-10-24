@@ -12,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, CheckCircle2, AlertCircle, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ReceiptItemCard } from '@/features/inventory/receipt/ReceiptItemCard';
+import { ReceiptItemCard } from '@/features/receipt/ReceiptItemCard';
 import type { ReceiptItem } from '@/services/receiptService';
 
 // ===== TYPES =====

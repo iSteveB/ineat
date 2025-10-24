@@ -1,5 +1,5 @@
-import { useEffect, useCallback } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,31 +16,70 @@ import {
 } from 'lucide-react';
 import { ReceiptCamera } from '@/features/receipt/ReceiptCamera';
 import { ReceiptProcessingLoader } from '@/features/receipt/ReceiptProcessingLoader';
+import { receiptService } from '@/services/receiptService';
 import { useUser } from '@/hooks/useAuth';
-import { useReceiptStore, receiptSelectors } from '@/stores/receiptStore';
+import { useReceiptStore } from '@/stores/receiptStore';
+import type { ReceiptStatusData } from '@/services/receiptService';
+
+// ===== TYPES =====
+
+/**
+ * Étapes du workflow de scan
+ */
+type ScanStep = 'capture' | 'uploading' | 'processing' | 'completed' | 'error';
+
+/**
+ * État de la page
+ */
+interface ScanPageState {
+	step: ScanStep;
+	receiptId: string | null;
+	uploadError: string | null;
+	isUploading: boolean;
+}
+
+// ===== COMPOSANT PRINCIPAL =====
 
 /**
  * Page principale pour scanner des tickets de caisse
+ * Gère le workflow complet de capture → upload → traitement → résultats
  *
- * Workflow simplifié avec le nouveau store :
- * 1. Capture photo
- * 2. uploadReceipt() → Gère automatiquement upload + polling
- * 3. Redirection vers résultats quand status === 'results'
+ * Workflow :
+ * 1. Capture : Prendre/sélectionner une photo
+ * 2. Upload : Envoi vers le serveur
+ * 3. Processing : Traitement OCR et matching
+ * 4. Completed : Redirection vers les résultats
  */
-export const ReceiptScanPage = () => {
-	// ===== HOOKS =====
+export const ReceiptScanPage: React.FC = () => {
+	// ===== NAVIGATION ET AUTH =====
+
 	const navigate = useNavigate();
+	const searchParams = useSearch({ strict: false });
 	const { data: user, isLoading: userLoading } = useUser();
 
 	// ===== STORE =====
-	const uploadReceipt = useReceiptStore((s) => s.uploadReceipt);
-	const reset = useReceiptStore((s) => s.reset);
-	const status = useReceiptStore(receiptSelectors.status);
-	const error = useReceiptStore(receiptSelectors.error);
-	const analysis = useReceiptStore(receiptSelectors.analysis);
-	const currentReceiptId = useReceiptStore(receiptSelectors.currentReceiptId);
+
+	const setActiveReceipt = useReceiptStore((state) => state.setActiveReceipt);
+	const clearActiveReceipt = useReceiptStore(
+		(state) => state.clearActiveReceipt
+	);
+
+	// ===== STATE =====
+
+	const [state, setState] = useState<ScanPageState>({
+		step: 'capture',
+		receiptId: null,
+		uploadError: null,
+		isUploading: false,
+	});
 
 	// ===== VÉRIFICATIONS =====
+
+	// Vérification si on revient d'une autre page avec un receiptId
+	const existingReceiptId = (searchParams as { receiptId?: string })
+		?.receiptId;
+
+	// Vérifier si l'utilisateur a un abonnement premium ou admin
 	const isPremium =
 		user?.subscription === 'PREMIUM' || user?.subscription === 'ADMIN';
 
@@ -57,75 +96,159 @@ export const ReceiptScanPage = () => {
 	}, [isPremium, userLoading, navigate]);
 
 	/**
-	 * Redirection automatique vers résultats quand complété
+	 * Si on a un receiptId en paramètre, aller directement au traitement
 	 */
 	useEffect(() => {
-		if (status === 'results' && analysis) {
-			navigate({
-				to: '/app/receipt/$receiptId/results',
-				params: { receiptId: analysis.receiptId },
+		if (existingReceiptId && state.step === 'capture') {
+			setState((prev) => ({
+				...prev,
+				step: 'processing',
+				receiptId: existingReceiptId,
+			}));
+
+			// Mettre à jour le store
+			setActiveReceipt({
+				receiptId: existingReceiptId,
+				status: 'processing',
+				progress: 0,
 			});
 		}
-	}, [status, analysis, navigate]);
+	}, [existingReceiptId, state.step, setActiveReceipt]);
 
 	/**
 	 * Cleanup au démontage
 	 */
 	useEffect(() => {
 		return () => {
-			if (status !== 'analyzing') {
-				reset();
+			// Nettoyer le store si on quitte la page
+			if (state.step !== 'processing') {
+				clearActiveReceipt();
 			}
 		};
-	}, [status, reset]);
+	}, [state.step, clearActiveReceipt]);
 
 	// ===== HANDLERS =====
 
 	/**
-	 * Gère la capture/upload d'une image
+	 * Gère la capture/sélection d'une image
 	 */
 	const handleImageCapture = useCallback(
 		async (file: File) => {
+			setState((prev) => ({
+				...prev,
+				step: 'uploading',
+				isUploading: true,
+				uploadError: null,
+			}));
+
 			try {
-				await uploadReceipt(file);
-				// Le store gère automatiquement :
-				// - status: 'uploading'
-				// - status: 'analyzing' (polling)
-				// - status: 'results' → redirection automatique
-			} catch (err) {
-				// L'erreur est déjà gérée dans le store
-				console.error('Upload error:', err);
+				const response = await receiptService.uploadReceipt(file);
+
+				if (response.success) {
+					// Mettre à jour l'état local
+					setState((prev) => ({
+						...prev,
+						step: 'processing',
+						receiptId: response.data.receiptId,
+						isUploading: false,
+					}));
+
+					// Mettre à jour le store
+					setActiveReceipt({
+						receiptId: response.data.receiptId,
+						status: 'processing',
+						progress: 0,
+						estimatedTimeRemaining: response.data.estimatedTime,
+					});
+
+					toast.success('Image uploadée avec succès');
+				} else {
+					throw new Error("Échec de l'upload");
+				}
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: "Erreur lors de l'upload";
+
+				setState((prev) => ({
+					...prev,
+					step: 'error',
+					uploadError: errorMessage,
+					isUploading: false,
+				}));
+
+				toast.error(errorMessage);
 			}
 		},
-		[uploadReceipt]
+		[setActiveReceipt]
 	);
 
 	/**
 	 * Gère les erreurs de capture
 	 */
-	const handleCaptureError = useCallback((errorMsg: string) => {
-		toast.error(errorMsg);
+	const handleCaptureError = useCallback((error: string) => {
+		toast.error(error);
 	}, []);
+
+	/**
+	 * Gère la fin du traitement
+	 */
+	const handleProcessingCompleted = useCallback(
+		(data: ReceiptStatusData) => {
+			setState((prev) => ({ ...prev, step: 'completed' }));
+
+			toast.success('Ticket traité avec succès !');
+
+			// Rediriger vers les résultats après un court délai
+			setTimeout(() => {
+				navigate({
+					to: '/app/receipt/$receiptId/results',
+					params: { receiptId: data.id },
+				});
+			}, 1500);
+		},
+		[navigate]
+	);
+
+	/**
+	 * Gère les erreurs de traitement
+	 */
+	const handleProcessingError = useCallback((error: string) => {
+		setState((prev) => ({
+			...prev,
+			step: 'error',
+			uploadError: error,
+		}));
+
+		toast.error('Erreur lors du traitement : ' + error);
+	}, []);
+
+	/**
+	 * Gère l'annulation du traitement
+	 */
+	const handleCancel = useCallback(() => {
+		clearActiveReceipt();
+		navigate({ to: '/app/inventory' });
+	}, [navigate, clearActiveReceipt]);
 
 	/**
 	 * Recommence le processus
 	 */
 	const handleRetry = useCallback(() => {
-		reset();
-	}, [reset]);
-
-	/**
-	 * Annule et retourne à l'inventaire
-	 */
-	const handleCancel = useCallback(() => {
-		reset();
-		navigate({ to: '/app/inventory' });
-	}, [reset, navigate]);
+		clearActiveReceipt();
+		setState({
+			step: 'capture',
+			receiptId: null,
+			uploadError: null,
+			isUploading: false,
+		});
+	}, [clearActiveReceipt]);
 
 	// ===== RENDU DES SECTIONS =====
 
 	/**
-	 * En-tête avec navigation
+	 * Rendu de l'en-tête avec navigation
 	 */
 	const renderHeader = () => (
 		<div className='flex items-center justify-between mb-6'>
@@ -153,14 +276,14 @@ export const ReceiptScanPage = () => {
 	);
 
 	/**
-	 * Étape de capture
+	 * Rendu de l'étape de capture
 	 */
 	const renderCaptureStep = () => (
 		<div className='space-y-6'>
 			<ReceiptCamera
 				onCapture={handleImageCapture}
 				onError={handleCaptureError}
-				isLoading={status === 'uploading'}
+				isLoading={state.isUploading}
 				preferredSource='both'
 				title='Photographiez votre ticket'
 			/>
@@ -201,7 +324,8 @@ export const ReceiptScanPage = () => {
 						<div>
 							<h4 className='font-medium'>Traitement rapide</h4>
 							<p className='text-sm text-muted-foreground'>
-								Le scan prend généralement 15 à 30 secondes
+								Le scan prend généralement 30 secondes à 2
+								minutes
 							</p>
 						</div>
 					</div>
@@ -211,53 +335,44 @@ export const ReceiptScanPage = () => {
 	);
 
 	/**
-	 * Étape d'upload
+	 * Rendu de l'étape d'upload
 	 */
 	const renderUploadingStep = () => (
-		<Card>
-			<CardContent className='p-8'>
-				<div className='flex justify-center mb-4'>
-					<div className='size-16 bg-primary/10 rounded-full flex items-center justify-center'>
-						<Camera className='size-8 text-primary animate-pulse' />
+		<div className='text-center space-y-4'>
+			<Card>
+				<CardContent className='p-8'>
+					<div className='flex justify-center mb-4'>
+						<div className='size-16 bg-primary/10 rounded-full flex items-center justify-center'>
+							<Camera className='size-8 text-primary animate-pulse' />
+						</div>
 					</div>
-				</div>
 
-				<h3 className='text-lg font-semibold mb-2 text-center'>
-					Upload en cours...
-				</h3>
-				<p className='text-sm text-muted-foreground mb-4 text-center'>
-					Envoi de votre image vers nos serveurs
-				</p>
+					<h3 className='text-lg font-semibold mb-2'>
+						Upload en cours...
+					</h3>
+					<p className='text-sm text-muted-foreground mb-4'>
+						Envoi de votre image vers nos serveurs
+					</p>
 
-				<div className='w-full bg-muted rounded-full h-2'>
-					<div className='bg-primary h-2 rounded-full animate-pulse w-3/4'></div>
-				</div>
-			</CardContent>
-		</Card>
+					<div className='w-full bg-muted rounded-full h-2'>
+						<div className='bg-primary h-2 rounded-full animate-pulse w-3/4'></div>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
 	);
 
 	/**
-	 * Étape de traitement (analyse OCR + LLM)
+	 * Rendu de l'étape de traitement
 	 */
 	const renderProcessingStep = () => {
-		// Utiliser currentReceiptId au lieu de analysis.receiptId
-		// car analysis est null pendant le polling
-		if (!currentReceiptId) {
-			return (
-				<Card>
-					<CardContent className='p-8 text-center'>
-						<div className='animate-spin size-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4'></div>
-						<p className='text-muted-foreground'>
-							Préparation de l'analyse...
-						</p>
-					</CardContent>
-				</Card>
-			);
-		}
+		if (!state.receiptId) return null;
 
 		return (
 			<ReceiptProcessingLoader
-				receiptId={currentReceiptId}
+				receiptId={state.receiptId}
+				onCompleted={handleProcessingCompleted}
+				onError={handleProcessingError}
 				onCancel={handleCancel}
 				title='Analyse de votre ticket en cours'
 			/>
@@ -265,14 +380,38 @@ export const ReceiptScanPage = () => {
 	};
 
 	/**
-	 * Étape d'erreur
+	 * Rendu de l'étape de succès
+	 */
+	const renderCompletedStep = () => (
+		<Card>
+			<CardContent className='p-8 text-center'>
+				<div className='flex justify-center mb-4'>
+					<CheckCircle className='size-16 text-green-600' />
+				</div>
+
+				<h3 className='text-lg font-semibold text-green-600 mb-2'>
+					Traitement terminé !
+				</h3>
+				<p className='text-sm text-muted-foreground mb-4'>
+					Redirection vers les résultats...
+				</p>
+
+				<div className='w-full bg-muted rounded-full h-2'>
+					<div className='bg-green-600 h-2 rounded-full animate-pulse w-full'></div>
+				</div>
+			</CardContent>
+		</Card>
+	);
+
+	/**
+	 * Rendu de l'étape d'erreur
 	 */
 	const renderErrorStep = () => (
 		<div className='space-y-4'>
-			<Alert variant='error'>
+			<Alert variant='destructive'>
 				<AlertTriangle className='size-4' />
 				<AlertDescription>
-					{error || 'Une erreur est survenue'}
+					{state.uploadError || 'Une erreur est survenue'}
 				</AlertDescription>
 			</Alert>
 
@@ -353,11 +492,12 @@ export const ReceiptScanPage = () => {
 			<div className='max-w-md mx-auto'>
 				{renderHeader()}
 
-				{/* Contenu selon le statut */}
-				{status === 'idle' && renderCaptureStep()}
-				{status === 'uploading' && renderUploadingStep()}
-				{status === 'analyzing' && renderProcessingStep()}
-				{status === 'error' && renderErrorStep()}
+				{/* Contenu principal selon l'étape */}
+				{state.step === 'capture' && renderCaptureStep()}
+				{state.step === 'uploading' && renderUploadingStep()}
+				{state.step === 'processing' && renderProcessingStep()}
+				{state.step === 'completed' && renderCompletedStep()}
+				{state.step === 'error' && renderErrorStep()}
 			</div>
 		</div>
 	);

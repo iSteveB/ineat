@@ -16,8 +16,7 @@ import {
   Package,
   Euro
 } from 'lucide-react';
-import { type ReceiptItem } from '@/services/receiptService';
-import { receiptService } from '@/services/receiptService';
+import { type ReceiptItem, receiptService } from '@/services/receiptService';
 
 // ===== TYPES =====
 

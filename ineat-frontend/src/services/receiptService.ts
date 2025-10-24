@@ -303,12 +303,10 @@ export interface ReceiptHistoryFilters {
 	page?: number;
 	limit?: number;
 	status?: ReceiptStatusFilter;
-	sortBy?: ReceiptSortOrder;
-	dateFrom?: string;
-	dateTo?: string;
-	storeName?: string;
-	minAmount?: number;
-	maxAmount?: number;
+	sortOrder?: ReceiptSortOrder;
+	search?: string;
+	startDate?: string;
+	endDate?: string;
 }
 
 // ===== SERVICE PRINCIPAL =====
@@ -436,6 +434,26 @@ export const receiptService = {
 	},
 
 	/**
+	 * Supprime un ticket
+	 *
+	 * Supprime le ticket de la base de données et le fichier associé de Cloudinary.
+	 * Cette action est irréversible.
+	 *
+	 * Note: Ne peut supprimer que les tickets qui n'ont pas été ajoutés à l'inventaire
+	 *
+	 * @param receiptId - ID du ticket à supprimer
+	 * @returns Confirmation de suppression
+	 * @throws Error si le ticket n'existe pas ou appartient à un autre utilisateur
+	 */
+	async deleteReceipt(
+		receiptId: string
+	): Promise<{ success: boolean; message: string }> {
+		return await apiClient.delete<{ success: boolean; message: string }>(
+			`/receipt/${receiptId}`
+		);
+	},
+
+	/**
 	 * Utilitaire : Vérifie si un ticket est prêt pour l'ajout à l'inventaire
 	 */
 	isReadyForInventory(status: ReceiptStatusData): boolean {
@@ -458,7 +476,7 @@ export const receiptService = {
 				return "Ticket traité et ajouté à l'inventaire";
 
 			case 'FAILED':
-				return status.errorMessage || 'Erreur lors du traitement';  
+				return status.errorMessage || 'Erreur lors du traitement';
 
 			case 'VALIDATED':
 				if (status.readyForInventory) {

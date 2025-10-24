@@ -251,7 +251,7 @@ export const ReceiptCamera: React.FC<ReceiptCameraProps> = ({
 				{showCamera && (
 					<Button
 						onClick={triggerCamera}
-						variant='ghost'
+						variant='default'
 						className='w-full h-16'
 						disabled={isLoading}>
 						<Camera className='size-5 mr-2' />
@@ -280,7 +280,7 @@ export const ReceiptCamera: React.FC<ReceiptCameraProps> = ({
 		if (!error) return null;
 
 		return (
-			<Alert variant='warning'>
+			<Alert variant='destructive'>
 				<AlertTriangle className='size-4' />
 				<AlertDescription>{error}</AlertDescription>
 			</Alert>
