@@ -118,13 +118,9 @@ export class ReceiptController {
     @Body('merchantName') merchantName?: string,
     @Body('merchantAddress') merchantAddress?: string,
   ) {
-    // Validation manuelle du type de document
-    if (!documentType) {
-      throw new BadRequestException('Le type de document est requis');
-    }
-
-    if (!Object.values(DocumentType).includes(documentType as DocumentType)) {
-      throw new BadRequestException('Type de document invalide');
+    // Valider le type de document
+    if (!Object.values(DocumentType).includes(dto.documentType)) {
+      throw new BadRequestException('alide');
     }
 
     // Créer le receipt

@@ -17,7 +17,7 @@ import {
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequiresPremium } from '../../auth/decorators/requires-premium.decorator';
 import { PremiumGuard } from '../../auth/guards/premium.guard';
-import { PrismaService } from '../../prisma/prisma.service';  
+import { PrismaService } from '../../prisma/prisma.service';
 import {
   ReceiptHistoryDto,
   ReceiptHistoryResponseDto,
@@ -57,7 +57,7 @@ export class ReceiptHistoryController {
   @UseGuards(PremiumGuard)
   @RequiresPremium()
   @ApiOperation({
-    summary: 'Récupérer l\'historique des tickets',
+    summary: "Récupérer l'historique des tickets",
     description: `
       Récupère l'historique complet des tickets de caisse de l'utilisateur avec :
       
@@ -85,7 +85,7 @@ export class ReceiptHistoryController {
   })
   @ApiQuery({
     name: 'limit',
-    description: 'Nombre d\'éléments par page (1-100)',
+    description: "Nombre d'éléments par page (1-100)",
     required: false,
     type: Number,
     example: 20,
@@ -161,7 +161,9 @@ export class ReceiptHistoryController {
   ): Promise<ReceiptHistoryResponseDto> {
     const userId = req.user.id;
 
-    this.logger.log(`Récupération de l'historique des tickets pour l'utilisateur ${userId} - Page ${query.page}, Limit ${query.limit}`);
+    this.logger.log(
+      `Récupération de l'historique des tickets pour l'utilisateur ${userId} - Page ${query.page}, Limit ${query.limit}`,
+    );
 
     try {
       // 1. Construire les filtres de requête
@@ -182,8 +184,14 @@ export class ReceiptHistoryController {
 
       // 5. Construire la réponse
       const historyDto: ReceiptHistoryDto = {
-        receipts: receipts.map((receipt) => this.mapReceiptToHistoryItem(receipt)),
-        pagination: this.buildPaginationMeta(query.page || 1, query.limit || 20, totalCount),
+        receipts: receipts.map((receipt) =>
+          this.mapReceiptToHistoryItem(receipt),
+        ),
+        pagination: this.buildPaginationMeta(
+          query.page || 1,
+          query.limit || 20,
+          totalCount,
+        ),
         stats,
       };
 
@@ -193,11 +201,15 @@ export class ReceiptHistoryController {
         message: this.buildHistoryMessage(historyDto),
       };
 
-      this.logger.log(`Historique récupéré: ${receipts.length} tickets (page ${query.page}/${historyDto.pagination.totalPages})`);
+      this.logger.log(
+        `Historique récupéré: ${receipts.length} tickets (page ${query.page}/${historyDto.pagination.totalPages})`,
+      );
       return response;
-
     } catch (error) {
-      this.logger.error(`Erreur lors de la récupération de l'historique pour l'utilisateur ${userId}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Erreur lors de la récupération de l'historique pour l'utilisateur ${userId}: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -253,7 +265,12 @@ export class ReceiptHistoryController {
   /**
    * Récupère les tickets avec leurs items
    */
-  private async getReceiptsWithItems(whereClause: any, skip: number, take: number, sortBy?: ReceiptSortOrder) {
+  private async getReceiptsWithItems(
+    whereClause: any,
+    skip: number,
+    take: number,
+    sortBy?: ReceiptSortOrder,
+  ) {
     // Construire l'ordre de tri
     const orderBy = this.buildOrderByClause(sortBy);
 
@@ -302,54 +319,55 @@ export class ReceiptHistoryController {
   /**
    * Calcule les statistiques globales
    */
-  private async calculateGlobalStats(userId: string, query: ReceiptHistoryQueryDto): Promise<ReceiptHistoryStatsDto> {
+  private async calculateGlobalStats(
+    userId: string,
+    query: ReceiptHistoryQueryDto,
+  ): Promise<ReceiptHistoryStatsDto> {
     // Utiliser les mêmes filtres que pour la liste (sauf pagination)
     const whereClause = this.buildWhereClause(userId, query);
 
     // Statistiques de base
-    const [
-      totalReceipts,
-      statusStats,
-      amountStats,
-      dateStats,
-      itemsStats,
-    ] = await Promise.all([
-      // Nombre total
-      this.prisma.receipt.count({ where: whereClause }),
-      
-      // Répartition par statut
-      this.prisma.receipt.groupBy({
-        by: ['status'],
-        where: whereClause,
-        _count: { status: true },
-      }),
-      
-      // Statistiques de montants
-      this.prisma.receipt.aggregate({
-        where: { ...whereClause, totalAmount: { not: null } },
-        _sum: { totalAmount: true },
-        _avg: { totalAmount: true },
-      }),
-      
-      // Dates extrêmes
-      this.prisma.receipt.aggregate({
-        where: whereClause,
-        _min: { createdAt: true },
-        _max: { createdAt: true },
-      }),
-      
-      // Nombre total d'items
-      this.prisma.receiptItem.count({
-        where: {
-          receipt: whereClause,
-        },
-      }),
-    ]);
+    const [totalReceipts, statusStats, amountStats, dateStats, itemsStats] =
+      await Promise.all([
+        // Nombre total
+        this.prisma.receipt.count({ where: whereClause }),
+
+        // Répartition par statut
+        this.prisma.receipt.groupBy({
+          by: ['status'],
+          where: whereClause,
+          _count: { status: true },
+        }),
+
+        // Statistiques de montants
+        this.prisma.receipt.aggregate({
+          where: { ...whereClause, totalAmount: { not: null } },
+          _sum: { totalAmount: true },
+          _avg: { totalAmount: true },
+        }),
+
+        // Dates extrêmes
+        this.prisma.receipt.aggregate({
+          where: whereClause,
+          _min: { createdAt: true },
+          _max: { createdAt: true },
+        }),
+
+        // Nombre total d'items
+        this.prisma.receiptItem.count({
+          where: {
+            receipt: whereClause,
+          },
+        }),
+      ]);
 
     // Traiter les statistiques de statut
-    const completedReceipts = statusStats.find(s => s.status === 'COMPLETED')?._count.status || 0;
-    const pendingValidation = statusStats.find(s => s.status === 'VALIDATED')?._count.status || 0;
-    const failedReceipts = statusStats.find(s => s.status === 'FAILED')?._count.status || 0;
+    const completedReceipts =
+      statusStats.find((s) => s.status === 'COMPLETED')?._count.status || 0;
+    const pendingValidation =
+      statusStats.find((s) => s.status === 'VALIDATED')?._count.status || 0;
+    const failedReceipts =
+      statusStats.find((s) => s.status === 'FAILED')?._count.status || 0;
 
     return {
       totalReceipts,
@@ -369,8 +387,10 @@ export class ReceiptHistoryController {
    */
   private mapReceiptToHistoryItem(receipt: any): ReceiptHistoryItemDto {
     const totalItems = receipt.items?.length || 0;
-    const validatedItems = receipt.items?.filter((item: any) => item.validated)?.length || 0;
-    const validationProgress = totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
+    const validatedItems =
+      receipt.items?.filter((item: any) => item.validated)?.length || 0;
+    const validationProgress =
+      totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
 
     return {
       id: receipt.id,
@@ -392,7 +412,11 @@ export class ReceiptHistoryController {
   /**
    * Construit les métadonnées de pagination
    */
-  private buildPaginationMeta(page: number, limit: number, totalItems: number): PaginationMetaDto {
+  private buildPaginationMeta(
+    page: number,
+    limit: number,
+    totalItems: number,
+  ): PaginationMetaDto {
     const totalPages = Math.ceil(totalItems / limit);
 
     return {
@@ -410,7 +434,7 @@ export class ReceiptHistoryController {
    */
   private buildHistoryMessage(historyDto: ReceiptHistoryDto): string {
     const { receipts, pagination, stats } = historyDto;
-    
+
     if (stats.totalReceipts === 0) {
       return 'Aucun ticket trouvé';
     }

@@ -82,6 +82,19 @@ const SUGGESTED_CATEGORIES = [
 	'Autre',
 ];
 
+/**
+ * Options d'emplacement de stockage
+ */
+const STORAGE_LOCATION_OPTIONS = [
+	'Réfrigérateur',
+	'Congélateur',
+	'Placard',
+	'Cave',
+	'Garde-manger',
+	'Fruitier',
+	'Autre',
+] as const;
+
 // ===== COMPOSANT =====
 
 /**
@@ -135,10 +148,17 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 	 */
 	useEffect(() => {
 		if (item) {
+			// Calculer le prix unitaire si manquant mais prix total et quantité présents
+			let calculatedUnitPrice = item.unitPrice ?? null;
+			
+			if (!calculatedUnitPrice && item.totalPrice && item.quantity && item.quantity > 0) {
+				calculatedUnitPrice = Math.round((item.totalPrice / item.quantity) * 100) / 100;
+			}
+			
 			setFormData({
 				detectedName: item.detectedName || '',
 				quantity: item.quantity || 1,
-				unitPrice: item.unitPrice ?? null,
+				unitPrice: calculatedUnitPrice,
 				totalPrice: item.totalPrice ?? null,
 				categoryGuess: item.categoryGuess || '',
 				expiryDate: item.expiryDate
@@ -165,17 +185,28 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 			[field]: value,
 		}));
 
-		// Recalculer le prix total si quantité ou prix unitaire change
-		if (field === 'quantity' || field === 'unitPrice') {
+		// Recalculer automatiquement les prix
+		if (field === 'quantity' || field === 'unitPrice' || field === 'totalPrice') {
 			const quantity =
 				field === 'quantity' ? (value as number) : formData.quantity;
 			const unitPrice =
 				field === 'unitPrice' ? (value as number | null) : formData.unitPrice;
+			const totalPrice =
+				field === 'totalPrice' ? (value as number | null) : formData.totalPrice;
 
-			if (quantity && unitPrice) {
+			// Si on change la quantité ou le prix unitaire → recalculer le prix total
+			if ((field === 'quantity' || field === 'unitPrice') && quantity && unitPrice) {
 				setFormData((prev) => ({
 					...prev,
-					totalPrice: quantity * unitPrice,
+					totalPrice: Math.round(quantity * unitPrice * 100) / 100,
+				}));
+			}
+			
+			// Si on change le prix total et qu'on a une quantité → calculer le prix unitaire
+			else if (field === 'totalPrice' && totalPrice && quantity && quantity > 0) {
+				setFormData((prev) => ({
+					...prev,
+					unitPrice: Math.round((totalPrice / quantity) * 100) / 100,
 				}));
 			}
 		}
@@ -323,11 +354,11 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 							<Input
 								id="quantity"
 								type="number"
-								min="0.01"
-								step="0.01"
+								min="1"
+								step="1"
 								value={formData.quantity}
 								onChange={(e) =>
-									handleFieldChange('quantity', parseFloat(e.target.value))
+									handleFieldChange('quantity', parseInt(e.target.value, 10))
 								}
 								disabled={isSaving}
 								required
@@ -409,15 +440,22 @@ export const EditReceiptItemModal: React.FC<EditReceiptItemModalProps> = ({
 
 						<div className="space-y-2">
 							<Label htmlFor="storageLocation">Emplacement de stockage</Label>
-							<Input
-								id="storageLocation"
+							<Select
 								value={formData.storageLocation}
-								onChange={(e) =>
-									handleFieldChange('storageLocation', e.target.value)
-								}
-								placeholder="Ex: Frigo, Placard..."
+								onValueChange={(value) => handleFieldChange('storageLocation', value)}
 								disabled={isSaving}
-							/>
+							>
+								<SelectTrigger id="storageLocation">
+									<SelectValue placeholder="Sélectionnez un emplacement" />
+								</SelectTrigger>
+								<SelectContent>
+									{STORAGE_LOCATION_OPTIONS.map((location) => (
+										<SelectItem key={location} value={location}>
+											{location}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 						</div>
 					</div>
 
