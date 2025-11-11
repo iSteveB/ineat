@@ -11,8 +11,8 @@ export class PrismaService
       // Configuration des niveaux de log selon l'environnement
       log:
         process.env.NODE_ENV === 'development'
-          ? ['query', 'info', 'warn', 'error'] // En développement: tous les logs
-          : ['error'], // En production: seulement les erreurs
+          ? ['info', 'warn', 'error']
+          : ['error']
     });
   }
 

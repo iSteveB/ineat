@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 // ===== TYPES ET INTERFACES =====
@@ -85,9 +90,7 @@ export interface AddReceiptToInventoryOptions {
 export class ReceiptToInventoryService {
   private readonly logger = new Logger(ReceiptToInventoryService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Ajoute tous les items validés d'un ticket à l'inventaire
@@ -97,12 +100,21 @@ export class ReceiptToInventoryService {
     validatedItems: ValidatedReceiptItem[],
     options: AddReceiptToInventoryOptions = {},
   ): Promise<ReceiptToInventoryResult> {
-    this.logger.log(`Ajout de ${validatedItems.length} items à l'inventaire pour l'utilisateur ${userId}`);
+    this.logger.log(
+      `🚀 Ajout de ${validatedItems.length} items à l'inventaire pour l'utilisateur ${userId}`,
+    );
+    this.logger.debug(
+      `📋 Items reçus: ${JSON.stringify(
+        validatedItems.map((i) => ({
+          productId: i.productId,
+          productName: i.productData?.name,
+          quantity: i.quantity,
+          categorySlug: i.productData?.categorySlug,
+        })),
+      )}`,
+    );
 
-    const {
-      purchaseDate = new Date(),
-      autoCreateProducts = true,
-    } = options;
+    const { purchaseDate = new Date(), autoCreateProducts = true } = options;
 
     const result: ReceiptToInventoryResult = {
       addedItems: [],
@@ -126,13 +138,34 @@ export class ReceiptToInventoryService {
       // Traiter chaque item
       for (const item of validatedItems) {
         try {
+          this.logger.debug(
+            `🔹 Traitement item: ${JSON.stringify({
+              productId: item.productId,
+              productName: item.productData?.name,
+              quantity: item.quantity,
+            })}`,
+          );
+
           // 1. Récupérer ou créer le produit
-          const product = await this.getOrCreateProduct(tx, item, autoCreateProducts);
+          const product = await this.getOrCreateProduct(
+            tx,
+            item,
+            autoCreateProducts,
+          );
+          this.logger.debug(
+            `✅ Produit obtenu/créé: ${product.id} - ${product.name}`,
+          );
 
           // 2. Calculer le prix pour cette ligne
-          const itemTotalPrice = item.totalPrice || (item.unitPrice ? item.unitPrice * item.quantity : 0);
+          const itemTotalPrice =
+            item.totalPrice ||
+            (item.unitPrice ? item.unitPrice * item.quantity : 0);
+          this.logger.debug(`💰 Prix calculé: ${itemTotalPrice}`);
 
           // 3. Créer l'élément d'inventaire
+          this.logger.debug(
+            `📦 Création InventoryItem pour userId=${userId}, productId=${product.id}`,
+          );
           const inventoryItem = await tx.inventoryItem.create({
             data: {
               userId,
@@ -145,6 +178,7 @@ export class ReceiptToInventoryService {
               notes: item.notes,
             },
           });
+          this.logger.log(`✅ InventoryItem créé: ${inventoryItem.id}`);
 
           // 4. Ajouter au résultat
           result.addedItems.push({
@@ -158,12 +192,15 @@ export class ReceiptToInventoryService {
           result.summary.successfulItems++;
 
           this.logger.debug(`Item ajouté: ${product.name} x${item.quantity}`);
-
         } catch (error) {
-          this.logger.error(`Erreur lors de l'ajout de l'item: ${error.message}`, error.stack);
-          
+          this.logger.error(
+            `❌ Erreur lors de l'ajout de l'item: ${error.message}`,
+            error.stack,
+          );
+
           result.failedItems.push({
-            productName: item.productData?.name || item.productId || 'Produit inconnu',
+            productName:
+              item.productData?.name || item.productId || 'Produit inconnu',
             error: error.message,
           });
           result.summary.failedItems++;
@@ -184,14 +221,18 @@ export class ReceiptToInventoryService {
           );
           result.budgetImpact = { ...result.budgetImpact, ...budgetImpact };
         } catch (error) {
-          this.logger.warn(`Erreur lors de la gestion du budget: ${error.message}`);
+          this.logger.warn(
+            `Erreur lors de la gestion du budget: ${error.message}`,
+          );
           // On ne fait pas échouer toute la transaction pour un problème de budget
         }
       }
     });
 
-    this.logger.log(`Ticket traité: ${result.summary.successfulItems}/${result.summary.totalItemsProcessed} items ajoutés`);
-    
+    this.logger.log(
+      `Ticket traité: ${result.summary.successfulItems}/${result.summary.totalItemsProcessed} items ajoutés`,
+    );
+
     return result;
   }
 
@@ -218,11 +259,15 @@ export class ReceiptToInventoryService {
 
     // Sinon, on doit créer un nouveau produit
     if (!item.productData) {
-      throw new BadRequestException('Données du produit manquantes pour créer un nouveau produit');
+      throw new BadRequestException(
+        'Données du produit manquantes pour créer un nouveau produit',
+      );
     }
 
     if (!autoCreateProducts) {
-      throw new BadRequestException('Création automatique de produits désactivée');
+      throw new BadRequestException(
+        'Création automatique de produits désactivée',
+      );
     }
 
     // Vérifier si la catégorie existe
@@ -231,7 +276,9 @@ export class ReceiptToInventoryService {
     });
 
     if (!category) {
-      throw new BadRequestException(`Catégorie ${item.productData.categorySlug} non trouvée`);
+      throw new BadRequestException(
+        `Catégorie ${item.productData.categorySlug} non trouvée`,
+      );
     }
 
     // Créer le nouveau produit
@@ -244,7 +291,6 @@ export class ReceiptToInventoryService {
         imageUrl: item.productData.imageUrl,
         unitType: item.productData.unitType,
         // Pour un produit créé via ticket, on a des infos limitées
-        isVerified: false,
       },
     });
 
@@ -301,8 +347,9 @@ export class ReceiptToInventoryService {
       },
     });
 
-    const remainingBudget = activeBudget.amount - (totalExpenses._sum.amount || 0);
-    
+    const remainingBudget =
+      activeBudget.amount - (totalExpenses._sum.amount || 0);
+
     let warningMessage: string | undefined;
     if (remainingBudget < 0) {
       warningMessage = `Budget dépassé de ${Math.abs(remainingBudget).toFixed(2)}€`;
@@ -351,7 +398,9 @@ export class ReceiptToInventoryService {
 
       // Validation date expiration
       if (item.expiryDate && item.expiryDate < new Date()) {
-        errors.push(`${itemLabel}: La date d'expiration ne peut pas être dans le passé`);
+        errors.push(
+          `${itemLabel}: La date d'expiration ne peut pas être dans le passé`,
+        );
       }
     }
 
@@ -372,7 +421,7 @@ export class ReceiptToInventoryService {
   }> {
     // Cette méthode nécessiterait un tracking des tickets dans la DB
     // Pour le moment, on peut retourner des stats basiques depuis les expenses
-    
+
     const expenseStats = await this.prisma.expense.aggregate({
       where: {
         userId,

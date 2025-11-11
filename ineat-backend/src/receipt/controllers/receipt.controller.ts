@@ -118,7 +118,7 @@ export class ReceiptController {
   ) {
     // Valider le type de document
     if (!Object.values(DocumentType).includes(dto.documentType)) {
-      throw new BadRequestException('Type de document invalide');
+      throw new BadRequestException('alide');
     }
 
     // Créer le receipt

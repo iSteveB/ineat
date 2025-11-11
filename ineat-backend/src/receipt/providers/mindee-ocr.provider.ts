@@ -21,39 +21,49 @@ import {
 /**
  * Provider OCR utilisant l'API Mindee
  *
- * Mindee offre deux APIs distinctes :
- * - Receipt OCR V5 : Pour les tickets de caisse photographiés
- * - Invoice OCR V4 : Pour les factures structurées (PDF/HTML)
- *
- * @example
- * ```typescript
- * const provider = new MindeeOcrProvider(configService);
- * const result = await provider.processDocument(
- *   imageBuffer,
- *   DocumentType.RECEIPT_IMAGE
- * );
- * ```
+ * Utilise ClientV2 avec modelId pour les APIs Mindee :
+ * - Receipt OCR : mindee/expense_receipts
+ * - Invoice OCR : mindee/invoices
  */
 @Injectable()
 export class MindeeOcrProvider implements IOcrProvider {
   readonly name = 'mindee';
   private readonly logger = new Logger(MindeeOcrProvider.name);
-  private client: mindee.Client;
+  private client: mindee.ClientV2;
+
+  // Model IDs (depuis .env ou valeurs par défaut)
+  private readonly RECEIPT_MODEL_ID: string;
+  private readonly INVOICE_MODEL_ID: string;
 
   constructor(private configService: ConfigService) {
     const apiKey = this.configService.get<string>('MINDEE_API_KEY');
 
+    // Récupérer les modelIds depuis .env
+    this.RECEIPT_MODEL_ID =
+      this.configService.get<string>('MINDEE_RECEIPT_MODEL_ID') ||
+      'mindee/expense_receipts';
+    this.INVOICE_MODEL_ID =
+      this.configService.get<string>('MINDEE_INVOICE_MODEL_ID') ||
+      'mindee/invoices';
+
     if (!apiKey) {
       this.logger.warn('MINDEE_API_KEY non configurée - Provider indisponible');
     } else {
-      this.client = new mindee.Client({ apiKey });
-      this.logger.log('Provider Mindee initialisé avec succès');
+      // Log pour debug (masquer une partie de la clé)
+      const maskedKey =
+        apiKey.substring(0, 8) + '***' + apiKey.substring(apiKey.length - 4);
+      this.logger.log(`Provider Mindee initialisé avec clé: ${maskedKey}`);
+      this.logger.log(`Model Receipt: ${this.RECEIPT_MODEL_ID}`);
+      this.logger.log(`Model Invoice: ${this.INVOICE_MODEL_ID}`);
+
+      // Utiliser ClientV2 avec modelId
+      this.client = new mindee.ClientV2({ apiKey });
+      this.logger.log('ClientV2 Mindee créé avec succès');
     }
   }
 
   /**
    * Vérifier si le provider supporte un type de document
-   * Mindee supporte tous les types (RECEIPT_IMAGE, INVOICE_PDF, INVOICE_HTML)
    */
   supportsDocumentType(type: DocumentType): boolean {
     return [
@@ -68,18 +78,17 @@ export class MindeeOcrProvider implements IOcrProvider {
    */
   async isAvailable(): Promise<boolean> {
     const apiKey = this.configService.get<string>('MINDEE_API_KEY');
-    return !!apiKey && !!this.client;
+    const isAvailable = !!apiKey && !!this.client;
+
+    this.logger.debug(
+      `Provider disponible: ${isAvailable} (apiKey: ${!!apiKey}, client: ${!!this.client})`,
+    );
+
+    return isAvailable;
   }
 
   /**
    * Traiter un document (ticket ou facture)
-   *
-   * @param buffer - Buffer du fichier
-   * @param type - Type de document
-   * @returns Résultat du traitement avec données extraites
-   *
-   * @throws Error si le type n'est pas supporté
-   * @throws Error si l'API Mindee retourne une erreur
    */
   async processDocument(
     buffer: Buffer,
@@ -98,48 +107,67 @@ export class MindeeOcrProvider implements IOcrProvider {
       }
 
       // Vérifier la disponibilité
-      if (!(await this.isAvailable())) {
+      const isAvailable = await this.isAvailable();
+      if (!isAvailable) {
         throw new Error('Provider Mindee non disponible (clé API manquante)');
       }
 
       // Créer l'input document depuis le buffer
-      // docFromBuffer accepte (buffer, filename)
-      const inputDoc = this.client.docFromBuffer(
+      const fileName = this.getFileName(type);
+      this.logger.debug(`Création du document avec nom: ${fileName}`);
+
+      const inputSource = new mindee.BufferInput({
         buffer,
-        this.getFileName(type),
+        filename: fileName,
+      });
+      this.logger.debug("Document créé, appel à l'API Mindee...");
+
+      // Définir le modelId selon le type de document
+      const modelId =
+        type === DocumentType.RECEIPT_IMAGE
+          ? this.RECEIPT_MODEL_ID
+          : this.INVOICE_MODEL_ID;
+
+      this.logger.debug(`Utilisation du model: ${modelId}`);
+
+      // Paramètres d'inférence
+      const inferenceParams = {
+        modelId,
+        confidence: true, // Calculer les scores de confiance
+        polygon: false, // Pas besoin des bounding boxes
+        rawText: false, // Pas besoin du texte brut
+      };
+
+      // Envoyer pour traitement
+      this.logger.debug('Envoi de la requête à Mindee...');
+      const response = await this.client.enqueueAndGetInference(
+        inputSource,
+        inferenceParams,
       );
 
-      // Router vers la bonne API selon le type
-      let apiResponse: mindee.PredictResponse<mindee.product.ReceiptV5> | mindee.PredictResponse<mindee.product.InvoiceV4>;
-      if (type === DocumentType.RECEIPT_IMAGE) {
-        // API Receipt pour tickets photo
-        // ReceiptV5 = endpoint mindee/expense_receipts v5 (API standard)
-        this.logger.debug(
-          'Utilisation de Receipt OCR API (expense_receipts v5)',
+      this.logger.log('✓ Réponse API reçue');
+
+      // Les vraies données sont dans rawHttp.inference.result.fields
+      const fields = (response as any).rawHttp?.inference?.result?.fields;
+
+      if (!fields) {
+        this.logger.error(
+          'Structure de réponse inattendue:',
+          JSON.stringify(response, null, 2),
         );
-        apiResponse = await this.client.parse(
-          mindee.product.ReceiptV5,
-          inputDoc,
-        );
-      } else {
-        // API Invoice pour factures drive (PDF/HTML)
-        // InvoiceV4 = endpoint mindee/invoices v4 (API standard)
-        this.logger.debug('Utilisation de Invoice OCR API (invoices v4)');
-        apiResponse = await this.client.parse(
-          mindee.product.InvoiceV4,
-          inputDoc,
-        );
+        throw new Error('Structure de réponse Mindee invalide');
       }
 
-      // Extraire les données de la réponse
-      const prediction = apiResponse.document.inference.prediction;
+      this.logger.log(
+        `Données extraites: ${fields.line_items?.items?.length || 0} items détectés`,
+      );
 
       // Mapper vers notre format standardisé
-      const data = this.mapToStandard(prediction, type);
+      const data = this.mapToStandard(fields, type);
 
       const processingTime = Date.now() - startTime;
       this.logger.log(
-        `Traitement réussi en ${processingTime}ms (confiance: ${data.confidence.toFixed(2)})`,
+        `✓ Traitement réussi en ${processingTime}ms (confiance: ${data.confidence.toFixed(2)})`,
       );
 
       return {
@@ -151,10 +179,28 @@ export class MindeeOcrProvider implements IOcrProvider {
       };
     } catch (error) {
       const processingTime = Date.now() - startTime;
+
+      // Log détaillé de l'erreur pour debug
       this.logger.error(
-        `Échec du traitement après ${processingTime}ms: ${error.message}`,
-        error.stack,
+        `❌ Échec du traitement après ${processingTime}ms: ${error.message}`,
       );
+
+      // Log de l'erreur complète pour debug
+      if (error.response) {
+        this.logger.error("Réponse complète de l'API Mindee:");
+        this.logger.error(JSON.stringify(error.response.data, null, 2));
+
+        if (error.response.status) {
+          this.logger.error(`Status HTTP: ${error.response.status}`);
+        }
+      }
+
+      if (error.code) {
+        this.logger.error(`Code erreur: ${error.code}`);
+      }
+
+      // Log du stack trace
+      this.logger.error('Stack trace:', error.stack);
 
       return {
         success: false,
@@ -185,98 +231,141 @@ export class MindeeOcrProvider implements IOcrProvider {
   /**
    * Mapper les données Mindee vers notre format standard
    */
-  private mapToStandard(prediction: any, type: DocumentType): OcrReceiptData {
+  private mapToStandard(fields: any, type: DocumentType): OcrReceiptData {
+    this.logger.log('Mapping des données vers format standard...');
+
     if (type === DocumentType.RECEIPT_IMAGE) {
-      return this.mapReceiptToStandard(prediction);
+      return this.mapReceiptToStandard(fields);
     } else {
-      return this.mapInvoiceToStandard(prediction);
+      return this.mapInvoiceToStandard(fields);
     }
   }
 
   /**
    * Mapper un ticket de caisse (Receipt API) vers format standard
+   * Les données viennent de rawHttp.inference.result.fields
    */
-  private mapReceiptToStandard(receipt: any): OcrReceiptData {
-    this.logger.debug(
-      `Mapping Receipt - ${receipt.lineItems?.length || 0} items détectés`,
-    );
+  private mapReceiptToStandard(fields: any): OcrReceiptData {
+    const lineItems = fields.line_items?.items || [];
+
+    this.logger.debug(`Mapping Receipt - ${lineItems.length} items détectés`);
 
     return {
-      merchantName: receipt.supplierName?.value || null,
-      merchantAddress: this.formatAddress(receipt.supplierAddress?.value),
-      totalAmount: receipt.totalAmount?.value || null,
-      taxAmount: receipt.totalTax?.value || null,
-      purchaseDate: receipt.date?.value ? new Date(receipt.date.value) : null,
-      currency: receipt.locale?.currency || 'EUR',
-      lineItems: this.mapReceiptLineItems(receipt.lineItems || []),
-      confidence: receipt.confidence || 0,
-      rawData: receipt, // Conserver les données brutes
+      merchantName: fields.supplier_name?.value || null,
+      merchantAddress: this.formatAddress(fields.supplier_address?.value),
+      totalAmount: fields.total_amount?.value || null,
+      taxAmount: fields.total_tax?.value || null,
+      purchaseDate: fields.date?.value ? new Date(fields.date.value) : null,
+      currency: fields.locale?.fields?.currency?.value || 'EUR',
+      lineItems: this.mapReceiptLineItems(lineItems),
+      confidence: this.calculateConfidence(fields),
+      rawData: fields,
     };
   }
 
   /**
    * Mapper une facture drive (Invoice API) vers format standard
    */
-  private mapInvoiceToStandard(invoice: any): OcrReceiptData {
-    this.logger.debug(
-      `Mapping Invoice - ${invoice.lineItems?.length || 0} items détectés`,
-    );
+  private mapInvoiceToStandard(fields: any): OcrReceiptData {
+    const lineItems = fields.line_items?.items || [];
+
+    this.logger.debug(`Mapping Invoice - ${lineItems.length} items détectés`);
 
     return {
-      merchantName: invoice.supplierName?.value || null,
-      merchantAddress: this.formatAddress(invoice.supplierAddress?.value),
-      totalAmount: invoice.totalAmount?.value || null,
-      taxAmount: invoice.totalTax?.value || null,
-      purchaseDate: invoice.date?.value ? new Date(invoice.date.value) : null,
-      currency: invoice.locale?.currency || 'EUR',
-      lineItems: this.mapInvoiceLineItems(invoice.lineItems || []),
-      confidence: invoice.confidence || 0.95, // Factures généralement plus fiables
-      invoiceNumber: invoice.invoiceNumber?.value || null,
-      orderNumber: invoice.referenceNumber?.value || null, // Mapping du numéro de référence
-      rawData: invoice,
+      merchantName: fields.supplier_name?.value || null,
+      merchantAddress: this.formatAddress(fields.supplier_address?.value),
+      totalAmount: fields.total_amount?.value || null,
+      taxAmount: fields.total_tax?.value || null,
+      purchaseDate: fields.date?.value ? new Date(fields.date.value) : null,
+      currency: fields.locale?.fields?.currency?.value || 'EUR',
+      lineItems: this.mapInvoiceLineItems(lineItems),
+      confidence: this.calculateConfidence(fields),
+      invoiceNumber: fields.invoice_number?.value || null,
+      orderNumber: fields.reference_number?.value || null,
+      rawData: fields,
     };
   }
 
   /**
    * Mapper les line items d'un ticket de caisse
+   * Structure: items[].fields.{description, quantity, unit_price, total_price}.value
    */
   private mapReceiptLineItems(items: any[]): OcrLineItem[] {
     return items.map((item, index) => {
+      const fields = item.fields || {};
+
       const lineItem: OcrLineItem = {
-        description: item.description || `Article ${index + 1}`,
-        quantity: item.quantity || null,
-        unitPrice: item.unitPrice || null,
-        totalPrice: item.totalAmount || null,
-        confidence: item.confidence || 0,
+        description: fields.description?.value || `Article ${index + 1}`,
+        quantity: fields.quantity?.value || null,
+        unitPrice: fields.unit_price?.value || null,
+        totalPrice: fields.total_price?.value || null,
+        confidence: this.mapConfidence(item.confidence),
       };
 
       this.logger.debug(
-        `Item ${index + 1}: "${lineItem.description}" (confiance: ${lineItem.confidence.toFixed(2)})`,
+        `Item ${index + 1}: "${lineItem.description}" x${lineItem.quantity} = ${lineItem.totalPrice}€ (confiance: ${lineItem.confidence.toFixed(2)})`,
       );
 
       return lineItem;
     });
+  }
+
+  /**
+   * Mapper la confiance Mindee (string) vers un nombre (0-1)
+   */
+  private mapConfidence(confidence: string | number | undefined): number {
+    if (typeof confidence === 'number') return confidence;
+
+    const confidenceMap: Record<string, number> = {
+      Certain: 0.95,
+      High: 0.85,
+      Medium: 0.7,
+      Low: 0.5,
+    };
+
+    return confidenceMap[confidence as string] || 0.5;
+  }
+
+  /**
+   * Calculer la confiance moyenne des champs
+   */
+  private calculateConfidence(fields: any): number {
+    const confidences: number[] = [];
+
+    // Parcourir les champs principaux
+    for (const key of Object.keys(fields)) {
+      const field = fields[key];
+      if (field?.confidence) {
+        confidences.push(this.mapConfidence(field.confidence));
+      }
+    }
+
+    if (confidences.length === 0) return 0.5;
+
+    const avg = confidences.reduce((a, b) => a + b, 0) / confidences.length;
+    return Math.round(avg * 100) / 100;
   }
 
   /**
    * Mapper les line items d'une facture drive
-   * Les factures drive ont généralement plus d'informations
    */
   private mapInvoiceLineItems(items: any[]): OcrLineItem[] {
     return items.map((item, index) => {
+      const fields = item.fields || {};
+
       const lineItem: OcrLineItem = {
-        description: item.description || `Article ${index + 1}`,
-        quantity: item.quantity || null,
-        unitPrice: item.unitPrice || null,
-        totalPrice: item.totalAmount || null,
-        confidence: item.confidence || 0.99, // Factures très fiables
-        // Champs bonus des factures drive
-        productCode: item.productCode || null, // EAN/code-barres
-        discount: item.discount || null,
+        description: fields.description?.value || `Article ${index + 1}`,
+        quantity: fields.quantity?.value || null,
+        unitPrice: fields.unit_price?.value || null,
+        totalPrice:
+          fields.total_price?.value || fields.total_amount?.value || null,
+        confidence: this.mapConfidence(item.confidence),
+        productCode: fields.product_code?.value || null,
+        discount: fields.discount?.value || null,
       };
 
       this.logger.debug(
-        `Item ${index + 1}: "${lineItem.description}"${lineItem.productCode ? ` (EAN: ${lineItem.productCode})` : ''} (confiance: ${lineItem.confidence.toFixed(2)})`,
+        `Item ${index + 1}: "${lineItem.description}"${lineItem.productCode ? ` (EAN: ${lineItem.productCode})` : ''} x${lineItem.quantity} = ${lineItem.totalPrice}€ (confiance: ${lineItem.confidence.toFixed(2)})`,
       );
 
       return lineItem;
@@ -284,7 +373,7 @@ export class MindeeOcrProvider implements IOcrProvider {
   }
 
   /**
-   * Formater une adresse (nettoyer les retours à la ligne, etc.)
+   * Formater une adresse
    */
   private formatAddress(address: string | null): string | null {
     if (!address) return null;
@@ -316,8 +405,8 @@ export class MindeeOcrProvider implements IOcrProvider {
     }
 
     // Erreurs d'authentification
-    if (error.response?.status === 401) {
-      return 'Clé API Mindee invalide';
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      return "Clé API Mindee invalide ou accès refusé. Vérifiez que votre clé a accès à l'API Receipt V5.";
     }
 
     // Erreur générique

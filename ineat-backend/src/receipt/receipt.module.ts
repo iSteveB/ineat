@@ -1,68 +1,48 @@
-/**
- * Module Receipt
- *
- * Module NestJS pour la gestion des tickets de caisse et factures drive
- * Inclut le traitement OCR, la validation et l'ajout à l'inventaire
- *
- * @module receipt/receipt.module
- */
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaModule } from '../prisma/prisma.module';
 
 // Services
 import { ReceiptService } from './services/receipt.service';
 import { OcrService } from './services/ocr.service';
 import { CloudinaryStorageService } from './services/cloudinary-storage.service';
+import { ReceiptAnalysisService } from './services/receipt-analysis.service';
+import { ReceiptToInventoryService } from './services/receipt-to-inventory.service';
 
 // Providers OCR
 import { MindeeOcrProvider } from './providers/mindee-ocr.provider';
 
-// Controllers
+// Controllers - IMPORTANT: Tous doivent être listés ici
 import { ReceiptController } from './controllers/receipt.controller';
+import { ReceiptStatusController } from './controllers/receipt-status.controller';
+import { ReceiptResultsController } from './controllers/receipt-results.controller';
+import { ReceiptValidationController } from './controllers/receipt-validation.controller';
+import { ReceiptInventoryController } from './controllers/receipt-inventory.controller';
+import { ReceiptHistoryController } from './controllers/receipt-history.controller';
 
-/**
- * Module Receipt
- *
- * Ce module gère tout le workflow des tickets de caisse et factures drive :
- * 1. Upload de documents (photo ticket ou PDF facture) via CloudinaryStorageService
- * 2. Traitement OCR avec Mindee (ou autres providers) via OcrService
- * 3. Extraction et structuration des données via ReceiptService
- * 4. Validation par l'utilisateur via API REST
- * 5. Ajout à l'inventaire (intégration future)
- *
- * Fonctionnalités premium protégées par @RequiresPremium()
- *
- * Dépendances externes :
- * - Cloudinary : stockage des images/PDF
- * - Mindee : traitement OCR
- * - Prisma : persistance des données
- */
+// Modules partagés
+import { PrismaModule } from '../prisma/prisma.module';
+
 @Module({
-  imports: [
-    ConfigModule, // Pour accéder aux variables d'environnement
-    PrismaModule, // Pour accéder à la base de données
-  ],
+  imports: [ConfigModule, PrismaModule],
   controllers: [
-    ReceiptController, // Controller gérant les requêtes HTTP pour les receipts
+    ReceiptController,
+    ReceiptStatusController, 
+    ReceiptResultsController,
+    ReceiptValidationController,
+    ReceiptInventoryController,
+    ReceiptHistoryController,
   ],
   providers: [
-    // Services principaux
-    ReceiptService, // Service principal orchestrant le workflow
-    OcrService, // Service OCR gérant les providers
-    CloudinaryStorageService, // Service de stockage des fichiers
+    // Services
+    ReceiptService,
+    OcrService,
+    CloudinaryStorageService,
+    ReceiptAnalysisService,
+    ReceiptToInventoryService,
 
-    // Providers OCR
-    MindeeOcrProvider, // Provider OCR Mindee
-    // Ajouter ici les futurs providers :
-    // GoogleVisionOcrProvider,
-    // TesseractOcrProvider,
+    // OCR Providers
+    MindeeOcrProvider,
   ],
-  exports: [
-    // Exporter les services pour utilisation dans d'autres modules
-    ReceiptService, // Pour intégration avec InventoryModule
-    OcrService, // Pour utilisation dans d'autres contextes OCR
-  ],
+  exports: [ReceiptService, OcrService, CloudinaryStorageService],
 })
 export class ReceiptModule {}
