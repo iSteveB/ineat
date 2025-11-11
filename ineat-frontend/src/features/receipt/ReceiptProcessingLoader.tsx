@@ -151,7 +151,7 @@ export const ReceiptProcessingLoader: React.FC<ReceiptProcessingLoaderProps> = (
 	const { status, isPolling, error } = useReceiptPolling({
 		receiptId,
 		onCompleted,
-		onError,
+		onError: (err: Error) => onError?.(err.message),
 		pollingInterval: 2000,
 	});
 

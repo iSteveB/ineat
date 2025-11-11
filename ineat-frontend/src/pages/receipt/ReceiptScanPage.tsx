@@ -82,7 +82,6 @@ export const ReceiptScanPage: React.FC = () => {
 	// Vérifier si l'utilisateur a un abonnement premium ou admin
 	const isPremium =
 		user?.subscription === 'PREMIUM' || user?.subscription === 'ADMIN';
-
 	// ===== EFFETS =====
 
 	/**

@@ -1,11 +1,19 @@
-import { apiClient } from '../lib/api-client';
+/**
+ * Service de gestion des tickets de caisse (receipts)
+ * Gère l'upload, le traitement et la récupération des résultats
+ */
 
-// ===== TYPES POUR LES TICKETS =====
+// ===== TYPES =====
 
 /**
- * Statut d'un ticket de caisse
+ * Statut d'un ticket
  */
 export type ReceiptStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'VALIDATED';
+
+/**
+ * Filtre de statut pour l'historique
+ */
+export type ReceiptStatusFilter = ReceiptStatus | 'ALL';
 
 /**
  * Ordre de tri pour l'historique
@@ -17,176 +25,118 @@ export type ReceiptSortOrder =
 	| 'AMOUNT_LOW';
 
 /**
- * Filtre de statut pour l'historique
- */
-export type ReceiptStatusFilter =
-	| 'ALL'
-	| 'PROCESSING'
-	| 'COMPLETED'
-	| 'FAILED'
-	| 'VALIDATED';
-
-/**
- * Type d'unité pour les produits
- */
-export type UnitType = 'KG' | 'G' | 'L' | 'ML' | 'UNIT';
-
-// ===== INTERFACES POUR LES RÉPONSES API =====
-
-/**
- * Réponse après upload d'un ticket
- */
-export interface ReceiptUploadResponse {
-	success: boolean;
-	data: {
-		receiptId: string;
-		status: ReceiptStatus;
-		estimatedTime: number;
-	};
-	message: string;
-}
-
-/**
- * Informations de statut d'un ticket
- */
-export interface ReceiptStatusData {
-	id: string;
-	status: ReceiptStatus;
-	imageUrl: string;
-	totalAmount?: number | null;
-	purchaseDate?: string | null;
-	merchantName?: string | null;
-	merchantAddress?: string | null;
-	totalItems: number;
-	validatedItems: number;
-	validationProgress: number;
-	readyForInventory: boolean;
-	addedToInventory: boolean;
-	createdAt: string;
-	updatedAt: string;
-	estimatedTimeRemaining?: number | null;
-	errorMessage?: string | null;
-}
-
-/**
- * Réponse pour le statut d'un ticket
- */
-export interface ReceiptStatusResponse {
-	success: boolean;
-	data: ReceiptStatusData;
-	message: string;
-}
-
-/**
- * Item de ticket détecté
- */
-export interface ReceiptItem {
-	id: string;
-	productId?: string | null;
-	detectedName: string;
-	quantity: number;
-	unitPrice?: number | null;
-	totalPrice?: number | null;
-	confidence: number;
-	validated: boolean;
-	categoryGuess?: string | null;
-	expiryDate?: string | null;
-	storageLocation?: string | null;
-	notes?: string | null;
-	createdAt: string;
-	updatedAt: string;
-	product?: {
-		id: string;
-		name: string;
-		brand?: string | null;
-		barcode?: string | null;
-		unitType: UnitType;
-		imageUrl?: string | null;
-		nutriscore?: string | null;
-		ecoScore?: string | null;
-		category: {
-			id: string;
-			name: string;
-			slug: string;
-		};
-	} | null;
-}
-
-/**
  * Métadonnées d'un ticket
  */
 export interface ReceiptMetadata {
 	id: string;
-	status: ReceiptStatus;
+	userId: string;
 	imageUrl: string;
-	totalAmount?: number | null;
-	purchaseDate?: string | null;
-	merchantName?: string | null;
-	merchantAddress?: string | null;
+	status: ReceiptStatus;
+	totalAmount: number | null;
+	purchaseDate: Date | null;
+	storeName: string | null;
+	storeLocation: string | null;
 	createdAt: string;
 	updatedAt: string;
 }
 
 /**
- * Statistiques de validation
+ * Item détecté sur un ticket
  */
-export interface ValidationStats {
-	totalItems: number;
-	validatedItems: number;
-	validationProgress: number;
-	itemsWithProducts: number;
-	itemsNeedingNewProducts: number;
-	averageConfidence: number;
-	readyForInventory: boolean;
+export interface ReceiptItem {
+	id: string;
+	receiptId: string;
+	productId: string | null;
+	detectedName: string;
+	quantity: number;
+	unitPrice: number | null;
+	totalPrice: number | null;
+	confidence: number;
+	validated: boolean;
+	categoryGuess: string | null;
+	expiryDate: Date | null;
+	storageLocation: string | null;
+	notes: string | null;
+	createdAt: string;
 }
 
 /**
- * Résultats complets d'un ticket
+ * Données pour valider/modifier un item
  */
-export interface ReceiptResults {
-	receipt: ReceiptMetadata;
-	items: ReceiptItem[];
-	stats: ValidationStats;
+export interface ValidateReceiptItemData {
+	productId?: string;
+	detectedName?: string;
+	quantity?: number;
+	unitPrice?: number;
+	totalPrice?: number;
+	validated?: boolean;
+	categoryGuess?: string | null;
+	expiryDate?: Date | null;
+	storageLocation?: string | null;
+	notes?: string | null;
 }
 
 /**
- * Réponse pour les résultats d'un ticket
+ * Réponse de l'API pour l'upload
  */
-export interface ReceiptResultsResponse {
+export interface UploadReceiptResponse {
 	success: boolean;
-	data: ReceiptResults;
-	message: string;
+	data: {
+		receiptId: string;
+		status: ReceiptStatus;
+		estimatedTime?: number;
+	};
+	message?: string;
 }
 
 /**
- * Item dans l'historique
+ * Données du statut en temps réel
+ * Correspond au DTO retourné par le backend (ReceiptStatusDto)
  */
-export interface ReceiptHistoryItem {
+export interface ReceiptStatusData {
 	id: string;
 	status: ReceiptStatus;
-	imageUrl: string;
-	totalAmount?: number | null;
-	purchaseDate?: string | null;
-	merchantName?: string | null;
-	merchantAddress?: string | null;
+	imageUrl: string | null;
+	totalAmount: number | null;
+	purchaseDate: string | null;
+	merchantName: string | null;
+	merchantAddress: string | null;
 	totalItems: number;
 	validatedItems: number;
 	validationProgress: number;
+	readyForInventory: boolean;
 	addedToInventory: boolean;
 	createdAt: string;
 	updatedAt: string;
+	estimatedTimeRemaining: number | null;
+	errorMessage: string | null;
 }
 
 /**
- * Métadonnées de pagination
+ * Réponse avec les résultats complets
  */
-export interface PaginationMeta {
-	currentPage: number;
-	pageSize: number;
-	totalItems: number;
-	totalPages: number;
-	hasNextPage: boolean;
-	hasPreviousPage: boolean;
+export interface ReceiptResultsResponse {
+	success: boolean;
+	data: {
+		receipt: ReceiptMetadata;
+		items: ReceiptItem[];
+	};
+}
+
+/**
+ * Item de l'historique
+ */
+export interface ReceiptHistoryItem {
+	id: string;
+	imageUrl: string;
+	status: ReceiptStatus;
+	totalAmount: number | null;
+	purchaseDate: Date | null;
+	storeName: string | null;
+	itemCount: number;
+	validatedItemCount: number;
+	createdAt: string;
+	updatedAt: string;
 }
 
 /**
@@ -195,331 +145,373 @@ export interface PaginationMeta {
 export interface ReceiptHistoryStats {
 	totalReceipts: number;
 	completedReceipts: number;
-	pendingValidation: number;
-	failedReceipts: number;
-	totalAmount: number;
-	averageAmount: number;
 	totalItemsAdded: number;
-	firstReceiptDate?: string | null;
-	lastReceiptDate?: string | null;
-}
-
-/**
- * Historique complet des tickets
- */
-export interface ReceiptHistory {
-	receipts: ReceiptHistoryItem[];
-	pagination: PaginationMeta;
-	stats: ReceiptHistoryStats;
-}
-
-/**
- * Réponse pour l'historique des tickets
- */
-export interface ReceiptHistoryResponse {
-	success: boolean;
-	data: ReceiptHistory;
-	message: string;
-}
-
-// ===== INTERFACES POUR LES REQUÊTES =====
-
-/**
- * Données pour valider un item de ticket
- */
-export interface ValidateReceiptItemData {
-	productId?: string;
-	newProduct?: {
-		name: string;
-		brand?: string;
-		barcode?: string;
-		categorySlug: string;
-		imageUrl?: string;
-		unitType: UnitType;
-	};
-	detectedName?: string;
-	quantity?: number;
-	unitPrice?: number;
-	totalPrice?: number;
-	validated?: boolean;
-	confidence?: number;
-	categoryGuess?: string;
-	expiryDate?: string;
-	storageLocation?: string;
-	notes?: string;
-}
-
-/**
- * Options pour l'ajout à l'inventaire
- */
-export interface AddReceiptToInventoryOptions {
-	purchaseDate?: string;
-	autoCreateProducts?: boolean;
-	forcedAdd?: boolean;
-}
-
-/**
- * Résultat de l'ajout à l'inventaire
- */
-export interface ReceiptToInventoryResult {
-	addedItems: Array<{
-		id: string;
-		productName: string;
-		quantity: number;
-		totalPrice?: number;
-	}>;
-	failedItems: Array<{
-		productName: string;
-		error: string;
-	}>;
-	budgetImpact: {
-		totalAmount: number;
-		expenseCreated: boolean;
-		budgetId?: string;
-		remainingBudget?: number;
-		warningMessage?: string;
-	};
-	summary: {
-		totalItemsProcessed: number;
-		successfulItems: number;
-		failedItems: number;
-		totalAmountSpent: number;
-	};
-}
-
-/**
- * Réponse pour l'ajout à l'inventaire
- */
-export interface AddReceiptToInventoryResponse {
-	success: boolean;
-	data: ReceiptToInventoryResult;
-	message: string;
+	totalAmount: number;
 }
 
 /**
  * Filtres pour l'historique
  */
 export interface ReceiptHistoryFilters {
-	page?: number;
-	limit?: number;
-	status?: ReceiptStatusFilter;
+	status?: ReceiptStatus;
 	sortOrder?: ReceiptSortOrder;
 	search?: string;
 	startDate?: string;
 	endDate?: string;
 }
 
-// ===== SERVICE PRINCIPAL =====
+/**
+ * Options pour l'ajout à l'inventaire
+ */
+export interface AddToInventoryOptions {
+	purchaseDate?: string;
+	autoCreateProducts?: boolean;
+	forcedAdd?: boolean;
+}
 
 /**
- * Service pour gérer les tickets de caisse
- * Centralise tous les appels API liés aux tickets
+ * Réponse de l'historique
  */
-export const receiptService = {
+export interface ReceiptHistoryResponse {
+	success: boolean;
+	data: {
+		receipts: ReceiptHistoryItem[];
+		stats: ReceiptHistoryStats;
+	};
+}
+
+// ===== SERVICE =====
+
+/**
+ * URL de base de l'API
+ */
+const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+
+/**
+ * Service de gestion des tickets de caisse
+ */
+class ReceiptService {
 	/**
-	 * Upload un fichier de ticket de caisse
+	 * Upload un ticket de caisse pour traitement OCR
+	 *
+	 * @param file - Fichier image du ticket
+	 * @returns Réponse avec le receiptId et le statut
+	 * @throws Error si l'upload échoue
 	 */
-	async uploadReceipt(file: File): Promise<ReceiptUploadResponse> {
-		// Validation du fichier côté client
-		if (!file) {
-			throw new Error('Aucun fichier sélectionné');
-		}
-
-		// Vérifier le type de fichier
-		if (!file.type.startsWith('image/')) {
-			throw new Error('Le fichier doit être une image');
-		}
-
-		// Vérifier la taille (max 10MB)
-		const maxSize = 10 * 1024 * 1024; // 10MB
-		if (file.size > maxSize) {
-			throw new Error("L'image ne doit pas dépasser 10MB");
-		}
-
-		// Créer FormData pour l'upload
-		const formData = new FormData();
-		formData.append('image', file);
-
+	async uploadReceipt(file: File): Promise<UploadReceiptResponse> {
 		try {
-			// Note : apiClient gère automatiquement le Content-Type pour FormData
-			const response = await fetch('/api/receipt/upload', {
+			// Validation du fichier côté client
+			const maxSize = 10 * 1024 * 1024; // 10MB
+			if (file.size > maxSize) {
+				throw new Error(
+					'Le fichier est trop volumineux (maximum 10MB)'
+				);
+			}
+
+			const allowedTypes = ['image/jpeg', 'image/png', 'image/heic'];
+			if (!allowedTypes.includes(file.type)) {
+				throw new Error(
+					'Format de fichier non supporté (formats acceptés: JPEG, PNG, HEIC)'
+				);
+			}
+
+			// Création du FormData
+			// Format confirmé qui fonctionne : 'receipt_image' (snake_case)
+			const formData = new FormData();
+			formData.append('file', file);
+			formData.append('documentType', 'receipt_image');
+
+			const response = await fetch(`${API_URL}/receipt/upload`, {
 				method: 'POST',
 				credentials: 'include',
 				body: formData,
 			});
 
 			if (!response.ok) {
-				const errorData = await response.json().catch(() => null);
-				throw new Error(
-					errorData?.message || "Erreur lors de l'upload"
-				);
+				let errorMessage = "Erreur lors de l'upload";
+
+				try {
+					const errorData = await response.json();
+					errorMessage = errorData.message || errorMessage;
+
+					// Détection d'erreur Cloudinary spécifique
+					if (
+						errorMessage.includes('Cloudinary') ||
+						errorMessage.includes('Invalid Signature')
+					) {
+						throw new Error(
+							'❌ Erreur de configuration Cloudinary côté serveur.\n' +
+								'Veuillez vérifier les credentials dans le .env backend.'
+						);
+					}
+				} catch {
+					// Si on ne peut pas parser le JSON, utiliser le message par défaut
+				}
+
+				throw new Error(errorMessage);
 			}
 
-			return await response.json();
+			const data = await response.json();
+
+			if (!data.success) {
+				throw new Error(data.message || "Échec de l'upload");
+			}
+
+			return {
+				success: true,
+				data: {
+					receiptId: data.data.receiptId,
+					status: data.data.status,
+					estimatedTime: 30,
+				},
+			};
 		} catch (error) {
-			console.error('Erreur upload ticket:', error);
-			throw error;
+			console.error('Erreur upload receipt:', error);
+			if (error instanceof Error) {
+				throw error;
+			}
+			throw new Error("Erreur lors de l'upload du ticket");
 		}
-	},
+	}
 
 	/**
-	 * Récupère le statut d'un ticket
+	 * Récupère le statut en temps réel d'un ticket en cours de traitement
+	 *
+	 * @param receiptId - ID du ticket
+	 * @returns Statut actuel avec progression
 	 */
-	async getReceiptStatus(receiptId: string): Promise<ReceiptStatusResponse> {
-		return await apiClient.get<ReceiptStatusResponse>(
-			`/receipt/${receiptId}/status`
-		);
-	},
+	async getReceiptStatus(receiptId: string): Promise<ReceiptStatusData> {
+		const response = await fetch(`${API_URL}/receipt/${receiptId}/status`, {
+			method: 'GET',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			let errorMessage = 'Erreur lors de la récupération du statut';
+			try {
+				const errorData = await response.json();
+				errorMessage = errorData.message || errorMessage;
+			} catch {
+				// Ignore parsing error
+			}
+
+			throw new Error(errorMessage);
+		}
+
+		const data = await response.json();
+		return data.data;
+	}
 
 	/**
-	 * Récupère les résultats détaillés d'un ticket
+	 * Récupère les résultats complets d'un ticket traité
+	 *
+	 * @param receiptId - ID du ticket
+	 * @returns Métadonnées du ticket et liste des items détectés
 	 */
 	async getReceiptResults(
 		receiptId: string
 	): Promise<ReceiptResultsResponse> {
-		return await apiClient.get<ReceiptResultsResponse>(
-			`/receipt/${receiptId}/results`
+		const response = await fetch(
+			`${API_URL}/receipt/${receiptId}/results`,
+			{
+				method: 'GET',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}
 		);
-	},
+
+		if (!response.ok) {
+			let errorMessage = 'Erreur lors de la récupération des résultats';
+			try {
+				const errorData = await response.json();
+				errorMessage = errorData.message || errorMessage;
+			} catch {
+				// Ignore parsing error
+			}
+
+			throw new Error(errorMessage);
+		}
+
+		return await response.json();
+	}
 
 	/**
-	 * Met à jour un item de ticket (validation/correction)
+	 * Met à jour un item du ticket (correction, validation, association produit)
+	 *
+	 * @param receiptId - ID du ticket
+	 * @param itemId - ID de l'item à modifier
+	 * @param data - Données à mettre à jour
 	 */
 	async updateReceiptItem(
 		receiptId: string,
 		itemId: string,
 		data: ValidateReceiptItemData
-	): Promise<{ success: boolean; data: ReceiptItem; message: string }> {
-		return await apiClient.put<{
-			success: boolean;
-			data: ReceiptItem;
-			message: string;
-		}>(`/receipt/${receiptId}/items/${itemId}`, data);
-	},
+	): Promise<void> {
+		const response = await fetch(
+			`${API_URL}/receipt/${receiptId}/items/${itemId}`,
+			{
+				method: 'PUT',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(data),
+			}
+		);
+
+		if (!response.ok) {
+			let errorMessage = "Erreur lors de la mise à jour de l'item";
+			try {
+				const errorData = await response.json();
+				errorMessage = errorData.message || errorMessage;
+			} catch {
+				// Ignore parsing error
+			}
+
+			throw new Error(errorMessage);
+		}
+	}
 
 	/**
-	 * Ajoute un ticket validé à l'inventaire
+	 * Ajoute tous les items validés d'un ticket à l'inventaire
+	 *
+	 * @param receiptId - ID du ticket
+	 * @param options - Options d'ajout (optionnel)
 	 */
 	async addReceiptToInventory(
 		receiptId: string,
-		options: AddReceiptToInventoryOptions = {}
-	): Promise<AddReceiptToInventoryResponse> {
-		return await apiClient.post<AddReceiptToInventoryResponse>(
-			`/receipt/${receiptId}/add-to-inventory`,
-			options
+		options: AddToInventoryOptions = {}
+	): Promise<void> {
+		// ✅ Ne PAS inclure receiptId dans le body (il est déjà dans l'URL)
+		const hasOptions = Object.keys(options).length > 0;
+
+		console.log('🚀 addReceiptToInventory called with:', {
+			receiptId,
+			options,
+			hasOptions,
+			bodyToSend: hasOptions ? options : 'NO BODY',
+		});
+
+		const fetchOptions: RequestInit = {
+			method: 'POST',
+			credentials: 'include',
+		};
+
+		// ✅ Ajouter body et Content-Type seulement si nécessaire
+		if (hasOptions) {
+			fetchOptions.headers = {
+				'Content-Type': 'application/json',
+			};
+			fetchOptions.body = JSON.stringify(options);
+		}
+
+		const response = await fetch(
+			`${API_URL}/receipt/${receiptId}/add-to-inventory`,
+			fetchOptions
 		);
-	},
+
+		if (!response.ok) {
+			let errorMessage =
+				"Erreur lors de l'ajout des items à l'inventaire";
+			try {
+				const errorData = await response.json();
+				errorMessage = errorData.message || errorMessage;
+			} catch {
+				// Ignore parsing error
+			}
+
+			throw new Error(errorMessage);
+		}
+	}
 
 	/**
-	 * Récupère l'historique des tickets avec filtres
+	 * Récupère l'historique des tickets avec filtres et statistiques
+	 *
+	 * @param filters - Filtres optionnels (statut, dates, recherche, tri)
+	 * @returns Liste des tickets et statistiques globales
 	 */
 	async getReceiptHistory(
 		filters: ReceiptHistoryFilters = {}
 	): Promise<ReceiptHistoryResponse> {
-		// Construire les paramètres de query
-		const searchParams = new URLSearchParams();
+		// Construction des query params
+		const params = new URLSearchParams();
 
-		Object.entries(filters).forEach(([key, value]) => {
-			if (value !== undefined && value !== null && value !== '') {
-				searchParams.append(key, value.toString());
-			}
+		if (filters.status) {
+			params.append('status', filters.status);
+		}
+		if (filters.sortOrder) {
+			params.append('sortOrder', filters.sortOrder);
+		}
+		if (filters.search) {
+			params.append('search', filters.search);
+		}
+		if (filters.startDate) {
+			params.append('startDate', filters.startDate);
+		}
+		if (filters.endDate) {
+			params.append('endDate', filters.endDate);
+		}
+
+		const queryString = params.toString();
+		const url = `${API_URL}/receipt/history${
+			queryString ? `?${queryString}` : ''
+		}`;
+
+		const response = await fetch(url, {
+			method: 'GET',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+			},
 		});
 
-		const queryString = searchParams.toString();
-		const endpoint = queryString
-			? `/receipt/history?${queryString}`
-			: '/receipt/history';
-
-		return await apiClient.get<ReceiptHistoryResponse>(endpoint);
-	},
-
-	/**
-	 * Supprime un ticket
-	 *
-	 * Supprime le ticket de la base de données et le fichier associé de Cloudinary.
-	 * Cette action est irréversible.
-	 *
-	 * Note: Ne peut supprimer que les tickets qui n'ont pas été ajoutés à l'inventaire
-	 *
-	 * @param receiptId - ID du ticket à supprimer
-	 * @returns Confirmation de suppression
-	 * @throws Error si le ticket n'existe pas ou appartient à un autre utilisateur
-	 */
-	async deleteReceipt(
-		receiptId: string
-	): Promise<{ success: boolean; message: string }> {
-		return await apiClient.delete<{ success: boolean; message: string }>(
-			`/receipt/${receiptId}`
-		);
-	},
-
-	/**
-	 * Utilitaire : Vérifie si un ticket est prêt pour l'ajout à l'inventaire
-	 */
-	isReadyForInventory(status: ReceiptStatusData): boolean {
-		return status.readyForInventory && status.status === 'VALIDATED';
-	},
-
-	/**
-	 * Utilitaire : Obtient le message d'état approprié
-	 */
-	getStatusMessage(status: ReceiptStatusData): string {
-		switch (status.status) {
-			case 'PROCESSING': {
-				const timeLeft = status.estimatedTimeRemaining;
-				return timeLeft
-					? `Traitement en cours... (~${timeLeft}s restantes)`
-					: 'Traitement en cours...';
+		if (!response.ok) {
+			let errorMessage = "Erreur lors de la récupération de l'historique";
+			try {
+				const errorData = await response.json();
+				errorMessage = errorData.message || errorMessage;
+			} catch {
+				// Ignore parsing error
 			}
 
-			case 'COMPLETED':
-				return "Ticket traité et ajouté à l'inventaire";
-
-			case 'FAILED':
-				return status.errorMessage || 'Erreur lors du traitement';
-
-			case 'VALIDATED':
-				if (status.readyForInventory) {
-					return "Prêt à être ajouté à l'inventaire";
-				} else {
-					return `Validation en cours (${status.validatedItems}/${status.totalItems} items)`;
-				}
-
-			default:
-				return 'Statut inconnu';
+			throw new Error(errorMessage);
 		}
-	},
+
+		return await response.json();
+	}
 
 	/**
-	 * Utilitaire : Formate le montant pour l'affichage
+	 * Supprime un ticket et tous ses items
+	 *
+	 * @param receiptId - ID du ticket à supprimer
 	 */
-	formatAmount(amount?: number | null): string {
-		if (!amount) return 'N/A';
-		return new Intl.NumberFormat('fr-FR', {
-			style: 'currency',
-			currency: 'EUR',
-		}).format(amount);
-	},
+	async deleteReceipt(receiptId: string): Promise<void> {
+		const response = await fetch(`${API_URL}/receipt/${receiptId}`, {
+			method: 'DELETE',
+			credentials: 'include',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
 
-	/**
-	 * Utilitaire : Formate la date relative
-	 */
-	formatRelativeDate(dateString: string): string {
-		const date = new Date(dateString);
-		const now = new Date();
-		const diffMs = now.getTime() - date.getTime();
-		const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+		if (!response.ok) {
+			let errorMessage = 'Erreur lors de la suppression du ticket';
+			try {
+				const errorData = await response.json();
+				errorMessage = errorData.message || errorMessage;
+			} catch {
+				// Ignore parsing error
+			}
 
-		if (diffDays === 0) {
-			return "Aujourd'hui";
-		} else if (diffDays === 1) {
-			return 'Hier';
-		} else if (diffDays < 7) {
-			return `Il y a ${diffDays} jours`;
-		} else {
-			return date.toLocaleDateString('fr-FR');
+			throw new Error(errorMessage);
 		}
-	},
-};
+	}
+}
 
-export default receiptService;
+// Export de l'instance singleton
+export const receiptService = new ReceiptService();

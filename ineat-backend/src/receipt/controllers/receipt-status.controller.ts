@@ -19,11 +19,6 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequiresPremium } from '../../auth/decorators/requires-premium.decorator';
 import { PremiumGuard } from '../../auth/guards/premium.guard';
 import { PrismaService } from '../../prisma/prisma.service';
-import {
-  ReceiptStatusDto,
-  ReceiptStatusResponseDto,
-  ReceiptStatusParamsDto,
-} from '../dto/receipt-status.dto';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -31,6 +26,34 @@ interface AuthenticatedRequest extends Request {
     email: string;
     role: string;
   };
+}
+
+/**
+ * DTO de réponse pour le statut
+ */
+export class ReceiptStatusDto {
+  id: string;
+  status: string;
+  imageUrl: string | null;
+  totalAmount: number | null;
+  purchaseDate: string | null;
+  merchantName: string | null;
+  merchantAddress: string | null;
+  totalItems: number;
+  validatedItems: number;
+  validationProgress: number;
+  readyForInventory: boolean;
+  addedToInventory: boolean;
+  createdAt: string;
+  updatedAt: string;
+  estimatedTimeRemaining: number | null;
+  errorMessage: string | null;
+}
+
+export class ReceiptStatusResponseDto {
+  success: boolean;
+  data: ReceiptStatusDto;
+  message: string;
 }
 
 /**
@@ -103,9 +126,8 @@ export class ReceiptStatusController {
   })
   async getReceiptStatus(
     @Req() req: AuthenticatedRequest,
-    @Param() params: ReceiptStatusParamsDto,
+    @Param('receiptId') receiptId: string, // ← Directement sans DTO
   ): Promise<ReceiptStatusResponseDto> {
-    const { receiptId } = params;
     const userId = req.user.id;
 
     this.logger.log(
@@ -235,7 +257,12 @@ export class ReceiptStatusController {
       return null;
     }
 
-    // Si vous stockez l'erreur dans rawOcrData ou un autre champ
+    // Si vous stockez l'erreur dans un champ dédié
+    if (receipt.errorMessage) {
+      return receipt.errorMessage;
+    }
+
+    // Si vous stockez l'erreur dans rawOcrData
     if (receipt.rawOcrData && receipt.rawOcrData.error) {
       return receipt.rawOcrData.error;
     }

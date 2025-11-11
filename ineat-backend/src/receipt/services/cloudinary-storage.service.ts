@@ -1,15 +1,21 @@
 /**
  * Service de stockage Cloudinary pour les receipts
- * 
- * Gère l'upload, la récupération et la suppression des images/PDF de receipts
- * sur Cloudinary, avec optimisation et transformation automatique
- * 
+ * VERSION CORRIGÉE : Utilise un upload preset pour éviter les erreurs de signature
+ *
  * @module receipt/services/cloudinary-storage.service
  */
 
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiResponse,
+  UploadApiErrorResponse,
+} from 'cloudinary';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
 
 /**
@@ -19,46 +25,33 @@ interface CloudinaryConfig {
   cloudName: string;
   apiKey: string;
   apiSecret: string;
+  receiptPreset?: string; // Upload preset pour receipts
 }
 
 /**
  * Résultat d'un upload sur Cloudinary
  */
 export interface CloudinaryUploadResult {
-  url: string;           // URL publique du fichier
-  secureUrl: string;     // URL HTTPS du fichier
-  publicId: string;      // ID Cloudinary du fichier
-  format: string;        // Format du fichier (jpg, png, pdf)
-  resourceType: string;  // Type de ressource (image, raw)
-  bytes: number;         // Taille en bytes
-  width?: number;        // Largeur (images uniquement)
-  height?: number;       // Hauteur (images uniquement)
+  url: string;
+  secureUrl: string;
+  publicId: string;
+  format: string;
+  resourceType: string;
+  bytes: number;
+  width?: number;
+  height?: number;
 }
 
 /**
  * Service de stockage sur Cloudinary spécifique aux receipts
- * 
- * Ce service gère :
- * - Upload d'images de tickets (JPEG, PNG, HEIC)
- * - Upload de PDF de factures drive
- * - Optimisation automatique des images
- * - Compression pour réduire les coûts
- * - Suppression des anciens fichiers
- * 
- * @example
- * ```typescript
- * const result = await cloudinaryStorage.uploadReceipt(
- *   buffer,
- *   'user-123',
- *   DocumentType.RECEIPT_IMAGE
- * );
- * console.log('URL:', result.secureUrl);
- * ```
+ *
+ * CHANGEMENT : Utilise maintenant un upload preset pour éviter les problèmes de signature
  */
 @Injectable()
 export class CloudinaryStorageService {
   private readonly logger = new Logger(CloudinaryStorageService.name);
-  private readonly receiptFolder = 'receipts'; // Dossier dans Cloudinary
+  private readonly receiptFolder = 'receipts';
+  private receiptPreset?: string; // Retiré readonly pour pouvoir l'assigner
 
   constructor(private configService: ConfigService) {
     this.initializeCloudinary();
@@ -76,8 +69,10 @@ export class CloudinaryStorageService {
       api_secret: config.apiSecret,
     });
 
+    this.receiptPreset = config.receiptPreset;
+
     this.logger.log(
-      `Cloudinary initialisé (cloud: ${config.cloudName}, folder: ${this.receiptFolder})`,
+      `Cloudinary initialisé (cloud: ${config.cloudName}, folder: ${this.receiptFolder}, preset: ${this.receiptPreset || 'none'})`,
     );
   }
 
@@ -88,6 +83,9 @@ export class CloudinaryStorageService {
     const cloudName = this.configService.get<string>('CLOUDINARY_CLOUD_NAME');
     const apiKey = this.configService.get<string>('CLOUDINARY_API_KEY');
     const apiSecret = this.configService.get<string>('CLOUDINARY_API_SECRET');
+    const receiptPreset = this.configService.get<string>(
+      'CLOUDINARY_RECEIPT_PRESET',
+    );
 
     if (!cloudName || !apiKey || !apiSecret) {
       throw new InternalServerErrorException(
@@ -95,18 +93,16 @@ export class CloudinaryStorageService {
       );
     }
 
-    return { cloudName, apiKey, apiSecret };
+    return { cloudName, apiKey, apiSecret, receiptPreset };
   }
 
   /**
    * Uploader un receipt (image ou PDF) sur Cloudinary
-   * 
+   *
    * @param buffer - Buffer du fichier
    * @param userId - ID de l'utilisateur
    * @param documentType - Type de document
    * @returns Résultat de l'upload
-   * 
-   * @throws InternalServerErrorException si l'upload échoue
    */
   async uploadReceipt(
     buffer: Buffer,
@@ -118,20 +114,16 @@ export class CloudinaryStorageService {
     );
 
     try {
-      // Déterminer le type de ressource
       const isPdf = documentType !== DocumentType.RECEIPT_IMAGE;
       const resourceType = isPdf ? 'raw' : 'image';
-
-      // Générer un nom de fichier unique
       const timestamp = Date.now();
       const publicId = `${this.receiptFolder}/${userId}/${timestamp}`;
 
-      // Options d'upload selon le type
-      const uploadOptions = isPdf
-        ? this.getPdfUploadOptions(publicId)
-        : this.getImageUploadOptions(publicId);
+      // Utiliser le preset si disponible (recommandé), sinon options simples
+      const uploadOptions = this.receiptPreset
+        ? this.getPresetUploadOptions(publicId, isPdf)
+        : this.getSimpleUploadOptions(publicId, isPdf);
 
-      // Uploader sur Cloudinary
       const result = await this.uploadToCloudinary(buffer, uploadOptions);
 
       this.logger.log(
@@ -140,10 +132,7 @@ export class CloudinaryStorageService {
 
       return this.mapCloudinaryResult(result);
     } catch (error) {
-      this.logger.error(
-        `Échec upload receipt: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Échec upload receipt: ${error.message}`, error.stack);
       throw new InternalServerErrorException(
         `Échec de l'upload sur Cloudinary: ${error.message}`,
       );
@@ -151,43 +140,55 @@ export class CloudinaryStorageService {
   }
 
   /**
-   * Options d'upload pour les images
+   * Options d'upload avec preset (méthode recommandée)
+   * Évite les problèmes de signature en utilisant un preset configuré dans Cloudinary
    */
-  private getImageUploadOptions(publicId: string): any {
+  private getPresetUploadOptions(publicId: string, isPdf: boolean): any {
+    this.logger.debug(`Upload avec preset: ${this.receiptPreset}`);
+
+    if (isPdf) {
+      return {
+        upload_preset: this.receiptPreset,
+        public_id: publicId,
+        resource_type: 'raw',
+        folder: this.receiptFolder,
+      };
+    }
+
     return {
+      upload_preset: this.receiptPreset,
       public_id: publicId,
       resource_type: 'image',
       folder: this.receiptFolder,
-      // Optimisations pour les receipts
-      transformation: [
-        {
-          quality: 'auto:good', // Compression automatique
-          fetch_format: 'auto', // Format optimal (WebP si supporté)
-        },
-      ],
-      // Limites de taille
-      eager: [
-        {
-          width: 1500,
-          height: 2000,
-          crop: 'limit', // Ne pas agrandir, seulement réduire si trop grand
-          quality: 'auto:good',
-        },
-      ],
-      // Tags pour organisation
-      tags: ['receipt', 'ocr'],
+      // Le preset contient déjà les transformations
     };
   }
 
   /**
-   * Options d'upload pour les PDF
+   * Options d'upload simples (fallback sans preset)
+   * Évite les transformations complexes qui nécessitent des signatures
    */
-  private getPdfUploadOptions(publicId: string): any {
+  private getSimpleUploadOptions(publicId: string, isPdf: boolean): any {
+    this.logger.debug('Upload sans preset - options simples');
+
+    if (isPdf) {
+      return {
+        public_id: publicId,
+        resource_type: 'raw',
+        folder: this.receiptFolder,
+        tags: ['receipt', 'invoice', 'pdf'],
+      };
+    }
+
+    // Pour les images : options minimales pour éviter les erreurs de signature
     return {
       public_id: publicId,
-      resource_type: 'raw', // PDF = raw
+      resource_type: 'image',
       folder: this.receiptFolder,
-      tags: ['receipt', 'invoice', 'pdf'],
+      tags: ['receipt', 'ocr'],
+      // Transformations basiques qui ne nécessitent pas de signature
+      quality: 'auto',
+      fetch_format: 'auto',
     };
   }
 
@@ -210,7 +211,6 @@ export class CloudinaryStorageService {
         },
       );
 
-      // Écrire le buffer dans le stream
       uploadStream.end(buffer);
     });
   }
@@ -235,15 +235,11 @@ export class CloudinaryStorageService {
 
   /**
    * Supprimer un receipt de Cloudinary
-   * 
-   * @param publicId - Public ID Cloudinary du fichier
-   * @returns true si suppression réussie
    */
   async deleteReceipt(publicId: string): Promise<boolean> {
     this.logger.log(`Suppression receipt: ${publicId}`);
 
     try {
-      // Déterminer le type de ressource depuis le publicId
       const resourceType = publicId.includes('.pdf') ? 'raw' : 'image';
 
       const result = await cloudinary.uploader.destroy(publicId, {
@@ -270,25 +266,18 @@ export class CloudinaryStorageService {
 
   /**
    * Supprimer tous les receipts d'un utilisateur
-   * Utile lors de la suppression de compte
-   * 
-   * @param userId - ID de l'utilisateur
-   * @returns Nombre de fichiers supprimés
    */
   async deleteUserReceipts(userId: string): Promise<number> {
     this.logger.log(`Suppression de tous les receipts de l'user ${userId}`);
 
     try {
-      // Rechercher tous les fichiers dans le dossier de l'utilisateur
       const prefix = `${this.receiptFolder}/${userId}`;
 
-      // Supprimer les images
       const imageResult = await cloudinary.api.delete_resources_by_prefix(
         prefix,
         { resource_type: 'image' },
       );
 
-      // Supprimer les PDFs (raw)
       const pdfResult = await cloudinary.api.delete_resources_by_prefix(
         prefix,
         { resource_type: 'raw' },
@@ -298,7 +287,9 @@ export class CloudinaryStorageService {
         Object.keys(imageResult.deleted || {}).length +
         Object.keys(pdfResult.deleted || {}).length;
 
-      this.logger.log(`✓ ${totalDeleted} receipts supprimés pour l'user ${userId}`);
+      this.logger.log(
+        `✓ ${totalDeleted} receipts supprimés pour l'user ${userId}`,
+      );
       return totalDeleted;
     } catch (error) {
       this.logger.error(
@@ -310,41 +301,7 @@ export class CloudinaryStorageService {
   }
 
   /**
-   * Nettoyer les anciens receipts (> 30 jours en statut PROCESSING/FAILED)
-   * À appeler via un CRON job
-   * 
-   * @param olderThanDays - Supprimer les fichiers plus vieux que X jours
-   * @returns Nombre de fichiers supprimés
-   */
-  async cleanupOldReceipts(olderThanDays: number = 30): Promise<number> {
-    this.logger.log(
-      `Nettoyage des receipts plus vieux que ${olderThanDays} jours`,
-    );
-
-    try {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - olderThanDays);
-
-      // Note: Cette méthode nécessite une liste des publicIds
-      // depuis la base de données (receipts en statut PROCESSING/FAILED)
-      // L'implémentation complète se fera dans le ReceiptService
-
-      this.logger.log('Nettoyage à implémenter avec la base de données');
-      return 0;
-    } catch (error) {
-      this.logger.error(
-        `Erreur nettoyage receipts: ${error.message}`,
-        error.stack,
-      );
-      return 0;
-    }
-  }
-
-  /**
    * Obtenir les informations d'un fichier sur Cloudinary
-   * 
-   * @param publicId - Public ID Cloudinary
-   * @returns Informations du fichier ou null si non trouvé
    */
   async getReceiptInfo(publicId: string): Promise<any | null> {
     try {

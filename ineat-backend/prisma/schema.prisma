@@ -59,7 +59,7 @@ model Product {
 
   inventoryItems    InventoryItem[]
   recipeIngredients RecipeIngredient[]
-  receiptItems  ReceiptItem[]
+  receiptItems      ReceiptItem[]
 
   @@index([name])
   @@index([brand])
@@ -230,69 +230,68 @@ enum NotificationType {
  * Types de documents supportés
  */
 enum DocumentType {
-  RECEIPT_IMAGE  // Ticket de caisse photographié
-  INVOICE_PDF    // Facture drive PDF
-  INVOICE_HTML   // Facture drive HTML
+  RECEIPT_IMAGE // Ticket de caisse photographié
+  INVOICE_PDF // Facture drive PDF
+  INVOICE_HTML // Facture drive HTML
 }
 
 /**
  * Statuts du traitement d'un receipt
  */
 enum ReceiptStatus {
-  PROCESSING  // En cours de traitement OCR
-  COMPLETED   // Traitement OCR terminé avec succès
-  FAILED      // Échec du traitement OCR
-  VALIDATED   // Validé par l'utilisateur et prêt pour ajout inventaire
+  PROCESSING // En cours de traitement OCR
+  COMPLETED // Traitement OCR terminé avec succès
+  FAILED // Échec du traitement OCR
+  VALIDATED // Validé par l'utilisateur et prêt pour ajout inventaire
 }
 
 /**
  * Receipt (Ticket de caisse ou Facture drive)
- * 
  * Représente un document uploadé par l'utilisateur
  * et les résultats du traitement OCR
  */
 model Receipt {
-  id            String        @id @default(uuid())
-  userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Type et stockage du document
-  documentType  DocumentType  @default(RECEIPT_IMAGE)
-  imageUrl      String?       // URL de l'image (tickets photo)
-  pdfUrl        String?       // URL du PDF (factures drive)
-  
+  documentType DocumentType @default(RECEIPT_IMAGE)
+  imageUrl     String? // URL de l'image (tickets photo)
+  pdfUrl       String? // URL du PDF (factures drive)
+
   // Statut du traitement
-  status        ReceiptStatus @default(PROCESSING)
-  
+  status ReceiptStatus @default(PROCESSING)
+
   // Résultats OCR (JSON)
-  rawOcrData    Json?         // Données brutes du provider OCR
-  
+  rawOcrData Json? // Données brutes du provider OCR
+
   // Informations extraites (dénormalisées pour performance)
-  merchantName  String?
+  merchantName     String?
   merchantLocation String?
-  merchantAddress String?
-  totalAmount   Float?
-  purchaseDate  DateTime?
-  
+  merchantAddress  String?
+  totalAmount      Float?
+  purchaseDate     DateTime?
+
   // Métadonnées spécifiques factures drive
-  invoiceNumber String?       // Numéro de facture
-  orderNumber   String?       // Numéro de commande
-  
+  invoiceNumber String? // Numéro de facture
+  orderNumber   String? // Numéro de commande
+
   // Informations OCR
-  ocrProvider   String?       // Provider utilisé (mindee, google-vision, etc.)
-  ocrConfidence Float?        // Score de confiance global (0-1)
-  processingTime Int?         // Temps de traitement en ms
-  
+  ocrProvider    String? // Provider utilisé (mindee, google-vision, etc.)
+  ocrConfidence  Float? // Score de confiance global (0-1)
+  processingTime Int? // Temps de traitement en ms
+
   // Erreur (si échec)
-  errorMessage  String?
-  
+  errorMessage String?
+
   // Timestamps
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  items         ReceiptItem[]
-  
+  items ReceiptItem[]
+
   // Index pour performance
   @@index([userId])
   @@index([status])
@@ -303,39 +302,40 @@ model Receipt {
 
 /**
  * ReceiptItem (Article/ligne d'un receipt)
- * 
  * Représente un produit détecté sur un ticket ou une facture
  */
 model ReceiptItem {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   receiptId       String
-  receipt         Receipt  @relation(fields: [receiptId], references: [id], onDelete: Cascade)
-  
+  receipt         Receipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  expiryDate      DateTime?
+  storageLocation String?
+  notes           String?
+
   // Association avec un produit existant (après matching)
-  productId       String?
-  product         Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
   // Données détectées par OCR
-  detectedName    String   // Nom détecté
-  quantity        Int      @default(1)
-  unitPrice       Float?
-  totalPrice      Float?
-  
-  // Métadonnées OCR
-  confidence      Float    // Score de confiance (0-1)
-  
+  detectedName String // Nom détecté
+  quantity     Int    @default(1)
+  unitPrice    Float?
+  totalPrice   Float?
+
+  confidence Float // Score de confiance (0-1)
+
   // État de validation
-  validated       Boolean  @default(false)  // L'utilisateur a validé cet item
-  
+  validated Boolean @default(false) // L'utilisateur a validé cet item
+
   // Informations enrichies (factures drive)
-  productCode     String?  // EAN/code-barres (très fiable sur factures)
-  category        String?  // Catégorie détectée
-  discount        Float?   // Réduction appliquée
-  
+  productCode String? // EAN/code-barres (très fiable sur factures)
+  category    String? // Catégorie détectée
+  discount    Float? // Réduction appliquée
+
   // Timestamps
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Index pour performance
   @@index([receiptId])
   @@index([productId])

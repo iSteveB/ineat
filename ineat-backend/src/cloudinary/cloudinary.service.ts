@@ -23,12 +23,12 @@ export class CloudinaryService {
   } {
     // Récupérer le upload preset depuis les variables d'environnement
     const uploadPreset = this.configService.get<string>(
-      'CLOUDINARY_UPLOAD_PRESET',
+      'CLOUDINARY_AVATAR_PRESET',
     );
 
     if (!uploadPreset) {
       throw new BadRequestException(
-        "CLOUDINARY_UPLOAD_PRESET non configuré dans les variables d'environnement",
+        "CLOUDINARY_AVATAR_PRESET non configuré dans les variables d'environnement",
       );
     }
 
