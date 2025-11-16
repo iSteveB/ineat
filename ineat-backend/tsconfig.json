@@ -21,6 +21,6 @@
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "prisma/**/*"],
+  "include": ["src/**/*", "prisma/**/*", "example.mjs"],
   "exclude": ["node_modules", "dist"]
 }
