@@ -25,6 +25,7 @@ import { ReceiptHistoryController } from './controllers/receipt-history.controll
 
 // Modules partagés
 import { PrismaModule } from '../prisma/prisma.module';
+import { LlmService } from './services/llm.service';
 
 @Module({
   imports: [ConfigModule, PrismaModule],
@@ -45,6 +46,7 @@ import { PrismaModule } from '../prisma/prisma.module';
   ],
   providers: [
     // Services
+    LlmService,
     ReceiptService,
     OcrService,
     CloudinaryStorageService,
@@ -53,6 +55,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 
     // OCR Providers
     MindeeOcrProvider,
+    TesseractOcrProvider,
   ],
   exports: [ReceiptService, OcrService, CloudinaryStorageService],
   exports: [ReceiptService, OcrService, CloudinaryStorageService],
