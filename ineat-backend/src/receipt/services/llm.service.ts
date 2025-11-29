@@ -6,21 +6,23 @@ import OpenAI from 'openai';
  * Suggestion de code EAN pour un produit
  */
 export interface EanSuggestion {
-  ean: string; // Code EAN13
-  confidence: number; // 0-1
-  brand: string; // Marque du produit
-  productName: string; // Nom complet du produit
+  ean: string;
+  confidence: number;
+  brand: string;
+  productName: string;
+  image: string | null;
 }
 
 /**
  * Produit détecté sur le ticket avec suggestions EAN
  */
 export interface DetectedProduct {
-  name: string; // Nom extrait du ticket (brut)
+  name: string;
   quantity: number | null;
   unitPrice: number | null;
   totalPrice: number | null;
-  suggestedEans: EanSuggestion[]; // 3-5 suggestions d'EAN
+  confidence: number;
+  suggestedEans: EanSuggestion[];
 }
 
 /**
@@ -28,17 +30,59 @@ export interface DetectedProduct {
  */
 export interface LlmReceiptAnalysis {
   merchantName: string | null;
-  purchaseDate: string | null; // ISO string
+  purchaseDate: string | null;
   totalAmount: number | null;
   products: DetectedProduct[];
-  confidence: number; // Confiance globale 0-1
+  confidence: number;
 }
 
 /**
- * Service d'analyse de tickets via LLM
+ * Structure JSON attendue du LLM (pour validation interne)
+ */
+interface LlmJsonResponse {
+  merchantName?: string | null;
+  purchaseDate?: string | null;
+  totalAmount?: number | null;
+  confidence?: number;
+  products: Array<{
+    name: string;
+    quantity?: number | null;
+    unitPrice?: number | null;
+    totalPrice?: number | null;
+    confidence?: number;
+    suggestedEans: Array<{
+      ean: string;
+      confidence?: number;
+      brand?: string;
+      productName?: string;
+      image?: string | null;
+    }>;
+  }>;
+}
+
+/**
+ * Structure d'un item de contenu texte dans la réponse OpenAI
+ */
+interface TextContentItem {
+  type: 'text';
+  text: string;
+}
+
+/**
+ * Structure d'un item output dans la réponse OpenAI Responses API
+ */
+interface OutputItem {
+  type: string;
+  text?: string;
+  content?: Array<{ type: string; text?: string }>;
+}
+
+/**
+ * Service d'analyse de tickets via LLM (OpenAI avec prompt pré-configuré)
  *
  * Utilise un prompt OpenAI pré-configuré avec accès internet pour analyser
- * le texte brut extrait par Tesseract et suggérer des codes EAN vérifiés.
+ * le texte brut extrait par Tesseract et suggérer des codes EAN vérifiés
+ * en temps réel sur OpenFoodFacts.
  *
  * Le prompt est configuré dans l'éditeur de prompt OpenAI et a accès à internet
  * pour vérifier les codes EAN en temps réel, garantissant des suggestions fiables.
@@ -56,76 +100,71 @@ export interface LlmReceiptAnalysis {
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
-  private openai: OpenAI;
+  private readonly openai: OpenAI | null = null;
+  private readonly promptId: string | null = null;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const promptId = this.configService.get<string>('TICKET_PROMPT_ID');
 
     if (!apiKey) {
       this.logger.warn(
         'OPENAI_API_KEY non configurée - Service LLM indisponible',
       );
-    } else {
-      this.openai = new OpenAI({ apiKey });
-
-      const promptId = this.configService.get<string>('TICKET_PROMPT_ID');
-      if (promptId) {
-        this.logger.log(
-          `Service LLM initialisé avec succès (Prompt ID: ${promptId})`,
-        );
-      } else {
-        this.logger.warn(
-          'TICKET_PROMPT_ID non configuré - Le service ne fonctionnera pas',
-        );
-      }
+      return;
     }
+
+    if (!promptId) {
+      this.logger.warn(
+        'TICKET_PROMPT_ID non configuré - Service LLM indisponible',
+      );
+      return;
+    }
+
+    this.openai = new OpenAI({ apiKey });
+    this.promptId = promptId;
+    this.logger.log(
+      `Service LLM initialisé avec succès (Prompt ID: ${promptId})`,
+    );
   }
 
   /**
    * Vérifie si le service LLM est disponible
    */
   isAvailable(): boolean {
-    return (
-      !!this.configService.get<string>('OPENAI_API_KEY') &&
-      !!this.configService.get<string>('TICKET_PROMPT_ID')
-    );
+    return this.openai !== null && this.promptId !== null;
   }
 
   /**
    * Analyse le texte d'un ticket et suggère des codes EAN pour chaque produit
    *
    * Utilise un prompt OpenAI pré-configuré avec accès internet pour des suggestions
-   * d'EAN fiables et vérifiables.
+   * d'EAN fiables et vérifiées sur OpenFoodFacts.
    *
    * @param receiptText - Texte brut extrait par OCR
    * @returns Analyse structurée avec suggestions d'EAN
+   * @throws Error si le service n'est pas disponible ou si l'analyse échoue
    */
   async analyzeReceiptText(receiptText: string): Promise<LlmReceiptAnalysis> {
     const startTime = Date.now();
 
-    if (!this.isAvailable()) {
-      throw new Error('Service LLM non disponible - OPENAI_API_KEY manquante');
-    }
-
-    const promptId = this.configService.get<string>('TICKET_PROMPT_ID');
-    if (!promptId) {
-      throw new Error('TICKET_PROMPT_ID non configuré dans .env');
+    if (!this.openai || !this.promptId) {
+      throw new Error(
+        'Service LLM non disponible - Configuration manquante (OPENAI_API_KEY ou TICKET_PROMPT_ID)',
+      );
     }
 
     this.logger.log(
-      `Analyse du ticket avec prompt OpenAI (ID: ${promptId})...`,
+      `Analyse du ticket avec prompt OpenAI (ID: ${this.promptId})...`,
     );
     this.logger.debug(`Texte à analyser: ${receiptText.length} caractères`);
 
     try {
-      // Utiliser l'API Responses avec le prompt pré-configuré
-      // CORRECTION 1: L'input doit être un tableau de messages
       const response = await this.openai.responses.create({
         prompt: {
-          id: promptId,
+          id: this.promptId,
           version: '2',
         },
-        // Format correct pour l'API Responses : tableau de messages
         input: [
           {
             role: 'user',
@@ -136,103 +175,162 @@ export class LlmService {
 
       const processingTime = Date.now() - startTime;
 
-      // CORRECTION 2: Accès correct à la réponse
-      // L'output est un tableau d'items, chaque item peut avoir du contenu
-      const outputItem = response.output?.[0];
-      if (!outputItem) {
-        throw new Error('Réponse vide du LLM - output vide');
-      }
-
-      // Extraire le texte selon le type de contenu
-      let responseText: unknown;
-      if ('text' in outputItem && outputItem.text) {
-        responseText = outputItem.text;
-      } else if ('content' in outputItem && Array.isArray(outputItem.content)) {
-        // Si le contenu est un tableau, chercher le premier élément texte
-        const textContent = outputItem.content.find(
-          (item: { type: string }) => item.type === 'text',
-        );
-        if (textContent && 'text' in textContent) {
-          responseText = (textContent as { text: string }).text;
-        } else {
-          throw new Error('Aucun contenu texte trouvé dans la réponse');
-        }
-      } else {
-        throw new Error('Format de réponse non reconnu');
-      }
+      // Extraire le texte de la réponse
+      const responseText = this.extractResponseText(response.output);
 
       this.logger.log(`Analyse LLM terminée en ${processingTime}ms`);
 
-      // Parser la réponse JSON
-      const analysis = this.parseResponse(responseText as string);
+      // Parser et valider la réponse JSON
+      const analysis = this.parseAndValidateResponse(responseText);
 
-      this.logger.log(`${analysis.products.length} produits détectés`);
+      this.logger.log(
+        `${analysis.products.length} produits détectés avec suggestions EAN`,
+      );
 
       return analysis;
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      this.logger.error("Erreur lors de l'analyse LLM", error);
+      this.logger.error(`Erreur lors de l'analyse LLM (${processingTime}ms)`, {
+        error: error instanceof Error ? error.message : 'Erreur inconnue',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
 
       throw new Error(
-        `Erreur analyse LLM (${processingTime}ms): ${
-          error instanceof Error ? error.message : 'Erreur inconnue'
-        }`,
+        `Erreur analyse LLM: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       );
     }
   }
 
   /**
+   * Extrait le texte de la réponse OpenAI Responses API
+   */
+  private extractResponseText(output: unknown): string {
+    if (!output || !Array.isArray(output) || output.length === 0) {
+      throw new Error('Réponse vide du LLM - output vide ou invalide');
+    }
+
+    const outputItem = output[0] as OutputItem;
+
+    // Cas 1: Texte direct dans outputItem.text
+    if (outputItem.text && typeof outputItem.text === 'string') {
+      return outputItem.text;
+    }
+
+    // Cas 2: Contenu dans outputItem.content (tableau)
+    if (outputItem.content && Array.isArray(outputItem.content)) {
+      const textContent = outputItem.content.find(
+        (item): item is TextContentItem =>
+          item.type === 'text' && typeof item.text === 'string',
+      );
+
+      if (textContent) {
+        return textContent.text;
+      }
+    }
+
+    // Cas 3: Essayer de sérialiser l'output pour debug
+    this.logger.error('Format de réponse non reconnu', {
+      outputItem: JSON.stringify(outputItem).substring(0, 500),
+    });
+
+    throw new Error('Format de réponse LLM non reconnu');
+  }
+
+  /**
    * Parse et valide la réponse JSON du LLM
    */
-  private parseResponse(responseText: string): LlmReceiptAnalysis {
-    try {
-      const parsed = JSON.parse(responseText);
+  private parseAndValidateResponse(responseText: string): LlmReceiptAnalysis {
+    // Nettoyer le texte (enlever les éventuels backticks markdown)
+    const cleanedText = responseText
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
 
-      // Validation basique de la structure
-      if (!parsed.products || !Array.isArray(parsed.products)) {
-        throw new Error(
-          'Structure JSON invalide: products manquant ou invalide',
-        );
+    let parsed: LlmJsonResponse;
+
+    try {
+      parsed = JSON.parse(cleanedText) as LlmJsonResponse;
+    } catch (parseError) {
+      this.logger.error('Erreur de parsing JSON', {
+        responseText: cleanedText.substring(0, 500),
+      });
+      throw new Error('Réponse LLM non valide: JSON malformé');
+    }
+
+    // Validation de la structure
+    if (!parsed.products || !Array.isArray(parsed.products)) {
+      throw new Error(
+        'Structure JSON invalide: champ "products" manquant ou invalide',
+      );
+    }
+
+    // Validation et normalisation des produits
+    const validatedProducts: DetectedProduct[] = [];
+
+    for (const product of parsed.products) {
+      if (!product.name || typeof product.name !== 'string') {
+        this.logger.warn('Produit ignoré: champ "name" manquant');
+        continue;
       }
 
-      // Validation de chaque produit
-      for (const product of parsed.products) {
-        if (!product.name || typeof product.name !== 'string') {
-          throw new Error('Produit invalide: name manquant');
-        }
+      if (!product.suggestedEans || !Array.isArray(product.suggestedEans)) {
+        this.logger.warn(
+          `Produit "${product.name}": suggestedEans manquant, ajout avec tableau vide`,
+        );
+        product.suggestedEans = [];
+      }
 
-        if (!product.suggestedEans || !Array.isArray(product.suggestedEans)) {
-          throw new Error(
-            `Produit "${product.name}": suggestedEans manquant ou invalide`,
-          );
-        }
-
-        // Validation des EAN
-        for (const ean of product.suggestedEans) {
-          if (!ean.ean || !/^\d{13}$/.test(ean.ean)) {
+      // Filtrer et valider les EAN
+      const validEans: EanSuggestion[] = product.suggestedEans
+        .filter((ean) => {
+          if (!ean.ean || typeof ean.ean !== 'string') {
+            return false;
+          }
+          // Validation EAN13 : exactement 13 chiffres
+          if (!/^\d{13}$/.test(ean.ean)) {
             this.logger.warn(
               `EAN invalide pour "${product.name}": ${ean.ean} (ignoré)`,
             );
-            // On filtre les EAN invalides
-            product.suggestedEans = product.suggestedEans.filter(
-              (e: EanSuggestion) => e.ean && /^\d{13}$/.test(e.ean),
-            );
+            return false;
           }
-        }
-      }
+          return true;
+        })
+        .map((ean) => ({
+          ean: ean.ean,
+          confidence: this.normalizeConfidence(ean.confidence),
+          brand: ean.brand ?? '-',
+          productName: ean.productName ?? product.name,
+          image: ean.image ?? null,
+        }));
 
-      return {
-        merchantName: parsed.merchantName || null,
-        purchaseDate: parsed.purchaseDate || null,
-        totalAmount: parsed.totalAmount || null,
-        products: parsed.products,
-        confidence: parsed.confidence || 0.5,
-      };
-    } catch (error) {
-      this.logger.error('Erreur lors du parsing de la réponse LLM', error);
-      throw new Error(
-        `Parsing JSON échoué: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
-      );
+      validatedProducts.push({
+        name: product.name,
+        quantity: product.quantity ?? null,
+        unitPrice: product.unitPrice ?? null,
+        totalPrice: product.totalPrice ?? null,
+        confidence: this.normalizeConfidence(product.confidence),
+        suggestedEans: validEans,
+      });
     }
+
+    return {
+      merchantName: parsed.merchantName ?? null,
+      purchaseDate: parsed.purchaseDate ?? null,
+      totalAmount:
+        typeof parsed.totalAmount === 'number' ? parsed.totalAmount : null,
+      products: validatedProducts,
+      confidence: this.normalizeConfidence(parsed.confidence),
+    };
+  }
+
+  /**
+   * Normalise un score de confiance entre 0 et 1
+   */
+  private normalizeConfidence(value: number | undefined): number {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return 0.5;
+    }
+    return Math.max(0, Math.min(1, value));
   }
 }

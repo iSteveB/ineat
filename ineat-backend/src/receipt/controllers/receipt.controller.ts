@@ -37,9 +37,9 @@ import { PremiumGuard } from '../../auth/guards/premium.guard';
 import { RequiresPremium } from '../../auth/decorators/requires-premium.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ReceiptService } from '../services/receipt.service';
-import { UploadReceiptDto, UpdateReceiptItemDto } from '../dto/receipt.dto';
+import { UpdateReceiptItemDto } from '../dto/receipt.dto';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
-import { ReceiptStatus } from '@prisma/client';
+import { ReceiptStatus, User } from '@prisma/client';
 
 /**
  * Contrôleur Receipt
@@ -100,8 +100,8 @@ export class ReceiptController {
     description: 'Abonnement premium requis',
   })
   async uploadReceipt(
-    @CurrentUser() user: any,
-    @Body() dto: UploadReceiptDto,
+    @CurrentUser() user: User,
+    @Body('documentType') documentType: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -115,20 +115,26 @@ export class ReceiptController {
       }),
     )
     file: Express.Multer.File,
+    @Body('merchantName') merchantName?: string,
+    @Body('merchantAddress') merchantAddress?: string,
   ) {
-    // Valider le type de document
-    if (!Object.values(DocumentType).includes(dto.documentType)) {
-      throw new BadRequestException('alide');
+    // Validation manuelle du type de document
+    if (!documentType) {
+      throw new BadRequestException('Le type de document est requis');
+    }
+
+    if (!Object.values(DocumentType).includes(documentType as DocumentType)) {
+      throw new BadRequestException('Type de document invalide');
     }
 
     // Créer le receipt
     const receipt = await this.receiptService.createReceipt({
       userId: user.id,
-      documentType: dto.documentType,
+      documentType: documentType as DocumentType,
       fileBuffer: file.buffer,
       fileName: file.originalname,
-      merchantName: dto.merchantName,
-      merchantAddress: dto.merchantAddress,
+      merchantName: merchantName,
+      merchantAddress: merchantAddress,
     });
 
     return {
@@ -167,7 +173,7 @@ export class ReceiptController {
     status: 403,
     description: 'Accès refusé (pas le propriétaire)',
   })
-  async getReceipt(@CurrentUser() user: any, @Param('id') receiptId: string) {
+  async getReceipt(@CurrentUser() user: User, @Param('id') receiptId: string) {
     const receipt = await this.receiptService.getReceiptById(
       receiptId,
       user.id,
@@ -196,7 +202,7 @@ export class ReceiptController {
     description: 'Liste des receipts',
   })
   async getUserReceipts(
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
     @Query('status') status?: ReceiptStatus,
     @Query('documentType') documentType?: DocumentType,
     @Query('limit') limit?: number,
@@ -248,7 +254,7 @@ export class ReceiptController {
     description: 'Receipt ou item non trouvé',
   })
   async updateReceiptItem(
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
     @Param('receiptId') receiptId: string,
     @Param('itemId') itemId: string,
     @Body() dto: UpdateReceiptItemDto,
@@ -291,7 +297,7 @@ export class ReceiptController {
     description: 'Receipt pas en statut COMPLETED',
   })
   async validateReceipt(
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
     @Param('id') receiptId: string,
   ) {
     const receipt = await this.receiptService.validateReceipt(
@@ -330,7 +336,7 @@ export class ReceiptController {
     description: 'Receipt non trouvé',
   })
   async deleteReceipt(
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
     @Param('id') receiptId: string,
   ) {
     await this.receiptService.deleteReceipt(receiptId, user.id);
@@ -357,7 +363,7 @@ export class ReceiptController {
     status: 200,
     description: 'Statistiques récupérées',
   })
-  async getReceiptStats(@CurrentUser() user: any) {
+  async getReceiptStats(@CurrentUser() user: User) {
     const stats = await this.receiptService.getReceiptStats(user.id);
 
     return {
