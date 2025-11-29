@@ -269,7 +269,7 @@ export const ReceiptScanPage = () => {
 	 */
 	const renderErrorStep = () => (
 		<div className='space-y-4'>
-			<Alert variant='destructive'>
+			<Alert variant='error'>
 				<AlertTriangle className='size-4' />
 				<AlertDescription>
 					{error || 'Une erreur est survenue'}

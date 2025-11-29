@@ -27,7 +27,6 @@ import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/in
 import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
 import { Route as AppRecipesSuggestionsRouteImport } from './routes/app/recipes/suggestions'
 import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$recipeId'
-import { Route as AppReceiptHistoryRouteImport } from './routes/app/receipt/history'
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
 import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
@@ -129,11 +128,6 @@ const AppRecipesRecipeIdRoute = AppRecipesRecipeIdRouteImport.update({
   path: '/recipes/$recipeId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppReceiptHistoryRoute = AppReceiptHistoryRouteImport.update({
-  id: '/receipt/history',
-  path: '/receipt/history',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppInventoryProductIdRoute = AppInventoryProductIdRouteImport.update({
   id: '/inventory/$productId',
   path: '/inventory/$productId',
@@ -203,7 +197,6 @@ export interface FileRoutesByFullPath {
   '/register': typeof AuthRegisterRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/receipt/history': typeof AppReceiptHistoryRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -233,7 +226,6 @@ export interface FileRoutesByTo {
   '/register': typeof AuthRegisterRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/receipt/history': typeof AppReceiptHistoryRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget': typeof AppBudgetIndexRoute
@@ -266,7 +258,6 @@ export interface FileRoutesById {
   '/_auth/register': typeof AuthRegisterRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
-  '/app/receipt/history': typeof AppReceiptHistoryRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/budget/': typeof AppBudgetIndexRoute
@@ -299,7 +290,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/receipt/history'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -329,7 +319,6 @@ export interface FileRouteTypes {
     | '/register'
     | '/app'
     | '/app/inventory/$productId'
-    | '/app/receipt/history'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget'
@@ -361,7 +350,6 @@ export interface FileRouteTypes {
     | '/_auth/register'
     | '/app/'
     | '/app/inventory/$productId'
-    | '/app/receipt/history'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
     | '/app/budget/'
@@ -518,13 +506,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRecipesRecipeIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/receipt/history': {
-      id: '/app/receipt/history'
-      path: '/receipt/history'
-      fullPath: '/app/receipt/history'
-      preLoaderRoute: typeof AppReceiptHistoryRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/app/inventory/$productId': {
       id: '/app/inventory/$productId'
       path: '/inventory/$productId'
@@ -626,7 +607,6 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 interface AppRouteRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
-  AppReceiptHistoryRoute: typeof AppReceiptHistoryRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesSuggestionsRoute: typeof AppRecipesSuggestionsRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
@@ -652,7 +632,6 @@ interface AppRouteRouteChildren {
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
-  AppReceiptHistoryRoute: AppReceiptHistoryRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesSuggestionsRoute: AppRecipesSuggestionsRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
