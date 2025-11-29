@@ -1,9 +1,8 @@
 /**
  * Service OCR principal
- * 
- * Service orchestrateur qui gère les différents providers OCR
- * et implémente la logique de sélection et de fallback
- * 
+ *
+ * Service qui gère le traitement OCR avec Tesseract.js
+ *
  * @module receipt/services/ocr.service
  */
 
@@ -14,39 +13,23 @@ import {
   DocumentType,
   OcrProcessingResult,
 } from '../interfaces/ocr-provider.interface';
-import { MindeeOcrProvider } from '../providers/mindee-ocr.provider';
+import { TesseractOcrProvider } from '../providers/tesseract-ocr.provider';
 
 /**
- * Types de providers OCR disponibles
+ * Type de provider OCR disponible
  */
-export type OcrProviderType = 'mindee' | 'google-vision' | 'tesseract';
+export type OcrProviderType = 'tesseract';
 
 /**
  * Service principal pour le traitement OCR
- * 
- * Ce service :
- * - Gère plusieurs providers OCR (Mindee, Google Vision, Tesseract)
- * - Sélectionne automatiquement le meilleur provider
- * - Implémente un système de fallback en cas d'échec
- * - Permet de forcer l'utilisation d'un provider spécifique
- * 
+ *
+ * Ce service utilise Tesseract.js pour extraire le texte des tickets de caisse.
+ * Tesseract est gratuit, fonctionne en local et n'a pas de limite d'utilisation.
+ *
  * @example
  * ```typescript
- * // Utiliser le provider par défaut
+ * // Traiter un ticket de caisse
  * const result = await ocrService.processDocument(buffer, DocumentType.RECEIPT_IMAGE);
- * 
- * // Forcer un provider spécifique
- * const result = await ocrService.processDocumentWithProvider(
- *   buffer, 
- *   DocumentType.INVOICE_PDF, 
- *   'mindee'
- * );
- * 
- * // Avec fallback automatique
- * const result = await ocrService.processDocumentWithFallback(
- *   buffer, 
- *   DocumentType.RECEIPT_IMAGE
- * );
  * ```
  */
 @Injectable()
@@ -58,23 +41,15 @@ export class OcrService {
 
   constructor(
     private configService: ConfigService,
-    private mindeeProvider: MindeeOcrProvider,
-    // Autres providers seront ajoutés ici plus tard
-    // private googleVisionProvider: GoogleVisionOcrProvider,
-    // private tesseractProvider: TesseractOcrProvider,
+    private tesseractProvider: TesseractOcrProvider,
   ) {
-    // Enregistrer tous les providers disponibles
-    this.providers = new Map([
-      ['mindee', mindeeProvider],
-      // Décommenter quand d'autres providers seront implémentés
-      // ['google-vision', googleVisionProvider],
-      // ['tesseract', tesseractProvider],
-    ]);
+    // Enregistrer Tesseract comme seul provider
+    this.providers = new Map([['tesseract', tesseractProvider]]);
 
     // Lire la configuration
     this.defaultProvider = this.configService.get<OcrProviderType>(
       'OCR_DEFAULT_PROVIDER',
-      'mindee',
+      'tesseract',
     );
 
     this.fallbackEnabled = this.configService.get<boolean>(
@@ -82,39 +57,37 @@ export class OcrService {
       false,
     );
 
-    this.logger.log(
-      `Service OCR initialisé - Provider par défaut: ${this.defaultProvider}, Fallback: ${this.fallbackEnabled ? 'activé' : 'désactivé'}`,
-    );
+    this.logger.log(`Service OCR initialisé avec Tesseract`);
   }
 
   /**
    * Traiter un document avec le provider par défaut
-   * 
+   *
    * @param buffer - Buffer du fichier
    * @param type - Type de document
    * @returns Résultat du traitement
-   * 
+   *
    * @throws BadRequestException si le provider n'est pas disponible
    */
   async processDocument(
     buffer: Buffer,
     type: DocumentType,
   ): Promise<OcrProcessingResult> {
-    this.logger.log(
-      `Traitement document ${type} avec provider par défaut (${this.defaultProvider})`,
-    );
+    this.logger.log(`Traitement document ${type} avec Tesseract`);
 
     return this.processDocumentWithProvider(buffer, type, this.defaultProvider);
   }
 
   /**
    * Traiter un document avec un provider spécifique
-   * 
+   *
+   * Note: Actuellement seul Tesseract est supporté.
+   *
    * @param buffer - Buffer du fichier
    * @param type - Type de document
-   * @param providerName - Nom du provider à utiliser
+   * @param providerName - Nom du provider à utiliser ('tesseract')
    * @returns Résultat du traitement
-   * 
+   *
    * @throws BadRequestException si le provider n'existe pas ou n'est pas disponible
    */
   async processDocumentWithProvider(
@@ -131,7 +104,7 @@ export class OcrService {
     const provider = this.providers.get(providerName);
     if (!provider) {
       throw new BadRequestException(
-        `Provider "${providerName}" non trouvé. Providers disponibles: ${Array.from(this.providers.keys()).join(', ')}`,
+        `Provider "${providerName}" non trouvé. Seul Tesseract est disponible.`,
       );
     }
 
@@ -139,7 +112,7 @@ export class OcrService {
     const isAvailable = await provider.isAvailable();
     if (!isAvailable) {
       throw new BadRequestException(
-        `Provider "${providerName}" non disponible (vérifier la configuration)`,
+        `Provider "${providerName}" non disponible`,
       );
     }
 
@@ -172,98 +145,30 @@ export class OcrService {
   }
 
   /**
-   * Traiter un document avec fallback automatique
-   * 
-   * Si le provider principal échoue, essaye automatiquement les autres providers
-   * dans l'ordre de priorité défini
-   * 
+   * Traiter un document (avec ou sans fallback, même comportement)
+   *
+   * Note: Avec un seul provider (Tesseract), cette méthode fait la même chose
+   * que processDocument(). Gardée pour compatibilité avec le code existant.
+   *
    * @param buffer - Buffer du fichier
    * @param type - Type de document
    * @returns Résultat du traitement
-   * 
-   * @throws BadRequestException si tous les providers échouent
+   *
+   * @throws BadRequestException si le traitement échoue
    */
   async processDocumentWithFallback(
     buffer: Buffer,
     type: DocumentType,
   ): Promise<OcrProcessingResult> {
-    if (!this.fallbackEnabled) {
-      this.logger.debug('Fallback désactivé, utilisation du provider par défaut uniquement');
-      return this.processDocument(buffer, type);
-    }
+    // Avec un seul provider, pas besoin de fallback complexe
+    this.logger.log(`Traitement avec Tesseract (provider unique)`);
 
-    // Ordre de priorité des providers pour fallback
-    const fallbackOrder: OcrProviderType[] = [
-      this.defaultProvider,
-      // Les autres providers seront essayés si le principal échoue
-      // 'google-vision',
-      // 'tesseract',
-    ].filter((name) => this.providers.has(name));
-
-    this.logger.log(
-      `Traitement avec fallback activé - Ordre: ${fallbackOrder.join(' → ')}`,
-    );
-
-    const errors: string[] = [];
-
-    // Essayer chaque provider dans l'ordre
-    for (const providerName of fallbackOrder) {
-      try {
-        const provider = this.providers.get(providerName);
-        
-        // Vérifier disponibilité
-        const isAvailable = await provider.isAvailable();
-        if (!isAvailable) {
-          const error = `${providerName}: non disponible`;
-          this.logger.debug(`↷ ${error}`);
-          errors.push(error);
-          continue;
-        }
-
-        // Vérifier support du type
-        if (!provider.supportsDocumentType(type)) {
-          const error = `${providerName}: type ${type} non supporté`;
-          this.logger.debug(`↷ ${error}`);
-          errors.push(error);
-          continue;
-        }
-
-        this.logger.debug(`→ Tentative avec ${providerName}...`);
-
-        // Tenter le traitement
-        const result = await provider.processDocument(buffer, type);
-
-        // Si succès, retourner immédiatement
-        if (result.success) {
-          this.logger.log(
-            `✓ Succès avec ${providerName} (${result.processingTime}ms)`,
-          );
-          return result;
-        }
-
-        // Si échec, logger et continuer
-        const error = `${providerName}: ${result.error}`;
-        this.logger.warn(`✗ ${error}`);
-        errors.push(error);
-      } catch (error) {
-        const errorMsg = `${providerName}: Exception - ${error.message}`;
-        this.logger.error(`✗ ${errorMsg}`, error.stack);
-        errors.push(errorMsg);
-      }
-    }
-
-    // Si tous les providers ont échoué
-    const errorMessage = `Tous les providers OCR ont échoué:\n${errors.map((e) => `  - ${e}`).join('\n')}`;
-    this.logger.error(errorMessage);
-
-    throw new BadRequestException(
-      'Impossible de traiter le document avec les providers disponibles',
-    );
+    return this.processDocument(buffer, type);
   }
 
   /**
    * Obtenir la liste des providers disponibles
-   * 
+   *
    * @returns Liste des noms de providers disponibles et configurés
    */
   async getAvailableProviders(): Promise<string[]> {
@@ -281,13 +186,15 @@ export class OcrService {
       }
     }
 
-    this.logger.debug(`Providers disponibles: ${available.join(', ') || 'aucun'}`);
+    this.logger.debug(
+      `Providers disponibles: ${available.join(', ') || 'aucun'}`,
+    );
     return available;
   }
 
   /**
    * Obtenir des informations sur les providers
-   * 
+   *
    * @returns Informations détaillées sur chaque provider
    */
   async getProvidersInfo(): Promise<
