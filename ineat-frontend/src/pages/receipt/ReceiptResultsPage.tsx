@@ -311,7 +311,7 @@ export const ReceiptResultsPage = () => {
 				<div className='max-w-4xl mx-auto'>
 					{renderHeader()}
 
-					<Alert variant='destructive'>
+					<Alert variant='error'>
 						<AlertTriangle className='size-4' />
 						<AlertDescription>
 							{error || 'Une erreur est survenue'}
