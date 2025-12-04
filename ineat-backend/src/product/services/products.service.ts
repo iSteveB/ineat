@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProductSearchResultDto } from '../../DTOs';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '../../../prisma/generated/prisma/client';
 
 @Injectable()
 export class ProductsService {
@@ -52,7 +52,7 @@ export class ProductsService {
     const products = await this.prisma.product.findMany({
       where: searchConditions,
       include: {
-        category: true,
+        Category: true,
       },
       take: limit,
       orderBy: [
@@ -87,7 +87,7 @@ export class ProductsService {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
       include: {
-        category: true,
+        Category: true,
       },
     });
 

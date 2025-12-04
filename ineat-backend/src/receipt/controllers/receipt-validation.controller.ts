@@ -28,6 +28,7 @@ import {
   ValidateReceiptItemApiResponseDto,
   ReceiptItemParamsDto,
 } from '../dto/validate-receipt-item.dto';
+import { randomUUID } from 'crypto';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -284,12 +285,14 @@ export class ReceiptValidationController {
     // Créer le nouveau produit
     const newProduct = await this.prisma.product.create({
       data: {
+        id: randomUUID(),
         name: productData.name,
         brand: productData.brand,
         barcode: productData.barcode,
         categoryId: category.id,
         imageUrl: productData.imageUrl,
         unitType: productData.unitType,
+        updatedAt: new Date(),
       },
     });
 
@@ -342,7 +345,7 @@ export class ReceiptValidationController {
       where: { id: itemId },
       data: updateData,
       include: {
-        product: true,
+        Product: true,
       },
     });
 
@@ -372,3 +375,4 @@ export class ReceiptValidationController {
     };
   }
 }
+

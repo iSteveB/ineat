@@ -9,7 +9,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, SafeUserDto } from '../dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
-import { User } from '@prisma/client';
+import { User } from '../../../prisma/generated/prisma/client';
+import { randomUUID } from 'crypto';
 
 interface GoogleUserData {
   email: string;
@@ -121,13 +122,15 @@ export class AuthService {
     // Créer l'utilisateur
     const newUser = await this.prisma.user.create({
       data: {
+        id: randomUUID(),
         email: registerDto.email,
         passwordHash,
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         profileType: registerDto.profileType,
-        subscription: 'FREE', // Valeur par défaut
+        subscription: 'FREE',
         preferences: registerDto.preferences || {},
+        updatedAt: new Date(),
       },
     });
 
@@ -151,16 +154,18 @@ export class AuthService {
     if (!user) {
       user = await this.prisma.user.create({
         data: {
+          id: randomUUID(),
           email,
           firstName,
           lastName,
-          passwordHash: '', // Pas de mot de passe pour les utilisateurs OAuth
-          profileType: 'SINGLE', // Valeur par défaut, à personnaliser plus tard
-          subscription: 'FREE', // Valeur par défaut
+          passwordHash: '',
+          profileType: 'SINGLE',
+          subscription: 'FREE',
           preferences: {
             profilePicture: photo,
             oauth: 'google',
           },
+          updatedAt: new Date(),
         },
       });
     }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Expense } from '@prisma/client';
+import { Expense } from '../../../prisma/generated/prisma/client';
 import {
   CreateExpenseData,
   CreateExpenseFromProductData,
@@ -20,6 +20,7 @@ import {
   autoDetectCategory,
 } from '../schemas/expense.schema';
 import { BudgetService } from './budget.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class ExpenseService {
@@ -31,14 +32,17 @@ export class ExpenseService {
   /**
    * Crée une nouvelle dépense
    */
-  async createExpense(userId: string, data: CreateExpenseData): Promise<Expense> {
+  async createExpense(
+    userId: string,
+    data: CreateExpenseData,
+  ): Promise<Expense> {
     let budgetId = data.budgetId;
 
     // Si pas de budget spécifié, chercher le budget du mois correspondant à la date
     if (!budgetId) {
       const expenseDate = new Date(data.date);
       budgetId = await this.findBudgetForDate(userId, expenseDate);
-      
+
       if (!budgetId) {
         throw new BudgetNotFoundForExpenseError(userId, data.date);
       }
@@ -61,6 +65,7 @@ export class ExpenseService {
     // Créer la dépense
     const expense = await this.prisma.expense.create({
       data: {
+        id: randomUUID(),
         userId,
         budgetId,
         amount: data.amount,
@@ -69,6 +74,7 @@ export class ExpenseService {
         category: data.category,
         notes: data.notes,
         receiptId: data.receiptId,
+        updatedAt: new Date(),
       },
     });
 
@@ -81,22 +87,26 @@ export class ExpenseService {
   async createExpenseFromProduct(
     userId: string,
     data: CreateExpenseFromProductData,
-    options: AutoCreateExpenseOptions = { findOrCreateBudget: true }
+    options: AutoCreateExpenseOptions = { findOrCreateBudget: true },
   ): Promise<CreateExpenseFromProductResult> {
     const expenseDate = new Date(data.purchaseDate);
-    
+
     // Chercher ou créer un budget pour cette date
     let budgetId = await this.findBudgetForDate(userId, expenseDate);
-    
+
     if (!budgetId && options.findOrCreateBudget) {
       // Créer un budget automatiquement si demandé
       const lastBudget = await this.budgetService.getCurrentBudget(userId);
       if (lastBudget || options.defaultBudgetAmount) {
         const amount = lastBudget?.amount ?? options.defaultBudgetAmount ?? 300; // Budget par défaut
-        const newBudget = await this.budgetService.createMonthlyBudget(userId, amount, {
-          year: expenseDate.getFullYear(),
-          month: expenseDate.getMonth(),
-        });
+        const newBudget = await this.budgetService.createMonthlyBudget(
+          userId,
+          amount,
+          {
+            year: expenseDate.getFullYear(),
+            month: expenseDate.getMonth(),
+          },
+        );
         budgetId = newBudget.id;
       }
     }
@@ -113,8 +123,8 @@ export class ExpenseService {
 
     // Si on a un budget et un prix, créer la dépense
     if (budgetId && data.amount > 0) {
-      const category = options.autoDetectCategory 
-        ? autoDetectCategory(data.productName) ?? data.notes
+      const category = options.autoDetectCategory
+        ? (autoDetectCategory(data.productName) ?? data.notes)
         : undefined;
 
       const expense = await this.createExpense(userId, {
@@ -123,7 +133,9 @@ export class ExpenseService {
         date: data.purchaseDate,
         source: data.source,
         category,
-        notes: data.notes ? `${data.productName} - ${data.notes}` : data.productName,
+        notes: data.notes
+          ? `${data.productName} - ${data.notes}`
+          : data.productName,
       });
 
       return {
@@ -145,7 +157,11 @@ export class ExpenseService {
   /**
    * Met à jour une dépense existante
    */
-  async updateExpense(expenseId: string, userId: string, data: UpdateExpenseData): Promise<Expense> {
+  async updateExpense(
+    expenseId: string,
+    userId: string,
+    data: UpdateExpenseData,
+  ): Promise<Expense> {
     const expense = await this.prisma.expense.findFirst({
       where: { id: expenseId, userId },
     });
@@ -155,7 +171,7 @@ export class ExpenseService {
     }
 
     const updateData: Record<string, unknown> = {};
-    
+
     if (data.amount !== undefined) updateData.amount = data.amount;
     if (data.source !== undefined) updateData.source = data.source;
     if (data.category !== undefined) updateData.category = data.category;
@@ -171,7 +187,10 @@ export class ExpenseService {
   /**
    * Récupère une dépense par son ID
    */
-  async getExpenseById(expenseId: string, userId: string): Promise<Expense | null> {
+  async getExpenseById(
+    expenseId: string,
+    userId: string,
+  ): Promise<Expense | null> {
     return this.prisma.expense.findFirst({
       where: { id: expenseId, userId },
     });
@@ -184,8 +203,12 @@ export class ExpenseService {
     userId: string,
     filters?: ExpenseFilters,
     page = 1,
-    pageSize = 20
-  ): Promise<{ expenses: ExpenseWithDisplay[]; total: number; hasNext: boolean }> {
+    pageSize = 20,
+  ): Promise<{
+    expenses: ExpenseWithDisplay[];
+    total: number;
+    hasNext: boolean;
+  }> {
     const where: Record<string, unknown> = { userId };
 
     // Filtres
@@ -196,10 +219,14 @@ export class ExpenseService {
     if (filters?.dateRange) {
       where.date = {};
       if (filters.dateRange.startDate) {
-        (where.date as Record<string, unknown>).gte = new Date(filters.dateRange.startDate);
+        (where.date as Record<string, unknown>).gte = new Date(
+          filters.dateRange.startDate,
+        );
       }
       if (filters.dateRange.endDate) {
-        (where.date as Record<string, unknown>).lte = new Date(filters.dateRange.endDate);
+        (where.date as Record<string, unknown>).lte = new Date(
+          filters.dateRange.endDate,
+        );
       }
     }
 
@@ -257,7 +284,10 @@ export class ExpenseService {
   /**
    * Récupère les dépenses d'un budget spécifique
    */
-  async getBudgetExpenses(budgetId: string, userId: string): Promise<ExpenseWithDisplay[]> {
+  async getBudgetExpenses(
+    budgetId: string,
+    userId: string,
+  ): Promise<ExpenseWithDisplay[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { budgetId, userId },
       orderBy: { date: 'desc' },
@@ -269,7 +299,10 @@ export class ExpenseService {
   /**
    * Calcule les statistiques des dépenses
    */
-  async getExpenseStats(userId: string, budgetId?: string): Promise<ExpenseStats> {
+  async getExpenseStats(
+    userId: string,
+    budgetId?: string,
+  ): Promise<ExpenseStats> {
     const where: Record<string, unknown> = { userId };
     if (budgetId) {
       where.budgetId = budgetId;
@@ -282,13 +315,20 @@ export class ExpenseService {
   /**
    * Calcule l'impact d'une dépense sur un budget
    */
-  async calculateExpenseImpact(budgetId: string, userId: string, expenseAmount: number): Promise<ExpenseImpact> {
+  async calculateExpenseImpact(
+    budgetId: string,
+    userId: string,
+    expenseAmount: number,
+  ): Promise<ExpenseImpact> {
     const budget = await this.budgetService.getBudgetById(budgetId, userId);
     if (!budget) {
       throw new BudgetNotFoundForExpenseError(userId, 'unknown');
     }
 
-    const currentStats = await this.budgetService.getBudgetStats(budgetId, userId);
+    const currentStats = await this.budgetService.getBudgetStats(
+      budgetId,
+      userId,
+    );
     const newSpent = currentStats.totalSpent + expenseAmount;
     const remainingBudget = budget.amount - newSpent;
     const percentageUsed = (newSpent / budget.amount) * 100;
@@ -339,7 +379,10 @@ export class ExpenseService {
   /**
    * Récupère les dépenses récentes (utile pour le dashboard)
    */
-  async getRecentExpenses(userId: string, limit = 10): Promise<ExpenseWithDisplay[]> {
+  async getRecentExpenses(
+    userId: string,
+    limit = 10,
+  ): Promise<ExpenseWithDisplay[]> {
     const expenses = await this.prisma.expense.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
@@ -352,12 +395,15 @@ export class ExpenseService {
   /**
    * Récupère les dépenses sans prix (pour suivi des achats)
    */
-  async getExpensesWithoutAmount(userId: string, budgetId?: string): Promise<Expense[]> {
-    const where: Record<string, unknown> = { 
+  async getExpensesWithoutAmount(
+    userId: string,
+    budgetId?: string,
+  ): Promise<Expense[]> {
+    const where: Record<string, unknown> = {
       userId,
       amount: 0,
     };
-    
+
     if (budgetId) {
       where.budgetId = budgetId;
     }
@@ -373,7 +419,10 @@ export class ExpenseService {
   /**
    * Trouve le budget correspondant à une date donnée
    */
-  private async findBudgetForDate(userId: string, date: Date): Promise<string | null> {
+  private async findBudgetForDate(
+    userId: string,
+    date: Date,
+  ): Promise<string | null> {
     const budget = await this.prisma.budget.findFirst({
       where: {
         userId,
@@ -389,7 +438,10 @@ export class ExpenseService {
   /**
    * Valide qu'une dépense peut être ajoutée
    */
-  private validateExpenseData(data: CreateExpenseData): { isValid: boolean; errors: string[] } {
+  private validateExpenseData(data: CreateExpenseData): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (data.amount < 0) {

@@ -196,7 +196,7 @@ export class ReceiptStatusController {
         userId,
       },
       include: {
-        items: true,
+        ReceiptItem: true,
       },
     });
 

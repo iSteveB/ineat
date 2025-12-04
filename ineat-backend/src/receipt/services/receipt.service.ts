@@ -25,7 +25,9 @@ import {
 import {
   ReceiptStatus,
   DocumentType as PrismaDocumentType,
-} from '@prisma/client';
+  Prisma,
+} from '../../../prisma/generated/prisma/client';
+import { randomUUID } from 'crypto';
 
 /**
  * Mapper notre enum DocumentType vers l'enum Prisma
@@ -111,6 +113,7 @@ export class ReceiptService {
       // 2. Créer le receipt en DB avec status PROCESSING
       const receipt = await this.prisma.receipt.create({
         data: {
+          id: randomUUID(),
           userId: dto.userId,
           documentType: mapDocumentTypeToPrisma(dto.documentType),
           status: ReceiptStatus.PROCESSING,
@@ -124,6 +127,7 @@ export class ReceiptService {
               : null,
           merchantName: dto.merchantName,
           merchantAddress: dto.merchantAddress,
+          updatedAt: new Date(),
         },
       });
 
@@ -295,7 +299,7 @@ export class ReceiptService {
   /**
    * Mettre à jour le receipt avec les résultats LLM (inclut suggestions EAN)
    */
-  private async updateReceiptWithLlmAnalysis(
+private async updateReceiptWithLlmAnalysis(
     receiptId: string,
     ocrResult: OcrProcessingResult,
     llmAnalysis: LlmReceiptAnalysis,
@@ -331,14 +335,15 @@ export class ReceiptService {
     if (llmAnalysis.products.length > 0) {
       await this.prisma.receiptItem.createMany({
         data: llmAnalysis.products.map((product) => ({
+          id: randomUUID(),
           receiptId,
           detectedName: product.name,
           quantity: product.quantity || 1,
           unitPrice: product.unitPrice,
           totalPrice: product.totalPrice,
           confidence: product.confidence,
-          // Stocker les suggestions EAN en JSON
-          suggestedEans: product.suggestedEans,
+          suggestedEans: product.suggestedEans as unknown as Prisma.InputJsonValue,
+          updatedAt: new Date(),
         })),
       });
     }
@@ -377,6 +382,7 @@ export class ReceiptService {
     if (data.lineItems && data.lineItems.length > 0) {
       await this.prisma.receiptItem.createMany({
         data: data.lineItems.map((item) => ({
+          id: randomUUID(),
           receiptId,
           detectedName: item.description,
           quantity: item.quantity || 1,
@@ -388,6 +394,7 @@ export class ReceiptService {
           discount: item.discount,
           // Pas de suggestions EAN en mode OCR seul
           suggestedEans: [],
+          updatedAt: new Date(),
         })),
       });
     }
@@ -404,9 +411,9 @@ export class ReceiptService {
     const receipt = await this.prisma.receipt.findUnique({
       where: { id },
       include: {
-        items: {
+        ReceiptItem: {
           include: {
-            product: true,
+            Product: true,
           },
         },
       },
@@ -457,7 +464,7 @@ export class ReceiptService {
     const receipts = await this.prisma.receipt.findMany({
       where,
       include: {
-        items: true,
+        ReceiptItem: true,
       },
       orderBy: { createdAt: 'desc' },
       take: filters?.limit || 50,
@@ -492,7 +499,7 @@ export class ReceiptService {
     const receipt = await this.getReceiptById(receiptId, userId);
 
     // Vérifier que l'item existe
-    const item = receipt.items.find((i) => i.id === itemId);
+    const item = receipt.ReceiptItem.find((i) => i.id === itemId);
     if (!item) {
       throw new NotFoundException(`Item ${itemId} non trouvé`);
     }

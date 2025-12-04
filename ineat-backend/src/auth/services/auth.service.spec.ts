@@ -1,13 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './services/auth.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { AuthService } from './auth.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
-import { User } from '@prisma/client';
-import { SafeUserDto } from './dto/auth.dto';
+import { User } from '../../../prisma/generated/prisma/client';
+import { SafeUserDto } from '../dto/auth.dto';
 
 // Mock des modules externes
 jest.mock('bcryptjs');
@@ -413,20 +413,6 @@ describe('AuthService', () => {
         photo: 'photo-url',
       };
 
-      const mockUser = {
-        id: 'google-user-id',
-        email: 'google@example.com',
-        passwordHash: '',
-        firstName: 'Google',
-        lastName: 'User',
-        profileType: 'SINGLE',
-        preferences: { oauth: 'google' },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as User;
-
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-
       // Act
       const result = await service.findOrCreateGoogleUser(
         googleData,
@@ -456,23 +442,6 @@ describe('AuthService', () => {
         lastName: 'Google',
         photo: 'photo-url',
       };
-
-      const mockCreatedUser = {
-        id: 'new-google-id',
-        email: 'new-google@example.com',
-        passwordHash: '',
-        firstName: 'New',
-        lastName: 'Google',
-        profileType: 'SINGLE',
-        preferences: { profilePicture: 'photo-url', oauth: 'google' },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as User;
-
-      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (prismaService.user.create as jest.Mock).mockResolvedValue(
-        mockCreatedUser,
-      );
 
       // Act
       const result = await service.findOrCreateGoogleUser(

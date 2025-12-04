@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Budget, Expense } from '@prisma/client';
+import { Budget, Expense } from '../../../prisma/generated/prisma/client';
 
 // ===== SCHÉMAS DE BASE =====
 
@@ -23,7 +23,7 @@ export const CreateBudgetSchema = BaseBudgetSchema.refine(
   {
     message: 'La date de fin doit être postérieure à la date de début',
     path: ['periodEnd'],
-  }
+  },
 );
 
 // Schéma pour la mise à jour (partial du schéma de base)
@@ -31,14 +31,18 @@ export const UpdateBudgetSchema = BaseBudgetSchema.partial();
 
 export const BudgetFiltersSchema = z.object({
   isActive: z.boolean().optional(),
-  dateRange: z.object({
-    startDate: DateStringSchema.optional(),
-    endDate: DateStringSchema.optional(),
-  }).optional(),
-  amountRange: z.object({
-    min: PriceSchema.optional(),
-    max: PriceSchema.optional(),
-  }).optional(),
+  dateRange: z
+    .object({
+      startDate: DateStringSchema.optional(),
+      endDate: DateStringSchema.optional(),
+    })
+    .optional(),
+  amountRange: z
+    .object({
+      min: PriceSchema.optional(),
+      max: PriceSchema.optional(),
+    })
+    .optional(),
 });
 
 // ===== SCHÉMAS POUR LES PARAMÈTRES =====
@@ -65,23 +69,29 @@ export const BudgetStatsSchema = z.object({
   isOverBudget: z.boolean(),
   isNearBudget: z.boolean(),
   riskLevel: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-  categoryBreakdown: z.array(z.object({
-    category: z.string(),
-    amount: z.number().min(0),
-    percentage: z.number().min(0).max(100),
-    transactionCount: z.number().int().min(0),
-  })),
-  sourceBreakdown: z.array(z.object({
-    source: z.string(),
-    amount: z.number().min(0),
-    percentage: z.number().min(0).max(100),
-    transactionCount: z.number().int().min(0),
-  })),
-  dailySpending: z.array(z.object({
-    date: z.string(),
-    amount: z.number().min(0),
-    cumulativeAmount: z.number().min(0),
-  })),
+  categoryBreakdown: z.array(
+    z.object({
+      category: z.string(),
+      amount: z.number().min(0),
+      percentage: z.number().min(0).max(100),
+      transactionCount: z.number().int().min(0),
+    }),
+  ),
+  sourceBreakdown: z.array(
+    z.object({
+      source: z.string(),
+      amount: z.number().min(0),
+      percentage: z.number().min(0).max(100),
+      transactionCount: z.number().int().min(0),
+    }),
+  ),
+  dailySpending: z.array(
+    z.object({
+      date: z.string(),
+      amount: z.number().min(0),
+      cumulativeAmount: z.number().min(0),
+    }),
+  ),
 });
 
 export const BudgetAlertSchema = z.object({
@@ -113,7 +123,7 @@ export type BudgetAlert = z.infer<typeof BudgetAlertSchema>;
  * Budget avec ses dépenses (pour les statistiques)
  */
 export type BudgetWithExpenses = Budget & {
-  expenses: Expense[];
+  Expense: Expense[];
 };
 
 /**
@@ -142,7 +152,10 @@ export class BudgetNotFoundError extends Error {
 }
 
 export class BudgetValidationError extends Error {
-  constructor(message: string, public readonly errors: string[]) {
+  constructor(
+    message: string,
+    public readonly errors: string[],
+  ) {
     super(message);
     this.name = 'BudgetValidationError';
   }
@@ -153,7 +166,10 @@ export class BudgetValidationError extends Error {
 /**
  * Calcule les statistiques d'un budget
  */
-export function calculateBudgetStats(budget: Budget, expenses: Expense[]): BudgetStats {
+export function calculateBudgetStats(
+  budget: Budget,
+  expenses: Expense[],
+): BudgetStats {
   const totalBudget = budget.amount;
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const remaining = totalBudget - totalSpent;
@@ -164,13 +180,22 @@ export function calculateBudgetStats(budget: Budget, expenses: Expense[]): Budge
   const endDate = new Date(budget.periodEnd);
   const today = new Date();
 
-  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-  const daysElapsed = Math.max(0, Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+  const totalDays = Math.ceil(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  const daysElapsed = Math.max(
+    0,
+    Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+  );
   const daysRemaining = Math.max(0, totalDays - daysElapsed);
 
   const averageDailySpending = daysElapsed > 0 ? totalSpent / daysElapsed : 0;
-  const suggestedDailyBudget = daysRemaining > 0 ? remaining / daysRemaining : 0;
-  const projectedSpending = daysRemaining > 0 ? totalSpent + (averageDailySpending * daysRemaining) : totalSpent;
+  const suggestedDailyBudget =
+    daysRemaining > 0 ? remaining / daysRemaining : 0;
+  const projectedSpending =
+    daysRemaining > 0
+      ? totalSpent + averageDailySpending * daysRemaining
+      : totalSpent;
 
   // Alertes
   const isOverBudget = totalSpent > totalBudget;
@@ -204,7 +229,10 @@ export function calculateBudgetStats(budget: Budget, expenses: Expense[]): Budge
 /**
  * Détermine si une alerte doit être envoyée
  */
-export function shouldTriggerAlert(stats: BudgetStats, lastAlertPercentage = 0): AlertCheckResult {
+export function shouldTriggerAlert(
+  stats: BudgetStats,
+  lastAlertPercentage = 0,
+): AlertCheckResult {
   const { percentageUsed, isOverBudget } = stats;
 
   if (isOverBudget && lastAlertPercentage < 100) {
@@ -225,7 +253,9 @@ export function shouldTriggerAlert(stats: BudgetStats, lastAlertPercentage = 0):
 /**
  * Type guard pour vérifier si un budget a des dépenses
  */
-export function budgetHasExpenses(budget: Budget | BudgetWithExpenses): budget is BudgetWithExpenses {
+export function budgetHasExpenses(
+  budget: Budget | BudgetWithExpenses,
+): budget is BudgetWithExpenses {
   return 'expenses' in budget && Array.isArray(budget.expenses);
 }
 
@@ -236,6 +266,6 @@ export function isCurrentMonthBudget(budget: Budget): boolean {
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-  
+
   return budget.periodStart >= startOfMonth && budget.periodEnd <= endOfMonth;
 }

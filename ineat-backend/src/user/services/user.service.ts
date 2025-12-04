@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ProfileType, Prisma } from '@prisma/client';
+import { ProfileType, Prisma } from '../../../prisma/generated/prisma/client';
 import {
   UpdateDietaryRestrictionsDto,
   DietaryPreferences,

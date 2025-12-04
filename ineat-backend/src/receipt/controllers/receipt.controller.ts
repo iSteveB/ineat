@@ -39,7 +39,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ReceiptService } from '../services/receipt.service';
 import { UpdateReceiptItemDto } from '../dto/receipt.dto';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
-import { ReceiptStatus, User } from '@prisma/client';
+import { ReceiptStatus, User } from '../../../prisma/generated/prisma/client';
 
 /**
  * Contrôleur Receipt

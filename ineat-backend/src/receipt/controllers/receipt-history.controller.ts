@@ -277,7 +277,7 @@ export class ReceiptHistoryController {
     return await this.prisma.receipt.findMany({
       where: whereClause,
       include: {
-        items: {
+        ReceiptItem: {
           select: {
             id: true,
             validated: true,
@@ -356,7 +356,7 @@ export class ReceiptHistoryController {
         // Nombre total d'items
         this.prisma.receiptItem.count({
           where: {
-            receipt: whereClause,
+            Receipt: whereClause,
           },
         }),
       ]);

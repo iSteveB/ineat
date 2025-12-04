@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Expense } from '@prisma/client';
+import { Expense } from '../../../prisma/generated/prisma/client';
 
 // ===== SCHÉMAS DE BASE =====
 
@@ -51,28 +51,36 @@ export const CreateExpenseFromProductSchema = z.object({
 });
 
 // Schéma pour la mise à jour d'une dépense
-export const UpdateExpenseSchema = BaseExpenseSchema.omit({ date: true }).partial();
+export const UpdateExpenseSchema = BaseExpenseSchema.omit({
+  date: true,
+}).partial();
 
 // ===== SCHÉMAS POUR LES FILTRES =====
 
 export const ExpenseFiltersSchema = z.object({
   budgetId: UuidSchema.optional(),
-  dateRange: z.object({
-    startDate: DateStringSchema.optional(),
-    endDate: DateStringSchema.optional(),
-  }).optional(),
-  amountRange: z.object({
-    min: PriceSchema.optional(),
-    max: PriceSchema.optional(),
-  }).optional(),
+  dateRange: z
+    .object({
+      startDate: DateStringSchema.optional(),
+      endDate: DateStringSchema.optional(),
+    })
+    .optional(),
+  amountRange: z
+    .object({
+      min: PriceSchema.optional(),
+      max: PriceSchema.optional(),
+    })
+    .optional(),
   source: z.string().optional(),
   category: z.string().optional(),
   hasReceipt: z.boolean().optional(),
   hasAmount: z.boolean().optional(), // Pour filtrer les dépenses avec/sans montant
-  search: z.object({
-    query: z.string().min(1).optional(),
-    fields: z.array(z.string()).optional(),
-  }).optional(),
+  search: z
+    .object({
+      query: z.string().min(1).optional(),
+      fields: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 // ===== SCHÉMAS POUR LES PARAMÈTRES =====
@@ -92,35 +100,43 @@ export const ExpenseStatsSchema = z.object({
   totalAmount: z.number().min(0),
   averageExpense: z.number().min(0),
   expensesWithoutAmount: z.number().int().min(0),
-  
+
   // Répartition par catégorie
-  categoryBreakdown: z.array(z.object({
-    category: z.string(),
-    count: z.number().int().min(0),
-    amount: z.number().min(0),
-    percentage: z.number().min(0).max(100),
-  })),
-  
+  categoryBreakdown: z.array(
+    z.object({
+      category: z.string(),
+      count: z.number().int().min(0),
+      amount: z.number().min(0),
+      percentage: z.number().min(0).max(100),
+    }),
+  ),
+
   // Répartition par source
-  sourceBreakdown: z.array(z.object({
-    source: z.string(),
-    count: z.number().int().min(0),
-    amount: z.number().min(0),
-    percentage: z.number().min(0).max(100),
-  })),
-  
+  sourceBreakdown: z.array(
+    z.object({
+      source: z.string(),
+      count: z.number().int().min(0),
+      amount: z.number().min(0),
+      percentage: z.number().min(0).max(100),
+    }),
+  ),
+
   // Évolution quotidienne
-  dailyExpenses: z.array(z.object({
-    date: z.string(),
-    count: z.number().int().min(0),
-    amount: z.number().min(0),
-  })),
+  dailyExpenses: z.array(
+    z.object({
+      date: z.string(),
+      count: z.number().int().min(0),
+      amount: z.number().min(0),
+    }),
+  ),
 });
 
 // ===== TYPES INFÉRÉS =====
 
 export type CreateExpenseData = z.infer<typeof CreateExpenseSchema>;
-export type CreateExpenseFromProductData = z.infer<typeof CreateExpenseFromProductSchema>;
+export type CreateExpenseFromProductData = z.infer<
+  typeof CreateExpenseFromProductSchema
+>;
 export type UpdateExpenseData = z.infer<typeof UpdateExpenseSchema>;
 export type ExpenseFilters = z.infer<typeof ExpenseFiltersSchema>;
 export type ExpenseParams = z.infer<typeof ExpenseParamsSchema>;
@@ -181,7 +197,9 @@ export class ExpenseNotFoundError extends Error {
 
 export class InvalidExpenseDateError extends Error {
   constructor(date: string, budgetPeriod: { start: Date; end: Date }) {
-    super(`La date ${date} n'est pas dans la période du budget (${budgetPeriod.start.toLocaleDateString()} - ${budgetPeriod.end.toLocaleDateString()})`);
+    super(
+      `La date ${date} n'est pas dans la période du budget (${budgetPeriod.start.toLocaleDateString()} - ${budgetPeriod.end.toLocaleDateString()})`,
+    );
     this.name = 'InvalidExpenseDateError';
   }
 }
@@ -199,8 +217,9 @@ export class BudgetNotFoundForExpenseError extends Error {
  * Formate l'affichage d'une dépense
  */
 export function formatExpenseDisplay(expense: Expense): ExpenseWithDisplay {
-  const displayAmount = expense.amount > 0 ? `${expense.amount.toFixed(2)}€` : '-';
-  
+  const displayAmount =
+    expense.amount > 0 ? `${expense.amount.toFixed(2)}€` : '-';
+
   return {
     ...expense,
     displayAmount,
@@ -213,14 +232,18 @@ export function formatExpenseDisplay(expense: Expense): ExpenseWithDisplay {
  */
 export function calculateExpenseStats(expenses: Expense[]): ExpenseStats {
   const totalExpenses = expenses.length;
-  const expensesWithAmount = expenses.filter(e => e.amount > 0);
-  const totalAmount = expensesWithAmount.reduce((sum, expense) => sum + expense.amount, 0);
-  const averageExpense = expensesWithAmount.length > 0 ? totalAmount / expensesWithAmount.length : 0;
-  const expensesWithoutAmount = expenses.filter(e => e.amount === 0).length;
+  const expensesWithAmount = expenses.filter((e) => e.amount > 0);
+  const totalAmount = expensesWithAmount.reduce(
+    (sum, expense) => sum + expense.amount,
+    0,
+  );
+  const averageExpense =
+    expensesWithAmount.length > 0 ? totalAmount / expensesWithAmount.length : 0;
+  const expensesWithoutAmount = expenses.filter((e) => e.amount === 0).length;
 
   // Répartition par catégorie (simplifié)
   const categoryMap = new Map<string, { count: number; amount: number }>();
-  expenses.forEach(expense => {
+  expenses.forEach((expense) => {
     const category = expense.category || 'Non catégorisé';
     const current = categoryMap.get(category) || { count: 0, amount: 0 };
     categoryMap.set(category, {
@@ -229,16 +252,18 @@ export function calculateExpenseStats(expenses: Expense[]): ExpenseStats {
     });
   });
 
-  const categoryBreakdown = Array.from(categoryMap.entries()).map(([category, data]) => ({
-    category,
-    count: data.count,
-    amount: data.amount,
-    percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
-  }));
+  const categoryBreakdown = Array.from(categoryMap.entries()).map(
+    ([category, data]) => ({
+      category,
+      count: data.count,
+      amount: data.amount,
+      percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
+    }),
+  );
 
   // Répartition par source (simplifié)
   const sourceMap = new Map<string, { count: number; amount: number }>();
-  expenses.forEach(expense => {
+  expenses.forEach((expense) => {
     const source = expense.source || 'Source inconnue';
     const current = sourceMap.get(source) || { count: 0, amount: 0 };
     sourceMap.set(source, {
@@ -247,12 +272,14 @@ export function calculateExpenseStats(expenses: Expense[]): ExpenseStats {
     });
   });
 
-  const sourceBreakdown = Array.from(sourceMap.entries()).map(([source, data]) => ({
-    source,
-    count: data.count,
-    amount: data.amount,
-    percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
-  }));
+  const sourceBreakdown = Array.from(sourceMap.entries()).map(
+    ([source, data]) => ({
+      source,
+      count: data.count,
+      amount: data.amount,
+      percentage: totalAmount > 0 ? (data.amount / totalAmount) * 100 : 0,
+    }),
+  );
 
   return {
     totalExpenses,
@@ -270,10 +297,10 @@ export function calculateExpenseStats(expenses: Expense[]): ExpenseStats {
  */
 export function validateExpenseForBudget(
   expense: CreateExpenseData,
-  budget: { periodStart: Date; periodEnd: Date }
+  budget: { periodStart: Date; periodEnd: Date },
 ): { isValid: boolean; error?: string } {
   const expenseDate = new Date(expense.date);
-  
+
   if (expenseDate < budget.periodStart || expenseDate > budget.periodEnd) {
     return {
       isValid: false,
@@ -289,26 +316,51 @@ export function validateExpenseForBudget(
  */
 export function autoDetectCategory(productName: string): string | undefined {
   const name = productName.toLowerCase();
-  
-  if (name.includes('pain') || name.includes('baguette') || name.includes('croissant')) {
+
+  if (
+    name.includes('pain') ||
+    name.includes('baguette') ||
+    name.includes('croissant')
+  ) {
     return 'Boulangerie';
   }
-  if (name.includes('lait') || name.includes('yaourt') || name.includes('fromage')) {
+  if (
+    name.includes('lait') ||
+    name.includes('yaourt') ||
+    name.includes('fromage')
+  ) {
     return 'Produits laitiers';
   }
-  if (name.includes('viande') || name.includes('bœuf') || name.includes('porc') || name.includes('agneau')) {
+  if (
+    name.includes('viande') ||
+    name.includes('bœuf') ||
+    name.includes('porc') ||
+    name.includes('agneau')
+  ) {
     return 'Viande';
   }
-  if (name.includes('poisson') || name.includes('saumon') || name.includes('thon')) {
+  if (
+    name.includes('poisson') ||
+    name.includes('saumon') ||
+    name.includes('thon')
+  ) {
     return 'Poisson';
   }
-  if (name.includes('pomme') || name.includes('banane') || name.includes('orange')) {
+  if (
+    name.includes('pomme') ||
+    name.includes('banane') ||
+    name.includes('orange')
+  ) {
     return 'Fruits';
   }
-  if (name.includes('salade') || name.includes('carotte') || name.includes('tomate')) {
+  if (
+    name.includes('salade') ||
+    name.includes('carotte') ||
+    name.includes('tomate')
+  ) {
     return 'Légumes';
   }
-  
+
   return undefined;
 }
 

@@ -15,7 +15,8 @@ import { OcrService } from '../services/ocr.service';
 import { ReceiptAnalysisService } from '../services/receipt-analysis.service';
 import { ProductMatchingService } from '../services/product-matching.service';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
-import { ReceiptStatus } from '@prisma/client';
+import { ReceiptStatus } from '../../../prisma/generated/prisma/client';
+import { randomUUID } from 'crypto';
 
 /**
  * Données du job de traitement de receipt
@@ -248,6 +249,7 @@ export class ReceiptProcessor {
       const bestMatch = matchResult.bestMatch;
 
       return {
+        id: randomUUID(),
         receiptId,
         detectedName: item.description,
         quantity: item.quantity || 1,
@@ -261,6 +263,7 @@ export class ReceiptProcessor {
         productId:
           bestMatch && bestMatch.score > 0.7 ? bestMatch.product.id : null,
         validated: bestMatch && bestMatch.score > 0.9 ? true : false,
+        updatedAt: new Date(),
       };
     });
 
