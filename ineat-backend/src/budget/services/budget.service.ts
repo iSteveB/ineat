@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Budget, Expense } from '@prisma/client';
+import { Budget, Expense } from '../../../prisma/generated/prisma/client';
 import {
   CreateBudgetData,
   UpdateBudgetData,
@@ -14,6 +14,7 @@ import {
   calculateBudgetStats,
   shouldTriggerAlert,
 } from '../schemas/budget.schema';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class BudgetService {
@@ -65,11 +66,13 @@ export class BudgetService {
 
     const budget = await this.prisma.budget.create({
       data: {
+        id: randomUUID(),
         userId,
         amount: data.amount,
         periodStart: startDate,
         periodEnd: endDate,
         isActive: data.isActive ?? true,
+        updatedAt: new Date(),
       },
     });
 
@@ -181,7 +184,7 @@ export class BudgetService {
     const budget = (await this.prisma.budget.findFirst({
       where: { id: budgetId, userId },
       include: {
-        expenses: true,
+        Expense: true,
       },
     })) as BudgetWithExpenses | null;
 
@@ -189,7 +192,7 @@ export class BudgetService {
       throw new BudgetNotFoundError(budgetId);
     }
 
-    return calculateBudgetStats(budget, budget.expenses);
+    return calculateBudgetStats(budget, budget.Expense);
   }
 
   /**

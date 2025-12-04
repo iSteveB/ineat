@@ -30,7 +30,6 @@ import {
 } from '../services/inventory.service';
 import {
   AddManualProductDto,
-  ProductCreatedResponseDto,
   QuickAddProductDto,
 } from '../../DTOs';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';

@@ -17,7 +17,7 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from '../services/user.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { ProfileType } from '@prisma/client';
+import { ProfileType } from '../../../prisma/generated/prisma/client';
 import { UpdateDietaryRestrictionsDto } from '../dto/update-dietary-restrictions.dto';
 
 interface RequestWithUser extends Request {

@@ -9,6 +9,7 @@ import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
 import { QuickAddProductDto } from 'src/DTOs';
 import { BudgetService } from 'src/budget/services/budget.service';
 import { ExpenseService } from 'src/budget/services/expense.service';
+import { randomUUID } from 'crypto';
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
 export interface InventoryStats {
@@ -190,7 +191,7 @@ export class InventoryService {
     return await this.prisma.product.findUnique({
       where: { barcode },
       include: {
-        category: true,
+        Category: true,
       },
     });
   }
@@ -207,9 +208,9 @@ export class InventoryService {
         userId,
       },
       include: {
-        product: {
+        Product: {
           include: {
-            category: true,
+            Category: true,
           },
         },
       },
@@ -266,9 +267,9 @@ export class InventoryService {
     return await this.prisma.inventoryItem.findMany({
       where,
       include: {
-        product: {
+        Product: {
           include: {
-            category: true,
+            Category: true,
           },
         },
       },
@@ -340,9 +341,9 @@ export class InventoryService {
       where: { id: inventoryItemId },
       data: updatePayload,
       include: {
-        product: {
+        Product: {
           include: {
-            category: true,
+            Category: true,
           },
         },
       },
@@ -706,6 +707,7 @@ export class InventoryService {
       // Crée la dépense directement avec Prisma
       const expense = await this.prisma.expense.create({
         data: {
+          id: randomUUID(),
           userId,
           budgetId: activeBudget.id,
           amount: purchasePrice,
@@ -714,6 +716,7 @@ export class InventoryService {
           category: 'Alimentation',
           notes:
             `${expenseData?.productName || 'Produit'} - ${expenseData?.notes || ''}`.trim(),
+          updatedAt: new Date(),
         },
       });
 

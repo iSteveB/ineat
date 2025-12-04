@@ -6,7 +6,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as authDtos from '../dto/auth.dto';
 import { RegisterDto, LoginDto } from '../dto/auth.dto';
-import { ProfileType, User } from '@prisma/client';
+import { ProfileType, User } from '../../../prisma/generated/prisma/client';
 
 // Type pour l'utilisateur sans le mot de passe
 type UserWithoutPassword = Omit<User, 'passwordHash'>;

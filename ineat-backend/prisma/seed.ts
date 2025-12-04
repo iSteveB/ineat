@@ -1,6 +1,16 @@
-import { PrismaClient } from '@prisma/client';
+import { randomUUID } from 'crypto';
+import { PrismaClient } from './generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-const prisma = new PrismaClient();
+
+
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const prisma = new PrismaClient({
+  adapter,
+});
 
 const categories = [
   { name: 'Fruits & Légumes', slug: 'fruits-et-legumes', icon: '🥕' },
@@ -20,7 +30,10 @@ async function main() {
     await prisma.category.upsert({
       where: { slug: category.slug },
       update: {},
-      create: category,
+      create: {
+        id: randomUUID(),
+        ...category,
+      },
     });
   }
   

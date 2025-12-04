@@ -1,83 +1,235 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "./generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-model User {
-  id           String       @id @default(uuid())
-  email        String       @unique
-  passwordHash String
-  firstName    String
-  lastName     String
-  avatarUrl    String?
-  profileType  ProfileType
-  preferences  Json // Stocke les préférences en JSON (restrictions alimentaires, allergies, etc.)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  subscription Subscription @default(FREE)
+model Budget {
+  id          String    @id
+  userId      String
+  amount      Float
+  periodStart DateTime
+  periodEnd   DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  User        User      @relation(fields: [userId], references: [id])
+  Expense     Expense[]
 
-  inventory     InventoryItem[]
-  budgets       Budget[]
-  expenses      Expense[]
-  notifications Notification[]
-  receipts      Receipt[]
+  @@index([periodStart, periodEnd])
+  @@index([userId])
 }
 
-enum ProfileType {
-  FAMILY
-  STUDENT
-  SINGLE
+model Category {
+  id             String     @id
+  name           String
+  parentId       String?
+  icon           String?
+  slug           String     @unique
+  Category       Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  other_Category Category[] @relation("CategoryToCategory")
+  Product        Product[]
 }
 
-enum Subscription {
-  FREE
-  PREMIUM
-  ADMIN
+model Expense {
+  id        String   @id
+  userId    String
+  budgetId  String
+  amount    Float
+  date      DateTime
+  source    String?
+  receiptId String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  category  String?
+  Budget    Budget   @relation(fields: [budgetId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
+
+  @@index([budgetId])
+  @@index([category])
+  @@index([date])
+  @@index([userId])
+}
+
+model InventoryItem {
+  id              String    @id
+  userId          String
+  productId       String
+  quantity        Float
+  expiryDate      DateTime?
+  purchaseDate    DateTime
+  purchasePrice   Float?
+  storageLocation String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  notes           String?
+  Product         Product   @relation(fields: [productId], references: [id])
+  User            User      @relation(fields: [userId], references: [id])
+
+  @@index([expiryDate])
+  @@index([productId])
+  @@index([userId])
+}
+
+model Notification {
+  id            String           @id
+  userId        String
+  type          NotificationType
+  title         String
+  message       String
+  isRead        Boolean          @default(false)
+  referenceId   String?
+  referenceType String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime
+  User          User             @relation(fields: [userId], references: [id])
+
+  @@index([isRead])
+  @@index([type])
+  @@index([userId])
 }
 
 model Product {
-  id          String      @id @default(uuid())
-  barcode     String?     @unique
-  name        String
-  brand       String?
-  category    Category    @relation(fields: [categoryId], references: [id])
-  categoryId  String
-  nutriscore  NutriScore?
-  ecoscore    Ecoscore?
-  novascore   Novascore?
-  unitType    UnitType
-  ingredients String?
-  nutrients   Json? // Structure : { carbohydrates: number, proteins: number, fats: number, salt: number }
-  imageUrl    String?
-  externalId  String? // ID de référence dans OpenFoodFacts
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id               String             @id
+  barcode          String?            @unique
+  name             String
+  brand            String?
+  categoryId       String
+  nutriscore       NutriScore?
+  ecoscore         Ecoscore?
+  novascore        Novascore?
+  unitType         UnitType
+  nutrients        Json?
+  imageUrl         String?
+  externalId       String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  ingredients      String?
+  InventoryItem    InventoryItem[]
+  Category         Category           @relation(fields: [categoryId], references: [id])
+  ReceiptItem      ReceiptItem[]
+  RecipeIngredient RecipeIngredient[]
 
-  inventoryItems    InventoryItem[]
-  recipeIngredients RecipeIngredient[]
-  receiptItems      ReceiptItem[]
-
-  @@index([name])
   @@index([brand])
+  @@index([name])
 }
 
-enum NutriScore {
-  A
-  B
-  C
-  D
-  E
+model Receipt {
+  id               String        @id
+  userId           String
+  documentType     DocumentType  @default(RECEIPT_IMAGE)
+  imageUrl         String?
+  pdfUrl           String?
+  status           ReceiptStatus @default(PROCESSING)
+  rawOcrData       Json?
+  merchantName     String?
+  totalAmount      Float?
+  purchaseDate     DateTime?
+  invoiceNumber    String?
+  orderNumber      String?
+  ocrProvider      String?
+  ocrConfidence    Float?
+  processingTime   Int?
+  errorMessage     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime
+  merchantAddress  String?
+  merchantLocation String?
+  User             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ReceiptItem      ReceiptItem[]
+
+  @@index([createdAt])
+  @@index([documentType])
+  @@index([purchaseDate])
+  @@index([status])
+  @@index([userId])
 }
 
-enum Novascore {
-  GROUP_1 // Nova group 1 - Aliments non transformés ou minimalement transformés
-  GROUP_2 // Nova group 2 - Ingrédients culinaires transformés
-  GROUP_3 // Nova group 3 - Aliments transformés  
-  GROUP_4 // Nova group 4 - Aliments ultra-transformés
+model ReceiptItem {
+  id              String    @id
+  receiptId       String
+  productId       String?
+  detectedName    String
+  quantity        Int       @default(1)
+  unitPrice       Float?
+  totalPrice      Float?
+  confidence      Float
+  validated       Boolean   @default(false)
+  productCode     String?
+  category        String?
+  discount        Float?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  expiryDate      DateTime?
+  notes           String?
+  storageLocation String?
+  selectedEan     String?
+  suggestedEans   Json      @default("[]")
+  Product         Product?  @relation(fields: [productId], references: [id])
+  Receipt         Receipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+
+  @@index([productCode])
+  @@index([productId])
+  @@index([receiptId])
+  @@index([validated])
+}
+
+model Recipe {
+  id               String             @id
+  name             String
+  description      String?
+  instructions     String
+  preparationTime  Int?
+  cookingTime      Int?
+  servings         Int
+  difficulty       RecipeDifficulty
+  imageUrl         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  RecipeIngredient RecipeIngredient[]
+}
+
+model RecipeIngredient {
+  id        String  @id
+  recipeId  String
+  productId String
+  quantity  Float
+  unit      String
+  notes     String?
+  Product   Product @relation(fields: [productId], references: [id])
+  Recipe    Recipe  @relation(fields: [recipeId], references: [id])
+
+  @@index([productId])
+  @@index([recipeId])
+}
+
+model User {
+  id            String          @id
+  email         String          @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  profileType   ProfileType
+  preferences   Json
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime
+  subscription  Subscription    @default(FREE)
+  avatarUrl     String?
+  Budget        Budget[]
+  Expense       Expense[]
+  InventoryItem InventoryItem[]
+  Notification  Notification[]
+  Receipt       Receipt[]
+}
+
+enum DocumentType {
+  RECEIPT_IMAGE
+  INVOICE_PDF
+  INVOICE_HTML
 }
 
 enum Ecoscore {
@@ -88,60 +240,38 @@ enum Ecoscore {
   E
 }
 
-enum UnitType {
-  KG
-  G
-  L
-  ML
-  UNIT
+enum NotificationType {
+  EXPIRY
+  BUDGET
+  SYSTEM
 }
 
-model Category {
-  id       String     @id @default(uuid())
-  name     String
-  slug     String     @unique
-  parentId String?
-  parent   Category?  @relation("CategoryToSubcategory", fields: [parentId], references: [id])
-  children Category[] @relation("CategoryToSubcategory")
-  icon     String?
-
-  products Product[]
+enum Novascore {
+  GROUP_1
+  GROUP_2
+  GROUP_3
+  GROUP_4
 }
 
-model InventoryItem {
-  id              String    @id @default(uuid())
-  user            User      @relation(fields: [userId], references: [id])
-  userId          String
-  product         Product   @relation(fields: [productId], references: [id])
-  productId       String
-  quantity        Float
-  expiryDate      DateTime?
-  purchaseDate    DateTime
-  purchasePrice   Float?
-  storageLocation String?
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([productId])
-  @@index([expiryDate])
+enum NutriScore {
+  A
+  B
+  C
+  D
+  E
 }
 
-model Recipe {
-  id              String           @id @default(uuid())
-  name            String
-  description     String?
-  instructions    String
-  preparationTime Int? // en minutes
-  cookingTime     Int? // en minutes
-  servings        Int
-  difficulty      RecipeDifficulty
-  imageUrl        String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+enum ProfileType {
+  FAMILY
+  STUDENT
+  SINGLE
+}
 
-  ingredients RecipeIngredient[]
+enum ReceiptStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+  VALIDATED
 }
 
 enum RecipeDifficulty {
@@ -150,195 +280,16 @@ enum RecipeDifficulty {
   HARD
 }
 
-model RecipeIngredient {
-  id        String  @id @default(uuid())
-  recipe    Recipe  @relation(fields: [recipeId], references: [id])
-  recipeId  String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Float
-  unit      String
-  notes     String?
-
-  @@index([recipeId])
-  @@index([productId])
+enum Subscription {
+  FREE
+  PREMIUM
+  ADMIN
 }
 
-model Budget {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  amount      Float
-  periodStart DateTime
-  periodEnd   DateTime
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  expenses Expense[]
-
-  @@index([userId])
-  @@index([periodStart, periodEnd])
-}
-
-model Expense {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  budget    Budget   @relation(fields: [budgetId], references: [id])
-  budgetId  String
-  amount    Float
-  date      DateTime
-  source    String?
-  category  String?
-  receiptId String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([budgetId])
-  @@index([date])
-  @@index([category])
-}
-
-model Notification {
-  id            String           @id @default(uuid())
-  user          User             @relation(fields: [userId], references: [id])
-  userId        String
-  type          NotificationType
-  title         String
-  message       String
-  isRead        Boolean          @default(false)
-  referenceId   String?
-  referenceType String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-
-  @@index([userId])
-  @@index([type])
-  @@index([isRead])
-}
-
-enum NotificationType {
-  EXPIRY
-  BUDGET
-  SYSTEM
-}
-
-/**
- * Types de documents supportés
- */
-enum DocumentType {
-  RECEIPT_IMAGE // Ticket de caisse photographié
-  INVOICE_PDF // Facture drive PDF
-  INVOICE_HTML // Facture drive HTML
-}
-
-/**
- * Statuts du traitement d'un receipt
- */
-enum ReceiptStatus {
-  PROCESSING // En cours de traitement OCR
-  COMPLETED // Traitement OCR terminé avec succès
-  FAILED // Échec du traitement OCR
-  VALIDATED // Validé par l'utilisateur et prêt pour ajout inventaire
-}
-
-/**
- * Receipt (Ticket de caisse ou Facture drive)
- * Représente un document uploadé par l'utilisateur
- * et les résultats du traitement OCR
- */
-model Receipt {
-  id     String @id @default(uuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Type et stockage du document
-  documentType DocumentType @default(RECEIPT_IMAGE)
-  imageUrl     String? // URL de l'image (tickets photo)
-  pdfUrl       String? // URL du PDF (factures drive)
-
-  // Statut du traitement
-  status ReceiptStatus @default(PROCESSING)
-
-  // Résultats OCR (JSON)
-  rawOcrData Json? // Données brutes du provider OCR
-
-  // Informations extraites (dénormalisées pour performance)
-  merchantName     String?
-  merchantLocation String?
-  merchantAddress  String?
-  totalAmount      Float?
-  purchaseDate     DateTime?
-
-  // Métadonnées spécifiques factures drive
-  invoiceNumber String? // Numéro de facture
-  orderNumber   String? // Numéro de commande
-
-  // Informations OCR
-  ocrProvider    String? // Provider utilisé (mindee, google-vision, etc.)
-  ocrConfidence  Float? // Score de confiance global (0-1)
-  processingTime Int? // Temps de traitement en ms
-
-  // Erreur (si échec)
-  errorMessage String?
-
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  items ReceiptItem[]
-
-  // Index pour performance
-  @@index([userId])
-  @@index([status])
-  @@index([documentType])
-  @@index([purchaseDate])
-  @@index([createdAt])
-}
-
-/**
- * ReceiptItem (Article/ligne d'un receipt)
- * Représente un produit détecté sur un ticket ou une facture
- */
-model ReceiptItem {
-  id              String    @id @default(uuid())
-  receiptId       String
-  receipt         Receipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
-  expiryDate      DateTime?
-  storageLocation String?
-  notes           String?
-
-  // Association avec un produit existant (après matching)
-  productId String?
-  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-
-  // Données détectées par OCR
-  detectedName String // Nom détecté
-  quantity     Int    @default(1)
-  unitPrice    Float?
-  totalPrice   Float?
-
-  confidence Float // Score de confiance (0-1)
-
-  // État de validation
-  validated Boolean @default(false) // L'utilisateur a validé cet item
-
-  // Informations enrichies (factures drive)
-  productCode String? // EAN/code-barres (très fiable sur factures)
-  category    String? // Catégorie détectée
-  discount    Float? // Réduction appliquée
-
-  // Timestamps
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Index pour performance
-  @@index([receiptId])
-  @@index([productId])
-  @@index([productCode]) // Important pour matching
-  @@index([validated])
+enum UnitType {
+  KG
+  G
+  L
+  ML
+  UNIT
 }

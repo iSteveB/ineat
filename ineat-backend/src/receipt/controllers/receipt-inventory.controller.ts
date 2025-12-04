@@ -343,9 +343,9 @@ export class ReceiptInventoryController {
         validated: true, // Seulement les items validés
       },
       include: {
-        product: {
+        Product: {
           include: {
-            category: true,
+            Category: true,
           },
         },
       },

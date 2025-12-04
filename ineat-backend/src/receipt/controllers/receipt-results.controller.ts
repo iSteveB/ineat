@@ -173,8 +173,8 @@ export class ReceiptResultsController {
       // Construire la réponse avec toutes les données
       const resultsDto: ReceiptResultsDto = {
         receipt: this.mapReceiptMetadata(receipt),
-        items: await this.mapReceiptItems(receipt.items),
-        stats: this.calculateValidationStats(receipt.items),
+        items: await this.mapReceiptItems(receipt.ReceiptItem),
+        stats: this.calculateValidationStats(receipt.ReceiptItem),
       };
 
       const response: ReceiptResultsResponseDto = {
@@ -212,11 +212,11 @@ export class ReceiptResultsController {
         userId,
       },
       include: {
-        items: {
+        ReceiptItem: {
           include: {
-            product: {
+            Product: {
               include: {
-                category: true,
+                Category: true,
               },
             },
           },

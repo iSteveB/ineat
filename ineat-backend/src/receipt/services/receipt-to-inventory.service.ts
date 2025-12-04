@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { randomUUID } from 'crypto';
 
 // ===== TYPES ET INTERFACES =====
 
@@ -168,6 +169,7 @@ export class ReceiptToInventoryService {
           );
           const inventoryItem = await tx.inventoryItem.create({
             data: {
+              id: randomUUID(),
               userId,
               productId: product.id,
               quantity: item.quantity,
@@ -176,6 +178,7 @@ export class ReceiptToInventoryService {
               purchasePrice: item.unitPrice,
               storageLocation: item.storageLocation,
               notes: item.notes,
+              updatedAt: new Date(),
             },
           });
           this.logger.log(`✅ InventoryItem créé: ${inventoryItem.id}`);

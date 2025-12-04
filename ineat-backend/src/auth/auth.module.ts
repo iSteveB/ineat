@@ -3,6 +3,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
+import type { StringValue } from 'ms'
 
 // Stratégies
 import { LocalStrategy } from './strategies/local.strategy';
@@ -31,22 +32,20 @@ import { PremiumGuard } from './guards/premium.guard';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN', '1d'),
+          expiresIn: (configService.get<string>('JWT_EXPIRES_IN') ?? '1d') as StringValue,
         },
       }),
     }),
   ],
   controllers: [AuthController, OAuthController],
   providers: [
-    // Services et stratégies
     AuthService,
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
-    // Guards
     AdminGuard,
     PremiumGuard,
   ],
