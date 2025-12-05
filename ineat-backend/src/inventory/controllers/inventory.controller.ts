@@ -28,10 +28,7 @@ import {
   InventoryService,
   ProductCreatedWithBudgetDto,
 } from '../services/inventory.service';
-import {
-  AddManualProductDto,
-  QuickAddProductDto,
-} from '../../DTOs';
+import { AddManualProductDto, QuickAddProductDto } from '../../DTOs';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 
@@ -672,7 +669,47 @@ export class InventoryController {
       }),
     };
 
-    return await this.inventoryService.getUserInventory(req.user.id, filters);
+    const inventory = await this.inventoryService.getUserInventory(
+      req.user.id,
+      filters,
+    );
+
+    // Transformer les clés Prisma (Product, Category) en format frontend (product, category)
+    return inventory.map((item) => ({
+      id: item.id,
+      userId: item.userId,
+      quantity: item.quantity,
+      expiryDate: item.expiryDate?.toISOString() ?? null,
+      purchaseDate: item.purchaseDate.toISOString(),
+      purchasePrice: item.purchasePrice,
+      storageLocation: item.storageLocation,
+      notes: item.notes,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+      product: item.Product
+        ? {
+            id: item.Product.id,
+            name: item.Product.name,
+            brand: item.Product.brand,
+            barcode: item.Product.barcode,
+            unitType: item.Product.unitType,
+            nutriscore: item.Product.nutriscore,
+            ecoscore: item.Product.ecoscore,
+            novascore: item.Product.novascore,
+            imageUrl: item.Product.imageUrl,
+            ingredients: item.Product.ingredients,
+            nutrients: item.Product.nutrients,
+            category: item.Product.Category
+              ? {
+                  id: item.Product.Category.id,
+                  name: item.Product.Category.name,
+                  slug: item.Product.Category.slug,
+                  icon: item.Product.Category.icon,
+                }
+              : null,
+          }
+        : null,
+    }));
   }
 
   /**

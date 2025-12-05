@@ -242,8 +242,8 @@ export class InventoryService {
     // Application des filtres
     if (filters) {
       if (filters.category) {
-        where.product = {
-          category: {
+        where.Product = {
+          Category: {
             slug: filters.category,
           },
         };
@@ -471,7 +471,7 @@ export class InventoryService {
     if (addProductDto.barcode) {
       const existingProductByBarcode = await tx.product.findUnique({
         where: { barcode: addProductDto.barcode },
-        include: { category: true },
+        include: { Category : true },
       });
 
       if (existingProductByBarcode) {
@@ -510,7 +510,7 @@ export class InventoryService {
         return await tx.product.update({
           where: { id: existingProduct.id },
           data: { barcode: addProductDto.barcode },
-          include: { category: true },
+          include: { Category: true },
         });
       }
 
@@ -534,6 +534,7 @@ export class InventoryService {
     try {
       return await tx.product.create({
         data: {
+          id: randomUUID(),
           name: addProductDto.name,
           brand: addProductDto.brand,
           barcode: addProductDto.barcode,
@@ -545,8 +546,9 @@ export class InventoryService {
           ingredients: addProductDto.ingredients,
           imageUrl: addProductDto.imageUrl,
           nutrients: nutritionalData,
+          updatedAt: new Date(),
         },
-        include: { category: true },
+        include: { Category: true },
       });
     } catch (error: any) {
       // Gestion des erreurs de contrainte unique sur le code-barres
@@ -597,6 +599,7 @@ export class InventoryService {
   ) {
     return await tx.inventoryItem.create({
       data: {
+        id: randomUUID(),
         userId,
         productId,
         quantity: addProductDto.quantity,
@@ -607,11 +610,12 @@ export class InventoryService {
         purchasePrice: addProductDto.purchasePrice,
         storageLocation: addProductDto.storageLocation,
         notes: addProductDto.notes,
+        updatedAt: new Date(),
       },
       include: {
-        product: {
+        Product: {
           include: {
-            category: true,
+            Category: true,
           },
         },
       },
@@ -630,7 +634,7 @@ export class InventoryService {
       name: product.name,
       brand: product.brand,
       barcode: product.barcode,
-      category: inventoryItem.product.category.slug,
+      category: inventoryItem.Product.Category.slug,
       quantity: inventoryItem.quantity,
       unitType: product.unitType,
       purchaseDate: inventoryItem.purchaseDate.toISOString(),
@@ -775,7 +779,7 @@ export class InventoryService {
   private async findProductById(tx: any, productId: string) {
     const product = await tx.product.findUnique({
       where: { id: productId },
-      include: { category: true },
+      include: { Category: true },
     });
 
     if (!product) {
@@ -822,6 +826,7 @@ export class InventoryService {
   ) {
     return await tx.inventoryItem.create({
       data: {
+        id: randomUUID(),
         userId,
         productId: quickAddDto.productId,
         quantity: quickAddDto.quantity,
@@ -832,11 +837,12 @@ export class InventoryService {
         purchasePrice: quickAddDto.purchasePrice || null,
         storageLocation: quickAddDto.storageLocation || null,
         notes: quickAddDto.notes || null,
+        updatedAt: new Date(),
       },
       include: {
-        product: {
+        Product: {
           include: {
-            category: true,
+            Category: true,
           },
         },
       },

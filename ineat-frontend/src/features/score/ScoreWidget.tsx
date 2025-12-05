@@ -40,14 +40,17 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 	// ===== CALCUL DES SCORES MOYENS =====
 
 	const calculateScores = (): ScoreData => {
+		// Filtrer d'abord les items avec un produit valide
+		const validItems = inventory.filter((item) => item && item.product);
+
 		// Filtrer les produits qui ont des scores valides
-		const productsWithNutriscore = inventory.filter(
+		const productsWithNutriscore = validItems.filter(
 			(item) => item.product.nutriscore
 		);
-		const productsWithEcoscore = inventory.filter(
+		const productsWithEcoscore = validItems.filter(
 			(item) => item.product.ecoscore
 		);
-		const productsWithNovascore = inventory.filter(
+		const productsWithNovascore = validItems.filter(
 			(item) => item.product.novascore
 		);
 

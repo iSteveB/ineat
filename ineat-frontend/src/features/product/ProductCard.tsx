@@ -18,6 +18,8 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
+
+
 	// Obtenir les couleurs selon le statut d'expiration
 	const getExpiryColors = (status: string) => {
 		switch (status) {

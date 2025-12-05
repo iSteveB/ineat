@@ -7,8 +7,6 @@ import { OcrService } from './services/ocr.service';
 import { CloudinaryStorageService } from './services/cloudinary-storage.service';
 import { ReceiptAnalysisService } from './services/receipt-analysis.service';
 import { ReceiptToInventoryService } from './services/receipt-to-inventory.service';
-import { ReceiptAnalysisService } from './services/receipt-analysis.service';
-import { ReceiptToInventoryService } from './services/receipt-to-inventory.service';
 
 // Providers OCR
 import { MindeeOcrProvider } from './providers/mindee-ocr.provider';
@@ -28,7 +26,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { LlmService } from './services/llm.service';
 
 @Module({
-  imports: [ConfigModule, PrismaModule],
   imports: [ConfigModule, PrismaModule],
   controllers: [
     ReceiptController,
@@ -57,7 +54,6 @@ import { LlmService } from './services/llm.service';
     MindeeOcrProvider,
     TesseractOcrProvider,
   ],
-  exports: [ReceiptService, OcrService, CloudinaryStorageService],
   exports: [ReceiptService, OcrService, CloudinaryStorageService],
 })
 export class ReceiptModule {}
