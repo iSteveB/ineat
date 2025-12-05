@@ -99,6 +99,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 			 */
 			uploadReceipt: async (file: File) => {
 				try {
+					console.log('🚀 [Store] uploadReceipt: starting upload...');
 					set(
 						{
 							status: 'uploading',
@@ -113,12 +114,19 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 					const { receiptId } = await receiptService.uploadReceipt(
 						file
 					);
+					console.log(
+						'🚀 [Store] uploadReceipt: upload done, receiptId:',
+						receiptId
+					);
 
 					// Stocker le receiptId immédiatement pour le loader
 					set(
 						{ status: 'analyzing', currentReceiptId: receiptId },
 						false,
 						'uploadReceipt/analyzing'
+					);
+					console.log(
+						'🚀 [Store] uploadReceipt: status set to analyzing'
 					);
 
 					// Démarrer le polling

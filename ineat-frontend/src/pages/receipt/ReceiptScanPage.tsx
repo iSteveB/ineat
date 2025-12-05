@@ -40,6 +40,16 @@ export const ReceiptScanPage = () => {
 	const analysis = useReceiptStore(receiptSelectors.analysis);
 	const currentReceiptId = useReceiptStore(receiptSelectors.currentReceiptId);
 
+	// ===== DEBUG =====
+	useEffect(() => {
+		console.log('🔍 ReceiptScanPage state:', {
+			status,
+			currentReceiptId,
+			hasAnalysis: !!analysis,
+			error,
+		});
+	}, [status, currentReceiptId, analysis, error]);
+
 	// ===== VÉRIFICATIONS =====
 	const isPremium =
 		user?.subscription === 'PREMIUM' || user?.subscription === 'ADMIN';
@@ -69,15 +79,18 @@ export const ReceiptScanPage = () => {
 	}, [status, analysis, navigate]);
 
 	/**
-	 * Cleanup au démontage
+	 * Cleanup au démontage - NE PAS reset pendant uploading/analyzing
 	 */
 	useEffect(() => {
 		return () => {
-			if (status !== 'analyzing') {
+			// Ne reset que si on est en idle ou error, jamais pendant le traitement
+			const currentStatus = useReceiptStore.getState().status;
+			console.log('🧹 ReceiptScanPage cleanup, status:', currentStatus);
+			if (currentStatus === 'idle' || currentStatus === 'error') {
 				reset();
 			}
 		};
-	}, [status, reset]);
+	}, [reset]);
 
 	// ===== HANDLERS =====
 
@@ -211,7 +224,7 @@ export const ReceiptScanPage = () => {
 	);
 
 	/**
-	 * Étape d'upload
+	 * Étape d'upload - affiche un loader pendant l'envoi
 	 */
 	const renderUploadingStep = () => (
 		<Card>
@@ -229,7 +242,7 @@ export const ReceiptScanPage = () => {
 					Envoi de votre image vers nos serveurs
 				</p>
 
-				<div className='w-full bg-muted rounded-full h-2'>
+				<div className='w-full bg-muted rounded-full h-2 overflow-hidden'>
 					<div className='bg-primary h-2 rounded-full animate-pulse w-3/4'></div>
 				</div>
 			</CardContent>
@@ -238,26 +251,13 @@ export const ReceiptScanPage = () => {
 
 	/**
 	 * Étape de traitement (analyse OCR + LLM)
+	 * Affiche toujours le ReceiptProcessingLoader, même sans receiptId
 	 */
 	const renderProcessingStep = () => {
-		// Utiliser currentReceiptId au lieu de analysis.receiptId
-		// car analysis est null pendant le polling
-		if (!currentReceiptId) {
-			return (
-				<Card>
-					<CardContent className='p-8 text-center'>
-						<div className='animate-spin size-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4'></div>
-						<p className='text-muted-foreground'>
-							Préparation de l'analyse...
-						</p>
-					</CardContent>
-				</Card>
-			);
-		}
-
+		// Toujours afficher le loader avec les étapes, même si receiptId n'est pas encore disponible
 		return (
 			<ReceiptProcessingLoader
-				receiptId={currentReceiptId}
+				receiptId={currentReceiptId || 'pending'}
 				onCancel={handleCancel}
 				title='Analyse de votre ticket en cours'
 			/>
@@ -269,7 +269,7 @@ export const ReceiptScanPage = () => {
 	 */
 	const renderErrorStep = () => (
 		<div className='space-y-4'>
-			<Alert variant='error'>
+			<Alert variant='destructive'>
 				<AlertTriangle className='size-4' />
 				<AlertDescription>
 					{error || 'Une erreur est survenue'}
