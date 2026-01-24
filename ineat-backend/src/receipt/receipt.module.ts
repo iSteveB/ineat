@@ -11,9 +11,6 @@ import { ReceiptToInventoryService } from './services/receipt-to-inventory.servi
 // Providers OCR
 import { MindeeOcrProvider } from './providers/mindee-ocr.provider';
 import { TesseractOcrProvider } from './providers/tesseract-ocr.provider';
-
-// Controllers - IMPORTANT: Tous doivent être listés ici
-// Controllers - IMPORTANT: Tous doivent être listés ici
 import { ReceiptController } from './controllers/receipt.controller';
 import { ReceiptStatusController } from './controllers/receipt-status.controller';
 import { ReceiptResultsController } from './controllers/receipt-results.controller';

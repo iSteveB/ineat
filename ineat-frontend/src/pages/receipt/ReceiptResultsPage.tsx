@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -50,6 +50,15 @@ export const ReceiptResultsPage = () => {
 
 	const stats = useScanStatistics();
 
+	// ===== CALLBACKS STABLES =====
+
+	/**
+	 * Navigation vers l'inventaire (stable)
+	 */
+	const navigateToInventory = useCallback(() => {
+		navigate({ to: '/app/inventory' });
+	}, [navigate]);
+
 	// ===== EFFETS =====
 
 	/**
@@ -58,49 +67,39 @@ export const ReceiptResultsPage = () => {
 	useEffect(() => {
 		if (status !== 'results' || !analysis) {
 			// Pas de résultats, retour à l'inventaire
-			navigate({ to: '/app/inventory' });
+			navigateToInventory();
 		}
-	}, [status, analysis, navigate]);
+	}, [status, analysis, navigateToInventory]);
 
 	/**
 	 * Vérifier que le receiptId correspond
 	 */
 	useEffect(() => {
 		if (analysis && analysis.receiptId !== receiptId) {
-			navigate({ to: '/app/inventory' });
+			navigateToInventory();
 		}
-	}, [analysis, receiptId, navigate]);
-
-	/**
-	 * Cleanup au démontage
-	 */
-	useEffect(() => {
-		return () => {
-			// Ne pas reset si on est juste en train de naviguer entre phases
-			// Le reset se fait après addToInventory() ou annulation explicite
-		};
-	}, []);
+	}, [analysis, receiptId, navigateToInventory]);
 
 	// ===== HANDLERS =====
 
 	/**
 	 * Sélectionne un code EAN pour un produit
 	 */
-	const handleSelectEan = (productId: string, eanCode: string) => {
+	const handleSelectEan = useCallback((productId: string, eanCode: string) => {
 		selectEan(productId, eanCode);
-	};
+	}, [selectEan]);
 
 	/**
 	 * Ignore un produit
 	 */
-	const handleSkipProduct = (productId: string) => {
+	const handleSkipProduct = useCallback((productId: string) => {
 		skipProduct(productId);
-	};
+	}, [skipProduct]);
 
 	/**
 	 * Valide Phase 1 et passe à Phase 2
 	 */
-	const handleValidatePhase1 = () => {
+	const handleValidatePhase1 = useCallback(() => {
 		try {
 			validatePhase1();
 
@@ -117,41 +116,41 @@ export const ReceiptResultsPage = () => {
 				toast.error(err.message);
 			}
 		}
-	};
+	}, [validatePhase1, phase2Products.length]);
 
 	/**
 	 * Passe directement à Phase 2 (si l'user veut)
 	 */
-	const handleGoToPhase2 = () => {
+	const handleGoToPhase2 = useCallback(() => {
 		goToPhase2();
-	};
+	}, [goToPhase2]);
 
 	/**
 	 * Ajoute tous les produits validés à l'inventaire
 	 */
-	const handleAddToInventory = async () => {
+	const handleAddToInventory = useCallback(async () => {
 		try {
 			await addToInventory();
 			toast.success("Produits ajoutés à l'inventaire avec succès !");
 
 			// Redirection après succès
 			setTimeout(() => {
-				navigate({ to: '/app/inventory' });
+				navigateToInventory();
 			}, 1500);
 		} catch (err) {
 			if (err instanceof Error) {
 				toast.error(err.message);
 			}
 		}
-	};
+	}, [addToInventory, navigateToInventory]);
 
 	/**
 	 * Annule et retourne à l'inventaire
 	 */
-	const handleCancel = () => {
+	const handleCancel = useCallback(() => {
 		reset();
-		navigate({ to: '/app/inventory' });
-	};
+		navigateToInventory();
+	}, [reset, navigateToInventory]);
 
 	// ===== RENDU DES SECTIONS =====
 

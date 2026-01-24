@@ -69,12 +69,27 @@ interface TextContentItem {
 }
 
 /**
+ * Structure d'un item de contenu output_text dans la réponse OpenAI
+ */
+interface OutputTextContentItem {
+  type: 'output_text';
+  text: string;
+  annotations?: unknown[];
+  logprobs?: unknown[];
+}
+
+/**
  * Structure d'un item output dans la réponse OpenAI Responses API
  */
 interface OutputItem {
   type: string;
   text?: string;
-  content?: Array<{ type: string; text?: string }>;
+  content?: Array<TextContentItem | OutputTextContentItem>;
+  // Support du type "reasoning" qui précède la réponse finale
+  summary?: unknown;
+  // Support du type "message" avec statut
+  status?: string;
+  role?: string;
 }
 
 /**
@@ -209,28 +224,59 @@ export class LlmService {
       throw new Error('Réponse vide du LLM - output vide ou invalide');
     }
 
-    const outputItem = output[0] as OutputItem;
+    // L'API peut retourner plusieurs items: [reasoning, web_search_call, reasoning, message]
+    // On cherche le premier item de type "message" avec du contenu
+    for (const item of output) {
+      const outputItem = item as OutputItem;
 
-    // Cas 1: Texte direct dans outputItem.text
-    if (outputItem.text && typeof outputItem.text === 'string') {
-      return outputItem.text;
-    }
+      // Skip les items de type "reasoning" et "web_search_call"
+      if (
+        outputItem.type === 'reasoning' ||
+        outputItem.type === 'web_search_call'
+      ) {
+        this.logger.debug(`Item de type ${outputItem.type} ignoré`);
+        continue;
+      }
 
-    // Cas 2: Contenu dans outputItem.content (tableau)
-    if (outputItem.content && Array.isArray(outputItem.content)) {
-      const textContent = outputItem.content.find(
-        (item): item is TextContentItem =>
-          item.type === 'text' && typeof item.text === 'string',
-      );
+      // Cas spécifique: Type "message" avec content array
+      if (
+        outputItem.type === 'message' &&
+        outputItem.content &&
+        Array.isArray(outputItem.content)
+      ) {
+        // Chercher un item de type "output_text" dans content
+        const outputText = outputItem.content.find(
+          (contentItem): contentItem is OutputTextContentItem =>
+            contentItem.type === 'output_text' &&
+            typeof contentItem.text === 'string',
+        );
 
-      if (textContent) {
-        return textContent.text;
+        if (outputText) {
+          return outputText.text;
+        }
+      }
+
+      // Cas 1: Texte direct dans outputItem.text
+      if (outputItem.text && typeof outputItem.text === 'string') {
+        return outputItem.text;
+      }
+
+      // Cas 2: Contenu dans outputItem.content (tableau) - ancien format
+      if (outputItem.content && Array.isArray(outputItem.content)) {
+        const textContent = outputItem.content.find(
+          (contentItem): contentItem is TextContentItem =>
+            contentItem.type === 'text' && typeof contentItem.text === 'string',
+        );
+
+        if (textContent) {
+          return textContent.text;
+        }
       }
     }
 
-    // Cas 3: Essayer de sérialiser l'output pour debug
+    // Aucun texte trouvé dans tous les items
     this.logger.error('Format de réponse non reconnu', {
-      outputItem: JSON.stringify(outputItem).substring(0, 500),
+      outputItem: JSON.stringify(output[0]).substring(0, 500),
     });
 
     throw new Error('Format de réponse LLM non reconnu');

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow'; 
 import { receiptService } from '@/services/receiptService';
 import type {
 	ReceiptAnalysis,
@@ -46,7 +47,7 @@ interface ReceiptStoreState {
 	skipProduct: (productId: string) => void;
 	updateProduct: (
 		productId: string,
-		updates: Partial<DetectedProduct>
+		updates: Partial<DetectedProduct>,
 	) => void;
 
 	// ===== Actions Phase =====
@@ -107,26 +108,25 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							currentReceiptId: null,
 						},
 						false,
-						'uploadReceipt/start'
+						'uploadReceipt/start',
 					);
 
 					// Upload
-					const { receiptId } = await receiptService.uploadReceipt(
-						file
-					);
+					const { receiptId } =
+						await receiptService.uploadReceipt(file);
 					console.log(
 						'🚀 [Store] uploadReceipt: upload done, receiptId:',
-						receiptId
+						receiptId,
 					);
 
 					// Stocker le receiptId immédiatement pour le loader
 					set(
 						{ status: 'analyzing', currentReceiptId: receiptId },
 						false,
-						'uploadReceipt/analyzing'
+						'uploadReceipt/analyzing',
 					);
 					console.log(
-						'🚀 [Store] uploadReceipt: status set to analyzing'
+						'🚀 [Store] uploadReceipt: status set to analyzing',
 					);
 
 					// Démarrer le polling
@@ -140,7 +140,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 					set(
 						{ status: 'error', error: errorMessage },
 						false,
-						'uploadReceipt/error'
+						'uploadReceipt/error',
 					);
 					throw error;
 				}
@@ -159,7 +159,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 
 						if (attempts > maxAttempts) {
 							throw new Error(
-								"L'analyse a pris trop de temps. Veuillez réessayer."
+								"L'analyse a pris trop de temps. Veuillez réessayer.",
 							);
 						}
 
@@ -170,25 +170,36 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							// Récupérer l'analyse complète
 							const analysis =
 								await receiptService.getReceiptAnalysis(
-									receiptId
+									receiptId,
 								);
 
-							// Mettre à jour le status AVANT setAnalysis pour éviter race condition
-							set(
-								{ status: 'results' },
-								false,
-								'pollAnalysis/completed'
+							// CORRECTION: Tout faire en un seul set() atomique
+							const { phase1, phase2 } = separateProductsByPhase(
+								analysis.products,
 							);
-							get().setAnalysis(analysis);
+
+							set(
+								{
+									status: 'results',
+									analysis,
+									phase1Products: phase1,
+									phase2Products: phase2,
+									currentPhase: 1,
+									validatedProductsCount: 0,
+									skippedProductsCount: 0,
+								},
+								false,
+								'pollAnalysis/completed',
+							);
 						} else if (statusResponse.status === 'error') {
 							throw new Error(
 								statusResponse.errorMessage ||
-									"L'analyse du ticket a échoué"
+									"L'analyse du ticket a échoué",
 							);
 						} else {
 							// Continuer le polling
 							await new Promise((resolve) =>
-								setTimeout(resolve, 2000)
+								setTimeout(resolve, 2000),
 							);
 							await poll();
 						}
@@ -201,7 +212,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 						set(
 							{ status: 'error', error: errorMessage },
 							false,
-							'pollAnalysis/error'
+							'pollAnalysis/error',
 						);
 						throw error;
 					}
@@ -212,14 +223,16 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 
 			/**
 			 * Définit l'analyse et sépare les produits par phase
+			 * (Utilisé uniquement si besoin de set manuel, sinon via pollAnalysis)
 			 */
 			setAnalysis: (analysis: ReceiptAnalysis) => {
 				const { phase1, phase2 } = separateProductsByPhase(
-					analysis.products
+					analysis.products,
 				);
 
 				set(
 					{
+						status: 'results',
 						analysis,
 						phase1Products: phase1,
 						phase2Products: phase2,
@@ -228,7 +241,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 						skippedProductsCount: 0,
 					},
 					false,
-					'setAnalysis'
+					'setAnalysis',
 				);
 			},
 
@@ -249,7 +262,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 				const currentPhase = state.currentPhase;
 
 				const updateProducts = (
-					products: DetectedProduct[]
+					products: DetectedProduct[],
 				): DetectedProduct[] =>
 					products.map((product) =>
 						product.id === productId
@@ -257,14 +270,14 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 									...product,
 									selectedEan: eanCode,
 									status: 'validated' as ProductStatus,
-							  }
-							: product
+								}
+							: product,
 					);
 
 				if (currentPhase === 1) {
 					const updated = updateProducts(state.phase1Products);
 					const validatedCount = updated.filter(
-						(p) => p.status === 'validated'
+						(p) => p.status === 'validated',
 					).length;
 
 					set(
@@ -273,16 +286,16 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							validatedProductsCount: validatedCount,
 						},
 						false,
-						'selectEan/phase1'
+						'selectEan/phase1',
 					);
 				} else {
 					const updated = updateProducts(state.phase2Products);
 					// Compter tous les validés (Phase 1 + Phase 2)
 					const phase1Validated = state.phase1Products.filter(
-						(p) => p.status === 'validated'
+						(p) => p.status === 'validated',
 					).length;
 					const phase2Validated = updated.filter(
-						(p) => p.status === 'validated'
+						(p) => p.status === 'validated',
 					).length;
 
 					set(
@@ -292,7 +305,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 								phase1Validated + phase2Validated,
 						},
 						false,
-						'selectEan/phase2'
+						'selectEan/phase2',
 					);
 				}
 			},
@@ -305,18 +318,18 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 				const currentPhase = state.currentPhase;
 
 				const updateProducts = (
-					products: DetectedProduct[]
+					products: DetectedProduct[],
 				): DetectedProduct[] =>
 					products.map((product) =>
 						product.id === productId
 							? { ...product, status: 'skipped' as ProductStatus }
-							: product
+							: product,
 					);
 
 				if (currentPhase === 1) {
 					const updated = updateProducts(state.phase1Products);
 					const skippedCount = updated.filter(
-						(p) => p.status === 'skipped'
+						(p) => p.status === 'skipped',
 					).length;
 
 					set(
@@ -325,16 +338,16 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							skippedProductsCount: skippedCount,
 						},
 						false,
-						'skipProduct/phase1'
+						'skipProduct/phase1',
 					);
 				} else {
 					const updated = updateProducts(state.phase2Products);
 					// Compter tous les skippés (Phase 1 + Phase 2)
 					const phase1Skipped = state.phase1Products.filter(
-						(p) => p.status === 'skipped'
+						(p) => p.status === 'skipped',
 					).length;
 					const phase2Skipped = updated.filter(
-						(p) => p.status === 'skipped'
+						(p) => p.status === 'skipped',
 					).length;
 
 					set(
@@ -343,7 +356,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							skippedProductsCount: phase1Skipped + phase2Skipped,
 						},
 						false,
-						'skipProduct/phase2'
+						'skipProduct/phase2',
 					);
 				}
 			},
@@ -353,39 +366,39 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 			 */
 			updateProduct: (
 				productId: string,
-				updates: Partial<DetectedProduct>
+				updates: Partial<DetectedProduct>,
 			) => {
 				const state = get();
 				const currentPhase = state.currentPhase;
 
 				const updateProducts = (
-					products: DetectedProduct[]
+					products: DetectedProduct[],
 				): DetectedProduct[] =>
 					products.map((product) =>
 						product.id === productId
 							? { ...product, ...updates }
-							: product
+							: product,
 					);
 
 				if (currentPhase === 1) {
 					set(
 						{
 							phase1Products: updateProducts(
-								state.phase1Products
+								state.phase1Products,
 							),
 						},
 						false,
-						'updateProduct/phase1'
+						'updateProduct/phase1',
 					);
 				} else {
 					set(
 						{
 							phase2Products: updateProducts(
-								state.phase2Products
+								state.phase2Products,
 							),
 						},
 						false,
-						'updateProduct/phase2'
+						'updateProduct/phase2',
 					);
 				}
 			},
@@ -400,12 +413,12 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 
 				// Vérifier que tous les produits Phase 1 ont été traités
 				const allHandled = state.phase1Products.every(
-					(p) => p.status === 'validated' || p.status === 'skipped'
+					(p) => p.status === 'validated' || p.status === 'skipped',
 				);
 
 				if (!allHandled) {
 					throw new Error(
-						'Tous les produits doivent être validés ou ignorés avant de passer à la Phase 2'
+						'Tous les produits doivent être validés ou ignorés avant de passer à la Phase 2',
 					);
 				}
 
@@ -436,7 +449,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 				// Récupérer tous les produits validés (Phase 1 + Phase 2)
 				const allProducts = [...phase1Products, ...phase2Products];
 				const validatedProducts = allProducts.filter(
-					(p) => p.status === 'validated' && p.selectedEan
+					(p) => p.status === 'validated' && p.selectedEan,
 				);
 
 				if (validatedProducts.length === 0) {
@@ -478,8 +491,8 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 		{
 			name: 'ReceiptStore',
 			enabled: import.meta.env.DEV,
-		}
-	)
+		},
+	),
 );
 
 // ===== SÉLECTEURS =====
@@ -562,7 +575,7 @@ export const receiptSelectors = {
 	 */
 	allValidatedProducts: (state: ReceiptStoreState) =>
 		[...state.phase1Products, ...state.phase2Products].filter(
-			(p) => p.status === 'validated'
+			(p) => p.status === 'validated',
 		),
 
 	/**
@@ -570,7 +583,7 @@ export const receiptSelectors = {
 	 */
 	isPhase1Complete: (state: ReceiptStoreState) =>
 		state.phase1Products.every(
-			(p) => p.status === 'validated' || p.status === 'skipped'
+			(p) => p.status === 'validated' || p.status === 'skipped',
 		),
 
 	/**
@@ -580,7 +593,7 @@ export const receiptSelectors = {
 		const allProducts = [...state.phase1Products, ...state.phase2Products];
 		const hasValidated = allProducts.some((p) => p.status === 'validated');
 		const phase1Complete = state.phase1Products.every(
-			(p) => p.status === 'validated' || p.status === 'skipped'
+			(p) => p.status === 'validated' || p.status === 'skipped',
 		);
 
 		return hasValidated && phase1Complete;
@@ -603,14 +616,16 @@ export const useProduct = (productId: string): DetectedProduct | undefined => {
  * Hook pour les statistiques du scan
  */
 export const useScanStatistics = () => {
-	return useReceiptStore((state) => ({
-		totalProducts: state.analysis?.products.length || 0,
-		phase1Count: state.phase1Products.length,
-		phase2Count: state.phase2Products.length,
-		validatedCount: state.validatedProductsCount,
-		skippedCount: state.skippedProductsCount,
-		successRate: state.analysis ? calculateSuccessRate(state.analysis) : 0,
-	}));
+	return useReceiptStore(
+		useShallow((state) => ({
+			totalProducts: state.analysis?.products.length || 0,
+			phase1Count: state.phase1Products.length,
+			phase2Count: state.phase2Products.length,
+			validatedCount: state.validatedProductsCount,
+			skippedCount: state.skippedProductsCount,
+			successRate: state.analysis ? calculateSuccessRate(state.analysis) : 0,
+		}))
+	);
 };
 
 // Export du type pour utilisation externe
