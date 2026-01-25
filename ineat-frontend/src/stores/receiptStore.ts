@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { useShallow } from 'zustand/react/shallow'; 
+import { useShallow } from 'zustand/react/shallow';
 import { receiptService } from '@/services/receiptService';
 import type {
 	ReceiptAnalysis,
@@ -173,10 +173,21 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 									receiptId,
 								);
 
+							// DEBUG: Voir ce que l'API retourne
+							console.log('=== ANALYSIS FROM API ===');
+							console.log(JSON.stringify(analysis, null, 2));
+							console.log('=========================');
+
 							// CORRECTION: Tout faire en un seul set() atomique
 							const { phase1, phase2 } = separateProductsByPhase(
 								analysis.products,
 							);
+
+							// DEBUG: Voir la séparation
+							console.log('=== SEPARATION PHASES ===');
+							console.log('Phase 1:', phase1.length, 'produits');
+							console.log('Phase 2:', phase2.length, 'produits');
+							console.log('=========================');
 
 							set(
 								{
@@ -623,8 +634,10 @@ export const useScanStatistics = () => {
 			phase2Count: state.phase2Products.length,
 			validatedCount: state.validatedProductsCount,
 			skippedCount: state.skippedProductsCount,
-			successRate: state.analysis ? calculateSuccessRate(state.analysis) : 0,
-		}))
+			successRate: state.analysis
+				? calculateSuccessRate(state.analysis)
+				: 0,
+		})),
 	);
 };
 

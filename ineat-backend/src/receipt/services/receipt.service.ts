@@ -299,7 +299,7 @@ export class ReceiptService {
   /**
    * Mettre à jour le receipt avec les résultats LLM (inclut suggestions EAN)
    */
-private async updateReceiptWithLlmAnalysis(
+  private async updateReceiptWithLlmAnalysis(
     receiptId: string,
     ocrResult: OcrProcessingResult,
     llmAnalysis: LlmReceiptAnalysis,
@@ -333,19 +333,37 @@ private async updateReceiptWithLlmAnalysis(
 
     // Créer les items avec suggestions EAN
     if (llmAnalysis.products.length > 0) {
+      const receiptItems = llmAnalysis.products.map((product) => ({
+        id: randomUUID(),
+        receiptId,
+        detectedName: product.name,
+        quantity: product.quantity || 1,
+        unitPrice: product.unitPrice,
+        totalPrice: product.totalPrice,
+        confidence: product.confidence,
+        suggestedEans:
+          product.suggestedEans as unknown as Prisma.InputJsonValue,
+        updatedAt: new Date(),
+      }));
+
       await this.prisma.receiptItem.createMany({
-        data: llmAnalysis.products.map((product) => ({
-          id: randomUUID(),
-          receiptId,
-          detectedName: product.name,
-          quantity: product.quantity || 1,
-          unitPrice: product.unitPrice,
-          totalPrice: product.totalPrice,
-          confidence: product.confidence,
-          suggestedEans: product.suggestedEans as unknown as Prisma.InputJsonValue,
-          updatedAt: new Date(),
-        })),
+        data: receiptItems,
       });
+
+      // DEBUG: Vérifier les items créés
+      this.logger.debug(
+        `[${receiptId}] ReceiptItems créés: ${receiptItems.length} items`,
+      );
+      this.logger.debug(
+        `[${receiptId}] Détails items: ${JSON.stringify(
+          receiptItems.map((item) => ({
+            name: item.detectedName,
+            eansCount: Array.isArray(item.suggestedEans)
+              ? (item.suggestedEans as unknown[]).length
+              : 0,
+          })),
+        )}`,
+      );
     }
   }
 

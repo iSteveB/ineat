@@ -186,6 +186,115 @@ export class ReceiptController {
   }
 
   /**
+   * Récupérer l'analyse complète d'un receipt (pour affichage des résultats)
+   *
+   * @route GET /receipt/:id/analysis
+   * @access Premium
+   */
+  @Get(':id/analysis')
+  @RequiresPremium()
+  @ApiOperation({
+    summary: "Récupérer l'analyse complète d'un receipt",
+    description: 'Récupère le receipt avec tous ses items et suggestions EAN pour affichage des résultats',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Analyse récupérée avec succès',
+    schema: {
+      example: {
+        success: true,
+        data: {
+          receiptId: '123e4567-e89b-12d3-a456-426614174000',
+          merchantName: 'Carrefour',
+          merchantAddress: '123 rue de Paris',
+          purchaseDate: '2025-03-03T12:02:00.000Z',
+          totalAmount: 8.30,
+          confidence: 0.7,
+          products: [
+            {
+              id: 'item-1',
+              name: 'ORANGINA',
+              quantity: 4,
+              unitPrice: null,
+              totalPrice: null,
+              confidence: 0.8,
+              status: 'pending',
+              selectedEan: null,
+              suggestedEans: [
+                {
+                  ean: '3124480169051',
+                  confidence: 0.8,
+                  brand: 'Orangina',
+                  productName: 'Soda à l\'Orange et sa Pulpe ORANGINA 4x50cl',
+                  image: null,
+                }
+              ]
+            }
+          ],
+          createdAt: '2025-10-17T10:30:00Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Receipt non trouvé',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Accès refusé (pas le propriétaire)',
+  })
+  async getReceiptAnalysis(
+    @CurrentUser() user: User,
+    @Param('id') receiptId: string,
+  ) {
+    const receipt = await this.receiptService.getReceiptById(
+      receiptId,
+      user.id,
+    );
+
+    // DEBUG: Voir ce que Prisma retourne
+    console.log('=== RECEIPT FROM PRISMA ===');
+    console.log('Receipt ID:', receipt.id);
+    console.log('ReceiptItem count:', receipt.ReceiptItem?.length || 0);
+    console.log('ReceiptItem details:', JSON.stringify(receipt.ReceiptItem, null, 2));
+    console.log('===========================');
+
+    // Transformer les ReceiptItem en DetectedProduct
+    const products = receipt.ReceiptItem.map((item) => ({
+      id: item.id,
+      name: item.detectedName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      confidence: item.confidence,
+      status: item.validated ? 'validated' : 'pending',
+      selectedEan: item.selectedEan || null,
+      suggestedEans: Array.isArray(item.suggestedEans) ? item.suggestedEans : [],
+    }));
+
+    // DEBUG: Voir les produits transformés
+    console.log('=== PRODUCTS TRANSFORMED ===');
+    console.log('Products count:', products.length);
+    console.log('Products:', JSON.stringify(products, null, 2));
+    console.log('============================');
+
+    return {
+      success: true,
+      data: {
+        receiptId: receipt.id,
+        merchantName: receipt.merchantName,
+        merchantAddress: receipt.merchantAddress,
+        purchaseDate: receipt.purchaseDate,
+        totalAmount: receipt.totalAmount,
+        confidence: receipt.ocrConfidence || 0.5,
+        products,
+        createdAt: receipt.createdAt,
+      },
+    };
+  }
+
+  /**
    * Récupérer tous les receipts de l'utilisateur
    *
    * @route GET /receipt

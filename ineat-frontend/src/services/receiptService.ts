@@ -256,7 +256,7 @@ class ReceiptService {
 	 */
 	async getReceiptAnalysis(receiptId: string): Promise<ReceiptAnalysis> {
 		const response = await fetch(
-			`${API_URL}/receipt/${receiptId}/status`,
+			`${API_URL}/receipt/${receiptId}/analysis`,
 			{
 				method: 'GET',
 				credentials: 'include',

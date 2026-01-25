@@ -211,9 +211,9 @@ export class ReceiptStatusController {
    * Calcule les métriques de progression
    */
   private calculateProgressMetrics(receipt: any) {
-    const totalItems = receipt.items?.length || 0;
+    const totalItems = receipt.ReceiptItem?.length || 0;
     const validatedItems =
-      receipt.items?.filter((item: any) => item.validated)?.length || 0;
+      receipt.ReceiptItem?.filter((item: any) => item.validated)?.length || 0;
 
     const validationProgress =
       totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
