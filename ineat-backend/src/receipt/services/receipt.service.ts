@@ -28,6 +28,7 @@ import {
   Prisma,
 } from '../../../prisma/generated/prisma/client';
 import { randomUUID } from 'crypto';
+import { ClaudeService } from './claude.service';
 
 /**
  * Mapper notre enum DocumentType vers l'enum Prisma
@@ -87,6 +88,7 @@ export class ReceiptService {
     private readonly prisma: PrismaService,
     private readonly ocrService: OcrService,
     private readonly llmService: LlmService,
+    private readonly claudeService: ClaudeService,
     private readonly cloudinaryStorage: CloudinaryStorageService,
   ) {}
 
@@ -168,91 +170,119 @@ export class ReceiptService {
    * @param documentType - Type de document
    */
   private async processReceiptOcrAndLlm(
-    receiptId: string,
-    fileBuffer: Buffer,
-    documentType: DocumentType,
-  ): Promise<void> {
-    this.logger.log(`Traitement OCR + LLM receipt ${receiptId}...`);
-    const startTime = Date.now();
+  receiptId: string,
+  fileBuffer: Buffer,
+  documentType: DocumentType,
+): Promise<void> {
+  this.logger.log(`Traitement OCR + LLM receipt ${receiptId}...`);
+  const startTime = Date.now();
 
-    try {
-      // === ÉTAPE 1 : OCR avec Tesseract ===
-      this.logger.debug(`[${receiptId}] Étape 1: OCR Tesseract...`);
-      const ocrResult = await this.ocrService.processDocument(
-        fileBuffer,
-        documentType,
-      );
+  try {
+    // === ÉTAPE 1 : OCR avec Tesseract ===
+    this.logger.debug(`[${receiptId}] Étape 1: OCR Tesseract...`);
+    const ocrResult = await this.ocrService.processDocument(
+      fileBuffer,
+      documentType,
+    );
 
-      if (!ocrResult.success || !ocrResult.data) {
-        throw new Error(ocrResult.error || 'Erreur OCR inconnue');
-      }
+    if (!ocrResult.success || !ocrResult.data) {
+      throw new Error(ocrResult.error || 'Erreur OCR inconnue');
+    }
 
-      const ocrText = this.extractTextFromOcrResult(ocrResult);
-      this.logger.debug(
-        `[${receiptId}] OCR terminé: ${ocrText.length} caractères extraits`,
-      );
+    const ocrText = this.extractTextFromOcrResult(ocrResult);
+    this.logger.debug(
+      `[${receiptId}] OCR terminé: ${ocrText.length} caractères extraits`,
+    );
 
-      // === ÉTAPE 2 : Analyse LLM (si disponible) ===
-      let llmAnalysis: LlmReceiptAnalysis | null = null;
+    // === ÉTAPE 2 : Analyse LLM (PRIORITÉ CLAUDE) ===
+    let llmAnalysis: LlmReceiptAnalysis | null = null;
 
-      if (this.llmService.isAvailable()) {
-        this.logger.debug(`[${receiptId}] Étape 2: Analyse LLM...`);
-        try {
-          llmAnalysis = await this.llmService.analyzeReceiptText(ocrText);
-          this.logger.debug(
-            `[${receiptId}] LLM terminé: ${llmAnalysis.products.length} produits détectés`,
-          );
-        } catch (llmError) {
-          // Le LLM a échoué mais on continue avec les données OCR basiques
-          this.logger.warn(
-            `[${receiptId}] LLM échoué (fallback sur OCR seul): ${llmError instanceof Error ? llmError.message : 'Erreur inconnue'}`,
-          );
-        }
-      } else {
+    // PRIORITÉ 1 : Essayer Claude avec MCP
+    if (this.claudeService.isAvailable()) {
+      this.logger.debug(`[${receiptId}] Étape 2: Analyse Claude + MCP...`);
+      try {
+        llmAnalysis = await this.claudeService.analyzeReceiptText(ocrText);
+        this.logger.debug(
+          `[${receiptId}] Claude terminé: ${llmAnalysis.products.length} produits détectés`,
+        );
+      } catch (claudeError) {
         this.logger.warn(
-          `[${receiptId}] Service LLM non disponible - Utilisation OCR seul`,
+          `[${receiptId}] Claude échoué, fallback sur OpenAI: ${claudeError instanceof Error ? claudeError.message : 'Erreur inconnue'}`,
+        );
+        
+        // FALLBACK : Essayer OpenAI
+        if (this.llmService.isAvailable()) {
+          try {
+            llmAnalysis = await this.llmService.analyzeReceiptText(ocrText);
+            this.logger.debug(
+              `[${receiptId}] OpenAI (fallback) terminé: ${llmAnalysis.products.length} produits détectés`,
+            );
+          } catch (openaiError) {
+            this.logger.warn(
+              `[${receiptId}] OpenAI échoué également: ${openaiError instanceof Error ? openaiError.message : 'Erreur inconnue'}`,
+            );
+          }
+        }
+      }
+    } 
+    // FALLBACK 2 : Si Claude non disponible, essayer OpenAI directement
+    else if (this.llmService.isAvailable()) {
+      this.logger.debug(`[${receiptId}] Étape 2: Analyse OpenAI...`);
+      try {
+        llmAnalysis = await this.llmService.analyzeReceiptText(ocrText);
+        this.logger.debug(
+          `[${receiptId}] OpenAI terminé: ${llmAnalysis.products.length} produits détectés`,
+        );
+      } catch (llmError) {
+        this.logger.warn(
+          `[${receiptId}] OpenAI échoué (fallback sur OCR seul): ${llmError instanceof Error ? llmError.message : 'Erreur inconnue'}`,
         );
       }
-
-      // === ÉTAPE 3 : Sauvegarde en DB ===
-      const processingTime = Date.now() - startTime;
-
-      if (llmAnalysis) {
-        // Avec analyse LLM complète
-        await this.updateReceiptWithLlmAnalysis(
-          receiptId,
-          ocrResult,
-          llmAnalysis,
-          processingTime,
-        );
-      } else {
-        // Fallback : OCR seul (sans suggestions EAN)
-        await this.updateReceiptWithOcrResult(receiptId, ocrResult);
-      }
-
-      this.logger.log(
-        `✓ Traitement réussi pour receipt ${receiptId} en ${processingTime}ms`,
-      );
-    } catch (error) {
-      // Exception : marquer comme FAILED
-      const processingTime = Date.now() - startTime;
-      const errorMessage =
-        error instanceof Error ? error.message : 'Erreur inconnue';
-
-      await this.prisma.receipt.update({
-        where: { id: receiptId },
-        data: {
-          status: ReceiptStatus.FAILED,
-          errorMessage,
-          processingTime,
-        },
-      });
-
-      this.logger.error(
-        `✗ Exception traitement receipt ${receiptId}: ${errorMessage}`,
+    } else {
+      this.logger.warn(
+        `[${receiptId}] Aucun service LLM disponible - Utilisation OCR seul`,
       );
     }
+
+    // === ÉTAPE 3 : Sauvegarde en DB ===
+    const processingTime = Date.now() - startTime;
+
+    if (llmAnalysis) {
+      // Avec analyse LLM complète
+      await this.updateReceiptWithLlmAnalysis(
+        receiptId,
+        ocrResult,
+        llmAnalysis,
+        processingTime,
+      );
+    } else {
+      // Fallback : OCR seul (sans suggestions EAN)
+      await this.updateReceiptWithOcrResult(receiptId, ocrResult);
+    }
+
+    this.logger.log(
+      `✓ Traitement réussi pour receipt ${receiptId} en ${processingTime}ms`,
+    );
+  } catch (error) {
+    // Exception : marquer comme FAILED
+    const processingTime = Date.now() - startTime;
+    const errorMessage =
+      error instanceof Error ? error.message : 'Erreur inconnue';
+
+    await this.prisma.receipt.update({
+      where: { id: receiptId },
+      data: {
+        status: ReceiptStatus.FAILED,
+        errorMessage,
+        processingTime,
+      },
+    });
+
+    this.logger.error(
+      `✗ Exception traitement receipt ${receiptId}: ${errorMessage}`,
+    );
   }
+}
 
   /**
    * Extraire le texte brut du résultat OCR

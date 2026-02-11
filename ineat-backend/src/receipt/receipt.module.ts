@@ -21,6 +21,7 @@ import { ReceiptHistoryController } from './controllers/receipt-history.controll
 // Modules partagés
 import { PrismaModule } from '../prisma/prisma.module';
 import { LlmService } from './services/llm.service';
+import { ClaudeService } from './services/claude.service';
 
 @Module({
   imports: [ConfigModule, PrismaModule],
@@ -41,6 +42,7 @@ import { LlmService } from './services/llm.service';
   providers: [
     // Services
     LlmService,
+    ClaudeService,
     ReceiptService,
     OcrService,
     CloudinaryStorageService,

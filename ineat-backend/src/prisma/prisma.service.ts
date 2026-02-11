@@ -16,10 +16,10 @@ export class PrismaService
     super({
       adapter,
       // Configuration des niveaux de log selon l'environnement
-      log:
-        process.env.NODE_ENV === 'development'
-          ? ['query', 'info', 'warn', 'error']
-          : ['error'],
+      // log:
+      //   process.env.NODE_ENV === 'development'
+      //     ? ['query', 'info', 'warn', 'error']
+      //     : ['error'],
     });
   }
 
