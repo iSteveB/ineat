@@ -1,6 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/authStore';
-import { User } from '@/schemas';
+import { ApiSuccessResponse, User } from '@/schemas';
 
 /**
  * Vérifie si l'utilisateur est authentifié, d'abord localement puis auprès du serveur si nécessaire
@@ -18,18 +18,23 @@ export const isAuthenticated = async (): Promise<boolean> => {
 
 	// Si pas authentifié localement, vérifier auprès du serveur
 	try {
-		const user = await apiClient.get<User>('/auth/profile');
+		const response =
+			await apiClient.get<ApiSuccessResponse<User>>('/auth/profile');
 
 		// Si la requête réussit, l'utilisateur est authentifié
 		// Mettre à jour le store
 		useAuthStore.setState({
-			user,
+			user: response.data,
 			isAuthenticated: true,
 		});
 
 		return true;
 	} catch {
 		// Si la requête échoue, l'utilisateur n'est pas authentifié
+		useAuthStore.setState({
+			user: null,
+			isAuthenticated: false,
+		});
 		return false;
 	}
 };

@@ -63,6 +63,21 @@ describe('AuthService', () => {
     jwtService = module.get<JwtService>(JwtService);
   });
 
+  const expectStandardAuthResponse = (
+    result: unknown,
+    expectedUser: { id: string; email: string },
+  ) => {
+    expect(result).toEqual({
+      success: true,
+      message: 'Authentification réussie',
+      data: {
+        user: expect.objectContaining(expectedUser),
+        accessToken: 'mocked-jwt-token',
+      },
+      timestamp: expect.any(String),
+    });
+  };
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
@@ -190,20 +205,15 @@ describe('AuthService', () => {
         'mocked-jwt-token',
         expect.objectContaining({
           httpOnly: true,
-          secure: true,
+          secure: false,
           sameSite: 'lax',
           path: '/',
+          maxAge: 24 * 60 * 60 * 1000,
         }),
       );
-      expect(result).toEqual({
-        user: {
-          id: 'user-id',
-          email: 'test@example.com',
-          firstName: 'Test',
-          lastName: 'User',
-          profileType: 'SINGLE',
-        },
-        accessToken: 'mocked-jwt-token',
+      expectStandardAuthResponse(result, {
+        id: 'user-id',
+        email: 'test@example.com',
       });
     });
   });
@@ -228,12 +238,9 @@ describe('AuthService', () => {
 
       // Assert
       expect(mockResponse.cookie).toHaveBeenCalled();
-      expect(result).toEqual({
-        user: expect.objectContaining({
-          id: 'user-id',
-          email: 'test@example.com',
-        }),
-        accessToken: 'mocked-jwt-token',
+      expectStandardAuthResponse(result, {
+        id: 'user-id',
+        email: 'test@example.com',
       });
     });
   });
@@ -278,21 +285,21 @@ describe('AuthService', () => {
       expect(bcrypt.hash).toHaveBeenCalledWith('Password123', 10);
       expect(prismaService.user.create).toHaveBeenCalledWith({
         data: {
+          id: expect.any(String),
           email: 'new@example.com',
           passwordHash: 'hashed-new-password',
           firstName: 'New',
           lastName: 'User',
           profileType: 'SINGLE',
+          subscription: 'FREE',
           preferences: {},
+          updatedAt: expect.any(Date),
         },
       });
       expect(mockResponse.cookie).toHaveBeenCalled();
-      expect(result).toEqual({
-        user: expect.objectContaining({
-          id: 'new-user-id',
-          email: 'new@example.com',
-        }),
-        accessToken: 'mocked-jwt-token',
+      expectStandardAuthResponse(result, {
+        id: 'new-user-id',
+        email: 'new@example.com',
       });
     });
 
@@ -340,6 +347,8 @@ describe('AuthService', () => {
         '',
         expect.objectContaining({
           httpOnly: true,
+          secure: false,
+          sameSite: 'lax',
           expires: expect.any(Date),
           path: '/',
         }),
@@ -374,14 +383,18 @@ describe('AuthService', () => {
 
       // Assert
       expect(result).toEqual({
-        id: 'user-id',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        profileType: 'SINGLE',
-        preferences: {},
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date),
+        success: true,
+        data: {
+          id: 'user-id',
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          profileType: 'SINGLE',
+          subscription: 'FREE',
+          preferences: {},
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        },
       });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'user-id' },
@@ -412,6 +425,21 @@ describe('AuthService', () => {
         lastName: 'User',
         photo: 'photo-url',
       };
+      const mockExistingGoogleUser = {
+        id: 'google-user-id',
+        email: 'google@example.com',
+        passwordHash: '',
+        firstName: 'Google',
+        lastName: 'User',
+        profileType: 'SINGLE',
+        subscription: 'FREE',
+        preferences: {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as User;
+      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(
+        mockExistingGoogleUser,
+      );
 
       // Act
       const result = await service.findOrCreateGoogleUser(
@@ -425,12 +453,9 @@ describe('AuthService', () => {
       });
       expect(prismaService.user.create).not.toHaveBeenCalled();
       expect(mockResponse.cookie).toHaveBeenCalled();
-      expect(result).toEqual({
-        user: expect.objectContaining({
-          id: 'google-user-id',
-          email: 'google@example.com',
-        }),
-        accessToken: 'mocked-jwt-token',
+      expectStandardAuthResponse(result, {
+        id: 'google-user-id',
+        email: 'google@example.com',
       });
     });
 
@@ -442,6 +467,26 @@ describe('AuthService', () => {
         lastName: 'Google',
         photo: 'photo-url',
       };
+      const mockCreatedGoogleUser = {
+        id: 'new-google-id',
+        email: 'new-google@example.com',
+        passwordHash: '',
+        firstName: 'New',
+        lastName: 'Google',
+        profileType: 'SINGLE',
+        subscription: 'FREE',
+        avatarUrl: null,
+        preferences: {
+          profilePicture: 'photo-url',
+          oauth: 'google',
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as User;
+      (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
+      (prismaService.user.create as jest.Mock).mockResolvedValue(
+        mockCreatedGoogleUser,
+      );
 
       // Act
       const result = await service.findOrCreateGoogleUser(
@@ -455,24 +500,24 @@ describe('AuthService', () => {
       });
       expect(prismaService.user.create).toHaveBeenCalledWith({
         data: {
+          id: expect.any(String),
           email: 'new-google@example.com',
           firstName: 'New',
           lastName: 'Google',
           passwordHash: '',
           profileType: 'SINGLE',
+          subscription: 'FREE',
           preferences: {
             profilePicture: 'photo-url',
             oauth: 'google',
           },
+          updatedAt: expect.any(Date),
         },
       });
       expect(mockResponse.cookie).toHaveBeenCalled();
-      expect(result).toEqual({
-        user: expect.objectContaining({
-          id: 'new-google-id',
-          email: 'new-google@example.com',
-        }),
-        accessToken: 'mocked-jwt-token',
+      expectStandardAuthResponse(result, {
+        id: 'new-google-id',
+        email: 'new-google@example.com',
       });
     });
   });

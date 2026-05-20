@@ -27,6 +27,17 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
+  private getAuthCookieOptions() {
+    const isProd = this.configService.get('NODE_ENV') === 'production';
+
+    return {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? ('none' as const) : ('lax' as const),
+      path: '/',
+    };
+  }
+
   // Valider un utilisateur pour l'authentification locale
   async validateUser(
     email: string,
@@ -50,16 +61,10 @@ export class AuthService {
     const payload = { email: user.email, sub: user.id };
     const accessToken = this.jwtService.sign(payload);
 
-    // Configurer les options du cookie
-    const isProd = this.configService.get('NODE_ENV') === 'production';
-
     // Définir le cookie HTTP-only
     response.cookie('auth_token', accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: isProd ? 'strict' : 'none', // Protection CSRF
+      ...this.getAuthCookieOptions(),
       maxAge: 24 * 60 * 60 * 1000, // 24 heures (ou utiliser la valeur de JWT_EXPIRES_IN)
-      path: '/', // Disponible sur toutes les routes
     });
 
     // Retourner les informations utilisateur dans le format d'API response standardisé
@@ -92,10 +97,8 @@ export class AuthService {
   async logout(response: Response) {
     // Effacer le cookie en définissant une date d'expiration dans le passé
     response.cookie('auth_token', '', {
-      httpOnly: true,
-      secure: true,
+      ...this.getAuthCookieOptions(),
       expires: new Date(0), // Date dans le passé
-      path: '/',
     });
 
     return {

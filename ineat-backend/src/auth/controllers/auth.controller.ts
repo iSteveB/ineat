@@ -8,6 +8,7 @@ import {
   Response,
   BadRequestException,
   SetMetadata,
+  HttpException,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
@@ -50,6 +51,9 @@ export class AuthController {
       const registerDto = validateRegisterDto(body);
       return this.authService.register(registerDto, response);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new BadRequestException(error.message);
     }
   }
@@ -67,6 +71,9 @@ export class AuthController {
       validateLoginDto(body);
       return this.authService.login(req.user as User, response);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new BadRequestException(error.message);
     }
   }
