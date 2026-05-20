@@ -32,11 +32,22 @@ export interface BudgetExistsResponse {
 	currentBudget?: Budget;
 }
 
-export interface CreateMonthlyBudgetData {
+interface BudgetExistsApiResponse {
+	success?: boolean;
+	data?: {
+		hasAnyBudget?: boolean;
+		exists?: boolean;
+		currentBudget?: Budget | RawBudgetApiData | null;
+	};
+	hasAnyBudget?: boolean;
+	exists?: boolean;
+	currentBudget?: Budget | RawBudgetApiData | null;
+}
+
+interface CreateMonthlyBudgetData {
 	amount: number;
-	periodStart: string;
-	periodEnd: string;
-	isActive: boolean;
+	year: number;
+	month: number;
 }
 
 // Interface pour les réponses de création/modification de budget
@@ -139,10 +150,20 @@ export const budgetService = {
 
 	async checkBudgetExists(): Promise<BudgetExistsResponse> {
 		try {
-			const response = await apiClient.get<BudgetExistsResponse>(
+			const response = await apiClient.get<BudgetExistsApiResponse>(
 				'/budget/exists'
 			);
-			return response;
+			const data = response.data ?? response;
+			const currentBudget = data.currentBudget
+				? isValidBudget(data.currentBudget as Budget)
+					? (data.currentBudget as Budget)
+					: transformBudgetFromApi(data.currentBudget as RawBudgetApiData)
+				: undefined;
+
+			return {
+				exists: data.exists ?? data.hasAnyBudget ?? false,
+				currentBudget: currentBudget ?? undefined,
+			};
 		} catch (error: unknown) {
 			const err = error as { status?: number };
 
@@ -157,22 +178,15 @@ export const budgetService = {
 	// Fonction corrigée pour créer un budget mensuel
 	async createMonthlyBudget(amount: number): Promise<Budget> {
 		const today = new Date();
-		const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-		const endOfMonth = new Date(
-			today.getFullYear(),
-			today.getMonth() + 1,
-			0
-		);
 
 		const budgetData: CreateMonthlyBudgetData = {
 			amount,
-			periodStart: startOfMonth.toISOString().split('T')[0],
-			periodEnd: endOfMonth.toISOString().split('T')[0],
-			isActive: true,
+			year: today.getFullYear(),
+			month: today.getMonth(),
 		};
 
 		const response = await apiClient.post<CreateBudgetApiResponse>(
-			'/budget',
+			'/budget/monthly',
 			budgetData
 		);
 		return processBudgetResponse(response);

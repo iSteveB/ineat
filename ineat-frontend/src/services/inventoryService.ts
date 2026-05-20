@@ -191,7 +191,7 @@ export const extractNotificationDataDefensive = (
 			}
 			return 'info'; // Dépense créée
 		}
-		return 'success'; // Par défaut
+		return 'info'; // Produit ajouté, mais sans impact budgétaire
 	};
 
 	return {

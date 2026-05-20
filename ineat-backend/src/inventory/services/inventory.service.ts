@@ -686,62 +686,41 @@ export class InventoryService {
     }
 
     try {
-      // Utilise les méthodes existantes du BudgetService
-      // Trouver le budget actif (méthode à implémenter si elle n'existe pas)
-      const budgets = await this.prisma.budget.findMany({
-        where: {
-          userId,
-          isActive: true,
-          periodStart: { lte: new Date() },
-          periodEnd: { gte: new Date() },
+      const expenseResult = await this.expenseService.createExpenseFromProduct(
+        userId,
+        {
+          productName: expenseData?.productName || 'Produit',
+          amount: purchasePrice,
+          purchaseDate:
+            expenseData?.purchaseDate ||
+            new Date().toISOString().split('T')[0],
+          source: expenseData?.source || 'Inventaire',
+          notes: expenseData?.notes,
+          inventoryItemId: expenseData?.inventoryItemId,
         },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      });
+        {
+          findOrCreateBudget: false,
+          autoDetectCategory: true,
+        },
+      );
 
-      if (budgets.length === 0) {
+      if (!expenseResult.expense || !expenseResult.budgetId) {
         return {
           expenseCreated: false,
-          message: 'Aucun budget actif trouvé',
+          message: expenseResult.message,
         };
       }
 
-      const activeBudget = budgets[0];
-
-      // Crée la dépense directement avec Prisma
-      const expense = await this.prisma.expense.create({
-        data: {
-          id: randomUUID(),
-          userId,
-          budgetId: activeBudget.id,
-          amount: purchasePrice,
-          date: new Date(expenseData?.purchaseDate || new Date()),
-          source: expenseData?.source || 'Inventaire',
-          category: 'Alimentation',
-          notes:
-            `${expenseData?.productName || 'Produit'} - ${expenseData?.notes || ''}`.trim(),
-          updatedAt: new Date(),
-        },
-      });
-
-      // Calcule le budget restant directement
-      const totalExpenses = await this.prisma.expense.aggregate({
-        where: {
-          budgetId: activeBudget.id,
-        },
-        _sum: {
-          amount: true,
-        },
-      });
-
-      const totalSpent = totalExpenses._sum.amount || 0;
-      const remainingBudget = activeBudget.amount - totalSpent;
+      const stats = await this.budgetService.getBudgetStats(
+        expenseResult.budgetId,
+        userId,
+      );
 
       return {
         expenseCreated: true,
-        message: `Dépense de ${purchasePrice}€ ajoutée au budget`,
-        budgetId: activeBudget.id,
-        remainingBudget: Math.max(0, remainingBudget),
+        message: expenseResult.message,
+        budgetId: expenseResult.budgetId,
+        remainingBudget: stats.remaining,
       };
     } catch (error) {
       console.error('Erreur lors de la gestion budgétaire:', error);

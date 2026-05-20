@@ -93,7 +93,11 @@ export class BudgetController {
 
       return {
         success: true,
-        data: { hasAnyBudget },
+        data: {
+          hasAnyBudget,
+          exists: hasAnyBudget,
+          currentBudget: null,
+        },
       };
     } catch (error) {
       throw new BadRequestException(error.message);
