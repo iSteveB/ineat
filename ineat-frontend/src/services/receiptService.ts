@@ -189,7 +189,7 @@ class ReceiptService {
 	 * @returns Statut actuel avec progression
 	 */
 	async getReceiptStatus(receiptId: string): Promise<ReceiptStatusResponse> {
-		const response = await fetch(`${API_URL}/receipt/${receiptId}/status`, {
+		const response = await fetch(`${API_URL}/receipt/${receiptId}/analysis`, {
 			method: 'GET',
 			credentials: 'include',
 			headers: {

@@ -150,7 +150,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 			 * Polling du statut d'analyse jusqu'à complétion
 			 */
 			pollAnalysis: async (receiptId: string) => {
-				const maxAttempts = 60; // 60 tentatives = 2 minutes max
+				const maxAttempts = 240; // 240 tentatives = 4 minutes max
 				let attempts = 0;
 
 				const poll = async (): Promise<void> => {

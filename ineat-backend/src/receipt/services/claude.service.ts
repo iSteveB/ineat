@@ -143,19 +143,28 @@ export class ClaudeService {
 
   /**
    * Construit le prompt pour Claude
+   * OPTIMISÉ pour réduire le temps de traitement
    */
   private buildPrompt(ocrText: string): string {
     return `TEXTE OCR DU TICKET :
 ${ocrText}
 
 TÂCHE :
-Analyse ce ticket de caisse et utilise les outils MCP OpenFoodFacts pour trouver les codes EAN de chaque produit détecté.
+Analyse ce ticket de caisse et utilise les outils MCP OpenFoodFacts pour trouver les codes EAN des produits.
 
-INSTRUCTIONS STRICTES :
+INSTRUCTIONS STRICTES - OPTIMISATION VITESSE :
 1. Identifie tous les produits alimentaires dans le texte OCR
-2. Pour CHAQUE produit, utilise l'outil searchProducts du MCP pour trouver les codes EAN
-3. Nettoie les noms de produits (enlève codes parasites, quantités)
-4. Retourne UNIQUEMENT le JSON ci-dessous, RIEN D'AUTRE
+2. Pour les 3-4 produits les PLUS CLAIRS uniquement, utilise searchProducts du MCP
+3. LIMITE : Maximum 2 suggestions EAN par produit (les meilleures)
+4. TIMEOUT : Si une recherche prend >10s, passe au produit suivant
+5. Si un produit est illisible, mets suggestedEans: [] et continue
+6. Nettoie les noms (enlève codes parasites, quantités)
+7. Retourne UNIQUEMENT le JSON ci-dessous, RIEN D'AUTRE
+
+PRIORITÉ : VITESSE > EXHAUSTIVITÉ
+- Vise 30-60 secondes de traitement total maximum
+- Ne cherche PAS d'EAN pour les produits très ambigus
+- 2 suggestions max par produit (pas 5-10)
 
 FORMAT DE RÉPONSE (JSON UNIQUEMENT, PAS DE TEXTE AVANT OU APRÈS) :
 {
@@ -188,8 +197,9 @@ RÈGLES CRITIQUES :
 - NE mets PAS de markdown (pas de \`\`\`json)
 - Commence DIRECTEMENT par {
 - Termine DIRECTEMENT par }
-- Utilise OBLIGATOIREMENT les outils MCP pour chaque produit
-- Si aucun EAN trouvé pour un produit, mets suggestedEans: []`;
+- Maximum 2 EAN par produit (pas plus)
+- Si incertain, mets suggestedEans: [] plutôt que de bloquer
+- Privilégie la RAPIDITÉ sur la perfection`;
   }
 
   /**
