@@ -134,7 +134,7 @@ class ReceiptService {
 			// Création du FormData
 			const formData = new FormData();
 			formData.append('file', file);
-			formData.append('documentType', 'receipt_image'); 
+			formData.append('documentType', 'receipt_image');
 
 			const response = await fetch(`${API_URL}/receipt/upload`, {
 				method: 'POST',
@@ -172,7 +172,6 @@ class ReceiptService {
 				receiptId: data.data?.receiptId || data.receiptId || data.id,
 			};
 		} catch (error) {
-			console.error('Erreur upload receipt:', error);
 			if (error instanceof Error) {
 				throw error;
 			}
@@ -210,7 +209,6 @@ class ReceiptService {
 		}
 
 		const data = await response.json();
-		console.log('📊 Status response:', data);
 
 		// Extraire les données (support multiple formats de réponse)
 		const responseData = data.data || data;
@@ -279,7 +277,6 @@ class ReceiptService {
 		}
 
 		const data = await response.json();
-		console.log('📊 Analysis response:', data);
 
 		// Extraire les données brutes (support multiple formats)
 		const rawAnalysis: BackendReceiptAnalysis = data.data || data;

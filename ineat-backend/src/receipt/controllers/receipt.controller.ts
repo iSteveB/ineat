@@ -41,6 +41,23 @@ import { UpdateReceiptItemDto } from '../dto/receipt.dto';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
 import { ReceiptStatus, User } from '../../../prisma/generated/prisma/client';
 
+function normalizeDocumentType(documentType: string): DocumentType | null {
+  const trimmedDocumentType = documentType.trim();
+
+  if (
+    Object.values(DocumentType).includes(trimmedDocumentType as DocumentType)
+  ) {
+    return trimmedDocumentType as DocumentType;
+  }
+
+  const enumKey = trimmedDocumentType.toUpperCase();
+  if (enumKey in DocumentType) {
+    return DocumentType[enumKey as keyof typeof DocumentType];
+  }
+
+  return null;
+}
+
 /**
  * Contrôleur Receipt
  *
@@ -84,7 +101,7 @@ export class ReceiptController {
         data: {
           receiptId: '123e4567-e89b-12d3-a456-426614174000',
           status: 'PROCESSING',
-          documentType: 'RECEIPT_IMAGE',
+          documentType: 'receipt_image',
           createdAt: '2025-10-17T10:30:00Z',
         },
         message: 'Ticket uploadé avec succès, traitement en cours',
@@ -109,7 +126,7 @@ export class ReceiptController {
           new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
           // Types autorisés
           new FileTypeValidator({
-            fileType: /(jpg|jpeg|png|heic|pdf)$/,
+            fileType: /(jpg|jpeg|png|webp|heic|pdf)$/,
           }),
         ],
       }),
@@ -123,14 +140,16 @@ export class ReceiptController {
       throw new BadRequestException('Le type de document est requis');
     }
 
-    if (!Object.values(DocumentType).includes(documentType as DocumentType)) {
+    const normalizedDocumentType = normalizeDocumentType(documentType);
+
+    if (!normalizedDocumentType) {
       throw new BadRequestException('Type de document invalide');
     }
 
     // Créer le receipt
     const receipt = await this.receiptService.createReceipt({
       userId: user.id,
-      documentType: documentType as DocumentType,
+      documentType: normalizedDocumentType,
       fileBuffer: file.buffer,
       fileName: file.originalname,
       merchantName: merchantName,
@@ -195,7 +214,8 @@ export class ReceiptController {
   @RequiresPremium()
   @ApiOperation({
     summary: "Récupérer l'analyse complète d'un receipt",
-    description: 'Récupère le receipt avec tous ses items et suggestions EAN pour affichage des résultats',
+    description:
+      'Récupère le receipt avec tous ses items et suggestions EAN pour affichage des résultats',
   })
   @ApiResponse({
     status: 200,
@@ -208,7 +228,7 @@ export class ReceiptController {
           merchantName: 'Carrefour',
           merchantAddress: '123 rue de Paris',
           purchaseDate: '2025-03-03T12:02:00.000Z',
-          totalAmount: 8.30,
+          totalAmount: 8.3,
           confidence: 0.7,
           products: [
             {
@@ -225,11 +245,11 @@ export class ReceiptController {
                   ean: '3124480169051',
                   confidence: 0.8,
                   brand: 'Orangina',
-                  productName: 'Soda à l\'Orange et sa Pulpe ORANGINA 4x50cl',
+                  productName: "Soda à l'Orange et sa Pulpe ORANGINA 4x50cl",
                   image: null,
-                }
-              ]
-            }
+                },
+              ],
+            },
           ],
           createdAt: '2025-10-17T10:30:00Z',
         },
@@ -253,13 +273,6 @@ export class ReceiptController {
       user.id,
     );
 
-    // DEBUG: Voir ce que Prisma retourne
-    console.log('=== RECEIPT FROM PRISMA ===');
-    console.log('Receipt ID:', receipt.id);
-    console.log('ReceiptItem count:', receipt.ReceiptItem?.length || 0);
-    console.log('ReceiptItem details:', JSON.stringify(receipt.ReceiptItem, null, 2));
-    console.log('===========================');
-
     // Transformer les ReceiptItem en DetectedProduct
     const products = receipt.ReceiptItem.map((item) => ({
       id: item.id,
@@ -270,14 +283,10 @@ export class ReceiptController {
       confidence: item.confidence,
       status: item.validated ? 'validated' : 'pending',
       selectedEan: item.selectedEan || null,
-      suggestedEans: Array.isArray(item.suggestedEans) ? item.suggestedEans : [],
+      suggestedEans: Array.isArray(item.suggestedEans)
+        ? item.suggestedEans
+        : [],
     }));
-
-    // DEBUG: Voir les produits transformés
-    console.log('=== PRODUCTS TRANSFORMED ===');
-    console.log('Products count:', products.length);
-    console.log('Products:', JSON.stringify(products, null, 2));
-    console.log('============================');
 
     return {
       success: true,
