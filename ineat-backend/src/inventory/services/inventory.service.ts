@@ -244,7 +244,7 @@ export class InventoryService {
       if (filters.category) {
         where.Product = {
           Category: {
-            slug: filters.category,
+            OR: [{ id: filters.category }, { slug: filters.category }],
           },
         };
       }

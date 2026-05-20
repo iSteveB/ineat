@@ -125,10 +125,10 @@ export class ProductsService {
       unitType: product.unitType,
       barcode: product.barcode,
       category: {
-        id: product.category.id,
-        name: product.category.name,
-        slug: product.category.slug,
-        icon: product.category.icon,
+        id: product.Category.id,
+        name: product.Category.name,
+        slug: product.Category.slug,
+        icon: product.Category.icon,
       },
     };
   }

@@ -47,6 +47,48 @@ interface AuthenticatedRequest extends Request {
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
+  private formatProduct(product: any) {
+    if (!product) return null;
+
+    return {
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      barcode: product.barcode,
+      unitType: product.unitType,
+      nutriscore: product.nutriscore,
+      ecoscore: product.ecoscore,
+      novascore: product.novascore,
+      imageUrl: product.imageUrl,
+      ingredients: product.ingredients,
+      nutrients: product.nutrients,
+      category: product.Category
+        ? {
+            id: product.Category.id,
+            name: product.Category.name,
+            slug: product.Category.slug,
+            icon: product.Category.icon,
+          }
+        : null,
+    };
+  }
+
+  private formatInventoryItem(item: any) {
+    return {
+      id: item.id,
+      userId: item.userId,
+      quantity: item.quantity,
+      expiryDate: item.expiryDate?.toISOString() ?? null,
+      purchaseDate: item.purchaseDate.toISOString(),
+      purchasePrice: item.purchasePrice,
+      storageLocation: item.storageLocation,
+      notes: item.notes,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
+      product: this.formatProduct(item.Product),
+    };
+  }
+
   /**
    * Ajoute un produit manuellement à l'inventaire de l'utilisateur
    */
@@ -408,7 +450,7 @@ export class InventoryController {
 
     return {
       exists: !!product,
-      product: product || null,
+      product: this.formatProduct(product),
     };
   }
 
@@ -485,11 +527,17 @@ export class InventoryController {
     @Req() req: AuthenticatedRequest,
     @Query('limit') limit?: number,
   ) {
-    const limitValue = limit && limit > 0 ? Math.min(limit, 50) : 5; // Max 50, défaut 5
-    return await this.inventoryService.getRecentProducts(
+    const parsedLimit = Number(limit);
+    const limitValue =
+      Number.isFinite(parsedLimit) && parsedLimit > 0
+        ? Math.min(parsedLimit, 50)
+        : 5;
+    const items = await this.inventoryService.getRecentProducts(
       req.user.id,
       limitValue,
     );
+
+    return items.map((item) => this.formatInventoryItem(item));
   }
 
   /**
@@ -674,42 +722,7 @@ export class InventoryController {
       filters,
     );
 
-    // Transformer les clés Prisma (Product, Category) en format frontend (product, category)
-    return inventory.map((item) => ({
-      id: item.id,
-      userId: item.userId,
-      quantity: item.quantity,
-      expiryDate: item.expiryDate?.toISOString() ?? null,
-      purchaseDate: item.purchaseDate.toISOString(),
-      purchasePrice: item.purchasePrice,
-      storageLocation: item.storageLocation,
-      notes: item.notes,
-      createdAt: item.createdAt.toISOString(),
-      updatedAt: item.updatedAt.toISOString(),
-      product: item.Product
-        ? {
-            id: item.Product.id,
-            name: item.Product.name,
-            brand: item.Product.brand,
-            barcode: item.Product.barcode,
-            unitType: item.Product.unitType,
-            nutriscore: item.Product.nutriscore,
-            ecoscore: item.Product.ecoscore,
-            novascore: item.Product.novascore,
-            imageUrl: item.Product.imageUrl,
-            ingredients: item.Product.ingredients,
-            nutrients: item.Product.nutrients,
-            category: item.Product.Category
-              ? {
-                  id: item.Product.Category.id,
-                  name: item.Product.Category.name,
-                  slug: item.Product.Category.slug,
-                  icon: item.Product.Category.icon,
-                }
-              : null,
-          }
-        : null,
-    }));
+    return inventory.map((item) => this.formatInventoryItem(item));
   }
 
   /**
@@ -760,11 +773,13 @@ export class InventoryController {
       purchasePrice?: number;
     },
   ) {
-    return await this.inventoryService.updateInventoryItem(
+    const updatedItem = await this.inventoryService.updateInventoryItem(
       req.user.id,
       inventoryItemId,
       updateData,
     );
+
+    return this.formatInventoryItem(updatedItem);
   }
 
   /**
@@ -846,7 +861,7 @@ export class InventoryController {
 
     return {
       success: true,
-      data: item,
+      data: this.formatInventoryItem(item),
     };
   }
 
