@@ -33,6 +33,14 @@ Le script `postinstall` lance `prisma generate`; `DATABASE_URL` doit donc etre d
 
 Le backend charge `.env.${NODE_ENV}`. En developpement, utiliser `.env.development`.
 
+Pour demarrer rapidement:
+
+```bash
+cp .env.example .env.development
+```
+
+Puis remplacer les placeholders par les valeurs locales ou les secrets de l'environnement cible.
+
 Variables principales:
 
 | Variable | Obligatoire | Usage |
@@ -53,7 +61,7 @@ Variables principales:
 | `CLOUDINARY_CLOUD_NAME` | Uploads | Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Uploads | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Uploads | Cloudinary API secret |
-| `CLOUDINARY_UPLOAD_PRESET` | Optionnel | Preset Cloudinary generique |
+| `CLOUDINARY_AVATAR_PRESET` | Optionnel | Preset Cloudinary pour avatars |
 | `CLOUDINARY_RECEIPT_PRESET` | Optionnel | Preset Cloudinary pour tickets |
 | `OPENAI_API_KEY` | Optionnel | Fallback LLM ticket |
 | `TICKET_PROMPT_ID` | Optionnel | Prompt OpenAI specifique |

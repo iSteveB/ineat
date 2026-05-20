@@ -25,6 +25,12 @@ pnpm install
 
 Creer un fichier `.env` dans `ineat-frontend`.
 
+Pour demarrer rapidement:
+
+```bash
+cp .env.example .env
+```
+
 | Variable | Obligatoire | Usage |
 | --- | --- | --- |
 | `VITE_API_URL` | Oui | URL du backend sans suffixe `/api`, par exemple `http://localhost:3000` |

@@ -47,8 +47,8 @@ pnpm install
 
 Configurer ensuite les fichiers d'environnement:
 
-- Backend: `ineat-backend/.env.development`
-- Frontend: `ineat-frontend/.env`
+- Backend: copier `ineat-backend/.env.example` vers `ineat-backend/.env.development`
+- Frontend: copier `ineat-frontend/.env.example` vers `ineat-frontend/.env`
 
 Voir les README de chaque application pour la liste des variables.
 
