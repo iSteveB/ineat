@@ -29,6 +29,7 @@ import {
 } from '../../../prisma/generated/prisma/client';
 import { randomUUID } from 'crypto';
 import { ClaudeService } from './claude.service';
+import { NotificationService } from '../../notification/notification.service';
 
 /**
  * Mapper notre enum DocumentType vers l'enum Prisma
@@ -90,6 +91,7 @@ export class ReceiptService {
     private readonly llmService: LlmService,
     private readonly claudeService: ClaudeService,
     private readonly cloudinaryStorage: CloudinaryStorageService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   /**
@@ -263,6 +265,10 @@ export class ReceiptService {
     this.logger.log(
       `✓ Traitement réussi pour receipt ${receiptId} en ${processingTime}ms`,
     );
+    await this.notificationService.createReceiptNotification(
+      receiptId,
+      ReceiptStatus.COMPLETED,
+    );
   } catch (error) {
     // Exception : marquer comme FAILED
     const processingTime = Date.now() - startTime;
@@ -277,6 +283,11 @@ export class ReceiptService {
         processingTime,
       },
     });
+    await this.notificationService.createReceiptNotification(
+      receiptId,
+      ReceiptStatus.FAILED,
+      errorMessage,
+    );
 
     this.logger.error(
       `✗ Exception traitement receipt ${receiptId}: ${errorMessage}`,

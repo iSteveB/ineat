@@ -12,6 +12,7 @@ import { UserModule } from './user/user.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ReceiptModule } from './receipt/receipt.module';
+import { NotificationModule } from './notification/notification.module';
 import { BullModule } from '@nestjs/bull';
 
 @Module({
@@ -35,6 +36,7 @@ import { BullModule } from '@nestjs/bull';
     CloudinaryModule,
     AvatarModule,
     ReceiptModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
