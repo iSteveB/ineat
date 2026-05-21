@@ -1,10 +1,21 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import DashboardPage from './DashboardPage';
 import { inventoryService } from '@/services/inventoryService';
 import { useAuthStore } from '@/stores/authStore';
+
+vi.mock('@tanstack/react-router', () => ({
+	Link: ({
+		children,
+		to,
+	}: {
+		children: ReactNode;
+		to: string;
+	}) => <a href={to}>{children}</a>,
+}));
 
 vi.mock('@/stores/authStore', () => ({
 	useAuthStore: vi.fn(),
@@ -83,6 +94,23 @@ describe('DashboardPage', () => {
 			expect(screen.getByText('Bonjour Camille,')).toBeInTheDocument();
 		});
 
+		expect(screen.getByText('1 produit à traiter')).toBeInTheDocument();
+		expect(screen.getByText('Agir maintenant')).toHaveAttribute(
+			'href',
+			'/app/inventory'
+		);
+		expect(screen.getByText('Scanner')).toHaveAttribute(
+			'href',
+			'/app/inventory/add/scan'
+		);
+		expect(screen.getByText('Ticket')).toHaveAttribute(
+			'href',
+			'/app/inventory/add/receipt'
+		);
+		expect(screen.getByText('Ajouter un produit')).toHaveAttribute(
+			'href',
+			'/app/inventory/add'
+		);
 		expect(screen.getByTestId('inventory-widget')).toBeInTheDocument();
 		expect(screen.getByTestId('budget-widget')).toBeInTheDocument();
 		expect(screen.getByTestId('score-widget')).toHaveTextContent('2');
@@ -116,5 +144,24 @@ describe('DashboardPage', () => {
 			).toBeInTheDocument();
 		});
 		expect(screen.getByText('API indisponible')).toBeInTheDocument();
+	});
+
+	it("priorise l'ajout quand l'inventaire est vide", async () => {
+		(inventoryService.getInventory as ReturnType<typeof vi.fn>)
+			.mockResolvedValueOnce([])
+			.mockResolvedValueOnce([]);
+		(inventoryService.getRecentProducts as ReturnType<typeof vi.fn>)
+			.mockResolvedValue([]);
+
+		renderDashboard();
+
+		await waitFor(() => {
+			expect(screen.getByText('Inventaire vide')).toBeInTheDocument();
+		});
+
+		expect(screen.getByText('Agir maintenant')).toHaveAttribute(
+			'href',
+			'/app/inventory/add'
+		);
 	});
 });
