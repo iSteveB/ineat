@@ -528,12 +528,13 @@ class ReceiptService {
 		if (filters.merchantName) {
 			params.append('merchantName', filters.merchantName);
 		}
-		if (filters.limit !== undefined) {
-			params.append('limit', filters.limit.toString());
-		}
-		if (filters.offset !== undefined) {
-			params.append('offset', filters.offset.toString());
-		}
+	if (filters.limit !== undefined) {
+		params.append('limit', filters.limit.toString());
+	}
+	if (filters.offset !== undefined) {
+		const limit = filters.limit || 20;
+		params.append('page', `${Math.floor(filters.offset / limit) + 1}`);
+	}
 
 		const queryString = params.toString();
 		const url = `${API_URL}/receipt/history${
@@ -560,8 +561,21 @@ class ReceiptService {
 			throw new Error(errorMessage);
 		}
 
-		const data = await response.json();
-		return data.data || data;
+	const data = await response.json();
+	const responseData = data.data || data;
+
+	if (responseData.pagination) {
+		return {
+			receipts: responseData.receipts || [],
+			total: responseData.pagination.totalItems || 0,
+			limit: responseData.pagination.itemsPerPage || filters.limit || 20,
+			offset:
+				((responseData.pagination.currentPage || 1) - 1) *
+				(responseData.pagination.itemsPerPage || filters.limit || 20),
+		};
+	}
+
+	return responseData;
 	}
 
 	/**

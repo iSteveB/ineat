@@ -26,12 +26,12 @@ import { ClaudeService } from './services/claude.service';
 @Module({
   imports: [ConfigModule, PrismaModule],
   controllers: [
-    ReceiptController,
+    ReceiptHistoryController,
     ReceiptStatusController,
     ReceiptResultsController,
     ReceiptValidationController,
     ReceiptInventoryController,
-    ReceiptHistoryController,
+    ReceiptController,
   ],
   providers: [
     // Services

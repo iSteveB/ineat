@@ -57,6 +57,25 @@ interface CreateBudgetApiResponse {
 	message: string;
 }
 
+interface ApiDataResponse<T> {
+	success?: boolean;
+	data: T;
+	message?: string;
+}
+
+function unwrapApiData<T>(response: T | ApiDataResponse<T>): T {
+	if (
+		response &&
+		typeof response === 'object' &&
+		'data' in response &&
+		('success' in response || 'message' in response)
+	) {
+		return (response as ApiDataResponse<T>).data;
+	}
+
+	return response as T;
+}
+
 // Fonction utilitaire pour traiter les réponses de budget avec wrapper
 function processBudgetResponse(response: CreateBudgetApiResponse): Budget {
 	// Vérifier le succès de l'opération
@@ -194,15 +213,18 @@ export const budgetService = {
 
 	async getBudgetByMonth(month: string): Promise<Budget | null> {
 		try {
-			const budget = await apiClient.get<Budget>(
+			const response = await apiClient.get<
+				ApiDataResponse<Budget | RawBudgetApiData | null>
+			>(
 				`/budget/month/${month}`
 			);
+			const budget = unwrapApiData(response);
 
-			if (budget && !isValidBudget(budget)) {
+			if (budget && !isValidBudget(budget as Budget)) {
 				return transformBudgetFromApi(budget as RawBudgetApiData);
 			}
 
-			return budget;
+			return budget as Budget | null;
 		} catch (error: unknown) {
 			const err = error as { status?: number };
 			if (err.status === 404) {
@@ -214,11 +236,15 @@ export const budgetService = {
 
 	async getBudgetHistory(): Promise<Budget[]> {
 		try {
-			const history = await apiClient.get<Budget[]>('/budget/history');
+			const response =
+				await apiClient.get<ApiDataResponse<Array<Budget | RawBudgetApiData>>>(
+					'/budget/history'
+				);
+			const history = unwrapApiData(response);
 
 			return history
 				.map((budget) => {
-					if (!isValidBudget(budget)) {
+					if (!isValidBudget(budget as Budget)) {
 						const transformed = transformBudgetFromApi(
 							budget as RawBudgetApiData
 						);
@@ -274,11 +300,15 @@ export const budgetService = {
 		const endpoint = `/budget${queryString ? `?${queryString}` : ''}`;
 
 		try {
-			const budgets = await apiClient.get<Budget[]>(endpoint);
+			const response =
+				await apiClient.get<ApiDataResponse<Array<Budget | RawBudgetApiData>>>(
+					endpoint
+				);
+			const budgets = unwrapApiData(response);
 
 			return budgets
 				.map((budget) => {
-					if (!isValidBudget(budget)) {
+					if (!isValidBudget(budget as Budget)) {
 						const transformed = transformBudgetFromApi(
 							budget as RawBudgetApiData
 						);
@@ -293,18 +323,29 @@ export const budgetService = {
 	},
 
 	async getBudgetStats(budgetId: string): Promise<BudgetStats> {
-		return await apiClient.get<BudgetStats>(`/budget/${budgetId}/stats`);
+		const response = await apiClient.get<ApiDataResponse<BudgetStats>>(
+			`/budget/${budgetId}/stats`
+		);
+		return unwrapApiData(response);
 	},
 
 	async addExpense(expenseData: CreateExpenseData): Promise<Expense> {
-		return await apiClient.post<Expense>('/expense', expenseData);
+		const response = await apiClient.post<ApiDataResponse<Expense>>(
+			'/expense',
+			expenseData
+		);
+		return unwrapApiData(response);
 	},
 
 	async updateExpense(
 		expenseId: string,
 		updates: Partial<CreateExpenseData>
 	): Promise<Expense> {
-		return await apiClient.put<Expense>(`/expense/${expenseId}`, updates);
+		const response = await apiClient.put<ApiDataResponse<Expense>>(
+			`/expense/${expenseId}`,
+			updates
+		);
+		return unwrapApiData(response);
 	},
 
 	async deleteExpense(expenseId: string): Promise<void> {
@@ -313,10 +354,10 @@ export const budgetService = {
 
 	async getBudgetAlerts(budgetId: string): Promise<BudgetAlert[]> {
 		try {
-			const alerts = await apiClient.get<BudgetAlert[]>(
+			const response = await apiClient.get<ApiDataResponse<BudgetAlert[]>>(
 				`/budget/${budgetId}/alerts`
 			);
-			return alerts;
+			return unwrapApiData(response);
 		} catch {
 			return [];
 		}
