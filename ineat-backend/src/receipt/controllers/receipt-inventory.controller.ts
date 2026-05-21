@@ -46,6 +46,24 @@ interface AuthenticatedRequest extends Request {
 export class AddReceiptToInventoryDto {
   @ApiPropertyOptional({
     description:
+      'Produits validés côté frontend à persister avant ajout à l\'inventaire',
+    example: [
+      {
+        productId: 'receipt-item-uuid',
+        eanCode: '3017624010701',
+        quantity: 2,
+      },
+    ],
+  })
+  @IsOptional()
+  products?: Array<{
+    productId: string;
+    eanCode?: string | null;
+    quantity?: number | null;
+  }>;
+
+  @ApiPropertyOptional({
+    description:
       "Date d'achat personnalisée (ISO 8601). Par défaut: maintenant",
     example: '2024-10-22T10:00:00.000Z',
     format: 'date-time',
@@ -230,7 +248,13 @@ export class ReceiptInventoryController {
       // 1. Vérifier que le ticket existe et appartient à l'utilisateur
       const receipt = await this.verifyReceiptOwnership(receiptId, userId);
 
-      // 2. Récupérer les items validés du ticket
+      // 2. Persister les validations envoyées par le frontend, si présentes
+      await this.applySubmittedProductValidations(
+        receiptId,
+        options.products,
+      );
+
+      // 3. Récupérer les items validés du ticket
       const validatedItems = await this.getValidatedReceiptItems(receiptId);
 
       this.logger.log(
@@ -254,7 +278,7 @@ export class ReceiptInventoryController {
         );
       }
 
-      // 3. Convertir les items en format attendu par le service
+      // 4. Convertir les items en format attendu par le service
       const itemsToAdd = await this.convertItemsForInventory(validatedItems);
       this.logger.debug(
         `Items convertis pour le service: ${JSON.stringify(
@@ -266,7 +290,7 @@ export class ReceiptInventoryController {
         )}`,
       );
 
-      // 4. Ajouter à l'inventaire via le service
+      // 5. Ajouter à l'inventaire via le service
       const result =
         await this.receiptToInventoryService.addReceiptItemsToInventory(
           userId,
@@ -280,10 +304,10 @@ export class ReceiptInventoryController {
           },
         );
 
-      // 5. Marquer le ticket comme traité
+      // 6. Marquer le ticket comme traité
       await this.markReceiptAsProcessed(receiptId);
 
-      // 6. Préparer la réponse
+      // 7. Préparer la réponse
       const response: AddReceiptToInventoryResponseDto = {
         success: true,
         data: result,
@@ -355,6 +379,48 @@ export class ReceiptInventoryController {
   }
 
   /**
+   * Applique les validations produit envoyées par le frontend.
+   *
+   * Le store receipt valide localement les produits avant l'appel final.
+   * Cet endpoint persiste donc ces choix pour que le service d'inventaire,
+   * qui lit uniquement les ReceiptItem.validated en base, voie le même état.
+   */
+  private async applySubmittedProductValidations(
+    receiptId: string,
+    products?: AddReceiptToInventoryDto['products'],
+  ): Promise<void> {
+    if (!products || products.length === 0) {
+      return;
+    }
+
+    for (const product of products) {
+      if (!product.productId) {
+        continue;
+      }
+
+      const existingProduct = product.eanCode
+        ? await this.prisma.product.findUnique({
+            where: { barcode: product.eanCode },
+          })
+        : null;
+
+      await this.prisma.receiptItem.updateMany({
+        where: {
+          id: product.productId,
+          receiptId,
+        },
+        data: {
+          validated: true,
+          selectedEan: product.eanCode || null,
+          ...(existingProduct ? { productId: existingProduct.id } : {}),
+          ...(product.quantity ? { quantity: product.quantity } : {}),
+          updatedAt: new Date(),
+        },
+      });
+    }
+  }
+
+  /**
    * Mappe une catégorie frontend vers un slug Prisma valide
    */
   private mapCategoryToSlug(category: string | null): string {
@@ -397,7 +463,7 @@ export class ReceiptInventoryController {
         converted.productData = {
           name: item.detectedName,
           brand: undefined, // Pas forcément détecté dans le ticket
-          barcode: undefined, // Pas forcément détecté dans le ticket
+          barcode: item.selectedEan || undefined,
           categorySlug: this.mapCategoryToSlug(item.category), // ✅ Mapper la catégorie
           unitType: 'UNIT', // Type par défaut, pourrait être amélioré
         };

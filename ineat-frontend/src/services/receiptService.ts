@@ -119,15 +119,22 @@ class ReceiptService {
 	async uploadReceipt(file: File): Promise<UploadReceiptResponse> {
 		try {
 			// Validation côté client
-			const maxSize = 5 * 1024 * 1024; // 5MB
+			const maxSize = 10 * 1024 * 1024; // 10MB, aligned with backend
 			if (file.size > maxSize) {
-				throw new Error('Le fichier est trop volumineux (maximum 5MB)');
+				throw new Error('Le fichier est trop volumineux (maximum 10MB)');
 			}
 
-			const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+			const allowedTypes = [
+				'image/jpeg',
+				'image/png',
+				'image/webp',
+				'image/heic',
+				'image/heif',
+				'application/pdf',
+			];
 			if (!allowedTypes.includes(file.type)) {
 				throw new Error(
-					'Format de fichier non supporté (formats acceptés: JPEG, PNG, WEBP)'
+					'Format de fichier non supporté (formats acceptés: JPEG, PNG, WEBP, HEIC, PDF)'
 				);
 			}
 
