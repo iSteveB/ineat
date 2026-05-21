@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
-import { QuickAddProductDto } from 'src/DTOs';
-import { BudgetService } from 'src/budget/services/budget.service';
-import { ExpenseService } from 'src/budget/services/expense.service';
+import { QuickAddProductDto } from '../../DTOs';
+import { BudgetService } from '../../budget/services/budget.service';
+import { ExpenseService } from '../../budget/services/expense.service';
 import { randomUUID } from 'crypto';
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)

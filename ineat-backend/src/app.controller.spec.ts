@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getQueueToken } from '@nestjs/bull';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -8,7 +9,19 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        AppService,
+        {
+          provide: getQueueToken('receipt-processing'),
+          useValue: {
+            isReady: jest.fn(),
+            getWaiting: jest.fn(),
+            getActive: jest.fn(),
+            getCompleted: jest.fn(),
+            getFailed: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
