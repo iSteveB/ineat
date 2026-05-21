@@ -165,6 +165,43 @@ describe('InventoryService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
+  it('rejects manual products with invalid business values before writing', async () => {
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 0,
+        unitType: 'KG',
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toThrow('La quantité doit être supérieure à 0');
+
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 1,
+        unitType: 'KG',
+        purchaseDate: '2999-05-01',
+      } as any),
+    ).rejects.toThrow("La date d'achat ne peut pas être dans le futur");
+
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 1,
+        unitType: 'KG',
+        purchaseDate: '2026-05-10',
+        expiryDate: '2026-05-01',
+      } as any),
+    ).rejects.toThrow(
+      "La date de péremption doit être postérieure à la date d'achat",
+    );
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+  });
+
   it('adds an existing product with quick add', async () => {
     tx.product.findUnique.mockResolvedValue(product);
 
@@ -185,6 +222,35 @@ describe('InventoryService', () => {
       }),
     );
     expect(result.name).toBe('Pommes');
+  });
+
+  it('rejects quick add with invalid quantity, price or dates', async () => {
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'product-1',
+        quantity: -1,
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toThrow('La quantité doit être supérieure à 0');
+
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'product-1',
+        quantity: 1,
+        purchaseDate: '2026-05-01',
+        purchasePrice: -2,
+      } as any),
+    ).rejects.toThrow("Le prix d'achat ne peut pas être négatif");
+
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'product-1',
+        quantity: 1,
+        purchaseDate: 'not-a-date',
+      } as any),
+    ).rejects.toThrow("La date d'achat doit être valide");
+
+    expect(tx.product.findUnique).not.toHaveBeenCalled();
   });
 
   it('rejects quick add when the product does not exist', async () => {

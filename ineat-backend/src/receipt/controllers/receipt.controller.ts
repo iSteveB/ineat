@@ -58,6 +58,32 @@ function normalizeDocumentType(documentType: string): DocumentType | null {
   return null;
 }
 
+const MAX_RECEIPT_FILE_SIZE = 10 * 1024 * 1024;
+const RECEIPT_UPLOAD_TYPES: Record<
+  DocumentType,
+  { mimeTypes: string[]; extensions: string[]; label: string }
+> = {
+  [DocumentType.RECEIPT_IMAGE]: {
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+    extensions: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'],
+    label: 'image de ticket',
+  },
+  [DocumentType.INVOICE_PDF]: {
+    mimeTypes: ['application/pdf'],
+    extensions: ['pdf'],
+    label: 'facture PDF',
+  },
+  [DocumentType.INVOICE_HTML]: {
+    mimeTypes: ['text/html'],
+    extensions: ['html', 'htm'],
+    label: 'facture HTML',
+  },
+};
+
+function getFileExtension(fileName: string): string {
+  return fileName.split('.').pop()?.toLowerCase() || '';
+}
+
 /**
  * Contrôleur Receipt
  *
@@ -123,10 +149,10 @@ export class ReceiptController {
       new ParseFilePipe({
         validators: [
           // Max 10MB
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new MaxFileSizeValidator({ maxSize: MAX_RECEIPT_FILE_SIZE }),
           // Types autorisés
           new FileTypeValidator({
-            fileType: /(jpg|jpeg|png|webp|heic|pdf)$/,
+            fileType: /(jpg|jpeg|png|webp|heic|heif|pdf|html|htm)$/,
           }),
         ],
       }),
@@ -145,6 +171,8 @@ export class ReceiptController {
     if (!normalizedDocumentType) {
       throw new BadRequestException('Type de document invalide');
     }
+
+    this.validateUploadedReceiptFile(file, normalizedDocumentType);
 
     // Créer le receipt
     const receipt = await this.receiptService.createReceipt({
@@ -166,6 +194,31 @@ export class ReceiptController {
       },
       message: 'Ticket reçu avec succès, traitement en cours',
     };
+  }
+
+  private validateUploadedReceiptFile(
+    file: Express.Multer.File,
+    documentType: DocumentType,
+  ): void {
+    if (!file) {
+      throw new BadRequestException('Le fichier est requis');
+    }
+
+    if (file.size > MAX_RECEIPT_FILE_SIZE) {
+      throw new BadRequestException('Le fichier est trop volumineux (maximum 10MB)');
+    }
+
+    const expected = RECEIPT_UPLOAD_TYPES[documentType];
+    const extension = getFileExtension(file.originalname);
+
+    if (
+      !expected.mimeTypes.includes(file.mimetype) ||
+      !expected.extensions.includes(extension)
+    ) {
+      throw new BadRequestException(
+        `Format de fichier invalide pour ${expected.label}. Formats acceptés: ${expected.extensions.join(', ')}`,
+      );
+    }
   }
 
   /**

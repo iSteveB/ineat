@@ -161,13 +161,13 @@ export class AddManualProductDto {
   @ApiPropertyOptional({
     description: 'Code-barres du produit (EAN-8, EAN-13, UPC, etc.)',
     example: '3263859672014',
-    pattern: '^(\\d{8}|\\d{12,14})$',
+    pattern: '^\\d{8,13}$',
   })
   @IsOptional()
   @IsString({ message: 'Le code-barres doit être une chaîne de caractères' })
-  @Matches(/^(\d{8}|\d{12,14})$/, {
+  @Matches(/^\d{8,13}$/, {
     message:
-      'Le code-barres doit contenir 8, 12, 13 ou 14 chiffres (format EAN-8, UPC-A, EAN-13, etc.)',
+      'Le code-barres doit contenir entre 8 et 13 chiffres',
   })
   @Transform(({ value }) => value?.trim() || null)
   barcode?: string;

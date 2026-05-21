@@ -404,6 +404,13 @@ export class InventoryService {
   private async validateProductData(
     addProductDto: AddManualProductDto,
   ): Promise<void> {
+    this.validateInventoryDates(
+      addProductDto.purchaseDate,
+      addProductDto.expiryDate,
+    );
+    this.validatePositiveQuantity(addProductDto.quantity);
+    this.validatePurchasePrice(addProductDto.purchasePrice);
+
     // Vérifier que la catégorie existe
     const category = await this.prisma.category.findFirst({
       where: { slug: addProductDto.category },
@@ -435,16 +442,57 @@ export class InventoryService {
       }
     }
 
-    // Vérifier la cohérence des dates
-    if (addProductDto.expiryDate && addProductDto.purchaseDate) {
-      const purchaseDate = new Date(addProductDto.purchaseDate);
-      const expiryDate = new Date(addProductDto.expiryDate);
+  }
 
-      if (expiryDate <= purchaseDate) {
-        throw new BadRequestException(
-          "La date de péremption doit être postérieure à la date d'achat",
-        );
-      }
+  private validateInventoryDates(
+    purchaseDateInput: string,
+    expiryDateInput?: string,
+  ): void {
+    const purchaseDate = new Date(purchaseDateInput);
+
+    if (Number.isNaN(purchaseDate.getTime())) {
+      throw new BadRequestException("La date d'achat doit être valide");
+    }
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    if (purchaseDate > today) {
+      throw new BadRequestException(
+        "La date d'achat ne peut pas être dans le futur",
+      );
+    }
+
+    if (!expiryDateInput) {
+      return;
+    }
+
+    const expiryDate = new Date(expiryDateInput);
+
+    if (Number.isNaN(expiryDate.getTime())) {
+      throw new BadRequestException('La date de péremption doit être valide');
+    }
+
+    if (expiryDate <= purchaseDate) {
+      throw new BadRequestException(
+        "La date de péremption doit être postérieure à la date d'achat",
+      );
+    }
+  }
+
+  private validatePositiveQuantity(quantity: number): void {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new BadRequestException('La quantité doit être supérieure à 0');
+    }
+  }
+
+  private validatePurchasePrice(purchasePrice?: number): void {
+    if (purchasePrice === undefined || purchasePrice === null) {
+      return;
+    }
+
+    if (!Number.isFinite(purchasePrice) || purchasePrice < 0) {
+      throw new BadRequestException("Le prix d'achat ne peut pas être négatif");
     }
   }
 
@@ -456,7 +504,7 @@ export class InventoryService {
   private isValidBarcodeFormat(barcode: string): boolean {
     // Validation basique pour codes-barres courants
     // EAN-8 (8 chiffres), EAN-13 (13 chiffres), UPC-A (12 chiffres), etc.
-    const barcodeRegex = /^(\d{8}|\d{12,14})$/;
+    const barcodeRegex = /^\d{8,13}$/;
     return barcodeRegex.test(barcode.trim());
   }
 
@@ -739,17 +787,9 @@ export class InventoryService {
   private async validateQuickAddData(
     quickAddDto: QuickAddProductDto,
   ): Promise<void> {
-    // Vérifier la cohérence des dates
-    if (quickAddDto.expiryDate && quickAddDto.purchaseDate) {
-      const purchaseDate = new Date(quickAddDto.purchaseDate);
-      const expiryDate = new Date(quickAddDto.expiryDate);
-
-      if (expiryDate <= purchaseDate) {
-        throw new BadRequestException(
-          "La date de péremption doit être postérieure à la date d'achat",
-        );
-      }
-    }
+    this.validateInventoryDates(quickAddDto.purchaseDate, quickAddDto.expiryDate);
+    this.validatePositiveQuantity(quickAddDto.quantity);
+    this.validatePurchasePrice(quickAddDto.purchasePrice);
   }
 
   /**
