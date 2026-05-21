@@ -11,6 +11,9 @@ import {
 	OffProductParams,
 	OFF_DEFAULT_FIELDS,
 	OffNutriments,
+	OFF_API_CONFIG,
+	OFF_ERROR_MESSAGES,
+	OFF_URLS,
 } from '@/schemas/openfoodfact';
 
 import {
@@ -37,10 +40,10 @@ export class OpenFoodFactsService {
 
 	constructor(config?: Partial<OffApiConfig>) {
 		this.config = {
-			baseUrl: config?.baseUrl || 'https://world.openfoodfacts.net',
+			baseUrl: config?.baseUrl || OFF_URLS.PRODUCTION,
 			userAgent:
-				config?.userAgent || 'MonInventaire/1.0 (contact@monapp.com)',
-			timeout: config?.timeout || 10000, // 10 secondes
+				config?.userAgent || OFF_API_CONFIG.DEFAULT_USER_AGENT,
+			timeout: config?.timeout || OFF_API_CONFIG.DEFAULT_TIMEOUT,
 		};
 	}
 
@@ -62,7 +65,8 @@ export class OpenFoodFactsService {
 			if (!this.isValidBarcode(barcode)) {
 				throw this.createError(
 					'INVALID_BARCODE',
-					`Code-barre invalide: ${barcode}`
+					OFF_ERROR_MESSAGES.INVALID_BARCODE,
+					{ barcode }
 				);
 			}
 
@@ -90,18 +94,22 @@ export class OpenFoodFactsService {
 				if (response.status === 429) {
 					throw this.createError(
 						'RATE_LIMIT',
-						'Limite de taux dépassée. Veuillez patienter.'
+						OFF_ERROR_MESSAGES.RATE_LIMIT
 					);
 				}
 				if (response.status === 404) {
 					throw this.createError(
 						'PRODUCT_NOT_FOUND',
-						'Produit non trouvé.'
+						OFF_ERROR_MESSAGES.PRODUCT_NOT_FOUND
 					);
 				}
 				throw this.createError(
 					'API_ERROR',
-					`Erreur API: ${response.status} ${response.statusText}`
+					OFF_ERROR_MESSAGES.API_ERROR,
+					{
+						status: response.status,
+						statusText: response.statusText,
+					}
 				);
 			}
 
@@ -116,7 +124,8 @@ export class OpenFoodFactsService {
 			if (data.status !== 1 || !data.product) {
 				throw this.createError(
 					'API_ERROR',
-					`Réponse API inattendue: ${data.status_verbose}`
+					OFF_ERROR_MESSAGES.API_ERROR,
+					{ statusVerbose: data.status_verbose }
 				);
 			}
 
@@ -131,12 +140,16 @@ export class OpenFoodFactsService {
 			if (error instanceof TypeError && error.message.includes('fetch')) {
 				throw this.createError(
 					'NETWORK_ERROR',
-					'Impossible de contacter OpenFoodFacts. Vérifiez votre connexion.'
+					OFF_ERROR_MESSAGES.NETWORK_ERROR
 				);
 			}
 
 			// Erreur inconnue
-			throw this.createError('UNKNOWN_ERROR', 'Erreur inattendue', error);
+			throw this.createError(
+				'UNKNOWN_ERROR',
+				OFF_ERROR_MESSAGES.UNKNOWN_ERROR,
+				error
+			);
 		}
 	}
 
@@ -528,20 +541,31 @@ export class OpenFoodFactsService {
 		options: RequestInit
 	): Promise<Response> {
 		const controller = new AbortController();
-		const timeoutId = setTimeout(
-			() => controller.abort(),
-			this.config.timeout
-		);
+		let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+		const timeoutPromise = new Promise<never>((_, reject) => {
+			timeoutId = setTimeout(() => {
+				controller.abort();
+				reject(
+					this.createError('TIMEOUT', OFF_ERROR_MESSAGES.TIMEOUT)
+				);
+			}, this.config.timeout);
+		});
 
 		try {
-			const response = await fetch(url, {
+			const fetchPromise = fetch(url, {
 				...options,
 				signal: controller.signal,
 			});
-			clearTimeout(timeoutId);
+			const response = await Promise.race([fetchPromise, timeoutPromise]);
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
 			return response;
 		} catch (error: unknown) {
-			clearTimeout(timeoutId);
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
 			throw error;
 		}
 	}

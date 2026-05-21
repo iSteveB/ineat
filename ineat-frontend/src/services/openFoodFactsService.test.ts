@@ -262,7 +262,10 @@ describe('OpenFoodFactsService', () => {
 			// Le timeout devrait déclencher une erreur
 			await expect(
 				slowService.getProductByBarcode(barcode)
-			).rejects.toThrow();
+			).rejects.toMatchObject({
+				type: 'TIMEOUT',
+				message: OFF_ERROR_MESSAGES.TIMEOUT,
+			});
 
 			expect(mockFetch).toHaveBeenCalledTimes(1);
 		});

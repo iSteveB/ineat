@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { LogoutButton } from './LogoutButton';
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from '@tanstack/react-router';
@@ -52,7 +52,7 @@ describe('LogoutButton', () => {
 		expect(button).toHaveTextContent('Se déconnecter');
 	});
 
-	it("appelle logout et navigate lorsqu'on clique sur le bouton", () => {
+	it("appelle logout et navigate lorsqu'on clique sur le bouton", async () => {
 		render(<LogoutButton />);
 
 		const button = screen.getByTestId('logout-button');
@@ -62,8 +62,13 @@ describe('LogoutButton', () => {
 		expect(logoutMock).toHaveBeenCalledTimes(1);
 
 		// Vérifier que navigate a été appelé avec le bon paramètre
-		expect(navigateMock).toHaveBeenCalledTimes(1);
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/login' });
+		await waitFor(() => {
+			expect(navigateMock).toHaveBeenCalledTimes(1);
+		});
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/login',
+			replace: true,
+		});
 	});
 
 	it('accepte et applique des props additionnelles', () => {

@@ -3,9 +3,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import RegisterForm from './RegisterForm';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
-import { RegisterDataSchema } from '@/schemas';
 import userEvent from '@testing-library/user-event';
-import { z } from 'zod';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
@@ -14,12 +12,6 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/stores/authStore', () => ({
 	useAuthStore: vi.fn(),
-}));
-
-vi.mock('@/schemas/authSchema', () => ({
-	RegisterDataSchema: {
-		parse: vi.fn(),
-	},
 }));
 
 describe('RegisterForm', () => {
@@ -42,9 +34,6 @@ describe('RegisterForm', () => {
 			isLoading: false,
 			error: null,
 		});
-		(
-			RegisterDataSchema.parse as ReturnType<typeof vi.fn>
-		).mockImplementation(() => true);
 	});
 
 	it('rend correctement la vue initiale avec le bouton Google et le bouton email', () => {
@@ -197,27 +186,6 @@ describe('RegisterForm', () => {
 	});
 
 	it('affiche une erreur si la validation du formulaire échoue', async () => {
-		// Créer une instance typée de ZodError
-		const zodErrors: z.ZodIssue[] = [
-			{
-				code: 'too_small',
-				path: ['password'],
-				message: 'Le mot de passe doit contenir au moins 8 caractères',
-				minimum: 8,
-				type: 'string',
-				inclusive: true,
-			},
-		];
-
-		const validationError = new z.ZodError(zodErrors);
-
-		// Faire échouer la validation
-		(
-			RegisterDataSchema.parse as ReturnType<typeof vi.fn>
-		).mockImplementation(() => {
-			throw validationError;
-		});
-
 		render(<RegisterForm />);
 
 		// Afficher le formulaire
@@ -310,27 +278,6 @@ describe('RegisterForm', () => {
 	});
 
 	it('efface les erreurs lors de la modification des champs', async () => {
-		// Créer une instance typée de ZodError
-		const zodErrors: z.ZodIssue[] = [
-			{
-				code: 'too_small',
-				path: ['password'],
-				message: 'Le mot de passe doit contenir au moins 8 caractères',
-				minimum: 8,
-				type: 'string',
-				inclusive: true,
-			},
-		];
-
-		const validationError = new z.ZodError(zodErrors);
-
-		// Faire échouer la validation lors du premier appel uniquement
-		(RegisterDataSchema.parse as ReturnType<typeof vi.fn>)
-			.mockImplementationOnce(() => {
-				throw validationError;
-			})
-			.mockImplementation(() => true);
-
 		render(<RegisterForm />);
 
 		// Afficher le formulaire
