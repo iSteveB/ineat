@@ -138,6 +138,23 @@ describe('apiClient', () => {
 			}
 		});
 
+		it('devrait normaliser les erreurs premium 403', async () => {
+			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+				ok: false,
+				status: 403,
+				json: vi.fn().mockResolvedValue({
+					message:
+						'Un abonnement Premium est requis pour accéder à cette fonctionnalité',
+				}),
+			});
+
+			await expect(apiClient.fetch('/receipt/upload')).rejects.toMatchObject({
+				status: 403,
+				message:
+					'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.',
+			});
+		});
+
 		it('devrait avoir un mécanisme de timeout configuré à 30 secondes', async () => {
 			// Espionner la méthode setTimeout
 			const setTimeoutSpy = vi.spyOn(global, 'setTimeout');

@@ -57,7 +57,10 @@ export const apiClient = {
 					// Si on ne peut pas parser le JSON, on utilise le message par défaut
 				}
 
-				throw new ApiRequestError(errorMessage, response.status);
+				throw new ApiRequestError(
+					normalizeApiErrorMessage(errorMessage, response.status),
+					response.status
+				);
 			}
 
 			// Si la réponse est vide (204 No Content), on retourne null
@@ -138,3 +141,14 @@ export const apiClient = {
 		return this.fetch<T>(endpoint, { ...options, method: 'DELETE' });
 	},
 };
+
+function normalizeApiErrorMessage(message: string, status: number): string {
+	if (
+		status === 403 &&
+		/premium|abonnement/i.test(message)
+	) {
+		return 'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.';
+	}
+
+	return message;
+}

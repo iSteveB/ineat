@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ReceiptCamera } from '@/features/receipt/ReceiptCamera';
 import { ReceiptProcessingLoader } from '@/features/receipt/ReceiptProcessingLoader';
+import { PremiumFeatureNotice } from '@/components/premium/PremiumFeatureNotice';
 import { useUser } from '@/hooks/useAuth';
 import { useReceiptStore, receiptSelectors } from '@/stores/receiptStore';
 
@@ -55,16 +56,6 @@ export const ReceiptScanPage = () => {
 		user?.subscription === 'PREMIUM' || user?.subscription === 'ADMIN';
 
 	// ===== EFFETS =====
-
-	/**
-	 * Vérifier le statut premium au chargement
-	 */
-	useEffect(() => {
-		if (!userLoading && !isPremium) {
-			toast.error('Cette fonctionnalité nécessite un abonnement Premium');
-			navigate({ to: '/app/subscription' });
-		}
-	}, [isPremium, userLoading, navigate]);
 
 	/**
 	 * Redirection automatique vers résultats quand complété
@@ -323,27 +314,10 @@ export const ReceiptScanPage = () => {
 	if (!isPremium) {
 		return (
 			<div className='container mx-auto px-4 py-8'>
-				<div className='max-w-md mx-auto'>
-					<Card>
-						<CardContent className='p-8 text-center'>
-							<Crown className='size-16 text-yellow-500 mx-auto mb-4' />
-							<h2 className='text-xl font-semibold mb-2'>
-								Fonctionnalité Premium
-							</h2>
-							<p className='text-muted-foreground mb-4'>
-								Le scan de tickets nécessite un abonnement
-								Premium
-							</p>
-							<Button
-								onClick={() =>
-									navigate({ to: '/app/subscription' })
-								}
-								className='w-full'>
-								Découvrir Premium
-							</Button>
-						</CardContent>
-					</Card>
-				</div>
+				<PremiumFeatureNotice
+					title='Scan de tickets réservé à Premium'
+					description='Le scan de tickets déclenche un traitement OCR puis une analyse automatique des articles. Cette capacité est protégée côté serveur et réservée aux abonnés Premium.'
+				/>
 			</div>
 		);
 	}
