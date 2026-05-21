@@ -19,8 +19,10 @@ import {
   validateLoginDto,
   LoginDto,
 } from '../dto/auth.dto';
-import { Request as ExpressRequest } from 'express';
-import { Response as ExpressResponse } from 'express';
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
 
 interface RequestWithUser extends ExpressRequest {

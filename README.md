@@ -76,13 +76,26 @@ Par defaut:
 
 ## Commandes Utiles
 
+Depuis la racine, les commandes de validation reproduisent les jobs CI:
+
+```bash
+pnpm run ci:frontend
+pnpm run ci:backend
+pnpm run ci
+```
+
+La validation backend utilise une `DATABASE_URL` factice pour `prisma generate`
+et les tests unitaires. Elle ne lance pas de migration ni de connexion a une
+base reelle.
+
 Backend:
 
 ```bash
 cd ineat-backend
 pnpm run dev
 pnpm run build
-pnpm run lint
+pnpm run lint        # corrige automatiquement
+pnpm run lint:check  # verification CI sans modification
 pnpm run test
 pnpm run test:e2e
 pnpm run prisma:migrate

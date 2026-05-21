@@ -17,9 +17,10 @@ import {
   ApiParam,
   ApiBody,
   ApiBearerAuth,
+  ApiProperty,
+  ApiPropertyOptional,
 } from '@nestjs/swagger';
 import { IsOptional, IsBoolean, IsDateString } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RequiresPremium } from '../../auth/decorators/requires-premium.decorator';
 import { PremiumGuard } from '../../auth/guards/premium.guard';

@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "ci": "pnpm run ci:frontend && pnpm run ci:backend",
+    "ci:frontend": "pnpm --dir ineat-frontend run lint && pnpm --dir ineat-frontend run test:run && pnpm --dir ineat-frontend run build",
+    "ci:backend": "pnpm --dir ineat-backend run lint:check && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm --dir ineat-backend exec jest --runInBand --no-watchman && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm --dir ineat-backend run build",
+    "test": "pnpm run ci"
   },
   "keywords": [],
   "author": "",
