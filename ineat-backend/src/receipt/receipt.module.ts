@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { BullModule } from '@nestjs/bull';
 
 // Services
 import { ReceiptService } from './services/receipt.service';
@@ -7,6 +8,8 @@ import { OcrService } from './services/ocr.service';
 import { CloudinaryStorageService } from './services/cloudinary-storage.service';
 import { ReceiptAnalysisService } from './services/receipt-analysis.service';
 import { ReceiptToInventoryService } from './services/receipt-to-inventory.service';
+import { ReceiptProcessingQueue } from './queues/receipt-processing.queue';
+import { ReceiptProcessor } from './processors/receipt.processor';
 
 // Providers OCR
 import { MindeeOcrProvider } from './providers/mindee-ocr.provider';
@@ -25,7 +28,14 @@ import { LlmService } from './services/llm.service';
 import { ClaudeService } from './services/claude.service';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, NotificationModule],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    NotificationModule,
+    BullModule.registerQueue({
+      name: 'receipt-processing',
+    }),
+  ],
   controllers: [
     ReceiptHistoryController,
     ReceiptStatusController,
@@ -43,11 +53,18 @@ import { ClaudeService } from './services/claude.service';
     CloudinaryStorageService,
     ReceiptAnalysisService,
     ReceiptToInventoryService,
+    ReceiptProcessingQueue,
+    ReceiptProcessor,
 
     // OCR Providers
     MindeeOcrProvider,
     TesseractOcrProvider,
   ],
-  exports: [ReceiptService, OcrService, CloudinaryStorageService],
+  exports: [
+    ReceiptService,
+    OcrService,
+    CloudinaryStorageService,
+    ReceiptProcessingQueue,
+  ],
 })
 export class ReceiptModule {}
