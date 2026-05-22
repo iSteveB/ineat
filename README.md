@@ -133,6 +133,7 @@ Le coeur produit repose sur ce flux:
 
 - Backend: `ineat-backend/README.md`
 - Frontend: `ineat-frontend/README.md`
+- Deploiement production: `docs/production-deployment.md`
 
 ## Notes De Developpement
 

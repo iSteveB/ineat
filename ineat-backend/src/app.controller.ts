@@ -8,12 +8,14 @@ import { ObservabilityService } from './observability/observability.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AdminGuard } from './auth/guards/admin.guard';
 import { RequiresAdmin } from './auth/decorators/requires-admin.decorator';
+import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
     private readonly observabilityService: ObservabilityService,
+    private readonly prismaService: PrismaService,
     @InjectQueue('receipt-processing')
     private readonly receiptQueue: Queue<ReceiptProcessingJobData>,
   ) {}
@@ -59,12 +61,34 @@ export class AppController {
   }
 
   @Get('health')
-  healthCheck(@Res() res: Response): void {
-    res.status(HttpStatus.OK).json({
-      status: 'ok',
+  async healthCheck(@Res() res: Response): Promise<void> {
+    const checks = {
+      database: false,
+      redis: false,
+    };
+
+    try {
+      await this.prismaService.$queryRawUnsafe('SELECT 1');
+      checks.database = true;
+    } catch {
+      checks.database = false;
+    }
+
+    try {
+      await this.receiptQueue.isReady();
+      checks.redis = true;
+    } catch {
+      checks.redis = false;
+    }
+
+    const isHealthy = checks.database && checks.redis;
+
+    res.status(isHealthy ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).json({
+      status: isHealthy ? 'ok' : 'error',
       timestamp: new Date().toISOString(),
       service: 'ineat-backend',
       version: '1.0.0',
+      checks,
     });
   }
 

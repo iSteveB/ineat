@@ -1,7 +1,9 @@
 [build]
 builder = "nixpacks"
 nixpacksConfigPath = "nixpacks.toml"
-buildCommand = "npm run build"
+buildCommand = "pnpm run build"
 
 [deploy]
 startCommand = "caddy run --config Caddyfile --adapter caddyfile"
+healthcheckPath = "/health"
+healthcheckTimeout = 120

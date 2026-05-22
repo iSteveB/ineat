@@ -3,6 +3,7 @@ import { getQueueToken } from '@nestjs/bull';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ObservabilityService } from './observability/observability.service';
+import { PrismaService } from './prisma/prisma.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -16,6 +17,12 @@ describe('AppController', () => {
           provide: ObservabilityService,
           useValue: {
             getSnapshot: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            $queryRawUnsafe: jest.fn(),
           },
         },
         {

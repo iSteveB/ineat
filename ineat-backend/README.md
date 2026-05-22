@@ -95,10 +95,19 @@ pnpm run build
 pnpm run start:prod
 ```
 
+Production Railway:
+
+```bash
+pnpm run deploy:start
+```
+
+Cette commande applique `prisma migrate deploy`, puis demarre l'API NestJS.
+
 ## Commandes
 
 ```bash
 pnpm run build              # prisma generate + compilation Nest
+pnpm run deploy:start       # migrations prod + demarrage NestJS
 pnpm run lint               # ESLint avec fix
 pnpm run format             # Prettier sur src et test
 pnpm run test               # tests unitaires Jest
