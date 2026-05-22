@@ -217,6 +217,8 @@ export const InventoryFiltersSchema = z.object({
 	storageLocation: z.string().optional(),
 	expiryStatus: z.array(ExpiryStatusSchema).optional(),
 	expiringWithinDays: z.coerce.number().int().min(1).max(365).optional(),
+	page: z.coerce.number().int().min(1).optional(),
+	limit: z.coerce.number().int().min(1).max(100).optional(),
 	dateRange: DateRangeFilterSchema.optional(),
 	priceRange: z
 		.object({

@@ -386,9 +386,10 @@ export class ReceiptHistoryController {
    * Mappe un ticket vers l'item d'historique
    */
   private mapReceiptToHistoryItem(receipt: any): ReceiptHistoryItemDto {
-    const totalItems = receipt.items?.length || 0;
+    const items = receipt.ReceiptItem || receipt.items || [];
+    const totalItems = items.length;
     const validatedItems =
-      receipt.items?.filter((item: any) => item.validated)?.length || 0;
+      items.filter((item: any) => item.validated)?.length || 0;
     const validationProgress =
       totalItems > 0 ? Math.round((validatedItems / totalItems) * 100) : 0;
 

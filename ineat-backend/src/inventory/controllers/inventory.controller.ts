@@ -657,6 +657,20 @@ export class InventoryController {
     description: 'Filtrer les produits qui périment dans X jours',
     example: 7,
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Numéro de page, active une réponse paginée',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: "Nombre d'éléments par page (1-100)",
+    example: 20,
+  })
   @ApiResponse({
     status: 200,
     description: 'Inventaire récupéré avec succès',
@@ -708,6 +722,8 @@ export class InventoryController {
     @Query('category') category?: string,
     @Query('storageLocation') storageLocation?: string,
     @Query('expiringWithinDays') expiringWithinDays?: number,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
   ) {
     const filters = {
       ...(category && { category }),
@@ -717,10 +733,31 @@ export class InventoryController {
       }),
     };
 
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+    const pagination =
+      Number.isFinite(parsedPage) || Number.isFinite(parsedLimit)
+        ? {
+            page: Number.isFinite(parsedPage) ? parsedPage : 1,
+            limit: Number.isFinite(parsedLimit) ? parsedLimit : 20,
+          }
+        : undefined;
+
     const inventory = await this.inventoryService.getUserInventory(
       req.user.id,
       filters,
+      pagination,
     );
+
+    if (!Array.isArray(inventory)) {
+      return {
+        success: true,
+        data: {
+          items: inventory.items.map((item) => this.formatInventoryItem(item)),
+          pagination: inventory.pagination,
+        },
+      };
+    }
 
     return inventory.map((item) => this.formatInventoryItem(item));
   }
@@ -849,9 +886,10 @@ export class InventoryController {
     @Req() req: AuthenticatedRequest,
     @Param('id', ParseUUIDPipe) inventoryItemId: string,
   ) {
-    // Récupérer l'item via le service getUserInventory et le filtrer
-    const inventory = await this.inventoryService.getUserInventory(req.user.id);
-    const item = inventory.find((item) => item.id === inventoryItemId);
+    const item = await this.inventoryService.getInventoryItemById(
+      req.user.id,
+      inventoryItemId,
+    );
 
     if (!item) {
       throw new BadRequestException(

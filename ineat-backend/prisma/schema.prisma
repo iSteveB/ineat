@@ -73,6 +73,10 @@ model InventoryItem {
   @@index([expiryDate])
   @@index([productId])
   @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, expiryDate])
+  @@index([userId, storageLocation])
+  @@index([userId, productId, storageLocation, expiryDate])
 }
 
 model Notification {
@@ -147,6 +151,10 @@ model Receipt {
   @@index([purchaseDate])
   @@index([status])
   @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, status, createdAt])
+  @@index([userId, purchaseDate])
+  @@index([userId, totalAmount])
 }
 
 model ReceiptItem {

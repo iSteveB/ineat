@@ -24,6 +24,7 @@ vi.mock('@/stores/authStore', () => ({
 vi.mock('@/services/inventoryService', () => ({
 	inventoryService: {
 		getInventory: vi.fn(),
+		getInventoryStats: vi.fn(),
 		getRecentProducts: vi.fn(),
 	},
 }));
@@ -82,6 +83,17 @@ describe('DashboardPage', () => {
 		(inventoryService.getInventory as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce([{ id: 'item-1' }, { id: 'item-2' }])
 			.mockResolvedValueOnce([{ id: 'expiring-1' }]);
+		(inventoryService.getInventoryStats as ReturnType<typeof vi.fn>)
+			.mockResolvedValue({
+				totalItems: 2,
+				expiryBreakdown: {
+					good: 1,
+					warning: 1,
+					critical: 0,
+					expired: 0,
+					unknown: 0,
+				},
+			});
 		(inventoryService.getRecentProducts as ReturnType<typeof vi.fn>).mockResolvedValue([
 			{ id: 'recent-1' },
 			{ id: 'recent-2' },
@@ -121,8 +133,13 @@ describe('DashboardPage', () => {
 			'1'
 		);
 		expect(inventoryService.getRecentProducts).toHaveBeenCalledWith(5);
+		expect(inventoryService.getInventoryStats).toHaveBeenCalled();
+		expect(inventoryService.getInventory).toHaveBeenCalledWith({
+			limit: 100,
+		});
 		expect(inventoryService.getInventory).toHaveBeenCalledWith({
 			expiringWithinDays: 7,
+			limit: 20,
 		});
 	});
 
@@ -130,6 +147,17 @@ describe('DashboardPage', () => {
 		(inventoryService.getInventory as ReturnType<typeof vi.fn>).mockRejectedValue(
 			new Error('API indisponible')
 		);
+		(inventoryService.getInventoryStats as ReturnType<typeof vi.fn>)
+			.mockResolvedValue({
+				totalItems: 0,
+				expiryBreakdown: {
+					good: 0,
+					warning: 0,
+					critical: 0,
+					expired: 0,
+					unknown: 0,
+				},
+			});
 		(inventoryService.getRecentProducts as ReturnType<typeof vi.fn>).mockResolvedValue(
 			[]
 		);
@@ -150,6 +178,17 @@ describe('DashboardPage', () => {
 		(inventoryService.getInventory as ReturnType<typeof vi.fn>)
 			.mockResolvedValueOnce([])
 			.mockResolvedValueOnce([]);
+		(inventoryService.getInventoryStats as ReturnType<typeof vi.fn>)
+			.mockResolvedValue({
+				totalItems: 0,
+				expiryBreakdown: {
+					good: 0,
+					warning: 0,
+					critical: 0,
+					expired: 0,
+					unknown: 0,
+				},
+			});
 		(inventoryService.getRecentProducts as ReturnType<typeof vi.fn>)
 			.mockResolvedValue([]);
 

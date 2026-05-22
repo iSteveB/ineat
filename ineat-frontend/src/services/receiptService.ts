@@ -568,10 +568,17 @@ class ReceiptService {
 		return {
 			receipts: responseData.receipts || [],
 			total: responseData.pagination.totalItems || 0,
-			limit: responseData.pagination.itemsPerPage || filters.limit || 20,
+			limit:
+				responseData.pagination.pageSize ||
+				responseData.pagination.itemsPerPage ||
+				filters.limit ||
+				20,
 			offset:
 				((responseData.pagination.currentPage || 1) - 1) *
-				(responseData.pagination.itemsPerPage || filters.limit || 20),
+				(responseData.pagination.pageSize ||
+					responseData.pagination.itemsPerPage ||
+					filters.limit ||
+					20),
 		};
 	}
 

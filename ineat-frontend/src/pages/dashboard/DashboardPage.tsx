@@ -33,12 +33,23 @@ const Dashboard: FC = () => {
 
 	// Récupération de l'inventaire complet pour le ScoreWidget
 	const {
-		data: fullInventory = [],
+		data: scoreInventory = [],
 		isLoading: isLoadingInventory,
 		error: inventoryError,
 	} = useQuery({
-		queryKey: ['fullInventory'],
-		queryFn: () => inventoryService.getInventory(),
+		queryKey: ['dashboardScoreInventory'],
+		queryFn: () => inventoryService.getInventory({ limit: 100 }),
+		staleTime: 5 * 60 * 1000,
+	});
+
+	const {
+		data: inventoryStats,
+		isLoading: isLoadingStats,
+		error: statsError,
+	} = useQuery({
+		queryKey: ['inventoryStats'],
+		queryFn: () => inventoryService.getInventoryStats(),
+		staleTime: 2 * 60 * 1000,
 	});
 
 	// Récupération des produits récents (5 derniers)
@@ -49,6 +60,7 @@ const Dashboard: FC = () => {
 	} = useQuery({
 		queryKey: ['recentProducts'],
 		queryFn: () => inventoryService.getRecentProducts(5),
+		staleTime: 60 * 1000,
 	});
 
 	// Récupération des produits qui expirent dans les 7 prochains jours
@@ -58,17 +70,20 @@ const Dashboard: FC = () => {
 		error: expiringError,
 	} = useQuery({
 		queryKey: ['expiringProducts'],
-		queryFn: () => inventoryService.getInventory({ expiringWithinDays: 7 }),
+		queryFn: () =>
+			inventoryService.getInventory({ expiringWithinDays: 7, limit: 20 }),
+		staleTime: 60 * 1000,
 	});
 
 	// ===== CALCULS DÉRIVÉS =====
 
 	// État de chargement global
 	const isLoading =
-		isLoadingInventory || isLoadingRecent || isLoadingExpiring;
+		isLoadingInventory || isLoadingStats || isLoadingRecent || isLoadingExpiring;
 
 	// Gestion des erreurs
-	const error = inventoryError || recentError || expiringError;
+	const error = inventoryError || statsError || recentError || expiringError;
+	const totalInventoryItems = inventoryStats?.totalItems ?? scoreInventory.length;
 
 	const priorityAction: DashboardAction =
 		expiringProducts.length > 0
@@ -79,7 +94,7 @@ const Dashboard: FC = () => {
 					to: '/app/inventory',
 					tone: 'warning',
 				}
-			: fullInventory.length === 0
+			: totalInventoryItems === 0
 				? {
 						title: 'Inventaire vide',
 						description:
@@ -162,7 +177,7 @@ const Dashboard: FC = () => {
 						<div className='grid grid-cols-3 gap-2 text-sm sm:max-w-md'>
 							<div className='rounded-md bg-neutral-100 px-3 py-2'>
 								<p className='font-semibold text-neutral-900'>
-									{fullInventory.length}
+									{totalInventoryItems}
 								</p>
 								<p className='text-xs text-neutral-600'>
 									en stock
@@ -220,10 +235,18 @@ const Dashboard: FC = () => {
 			</section>
 
 			<div className='flex flex-col gap-6'>
-				<InventoryWidget />
+				<InventoryWidget
+					totalProducts={inventoryStats?.totalItems}
+					soonExpiringCount={
+						(inventoryStats?.expiryBreakdown.critical ?? 0) +
+						(inventoryStats?.expiryBreakdown.warning ?? 0)
+					}
+					criticalCount={inventoryStats?.expiryBreakdown.critical}
+					expiredCount={inventoryStats?.expiryBreakdown.expired}
+				/>
 
 				{/* Widget Score avec données réelles */}
-				<ScoreWidget inventory={fullInventory} />
+				<ScoreWidget inventory={scoreInventory} />
 
 				{/* Widget Budget */}
 				<BudgetWidget />

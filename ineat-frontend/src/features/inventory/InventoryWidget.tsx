@@ -25,7 +25,18 @@ interface InventoryWidgetProps {
 	expiredCount?: number;
 }
 
-export const InventoryWidget: FC<InventoryWidgetProps> = () => {
+export const InventoryWidget: FC<InventoryWidgetProps> = ({
+	totalProducts: providedTotalProducts,
+	soonExpiringCount: providedSoonExpiringCount,
+	criticalCount: providedCriticalCount,
+	expiredCount: providedExpiredCount,
+}) => {
+	const hasProvidedStats =
+		providedTotalProducts !== undefined ||
+		providedSoonExpiringCount !== undefined ||
+		providedCriticalCount !== undefined ||
+		providedExpiredCount !== undefined;
+
 	// Utiliser les mêmes hooks que l'InventoryPage pour assurer la cohérence
 	const items = useInventoryItems();
 	const isLoading = useInventoryLoading();
@@ -34,17 +45,24 @@ export const InventoryWidget: FC<InventoryWidgetProps> = () => {
 
 	// Récupérer les données à l'initialisation du composant
 	useEffect(() => {
-		fetchInventoryItems();
-	}, [fetchInventoryItems]);
+		if (!hasProvidedStats) {
+			fetchInventoryItems();
+		}
+	}, [fetchInventoryItems, hasProvidedStats]);
 
 	// Calculer les statistiques directement depuis les items
-	const totalProducts = items.length;
+	const totalProducts = providedTotalProducts ?? items.length;
 	
 	// Calculer les comptes par statut d'expiration
-	const expiredCount = items.filter(item => item.expiryStatus === 'EXPIRED').length;
-	const criticalCount = items.filter(item => item.expiryStatus === 'CRITICAL').length;
+	const expiredCount =
+		providedExpiredCount ??
+		items.filter((item) => item.expiryStatus === 'EXPIRED').length;
+	const criticalCount =
+		providedCriticalCount ??
+		items.filter((item) => item.expiryStatus === 'CRITICAL').length;
 	const warningCount = items.filter(item => item.expiryStatus === 'WARNING').length;
-	const soonExpiringCount = criticalCount + warningCount;
+	const soonExpiringCount =
+		providedSoonExpiringCount ?? criticalCount + warningCount;
 
 	// Calculer le statut global de l'inventaire
 	const getInventoryStatus = (): string => {
@@ -106,7 +124,7 @@ export const InventoryWidget: FC<InventoryWidgetProps> = () => {
 	const colors = getStatusColors(status);
 
 	// Affichage pendant le chargement
-	if (isLoading) {
+	if (!hasProvidedStats && isLoading) {
 		return (
 			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
 				<div className='absolute top-0 right-0 size-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />
@@ -132,7 +150,7 @@ export const InventoryWidget: FC<InventoryWidgetProps> = () => {
 	}
 
 	// Affichage en cas d'erreur
-	if (error) {
+	if (!hasProvidedStats && error) {
 		return (
 			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
 				<div className='absolute top-0 right-0 size-24 bg-gradient-to-br from-red-100/20 to-orange-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />

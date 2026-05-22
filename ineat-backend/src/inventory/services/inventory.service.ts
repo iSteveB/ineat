@@ -57,6 +57,23 @@ export interface ProductCreatedWithBudgetDto extends ProductCreatedResponseDto {
 
 type ExpiryStatus = 'GOOD' | 'WARNING' | 'CRITICAL' | 'EXPIRED' | 'UNKNOWN';
 
+export interface InventoryPaginationOptions {
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedInventoryResult {
+  items: any[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
 @Injectable()
 export class InventoryService {
   constructor(
@@ -234,7 +251,8 @@ export class InventoryService {
       storageLocation?: string;
       expiringWithinDays?: number;
     },
-  ) {
+    pagination?: InventoryPaginationOptions,
+  ): Promise<any[] | PaginatedInventoryResult> {
     const where: any = {
       userId,
     };
@@ -264,7 +282,14 @@ export class InventoryService {
       }
     }
 
-    return await this.prisma.inventoryItem.findMany({
+    const page =
+      pagination?.page && pagination.page > 0 ? Math.floor(pagination.page) : 1;
+    const limit =
+      pagination?.limit && pagination.limit > 0
+        ? Math.min(Math.floor(pagination.limit), 100)
+        : undefined;
+
+    const query = {
       where,
       include: {
         Product: {
@@ -274,9 +299,48 @@ export class InventoryService {
         },
       },
       orderBy: [
-        { expiryDate: 'asc' }, // Produits qui périment en premier
-        { createdAt: 'desc' }, // Plus récents en premier pour ceux sans date
+        { expiryDate: 'asc' as const }, // Produits qui périment en premier
+        { createdAt: 'desc' as const }, // Plus récents en premier pour ceux sans date
       ],
+      ...(limit ? { skip: (page - 1) * limit, take: limit } : {}),
+    };
+
+    if (!limit) {
+      return await this.prisma.inventoryItem.findMany(query);
+    }
+
+    const [items, totalItems] = await Promise.all([
+      this.prisma.inventoryItem.findMany(query),
+      this.prisma.inventoryItem.count({ where }),
+    ]);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      pagination: {
+        currentPage: page,
+        pageSize: limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
+
+  async getInventoryItemById(userId: string, inventoryItemId: string) {
+    return await this.prisma.inventoryItem.findFirst({
+      where: {
+        id: inventoryItemId,
+        userId,
+      },
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
+      },
     });
   }
 
@@ -874,25 +938,105 @@ export class InventoryService {
    * Récupère les statistiques d'inventaire pour un utilisateur
    */
   async getInventoryStats(userId: string): Promise<InventoryStats> {
-    // Implémentation existante des statistiques...
-    // (Code non modifié car pas concerné par les nouveaux champs)
+    const now = new Date();
+    const twoDaysFromNow = new Date(now);
+    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+    const fiveDaysFromNow = new Date(now);
+    fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const [
+      totalItems,
+      valueStats,
+      expired,
+      critical,
+      warning,
+      good,
+      unknown,
+      storageStats,
+      itemsAddedThisWeek,
+    ] = await Promise.all([
+      this.prisma.inventoryItem.count({ where: { userId } }),
+      this.prisma.inventoryItem.aggregate({
+        where: { userId },
+        _sum: {
+          purchasePrice: true,
+          quantity: true,
+        },
+        _avg: {
+          purchasePrice: true,
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, expiryDate: { lt: now } },
+      }),
+      this.prisma.inventoryItem.count({
+        where: {
+          userId,
+          expiryDate: {
+            gte: now,
+            lte: twoDaysFromNow,
+          },
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: {
+          userId,
+          expiryDate: {
+            gt: twoDaysFromNow,
+            lte: fiveDaysFromNow,
+          },
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, expiryDate: { gt: fiveDaysFromNow } },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, expiryDate: null },
+      }),
+      this.prisma.inventoryItem.groupBy({
+        by: ['storageLocation'],
+        where: { userId },
+        _count: { _all: true },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, createdAt: { gte: oneWeekAgo } },
+      }),
+    ]);
+
+    const storageBreakdown = Object.fromEntries(
+      storageStats.map((stat) => {
+        const key = stat.storageLocation || 'unknown';
+        const count = stat._count._all;
+
+        return [
+          key,
+          {
+            count,
+            percentage:
+              totalItems > 0 ? Math.round((count / totalItems) * 100) : 0,
+          },
+        ];
+      }),
+    );
 
     return {
-      totalItems: 0,
-      totalValue: 0,
-      totalQuantity: 0,
-      averageItemValue: 0,
+      totalItems,
+      totalValue: valueStats._sum.purchasePrice || 0,
+      totalQuantity: valueStats._sum.quantity || 0,
+      averageItemValue: valueStats._avg.purchasePrice || 0,
       expiryBreakdown: {
-        good: 0,
-        warning: 0,
-        critical: 0,
-        expired: 0,
-        unknown: 0,
+        good,
+        warning,
+        critical,
+        expired,
+        unknown,
       },
       categoryBreakdown: [],
-      storageBreakdown: {},
+      storageBreakdown,
       recentActivity: {
-        itemsAddedThisWeek: 0,
+        itemsAddedThisWeek,
         itemsConsumedThisWeek: 0,
       },
     };
