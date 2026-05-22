@@ -14,6 +14,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ReceiptModule } from './receipt/receipt.module';
 import { NotificationModule } from './notification/notification.module';
 import { BullModule } from '@nestjs/bull';
+import { ObservabilityModule } from './observability/observability.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { BullModule } from '@nestjs/bull';
     BullModule.registerQueue({
       name: 'receipt-processing',
     }),
+    ObservabilityModule,
     PrismaModule,
     AuthModule,
     InventoryModule,

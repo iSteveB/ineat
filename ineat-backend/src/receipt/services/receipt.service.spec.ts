@@ -27,6 +27,11 @@ describe('ReceiptService', () => {
   const receiptProcessingQueue = {
     addReceiptProcessingJob: jest.fn(),
   };
+  const observabilityService = {
+    trackEvent: jest.fn(),
+    increment: jest.fn(),
+    recordTiming: jest.fn(),
+  };
 
   let service: ReceiptService;
 
@@ -40,6 +45,7 @@ describe('ReceiptService', () => {
       cloudinaryStorage as any,
       notificationService as any,
       receiptProcessingQueue as any,
+      observabilityService as any,
     );
   });
 

@@ -11,6 +11,7 @@ import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
 import { randomUUID } from 'crypto';
+import { ObservabilityService } from '../../observability/observability.service';
 
 interface GoogleUserData {
   email: string;
@@ -25,6 +26,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private observabilityService: ObservabilityService,
   ) {}
 
   private getAuthCookieOptions() {
@@ -48,10 +50,18 @@ export class AuthService {
     });
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
+      this.observabilityService.trackEvent('auth.login.success', 'info', 'Login success', {
+        userId: user.id,
+      });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash, ...result } = user;
       return result as SafeUserDto;
     }
+
+    this.observabilityService.trackEvent('auth.login.failure', 'warn', 'Login failure', {
+      emailDomain: email.split('@')[1] ?? 'unknown',
+      reason: user ? 'invalid_password' : 'user_not_found',
+    });
 
     return null;
   }
@@ -115,6 +125,15 @@ export class AuthService {
     });
 
     if (existingUser) {
+      this.observabilityService.trackEvent(
+        'auth.register.conflict',
+        'warn',
+        'Register conflict',
+        {
+          existingUserId: existingUser.id,
+          emailDomain: registerDto.email.split('@')[1] ?? 'unknown',
+        },
+      );
       throw new ConflictException('Cet email est déjà utilisé');
     }
 
@@ -140,6 +159,16 @@ export class AuthService {
     // Supprimer le mot de passe avant de renvoyer l'utilisateur
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _, ...user } = newUser;
+
+    this.observabilityService.trackEvent(
+      'auth.register.success',
+      'info',
+      'User registered',
+      {
+        userId: newUser.id,
+        profileType: newUser.profileType,
+      },
+    );
 
     return this.setCookies(user as SafeUserDto, response);
   }
@@ -187,6 +216,12 @@ export class AuthService {
     });
 
     if (!user) {
+      this.observabilityService.trackEvent(
+        'auth.profile.not_found',
+        'warn',
+        'Profile user not found',
+        { userId },
+      );
       throw new UnauthorizedException('Utilisateur non trouvé');
     }
 

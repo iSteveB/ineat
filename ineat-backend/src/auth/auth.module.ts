@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PrismaModule } from '../prisma/prisma.module';
 import type { StringValue } from 'ms'
+import { ObservabilityModule } from '../observability/observability.module';
 
 // Stratégies
 import { LocalStrategy } from './strategies/local.strategy';
@@ -24,6 +25,7 @@ import { PremiumGuard } from './guards/premium.guard';
 @Module({
   imports: [
     PrismaModule,
+    ObservabilityModule,
     PassportModule.register({
       session: false,
       defaultStrategy: 'jwt',

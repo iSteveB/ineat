@@ -31,6 +31,7 @@ import { randomUUID } from 'crypto';
 import { ClaudeService } from './claude.service';
 import { NotificationService } from '../../notification/notification.service';
 import { ReceiptProcessingQueue } from '../queues/receipt-processing.queue';
+import { ObservabilityService } from '../../observability/observability.service';
 
 /**
  * Mapper notre enum DocumentType vers l'enum Prisma
@@ -94,6 +95,7 @@ export class ReceiptService {
     private readonly cloudinaryStorage: CloudinaryStorageService,
     private readonly notificationService: NotificationService,
     private readonly receiptProcessingQueue: ReceiptProcessingQueue,
+    private readonly observabilityService: ObservabilityService,
   ) {}
 
   /**
@@ -103,6 +105,20 @@ export class ReceiptService {
    * @returns Receipt créé avec status PROCESSING
    */
   async createReceipt(dto: CreateReceiptDto) {
+    const uploadStartTime = Date.now();
+
+    this.observabilityService.increment('receipt.upload.requested');
+    this.observabilityService.trackEvent(
+      'receipt.upload.requested',
+      'info',
+      'Receipt upload requested',
+      {
+        userId: dto.userId,
+        documentType: dto.documentType,
+        fileSize: dto.fileBuffer.length,
+      },
+    );
+
     this.logger.log(
       `Création receipt pour user ${dto.userId}, type: ${dto.documentType}`,
     );
@@ -114,6 +130,15 @@ export class ReceiptService {
         dto.fileBuffer,
         dto.userId,
         dto.documentType,
+      );
+      this.observabilityService.recordTiming(
+        'cloudinary.receipt_upload.duration_ms',
+        Date.now() - uploadStartTime,
+        {
+          userId: dto.userId,
+          documentType: dto.documentType,
+          fileSize: dto.fileBuffer.length,
+        },
       );
 
       // 2. Créer le receipt en DB avec status PROCESSING
@@ -138,6 +163,16 @@ export class ReceiptService {
       });
 
       this.logger.log(`✓ Receipt créé: ${receipt.id}`);
+      this.observabilityService.trackEvent(
+        'receipt.created',
+        'info',
+        'Receipt created and ready for queue',
+        {
+          userId: dto.userId,
+          receiptId: receipt.id,
+          documentType: dto.documentType,
+        },
+      );
 
       // 3. Planifier le traitement OCR + LLM via Bull/Redis.
       await this.receiptProcessingQueue.addReceiptProcessingJob({
@@ -154,6 +189,17 @@ export class ReceiptService {
 
       return receipt;
     } catch (error) {
+      this.observabilityService.increment('receipt.upload.failed');
+      this.observabilityService.trackEvent(
+        'receipt.upload.failed',
+        'error',
+        'Receipt upload failed',
+        {
+          userId: dto.userId,
+          documentType: dto.documentType,
+          error,
+        },
+      );
       this.logger.error(
         `Erreur création receipt: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       );
@@ -185,14 +231,37 @@ export class ReceiptService {
     try {
       // === ÉTAPE 1 : OCR avec Tesseract ===
       this.logger.debug(`[${receiptId}] Étape 1: OCR Tesseract...`);
+      const ocrStartTime = Date.now();
       const ocrResult = await this.ocrService.processDocument(
         fileBuffer,
         documentType,
       );
+      this.observabilityService.recordTiming(
+        'receipt.ocr.duration_ms',
+        Date.now() - ocrStartTime,
+        {
+          receiptId,
+          documentType,
+          success: ocrResult.success,
+          confidence: ocrResult.data?.confidence,
+        },
+      );
 
       if (!ocrResult.success || !ocrResult.data) {
+        this.observabilityService.increment('receipt.ocr.failed');
+        this.observabilityService.trackEvent(
+          'receipt.ocr.failed',
+          'error',
+          'Receipt OCR failed',
+          {
+            receiptId,
+            documentType,
+            error: ocrResult.error,
+          },
+        );
         throw new Error(ocrResult.error || 'Erreur OCR inconnue');
       }
+      this.observabilityService.increment('receipt.ocr.completed');
 
       const ocrText = this.extractTextFromOcrResult(ocrResult);
       this.logger.debug(
@@ -206,11 +275,32 @@ export class ReceiptService {
       if (this.claudeService.isAvailable()) {
         this.logger.debug(`[${receiptId}] Étape 2: Analyse Claude + MCP...`);
         try {
+          const llmStartTime = Date.now();
           llmAnalysis = await this.claudeService.analyzeReceiptText(ocrText);
+          this.observabilityService.recordTiming(
+            'receipt.llm.claude.duration_ms',
+            Date.now() - llmStartTime,
+            {
+              receiptId,
+              productsCount: llmAnalysis.products.length,
+              confidence: llmAnalysis.confidence,
+            },
+          );
+          this.observabilityService.increment('receipt.llm.claude.completed');
           this.logger.debug(
             `[${receiptId}] Claude terminé: ${llmAnalysis.products.length} produits détectés`,
           );
         } catch (claudeError) {
+          this.observabilityService.increment('receipt.llm.claude.failed');
+          this.observabilityService.trackEvent(
+            'receipt.llm.claude.failed',
+            'warn',
+            'Claude receipt analysis failed, trying fallback',
+            {
+              receiptId,
+              error: claudeError,
+            },
+          );
           this.logger.warn(
             `[${receiptId}] Claude échoué, fallback sur OpenAI: ${claudeError instanceof Error ? claudeError.message : 'Erreur inconnue'}`,
           );
@@ -218,11 +308,33 @@ export class ReceiptService {
           // FALLBACK : Essayer OpenAI
           if (this.llmService.isAvailable()) {
             try {
+              const llmStartTime = Date.now();
               llmAnalysis = await this.llmService.analyzeReceiptText(ocrText);
+              this.observabilityService.recordTiming(
+                'receipt.llm.openai.duration_ms',
+                Date.now() - llmStartTime,
+                {
+                  receiptId,
+                  provider: 'openai_fallback',
+                  productsCount: llmAnalysis.products.length,
+                  confidence: llmAnalysis.confidence,
+                },
+              );
+              this.observabilityService.increment('receipt.llm.openai.completed');
               this.logger.debug(
                 `[${receiptId}] OpenAI (fallback) terminé: ${llmAnalysis.products.length} produits détectés`,
               );
             } catch (openaiError) {
+              this.observabilityService.increment('receipt.llm.openai.failed');
+              this.observabilityService.trackEvent(
+                'receipt.llm.openai.failed',
+                'warn',
+                'OpenAI receipt fallback failed',
+                {
+                  receiptId,
+                  error: openaiError,
+                },
+              );
               this.logger.warn(
                 `[${receiptId}] OpenAI échoué également: ${openaiError instanceof Error ? openaiError.message : 'Erreur inconnue'}`,
               );
@@ -234,11 +346,33 @@ export class ReceiptService {
       else if (this.llmService.isAvailable()) {
         this.logger.debug(`[${receiptId}] Étape 2: Analyse OpenAI...`);
         try {
+          const llmStartTime = Date.now();
           llmAnalysis = await this.llmService.analyzeReceiptText(ocrText);
+          this.observabilityService.recordTiming(
+            'receipt.llm.openai.duration_ms',
+            Date.now() - llmStartTime,
+            {
+              receiptId,
+              provider: 'openai',
+              productsCount: llmAnalysis.products.length,
+              confidence: llmAnalysis.confidence,
+            },
+          );
+          this.observabilityService.increment('receipt.llm.openai.completed');
           this.logger.debug(
             `[${receiptId}] OpenAI terminé: ${llmAnalysis.products.length} produits détectés`,
           );
         } catch (llmError) {
+          this.observabilityService.increment('receipt.llm.openai.failed');
+          this.observabilityService.trackEvent(
+            'receipt.llm.openai.failed',
+            'warn',
+            'OpenAI receipt analysis failed, using OCR only',
+            {
+              receiptId,
+              error: llmError,
+            },
+          );
           this.logger.warn(
             `[${receiptId}] OpenAI échoué (fallback sur OCR seul): ${llmError instanceof Error ? llmError.message : 'Erreur inconnue'}`,
           );
@@ -268,6 +402,28 @@ export class ReceiptService {
       this.logger.log(
         `✓ Traitement réussi pour receipt ${receiptId} en ${processingTime}ms`,
       );
+      this.observabilityService.increment('receipt.processing.completed');
+      this.observabilityService.recordTiming(
+        'receipt.processing.duration_ms',
+        processingTime,
+        {
+          receiptId,
+          documentType,
+          productsCount: llmAnalysis?.products.length ?? 0,
+          usedLlm: Boolean(llmAnalysis),
+        },
+      );
+      this.observabilityService.trackEvent(
+        'receipt.processing.completed',
+        'info',
+        'Receipt processing completed',
+        {
+          receiptId,
+          documentType,
+          durationMs: processingTime,
+          productsCount: llmAnalysis?.products.length ?? 0,
+        },
+      );
       await this.notificationService.createReceiptNotification(
         receiptId,
         ReceiptStatus.COMPLETED,
@@ -278,6 +434,18 @@ export class ReceiptService {
 
       this.logger.error(
         `✗ Exception traitement receipt ${receiptId}: ${errorMessage}`,
+      );
+      this.observabilityService.increment('receipt.processing.failed');
+      this.observabilityService.trackEvent(
+        'receipt.processing.failed',
+        'error',
+        'Receipt processing failed',
+        {
+          receiptId,
+          documentType,
+          durationMs: Date.now() - startTime,
+          error,
+        },
       );
 
       if (options.throwOnError) {
@@ -305,6 +473,17 @@ export class ReceiptService {
     receiptId: string,
     errorMessage: string,
   ): Promise<void> {
+    this.observabilityService.increment('receipt.processing.final_failed');
+    this.observabilityService.trackEvent(
+      'receipt.processing.final_failed',
+      'error',
+      'Receipt processing permanently failed',
+      {
+        receiptId,
+        errorMessage,
+      },
+    );
+
     await this.prisma.receipt.update({
       where: { id: receiptId },
       data: {

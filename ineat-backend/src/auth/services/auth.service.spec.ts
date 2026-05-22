@@ -8,6 +8,7 @@ import * as bcrypt from 'bcryptjs';
 import { Response } from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
 import { SafeUserDto } from '../dto/auth.dto';
+import { ObservabilityService } from '../../observability/observability.service';
 
 // Mock des modules externes
 jest.mock('bcryptjs');
@@ -37,6 +38,14 @@ describe('AuthService', () => {
               findUnique: jest.fn(),
               create: jest.fn(),
             },
+          },
+        },
+        {
+          provide: ObservabilityService,
+          useValue: {
+            trackEvent: jest.fn(),
+            increment: jest.fn(),
+            recordTiming: jest.fn(),
           },
         },
         {

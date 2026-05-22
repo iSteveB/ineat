@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getQueueToken } from '@nestjs/bull';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ObservabilityService } from './observability/observability.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -11,6 +12,12 @@ describe('AppController', () => {
       controllers: [AppController],
       providers: [
         AppService,
+        {
+          provide: ObservabilityService,
+          useValue: {
+            getSnapshot: jest.fn(),
+          },
+        },
         {
           provide: getQueueToken('receipt-processing'),
           useValue: {

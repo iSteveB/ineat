@@ -24,6 +24,7 @@ import { ReceiptHistoryController } from './controllers/receipt-history.controll
 // Modules partagés
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationModule } from '../notification/notification.module';
+import { ObservabilityModule } from '../observability/observability.module';
 import { LlmService } from './services/llm.service';
 import { ClaudeService } from './services/claude.service';
 
@@ -32,6 +33,7 @@ import { ClaudeService } from './services/claude.service';
     ConfigModule,
     PrismaModule,
     NotificationModule,
+    ObservabilityModule,
     BullModule.registerQueue({
       name: 'receipt-processing',
     }),

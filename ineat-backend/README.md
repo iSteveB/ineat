@@ -125,6 +125,7 @@ En developpement:
 
 - Swagger: `/docs`
 - Health check: `/health`
+- Observabilite admin: `/health/observability`
 
 Modules principaux:
 
@@ -139,6 +140,31 @@ Modules principaux:
 | `BudgetModule` | Budgets mensuels et depenses |
 | `ReceiptModule` | Upload ticket, OCR, analyse LLM, validation, ajout inventaire |
 | `PrismaModule` | Acces base de donnees |
+
+## Observabilite Production
+
+Le backend expose un snapshot d'observabilite sur `GET /health/observability`.
+La route est protegee par `JwtAuthGuard` et `AdminGuard`; elle doit etre utilisee
+avec un compte `ADMIN`.
+
+Le snapshot contient:
+
+- `counters`: compteurs d'evenements par flux critique.
+- `timings`: durees min/max/moyenne et dernier contexte pour les traitements.
+- `recentEvents`: derniers evenements critiques, avec contexte sanitize.
+
+Signaux a surveiller en priorite:
+
+- `receipt.upload.failed`: echec Cloudinary ou creation receipt.
+- `receipt.ocr.failed`: echec OCR avec `receiptId` et `documentType`.
+- `receipt.llm.claude.failed` et `receipt.llm.openai.failed`: erreurs LLM et fallback.
+- `receipt.processing.final_failed`: ticket definitivement echoue apres retries Bull.
+- `auth.login.failure`: hausse anormale des echecs de connexion.
+- `receipt.processing.duration_ms`, `receipt.ocr.duration_ms`, `receipt.llm.*.duration_ms`: derive des temps de traitement.
+
+Les contextes exposent des identifiants utiles (`userId`, `receiptId`) sans secrets.
+Les cles sensibles (`password`, `token`, `secret`, `cookie`, `authorization`,
+`apiKey`, etc.) sont remplacees par `[redacted]`.
 
 ## Flux Ticket De Caisse
 

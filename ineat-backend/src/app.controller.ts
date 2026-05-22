@@ -1,14 +1,19 @@
-import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Res, UseGuards } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { ReceiptProcessingJobData } from './receipt/processors/receipt.processor';
+import { ObservabilityService } from './observability/observability.service';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { AdminGuard } from './auth/guards/admin.guard';
+import { RequiresAdmin } from './auth/decorators/requires-admin.decorator';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
+    private readonly observabilityService: ObservabilityService,
     @InjectQueue('receipt-processing')
     private readonly receiptQueue: Queue<ReceiptProcessingJobData>,
   ) {}
@@ -61,6 +66,16 @@ export class AppController {
       service: 'ineat-backend',
       version: '1.0.0',
     });
+  }
+
+  @Get('health/observability')
+  @RequiresAdmin()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  observabilitySnapshot() {
+    return {
+      status: 'ok',
+      ...this.observabilityService.getSnapshot(),
+    };
   }
 
   @Get()
