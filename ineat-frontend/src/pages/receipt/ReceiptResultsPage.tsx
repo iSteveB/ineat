@@ -13,6 +13,7 @@ import {
 	receiptSelectors,
 	useScanStatistics,
 } from '@/stores/receiptStore';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 /**
  * Page des résultats d'un ticket scanné
@@ -112,9 +113,12 @@ export const ReceiptResultsPage = () => {
 				);
 			}
 		} catch (err) {
-			if (err instanceof Error) {
-				toast.error(err.message);
-			}
+			toast.error(
+				getUserFacingErrorMessage(
+					err,
+					'Impossible de valider cette étape. Veuillez réessayer.'
+				)
+			);
 		}
 	}, [validatePhase1, phase2Products.length]);
 
@@ -138,9 +142,12 @@ export const ReceiptResultsPage = () => {
 				navigateToInventory();
 			}, 1500);
 		} catch (err) {
-			if (err instanceof Error) {
-				toast.error(err.message);
-			}
+			toast.error(
+				getUserFacingErrorMessage(
+					err,
+					"Impossible d'ajouter les produits à l'inventaire. Veuillez réessayer."
+				)
+			);
 		}
 	}, [addToInventory, navigateToInventory]);
 

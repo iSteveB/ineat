@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 /**
  * Paramètres d'upload retournés par l'API
@@ -163,10 +164,10 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 				toast.success('Photo de profil mise à jour avec succès');
 				return response.avatarUrl;
 			} catch (error) {
-				const errorMsg =
-					error instanceof Error
-						? error.message
-						: "Erreur lors de l'upload";
+				const errorMsg = getUserFacingErrorMessage(
+					error,
+					"Impossible de mettre à jour la photo de profil. Veuillez réessayer."
+				);
 				setState((prev) => ({
 					...prev,
 					isUploading: false,
@@ -203,10 +204,10 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 			toast.success('Photo de profil supprimée avec succès');
 			return true;
 		} catch (error) {
-			const errorMsg =
-				error instanceof Error
-					? error.message
-					: 'Erreur lors de la suppression';
+			const errorMsg = getUserFacingErrorMessage(
+				error,
+				'Impossible de supprimer la photo de profil. Veuillez réessayer.'
+			);
 			setState((prev) => ({
 				...prev,
 				isUploading: false,

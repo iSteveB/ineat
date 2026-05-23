@@ -30,6 +30,7 @@ import { EditInventoryItemModal } from '@/features/inventory/EditInventoryItemMo
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { UpdateInventoryItemData } from '@/schemas';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 const ProductDetailPage: FC = () => {
 	const { productId } = useParams({ from: '/app/inventory/$productId' });
@@ -218,11 +219,12 @@ const ProductDetailPage: FC = () => {
 			toast.success('Produit mis à jour avec succès');
 			setIsEditModalOpen(false);
 		} catch (error) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-			} else {
-				toast.error('Erreur lors de la mise à jour du produit');
-			}
+			toast.error(
+				getUserFacingErrorMessage(
+					error,
+					'Impossible de mettre à jour le produit. Veuillez réessayer.'
+				)
+			);
 		} finally {
 			setIsUpdating(false);
 		}
@@ -242,11 +244,12 @@ const ProductDetailPage: FC = () => {
 				toast.success("Produit supprimé de l'inventaire");
 				navigate({ to: '/app/inventory' });
 			} catch (error) {
-				if (error instanceof Error) {
-					toast.error(error.message);
-				} else {
-					toast.error('Erreur lors de la suppression du produit');
-				}
+				toast.error(
+					getUserFacingErrorMessage(
+						error,
+						'Impossible de supprimer le produit. Veuillez réessayer.'
+					)
+				);
 			}
 		}
 	};

@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Product } from '@/schemas/product';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 // ===== TYPES =====
 
@@ -151,15 +152,13 @@ export const ProductSearchModal: React.FC<ProductSearchModalProps> = ({
 					});
 				}
 			} catch (error) {
-				const errorMessage =
-					error instanceof Error
-						? error.message
-						: 'Erreur lors de la recherche';
-
 				setSearchResult({
 					products: [],
 					isLoading: false,
-					error: errorMessage,
+					error: getUserFacingErrorMessage(
+						error,
+						'Impossible de rechercher des produits. Veuillez réessayer.'
+					),
 				});
 			}
 		},
@@ -215,11 +214,12 @@ export const ProductSearchModal: React.FC<ProductSearchModalProps> = ({
 			toast.success('Produit associé avec succès');
 			handleClose();
 		} catch (error) {
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: "Erreur lors de l'association";
-			toast.error(errorMessage);
+			toast.error(
+				getUserFacingErrorMessage(
+					error,
+					"Impossible d'associer ce produit. Veuillez réessayer."
+				)
+			);
 		} finally {
 			setIsAssociating(false);
 		}

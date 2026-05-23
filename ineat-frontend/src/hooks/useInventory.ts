@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 import {
 	inventoryService,
 	UpdateInventoryItemInput,
@@ -111,8 +112,10 @@ export function useAddManualProduct() {
 		},
 
 		onError: (error: Error) => {
-			const errorMessage =
-				error.message || "Erreur lors de l'ajout du produit";
+			const errorMessage = getUserFacingErrorMessage(
+				error,
+				"Impossible d'ajouter le produit. Veuillez réessayer."
+			);
 
 			toast.error("Erreur lors de l'ajout du produit", {
 				description: errorMessage,
@@ -164,8 +167,10 @@ export function useUpdateInventoryItem() {
 			},
 
 			onError: (error: Error) => {
-				const errorMessage =
-					error.message || 'Erreur lors de la mise à jour';
+				const errorMessage = getUserFacingErrorMessage(
+					error,
+					'Impossible de mettre à jour le produit. Veuillez réessayer.'
+				);
 
 				toast.error('Erreur lors de la mise à jour', {
 					description: errorMessage,
@@ -213,8 +218,10 @@ export function useRemoveInventoryItem() {
 		},
 
 		onError: (error: Error) => {
-			const errorMessage =
-				error.message || 'Erreur lors de la suppression';
+			const errorMessage = getUserFacingErrorMessage(
+				error,
+				'Impossible de supprimer le produit. Veuillez réessayer.'
+			);
 
 			toast.error('Erreur lors de la suppression', {
 				description: errorMessage,

@@ -31,6 +31,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AddOFFProductForm } from '../inventory/form/AddOFFProductForm';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 type FlowStep = 'scan' | 'form' | 'not-found' | 'success';
 
@@ -198,7 +199,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 		},
 		onError: (error: Error) => {
 			toast.error("Erreur lors de l'ajout", {
-				description: error.message,
+				description: getUserFacingErrorMessage(
+					error,
+					"Impossible d'ajouter le produit. Veuillez réessayer."
+				),
 			});
 		},
 	});
@@ -240,7 +244,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 		},
 		onError: (error: Error) => {
 			toast.error("Erreur lors de l'ajout", {
-				description: error.message,
+				description: getUserFacingErrorMessage(
+					error,
+					"Impossible d'ajouter le produit. Veuillez réessayer."
+				),
 			});
 		},
 	});

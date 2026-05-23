@@ -12,6 +12,7 @@ import {
 	separateProductsByPhase,
 	calculateSuccessRate,
 } from '@/schemas/receipt';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 // ===== TYPES =====
 
@@ -132,10 +133,10 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 					// Démarrer le polling
 					await get().pollAnalysis(receiptId);
 				} catch (error) {
-					const errorMessage =
-						error instanceof Error
-							? error.message
-							: "Erreur lors de l'upload du ticket";
+					const errorMessage = getUserFacingErrorMessage(
+						error,
+						"Impossible d'envoyer le ticket. Veuillez réessayer."
+					);
 
 					set(
 						{ status: 'error', error: errorMessage },
@@ -215,10 +216,10 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							await poll();
 						}
 					} catch (error) {
-						const errorMessage =
-							error instanceof Error
-								? error.message
-								: "Erreur lors de l'analyse du ticket";
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							"Impossible d'analyser le ticket. Veuillez réessayer."
+						);
 
 						set(
 							{ status: 'error', error: errorMessage },
@@ -480,10 +481,10 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 					// Succès - reset du store
 					get().reset();
 				} catch (error) {
-					const errorMessage =
-						error instanceof Error
-							? error.message
-							: "Erreur lors de l'ajout à l'inventaire";
+					const errorMessage = getUserFacingErrorMessage(
+						error,
+						"Impossible d'ajouter les produits à l'inventaire. Veuillez réessayer."
+					);
 
 					set({ error: errorMessage }, false, 'addToInventory/error');
 					throw error;
