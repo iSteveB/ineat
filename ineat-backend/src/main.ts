@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -40,7 +40,7 @@ async function bootstrap() {
   const configServiceInstance = app.get(ConfigService);
 
   // Utilisation de Swagger pour la documentation API (uniquement en dev)
-  if (!isProduction) { 
+  if (!isProduction) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('InEat API')
       .setDescription("API pour la gestion d'inventaire alimentaire")
@@ -80,8 +80,8 @@ async function bootstrap() {
   } else {
     // En développement, permettre localhost
     allowedOrigins = [
-      "https://ineat-frontend-developpement.up.railway.app",
-      "https://ineat-backend-developpement.up.railway.app",
+      'https://ineat-frontend-developpement.up.railway.app',
+      'https://ineat-backend-developpement.up.railway.app',
       'https://192.168.1.28:5173',
       'https://localhost:5173',
       'http://localhost:5173',

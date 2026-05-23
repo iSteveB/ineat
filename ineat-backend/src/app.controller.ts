@@ -1,4 +1,11 @@
-import { Controller, Get, HttpStatus, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { AppService } from './app.service';
@@ -9,6 +16,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AdminGuard } from './auth/guards/admin.guard';
 import { RequiresAdmin } from './auth/decorators/requires-admin.decorator';
 import { PrismaService } from './prisma/prisma.service';
+import * as Sentry from '@sentry/nestjs';
 
 @Controller()
 export class AppController {
@@ -100,6 +108,19 @@ export class AppController {
       status: 'ok',
       ...this.observabilityService.getSnapshot(),
     };
+  }
+
+  @Get('debug-sentry')
+  debugSentry(): never {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException('Route non trouvée');
+    }
+
+    Sentry.logger.info('User triggered test error', {
+      action: 'test_error_endpoint',
+    });
+    Sentry.metrics.count('test_counter', 1);
+    throw new Error('Sentry debug endpoint test error');
   }
 
   @Get()

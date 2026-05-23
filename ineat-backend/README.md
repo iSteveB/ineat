@@ -102,6 +102,25 @@ or non-public `5xx` errors are returned as `Une erreur est survenue. Veuillez
 réessayer.`. If a server error has a deliberately public message, throw an
 `HttpException` response object with a stable `code` and safe `message`.
 
+## Sentry
+
+Backend Sentry initialization happens in `src/instrument.ts`, imported before the
+Nest application bootstraps. Configure it with environment variables:
+
+```bash
+SENTRY_DSN=
+SENTRY_ENABLE_LOGS=true
+SENTRY_TRACES_SAMPLE_RATE=1.0
+SENTRY_PROFILE_SAMPLE_RATE=1.0
+SENTRY_SEND_DEFAULT_PII=false
+```
+
+Use lower sampling rates in production unless higher volume is intentional. The
+default production sampling is conservative, and `sendDefaultPii` is disabled
+unless `SENTRY_SEND_DEFAULT_PII=true` is explicitly set. For verification outside
+production, call `GET /debug-sentry`; the route throws a test exception and is
+hidden in production.
+
 Mode watch:
 
 ```bash
