@@ -5,6 +5,22 @@ import {
 } from '@nestjs/common';
 import { HttpExceptionFilter } from './http-exception.filter';
 
+const SENSITIVE_TERMS = [
+  'api_key',
+  'Invalid Signature',
+  'CLOUDINARY_API_SECRET',
+  'stack',
+  'Cloudinary',
+];
+
+const expectNoSensitiveTerms = (value: unknown) => {
+  const serialized = JSON.stringify(value);
+
+  SENSITIVE_TERMS.forEach((term) => {
+    expect(serialized).not.toContain(term);
+  });
+};
+
 const createHost = (headers: Record<string, string> = {}) => {
   const json = jest.fn();
   const status = jest.fn().mockReturnValue({ json });
@@ -60,15 +76,17 @@ describe('HttpExceptionFilter', () => {
     });
   });
 
-  it('masque les erreurs 500 techniques', () => {
+  it.each([
+    'Invalid api_key 738474456436988',
+    'Invalid Signature abc123 for Cloudinary upload',
+    'Missing CLOUDINARY_API_SECRET in environment',
+    'Cloudinary stack trace at upload_stream',
+  ])('masque les erreurs 500 techniques: %s', (message) => {
     const { host, json, status } = createHost({
       'x-request-id': 'req-500',
     });
 
-    filter.catch(
-      new InternalServerErrorException('Invalid api_key 738474456436988'),
-      host,
-    );
+    filter.catch(new InternalServerErrorException(message), host);
 
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith({
@@ -77,7 +95,7 @@ describe('HttpExceptionFilter', () => {
       message: 'Une erreur est survenue. Veuillez réessayer.',
       requestId: 'req-500',
     });
-    expect(JSON.stringify(json.mock.calls[0][0])).not.toContain('api_key');
+    expectNoSensitiveTerms(json.mock.calls[0][0]);
   });
 
   it('conserve les erreurs 500 explicitement publiques avec code stable', () => {
