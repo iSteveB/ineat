@@ -1,9 +1,16 @@
-import { Controller, Get, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpStatus,
+  NotFoundException,
+  Res,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { ReceiptProcessingJobData } from './receipt/processors/receipt.processor';
+import * as Sentry from '@sentry/nestjs';
 
 @Controller()
 export class AppController {
@@ -61,6 +68,19 @@ export class AppController {
       service: 'ineat-backend',
       version: '1.0.0',
     });
+  }
+
+  @Get('debug-sentry')
+  debugSentry(): never {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException('Route non trouvée');
+    }
+
+    Sentry.logger.info('User triggered test error', {
+      action: 'test_error_endpoint',
+    });
+    Sentry.metrics.count('test_counter', 1);
+    throw new Error('Sentry debug endpoint test error');
   }
 
   @Get()

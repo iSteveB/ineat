@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { randomUUID } from 'crypto';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 
 const DEFAULT_ERROR_MESSAGE = 'Une erreur est survenue. Veuillez réessayer.';
 
@@ -29,7 +30,7 @@ interface NormalizedErrorResponse {
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(HttpExceptionFilter.name);
 
-  // Add @SentryExceptionCaptured() here when Sentry is installed.
+  @SentryExceptionCaptured()
   catch(exception: unknown, host: ArgumentsHost): void {
     const context = host.switchToHttp();
     const request = context.getRequest<Request>();
