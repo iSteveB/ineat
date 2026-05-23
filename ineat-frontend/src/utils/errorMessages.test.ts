@@ -3,6 +3,13 @@ import { ApiRequestError } from '@/lib/api-client';
 import { getUserFacingErrorMessage } from './errorMessages';
 
 describe('getUserFacingErrorMessage', () => {
+	const sensitiveMessages = [
+		'Cloudinary Invalid api_key 738474456436988',
+		'Invalid Signature abc123 for Cloudinary upload',
+		'Missing CLOUDINARY_API_SECRET in environment',
+		'Cloudinary stack trace at upload_stream',
+	];
+
 	it('retourne le message public des ApiRequestError', () => {
 		const error = new ApiRequestError(
 			'Impossible de mettre à jour le profil.',
@@ -17,16 +24,19 @@ describe('getUserFacingErrorMessage', () => {
 		).toBe('Impossible de mettre à jour le profil.');
 	});
 
-	it('masque les erreurs sensibles génériques', () => {
-		const error = new Error('Cloudinary Invalid api_key 738474456436988');
+	it.each(sensitiveMessages)(
+		'masque les erreurs sensibles génériques: %s',
+		(message) => {
+			const error = new Error(message);
 
-		expect(
-			getUserFacingErrorMessage(
-				error,
-				'Impossible de mettre à jour la photo de profil.'
-			)
-		).toBe('Impossible de mettre à jour la photo de profil.');
-	});
+			expect(
+				getUserFacingErrorMessage(
+					error,
+					'Impossible de mettre à jour la photo de profil.'
+				)
+			).toBe('Impossible de mettre à jour la photo de profil.');
+		}
+	);
 
 	it('préserve les messages locaux non sensibles', () => {
 		const error = new Error('Aucun produit à ajouter à l’inventaire');

@@ -4,6 +4,21 @@ import { fail } from 'assert';
 
 // Sauvegarde de la version originale de fetch
 const originalFetch = global.fetch;
+const SENSITIVE_TERMS = [
+	'api_key',
+	'Invalid Signature',
+	'CLOUDINARY_API_SECRET',
+	'stack',
+	'Cloudinary',
+];
+
+const expectNoSensitiveTerms = (value: unknown) => {
+	const serialized = JSON.stringify(value);
+
+	SENSITIVE_TERMS.forEach((term) => {
+		expect(serialized).not.toContain(term);
+	});
+};
 
 describe('apiClient', () => {
 	// Configurer les mocks avant chaque test
@@ -138,39 +153,46 @@ describe('apiClient', () => {
 			}
 		});
 
-		it('devrait masquer les messages techniques des erreurs 500', async () => {
-			const mockResponse = {
-				ok: false,
-				status: 500,
-				headers: new Headers({ 'X-Request-Id': 'req-500' }),
-				json: vi.fn().mockResolvedValue({
-					message:
-						'Invalid api_key 738474456436988 from Cloudinary stack trace',
-				}),
-			};
+		it.each([
+			'Invalid api_key 738474456436988 from Cloudinary stack trace',
+			'Invalid Signature abc123 for Cloudinary upload',
+			'Missing CLOUDINARY_API_SECRET in environment',
+			'Cloudinary stack trace at upload_stream',
+		])(
+			'devrait masquer les messages techniques des erreurs 500: %s',
+			async (technicalMessage) => {
+				const mockResponse = {
+					ok: false,
+					status: 500,
+					headers: new Headers({ 'X-Request-Id': 'req-500' }),
+					json: vi.fn().mockResolvedValue({
+						message: technicalMessage,
+					}),
+				};
 
-			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
-				mockResponse
-			);
+				(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+					mockResponse
+				);
 
-			try {
-				await apiClient.fetch('/receipt/upload');
-				fail('Devrait lancer une erreur');
-			} catch (error) {
-				expect(error).toBeInstanceOf(ApiRequestError);
-				expect((error as ApiRequestError).status).toBe(500);
-				expect((error as ApiRequestError).message).toBe(
-					'Impossible de traiter le ticket. Veuillez réessayer.'
-				);
-				expect((error as ApiRequestError).requestId).toBe('req-500');
-				expect((error as ApiRequestError).rawMessage).toContain(
-					'Invalid api_key'
-				);
-				expect((error as ApiRequestError).message).not.toContain(
-					'api_key'
-				);
+				try {
+					await apiClient.fetch('/receipt/upload');
+					fail('Devrait lancer une erreur');
+				} catch (error) {
+					expect(error).toBeInstanceOf(ApiRequestError);
+					expect((error as ApiRequestError).status).toBe(500);
+					expect((error as ApiRequestError).message).toBe(
+						'Impossible de traiter le ticket. Veuillez réessayer.'
+					);
+					expect((error as ApiRequestError).requestId).toBe(
+						'req-500'
+					);
+					expect((error as ApiRequestError).rawMessage).toBe(
+						technicalMessage
+					);
+					expectNoSensitiveTerms((error as ApiRequestError).message);
+				}
 			}
-		});
+		);
 
 		it('devrait conserver les messages de validation 400 sans détails sensibles', async () => {
 			const mockResponse = {
