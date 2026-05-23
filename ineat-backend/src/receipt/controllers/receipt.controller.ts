@@ -195,7 +195,8 @@ export class ReceiptController {
   @RequiresPremium()
   @ApiOperation({
     summary: "Récupérer l'analyse complète d'un receipt",
-    description: 'Récupère le receipt avec tous ses items et suggestions EAN pour affichage des résultats',
+    description:
+      'Récupère le receipt avec tous ses items et suggestions EAN pour affichage des résultats',
   })
   @ApiResponse({
     status: 200,
@@ -208,7 +209,7 @@ export class ReceiptController {
           merchantName: 'Carrefour',
           merchantAddress: '123 rue de Paris',
           purchaseDate: '2025-03-03T12:02:00.000Z',
-          totalAmount: 8.30,
+          totalAmount: 8.3,
           confidence: 0.7,
           products: [
             {
@@ -225,11 +226,11 @@ export class ReceiptController {
                   ean: '3124480169051',
                   confidence: 0.8,
                   brand: 'Orangina',
-                  productName: 'Soda à l\'Orange et sa Pulpe ORANGINA 4x50cl',
+                  productName: "Soda à l'Orange et sa Pulpe ORANGINA 4x50cl",
                   image: null,
-                }
-              ]
-            }
+                },
+              ],
+            },
           ],
           createdAt: '2025-10-17T10:30:00Z',
         },
@@ -253,13 +254,6 @@ export class ReceiptController {
       user.id,
     );
 
-    // DEBUG: Voir ce que Prisma retourne
-    console.log('=== RECEIPT FROM PRISMA ===');
-    console.log('Receipt ID:', receipt.id);
-    console.log('ReceiptItem count:', receipt.ReceiptItem?.length || 0);
-    console.log('ReceiptItem details:', JSON.stringify(receipt.ReceiptItem, null, 2));
-    console.log('===========================');
-
     // Transformer les ReceiptItem en DetectedProduct
     const products = receipt.ReceiptItem.map((item) => ({
       id: item.id,
@@ -270,14 +264,10 @@ export class ReceiptController {
       confidence: item.confidence,
       status: item.validated ? 'validated' : 'pending',
       selectedEan: item.selectedEan || null,
-      suggestedEans: Array.isArray(item.suggestedEans) ? item.suggestedEans : [],
+      suggestedEans: Array.isArray(item.suggestedEans)
+        ? item.suggestedEans
+        : [],
     }));
-
-    // DEBUG: Voir les produits transformés
-    console.log('=== PRODUCTS TRANSFORMED ===');
-    console.log('Products count:', products.length);
-    console.log('Products:', JSON.stringify(products, null, 2));
-    console.log('============================');
 
     return {
       success: true,

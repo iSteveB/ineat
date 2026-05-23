@@ -236,7 +236,7 @@ class ReceiptService {
 	 * @returns Statut actuel avec progression
 	 */
 	async getReceiptStatus(receiptId: string): Promise<ReceiptStatusResponse> {
-		const response = await fetch(`${API_URL}/receipt/${receiptId}/analysis`, {
+		const response = await fetch(`${API_URL}/receipt/${receiptId}/status`, {
 			method: 'GET',
 			credentials: 'include',
 			headers: {
@@ -279,7 +279,7 @@ class ReceiptService {
 				mappedStatus = 'error';
 				break;
 			default:
-				mappedStatus = 'analyzing';
+				throw new Error(`Statut de ticket inconnu: ${backendStatus}`);
 		}
 
 		return {
