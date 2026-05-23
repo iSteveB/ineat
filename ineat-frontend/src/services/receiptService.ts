@@ -104,6 +104,53 @@ interface BackendReceiptAnalysis {
  * URL de base de l'API
  */
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+export const RECEIPT_UPLOAD_ERROR_MESSAGE =
+	"Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants.";
+
+interface ApiErrorResponse {
+	code?: string;
+	message?: string | string[];
+}
+
+const SENSITIVE_UPLOAD_ERROR_PATTERNS = [
+	/cloudinary/i,
+	/api[_ -]?key/i,
+	/api[_ -]?secret/i,
+	/invalid signature/i,
+	/signature/i,
+	/CLOUDINARY_/i,
+	/stack/i,
+];
+
+const getApiErrorMessage = (errorData: ApiErrorResponse): string | null => {
+	if (typeof errorData.message === 'string') {
+		return errorData.message;
+	}
+
+	if (Array.isArray(errorData.message)) {
+		return errorData.message.join(', ');
+	}
+
+	return null;
+};
+
+const shouldHideUploadError = (
+	response: Response,
+	errorData: ApiErrorResponse | null,
+	errorMessage: string | null
+): boolean => {
+	if (response.status >= 500) {
+		return true;
+	}
+
+	if (errorData?.code === 'RECEIPT_UPLOAD_FAILED') {
+		return true;
+	}
+
+	return SENSITIVE_UPLOAD_ERROR_PATTERNS.some((pattern) =>
+		pattern.test(errorMessage || '')
+	);
+};
 
 /**
  * Service de gestion des tickets de caisse
@@ -143,27 +190,21 @@ class ReceiptService {
 			});
 
 			if (!response.ok) {
-				let errorMessage = "Erreur lors de l'upload";
+				let errorData: ApiErrorResponse | null = null;
+				let errorMessage: string | null = null;
 
 				try {
-					const errorData = await response.json();
-					errorMessage = errorData.message || errorMessage;
-
-					// Détection d'erreur Cloudinary spécifique
-					if (
-						errorMessage.includes('Cloudinary') ||
-						errorMessage.includes('Invalid Signature')
-					) {
-						throw new Error(
-							'⚠️ Erreur de configuration Cloudinary côté serveur.\n' +
-								'Veuillez vérifier les credentials dans le .env backend.'
-						);
-					}
+					errorData = await response.json();
+					errorMessage = getApiErrorMessage(errorData);
 				} catch {
 					// Si on ne peut pas parser le JSON, utiliser le message par défaut
 				}
 
-				throw new Error(errorMessage);
+				if (shouldHideUploadError(response, errorData, errorMessage)) {
+					throw new Error(RECEIPT_UPLOAD_ERROR_MESSAGE);
+				}
+
+				throw new Error(errorMessage || RECEIPT_UPLOAD_ERROR_MESSAGE);
 			}
 
 			const data = await response.json();
