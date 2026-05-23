@@ -122,7 +122,13 @@ const SENSITIVE_UPLOAD_ERROR_PATTERNS = [
 	/stack/i,
 ];
 
-const getApiErrorMessage = (errorData: ApiErrorResponse): string | null => {
+const getApiErrorMessage = (
+	errorData: ApiErrorResponse | null
+): string | null => {
+	if (!errorData) {
+		return null;
+	}
+
 	if (typeof errorData.message === 'string') {
 		return errorData.message;
 	}

@@ -133,7 +133,99 @@ describe('apiClient', () => {
 				expect(error).toBeInstanceOf(ApiRequestError);
 				expect((error as ApiRequestError).status).toBe(500);
 				expect((error as ApiRequestError).message).toBe(
-					'Une erreur est survenue'
+					'Une erreur est survenue. Veuillez réessayer.'
+				);
+			}
+		});
+
+		it('devrait masquer les messages techniques des erreurs 500', async () => {
+			const mockResponse = {
+				ok: false,
+				status: 500,
+				headers: new Headers({ 'X-Request-Id': 'req-500' }),
+				json: vi.fn().mockResolvedValue({
+					message:
+						'Invalid api_key 738474456436988 from Cloudinary stack trace',
+				}),
+			};
+
+			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockResponse
+			);
+
+			try {
+				await apiClient.fetch('/receipt/upload');
+				fail('Devrait lancer une erreur');
+			} catch (error) {
+				expect(error).toBeInstanceOf(ApiRequestError);
+				expect((error as ApiRequestError).status).toBe(500);
+				expect((error as ApiRequestError).message).toBe(
+					'Impossible de traiter le ticket. Veuillez réessayer.'
+				);
+				expect((error as ApiRequestError).requestId).toBe('req-500');
+				expect((error as ApiRequestError).rawMessage).toContain(
+					'Invalid api_key'
+				);
+				expect((error as ApiRequestError).message).not.toContain(
+					'api_key'
+				);
+			}
+		});
+
+		it('devrait conserver les messages de validation 400 sans détails sensibles', async () => {
+			const mockResponse = {
+				ok: false,
+				status: 400,
+				json: vi.fn().mockResolvedValue({
+					code: 'BAD_REQUEST',
+					message: ['Le nom du produit est requis'],
+					requestId: 'req-400',
+				}),
+			};
+
+			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockResponse
+			);
+
+			try {
+				await apiClient.fetch('/inventory');
+				fail('Devrait lancer une erreur');
+			} catch (error) {
+				expect(error).toBeInstanceOf(ApiRequestError);
+				expect((error as ApiRequestError).status).toBe(400);
+				expect((error as ApiRequestError).code).toBe('BAD_REQUEST');
+				expect((error as ApiRequestError).message).toBe(
+					'Le nom du produit est requis'
+				);
+				expect((error as ApiRequestError).requestId).toBe('req-400');
+			}
+		});
+
+		it('devrait mapper les codes publics connus vers leur message safe', async () => {
+			const mockResponse = {
+				ok: false,
+				status: 500,
+				json: vi.fn().mockResolvedValue({
+					code: 'RECEIPT_UPLOAD_FAILED',
+					message: 'Internal provider details',
+					requestId: 'req-upload',
+				}),
+			};
+
+			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+				mockResponse
+			);
+
+			try {
+				await apiClient.fetch('/receipt/upload');
+				fail('Devrait lancer une erreur');
+			} catch (error) {
+				expect(error).toBeInstanceOf(ApiRequestError);
+				expect((error as ApiRequestError).code).toBe(
+					'RECEIPT_UPLOAD_FAILED'
+				);
+				expect((error as ApiRequestError).message).toBe(
+					"Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants."
 				);
 			}
 		});
@@ -221,6 +313,9 @@ describe('apiClient', () => {
 				expect(error).toBeInstanceOf(ApiRequestError);
 				expect((error as ApiRequestError).status).toBe(0);
 				expect((error as ApiRequestError).message).toBe(
+					'Impossible de joindre le serveur. Vérifiez votre connexion.'
+				);
+				expect((error as ApiRequestError).rawMessage).toBe(
 					'Network error'
 				);
 			}
@@ -361,6 +456,18 @@ describe('apiClient', () => {
 			expect(error.message).toBe('Test error');
 			expect(error.status).toBe(404);
 			expect(error.name).toBe('ApiRequestError');
+		});
+
+		it('devrait conserver les métadonnées optionnelles', () => {
+			const error = new ApiRequestError('Message public', 500, {
+				code: 'TEST_CODE',
+				requestId: 'req-test',
+				rawMessage: 'Message brut',
+			});
+
+			expect(error.code).toBe('TEST_CODE');
+			expect(error.requestId).toBe('req-test');
+			expect(error.rawMessage).toBe('Message brut');
 		});
 	});
 });

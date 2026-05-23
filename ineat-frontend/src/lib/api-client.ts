@@ -1,18 +1,152 @@
 export class ApiRequestError extends Error {
 	status: number;
+	code?: string;
+	requestId?: string;
+	rawMessage?: string;
 
-	constructor(message: string, status: number) {
+	constructor(
+		message: string,
+		status: number,
+		options: {
+			code?: string;
+			requestId?: string;
+			rawMessage?: string;
+		} = {}
+	) {
 		super(message);
 		this.name = 'ApiRequestError';
 		this.status = status;
+		this.code = options.code;
+		this.requestId = options.requestId;
+		this.rawMessage = options.rawMessage;
 	}
 }
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+const DEFAULT_ERROR_MESSAGE = 'Une erreur est survenue. Veuillez réessayer.';
+const NETWORK_ERROR_MESSAGE =
+	'Impossible de joindre le serveur. Vérifiez votre connexion.';
 
 interface FetchOptions extends RequestInit {
 	skipAuth?: boolean;
 }
+
+interface ApiErrorResponse {
+	code?: string;
+	message?: string | string[];
+	requestId?: string;
+}
+
+const SENSITIVE_ERROR_PATTERNS = [
+	/api[_ -]?key/i,
+	/api[_ -]?secret/i,
+	/secret/i,
+	/token/i,
+	/password/i,
+	/invalid signature/i,
+	/signature/i,
+	/cloudinary/i,
+	/CLOUDINARY_/i,
+	/stack/i,
+	/prisma/i,
+	/postgres/i,
+	/redis/i,
+	/trace/i,
+	/exception/i,
+];
+
+const PUBLIC_ERROR_MESSAGES_BY_CODE: Record<string, string> = {
+	RECEIPT_UPLOAD_FAILED:
+		"Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants.",
+};
+
+const getResponseHeader = (response: Response, name: string): string | null => {
+	if (!response.headers || typeof response.headers.get !== 'function') {
+		return null;
+	}
+
+	return response.headers.get(name);
+};
+
+const getApiErrorMessage = (errorData: ApiErrorResponse | null) => {
+	if (!errorData) {
+		return undefined;
+	}
+
+	if (typeof errorData.message === 'string') {
+		return errorData.message;
+	}
+
+	if (Array.isArray(errorData.message)) {
+		return errorData.message.join(', ');
+	}
+
+	return undefined;
+};
+
+const containsSensitiveDetails = (message?: string): boolean => {
+	if (!message) {
+		return false;
+	}
+
+	return SENSITIVE_ERROR_PATTERNS.some((pattern) => pattern.test(message));
+};
+
+const getEndpointFallbackMessage = (
+	endpoint: string,
+	status: number
+): string => {
+	if (status === 401) {
+		return 'Votre session a expiré. Veuillez vous reconnecter.';
+	}
+
+	if (status === 403) {
+		return "Vous n'avez pas les droits nécessaires pour effectuer cette action.";
+	}
+
+	if (endpoint.includes('/auth/')) {
+		return "Impossible de finaliser l'authentification. Veuillez réessayer.";
+	}
+
+	if (endpoint.includes('/receipt')) {
+		return 'Impossible de traiter le ticket. Veuillez réessayer.';
+	}
+
+	if (endpoint.includes('/avatar')) {
+		return 'Impossible de mettre à jour la photo de profil. Veuillez réessayer.';
+	}
+
+	if (endpoint.includes('/inventory')) {
+		return "Impossible de mettre à jour l'inventaire. Veuillez réessayer.";
+	}
+
+	if (endpoint.includes('/budget') || endpoint.includes('/expense')) {
+		return 'Impossible de mettre à jour le budget. Veuillez réessayer.';
+	}
+
+	return DEFAULT_ERROR_MESSAGE;
+};
+
+const getPublicErrorMessage = (
+	endpoint: string,
+	status: number,
+	errorData: ApiErrorResponse | null,
+	rawMessage?: string
+): string => {
+	if (status === 403 && /premium|abonnement/i.test(rawMessage || '')) {
+		return 'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.';
+	}
+
+	if (errorData?.code && PUBLIC_ERROR_MESSAGES_BY_CODE[errorData.code]) {
+		return PUBLIC_ERROR_MESSAGES_BY_CODE[errorData.code];
+	}
+
+	if (status >= 500 || containsSensitiveDetails(rawMessage)) {
+		return getEndpointFallbackMessage(endpoint, status);
+	}
+
+	return rawMessage || getEndpointFallbackMessage(endpoint, status);
+};
 
 // Client API principal
 export const apiClient = {
@@ -46,21 +180,32 @@ export const apiClient = {
 
 			// Gestion de base des erreurs HTTP
 			if (!response.ok) {
-				let errorMessage = 'Une erreur est survenue';
-				let errorData: { message?: string } | null = null;
+				let errorData: ApiErrorResponse | null = null;
 
 				// Tentative de récupération du message d'erreur
 				try {
 					errorData = await response.json();
-					errorMessage = errorData?.message || errorMessage;
 				} catch {
 					// Si on ne peut pas parser le JSON, on utilise le message par défaut
 				}
 
-				throw new ApiRequestError(
-					normalizeApiErrorMessage(errorMessage, response.status),
-					response.status
+				const rawMessage = getApiErrorMessage(errorData);
+				const requestId =
+					errorData?.requestId ||
+					getResponseHeader(response, 'X-Request-Id') ||
+					undefined;
+				const errorMessage = getPublicErrorMessage(
+					endpoint,
+					response.status,
+					errorData,
+					rawMessage
 				);
+
+				throw new ApiRequestError(errorMessage, response.status, {
+					code: errorData?.code,
+					requestId,
+					rawMessage,
+				});
 			}
 
 			// Si la réponse est vide (204 No Content), on retourne null
@@ -81,10 +226,12 @@ export const apiClient = {
 				if (error.name === 'AbortError') {
 					throw new ApiRequestError('La requête a expiré', 408);
 				}
-				throw new ApiRequestError(error.message, 0);
+				throw new ApiRequestError(NETWORK_ERROR_MESSAGE, 0, {
+					rawMessage: error.message,
+				});
 			}
 
-			throw new ApiRequestError('Une erreur inconnue est survenue', 0);
+			throw new ApiRequestError(NETWORK_ERROR_MESSAGE, 0);
 		} finally {
 			clearTimeout(timeoutId);
 		}
@@ -141,14 +288,3 @@ export const apiClient = {
 		return this.fetch<T>(endpoint, { ...options, method: 'DELETE' });
 	},
 };
-
-function normalizeApiErrorMessage(message: string, status: number): string {
-	if (
-		status === 403 &&
-		/premium|abonnement/i.test(message)
-	) {
-		return 'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.';
-	}
-
-	return message;
-}
