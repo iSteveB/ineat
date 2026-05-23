@@ -175,17 +175,7 @@ export class ReceiptService {
       );
 
       // 3. Planifier le traitement OCR + LLM via Bull/Redis.
-      await this.receiptProcessingQueue.addReceiptProcessingJob({
-        receiptId: receipt.id,
-        fileBuffer: dto.fileBuffer,
-        documentType: dto.documentType,
-        userId: dto.userId,
-        metadata: {
-          originalFileName: dto.fileName,
-          fileSize: dto.fileBuffer.length,
-          uploadedAt: new Date(),
-        },
-      });
+      await this.scheduleReceiptProcessing(receipt.id, dto);
 
       return receipt;
     } catch (error) {
@@ -204,6 +194,65 @@ export class ReceiptService {
         `Erreur création receipt: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       );
       throw error;
+    }
+  }
+
+  private async scheduleReceiptProcessing(
+    receiptId: string,
+    dto: CreateReceiptDto,
+  ): Promise<void> {
+    const jobData = {
+      receiptId,
+      fileBuffer: dto.fileBuffer,
+      documentType: dto.documentType,
+      userId: dto.userId,
+      metadata: {
+        originalFileName: dto.fileName,
+        fileSize: dto.fileBuffer.length,
+        uploadedAt: new Date(),
+      },
+    };
+
+    try {
+      await this.receiptProcessingQueue.addReceiptProcessingJob(jobData);
+      return;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
+
+      this.logger.error(
+        `Impossible d'ajouter le receipt ${receiptId} à la queue, traitement local de secours: ${errorMessage}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      this.observabilityService.increment('receipt.queue.enqueue.failed');
+      this.observabilityService.trackEvent(
+        'receipt.queue.enqueue.failed',
+        'error',
+        'Receipt processing queue enqueue failed, using local fallback',
+        {
+          receiptId,
+          userId: dto.userId,
+          documentType: dto.documentType,
+          error,
+        },
+      );
+
+      setImmediate(() => {
+        void this.processReceiptOcrAndLlm(
+          receiptId,
+          dto.fileBuffer,
+          dto.documentType,
+        ).catch((fallbackError) => {
+          const fallbackErrorMessage =
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : 'Erreur inconnue';
+          this.logger.error(
+            `Traitement local de secours échoué pour receipt ${receiptId}: ${fallbackErrorMessage}`,
+            fallbackError instanceof Error ? fallbackError.stack : undefined,
+          );
+        });
+      });
     }
   }
 

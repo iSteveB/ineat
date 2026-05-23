@@ -97,6 +97,47 @@ describe('ReceiptService', () => {
     expect(ocrService.processDocument).not.toHaveBeenCalled();
   });
 
+  it('returns the created receipt and starts a local fallback when the queue is unavailable', async () => {
+    const fileBuffer = Buffer.from('receipt-image');
+    const receipt = {
+      id: 'receipt-1',
+      userId: 'user-1',
+      documentType: 'RECEIPT_IMAGE',
+      status: ReceiptStatus.PROCESSING,
+    };
+    const processSpy = jest
+      .spyOn(service, 'processReceiptOcrAndLlm')
+      .mockResolvedValue(undefined);
+
+    cloudinaryStorage.uploadReceipt.mockResolvedValue({
+      secureUrl: 'https://cdn.example.com/receipt.png',
+    });
+    prisma.receipt.create.mockResolvedValue(receipt);
+    receiptProcessingQueue.addReceiptProcessingJob.mockRejectedValue(
+      new Error('Redis unavailable'),
+    );
+
+    await expect(
+      service.createReceipt({
+        userId: 'user-1',
+        documentType: DocumentType.RECEIPT_IMAGE,
+        fileBuffer,
+        fileName: 'ticket.png',
+      }),
+    ).resolves.toBe(receipt);
+
+    await new Promise<void>((resolve) => setImmediate(resolve));
+
+    expect(processSpy).toHaveBeenCalledWith(
+      'receipt-1',
+      fileBuffer,
+      DocumentType.RECEIPT_IMAGE,
+    );
+    expect(observabilityService.increment).toHaveBeenCalledWith(
+      'receipt.queue.enqueue.failed',
+    );
+  });
+
   it('marks a receipt as failed with a notification', async () => {
     prisma.receipt.update.mockResolvedValue({ id: 'receipt-1' });
 
