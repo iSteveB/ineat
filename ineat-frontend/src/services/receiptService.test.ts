@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 
-import { receiptService } from './receiptService';
+import {
+	RECEIPT_UPLOAD_ERROR_MESSAGE,
+	receiptService,
+} from './receiptService';
 import { server } from '@/test/mocks/server';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
@@ -26,6 +29,49 @@ describe('receiptService', () => {
 			receiptId: 'receipt-1',
 		});
 		expect(uploadedDocumentType).toBe('receipt_image');
+	});
+
+	it('masque les erreurs Cloudinary sensibles retournées par le backend', async () => {
+		server.use(
+			http.post(`${API_URL}/receipt/upload`, () =>
+				HttpResponse.json(
+					{
+						message:
+							"Échec de l'upload sur Cloudinary: Invalid api_key 738474456436988",
+					},
+					{ status: 500 }
+				)
+			)
+		);
+
+		const file = new File(['image'], 'ticket.png', { type: 'image/png' });
+
+		await expect(receiptService.uploadReceipt(file)).rejects.toThrow(
+			RECEIPT_UPLOAD_ERROR_MESSAGE
+		);
+		await expect(receiptService.uploadReceipt(file)).rejects.not.toThrow(
+			'Invalid api_key'
+		);
+	});
+
+	it('masque les erreurs avec le code RECEIPT_UPLOAD_FAILED', async () => {
+		server.use(
+			http.post(`${API_URL}/receipt/upload`, () =>
+				HttpResponse.json(
+					{
+						code: 'RECEIPT_UPLOAD_FAILED',
+						message: RECEIPT_UPLOAD_ERROR_MESSAGE,
+					},
+					{ status: 500 }
+				)
+			)
+		);
+
+		const file = new File(['image'], 'ticket.png', { type: 'image/png' });
+
+		await expect(receiptService.uploadReceipt(file)).rejects.toThrow(
+			RECEIPT_UPLOAD_ERROR_MESSAGE
+		);
 	});
 
 	it('mappe les états backend de traitement en états frontend', async () => {
@@ -180,6 +226,3 @@ describe('receiptService', () => {
 					},
 				],
 			},
-		});
-	});
-});

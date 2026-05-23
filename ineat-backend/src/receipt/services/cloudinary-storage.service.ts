@@ -18,6 +18,10 @@ import {
 } from 'cloudinary';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
 
+export const RECEIPT_UPLOAD_ERROR_CODE = 'RECEIPT_UPLOAD_FAILED';
+export const RECEIPT_UPLOAD_ERROR_MESSAGE =
+  "Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants.";
+
 /**
  * Configuration Cloudinary pour les receipts
  */
@@ -88,9 +92,13 @@ export class CloudinaryStorageService {
     );
 
     if (!cloudName || !apiKey || !apiSecret) {
-      throw new InternalServerErrorException(
-        'Configuration Cloudinary manquante (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)',
+      this.logger.error(
+        'Configuration Cloudinary manquante pour les receipts (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)',
       );
+      throw new InternalServerErrorException({
+        code: RECEIPT_UPLOAD_ERROR_CODE,
+        message: RECEIPT_UPLOAD_ERROR_MESSAGE,
+      });
     }
 
     return { cloudName, apiKey, apiSecret, receiptPreset };
@@ -133,9 +141,10 @@ export class CloudinaryStorageService {
       return this.mapCloudinaryResult(result);
     } catch (error) {
       this.logger.error(`Échec upload receipt: ${error.message}`, error.stack);
-      throw new InternalServerErrorException(
-        `Échec de l'upload sur Cloudinary: ${error.message}`,
-      );
+      throw new InternalServerErrorException({
+        code: RECEIPT_UPLOAD_ERROR_CODE,
+        message: RECEIPT_UPLOAD_ERROR_MESSAGE,
+      });
     }
   }
 
