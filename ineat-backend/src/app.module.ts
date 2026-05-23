@@ -15,6 +15,8 @@ import { ReceiptModule } from './receipt/receipt.module';
 import { NotificationModule } from './notification/notification.module';
 import { BullModule } from '@nestjs/bull';
 import { ObservabilityModule } from './observability/observability.module';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 @Module({
   imports: [
@@ -41,6 +43,13 @@ import { ObservabilityModule } from './observability/observability.module';
     NotificationModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PrismaService],
+  providers: [
+    AppService,
+    PrismaService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
