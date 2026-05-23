@@ -22,18 +22,19 @@ import { ReceiptHistoryController } from './controllers/receipt-history.controll
 import { PrismaModule } from '../prisma/prisma.module';
 import { LlmService } from './services/llm.service';
 import { ClaudeService } from './services/claude.service';
+import { OpenFoodFactsService } from './services/openfoodfacts.service';
 
 @Module({
   imports: [ConfigModule, PrismaModule],
   controllers: [
     ReceiptController,
-    ReceiptStatusController, 
+    ReceiptStatusController,
     ReceiptResultsController,
     ReceiptValidationController,
     ReceiptInventoryController,
     ReceiptHistoryController,
     ReceiptController,
-    ReceiptStatusController, 
+    ReceiptStatusController,
     ReceiptResultsController,
     ReceiptValidationController,
     ReceiptInventoryController,
@@ -43,6 +44,7 @@ import { ClaudeService } from './services/claude.service';
     // Services
     LlmService,
     ClaudeService,
+    OpenFoodFactsService,
     ReceiptService,
     OcrService,
     CloudinaryStorageService,

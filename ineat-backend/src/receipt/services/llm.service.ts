@@ -93,34 +93,31 @@ interface OutputItem {
 }
 
 /**
- * Service d'analyse de tickets via LLM (OpenAI avec prompt pré-configuré)
+ * Service d'analyse de tickets via LLM (OpenAI, extraction rapide)
  *
- * Utilise un prompt OpenAI pré-configuré avec accès internet pour analyser
- * le texte brut extrait par Tesseract et suggérer des codes EAN vérifiés
- * en temps réel sur OpenFoodFacts.
- *
- * Le prompt est configuré dans l'éditeur de prompt OpenAI et a accès à internet
- * pour vérifier les codes EAN en temps réel, garantissant des suggestions fiables.
+ * Utilise un prompt local sans outil web pour analyser le texte brut extrait
+ * par OCR. L'enrichissement EAN est volontairement séparé du LLM pour éviter
+ * les appels longs et non bornés.
  *
  * Configuration requise :
  * - OPENAI_API_KEY : Clé API OpenAI
- * - TICKET_PROMPT_ID : ID du prompt configuré dans l'éditeur OpenAI
+ * - OPENAI_RECEIPT_MODEL : modèle optionnel (défaut: gpt-4.1-mini)
  *
  * @example
  * ```typescript
  * const analysis = await llmService.analyzeReceiptText(extractedText);
- * // analysis.products[0].suggestedEans = [{ ean: '301...', confidence: 0.9, ... }]
+ * // analysis.products[0].name = 'Orangina'
  * ```
  */
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
   private readonly openai: OpenAI | null = null;
-  private readonly promptId: string | null = null;
+  private readonly model: string;
+  private readonly timeoutMs: number;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
-    const promptId = this.configService.get<string>('TICKET_PROMPT_ID');
 
     if (!apiKey) {
       this.logger.warn(
@@ -129,17 +126,15 @@ export class LlmService {
       return;
     }
 
-    if (!promptId) {
-      this.logger.warn(
-        'TICKET_PROMPT_ID non configuré - Service LLM indisponible',
-      );
-      return;
-    }
-
     this.openai = new OpenAI({ apiKey });
-    this.promptId = promptId;
+    this.model =
+      this.configService.get<string>('OPENAI_RECEIPT_MODEL') || 'gpt-4.1-mini';
+    this.timeoutMs =
+      Number(this.configService.get<string>('OPENAI_RECEIPT_TIMEOUT_MS')) ||
+      15000;
+
     this.logger.log(
-      `Service LLM initialisé avec succès (Prompt ID: ${promptId})`,
+      `Service LLM initialisé avec succès (modèle: ${this.model}, timeout: ${this.timeoutMs}ms)`,
     );
   }
 
@@ -147,60 +142,62 @@ export class LlmService {
    * Vérifie si le service LLM est disponible
    */
   isAvailable(): boolean {
-    return this.openai !== null && this.promptId !== null;
+    return this.openai !== null;
   }
 
   /**
-   * Analyse le texte d'un ticket et suggère des codes EAN pour chaque produit
+   * Analyse le texte d'un ticket et extrait les produits détectés
    *
-   * Utilise un prompt OpenAI pré-configuré avec accès internet pour des suggestions
-   * d'EAN fiables et vérifiées sur OpenFoodFacts.
+   * Utilise un prompt sans outils externes. Les suggestions EAN sont enrichies
+   * par un service dédié et borné en temps.
    *
    * @param receiptText - Texte brut extrait par OCR
-   * @returns Analyse structurée avec suggestions d'EAN
+   * @returns Analyse structurée sans enrichissement externe
    * @throws Error si le service n'est pas disponible ou si l'analyse échoue
    */
   async analyzeReceiptText(receiptText: string): Promise<LlmReceiptAnalysis> {
     const startTime = Date.now();
 
-    if (!this.openai || !this.promptId) {
+    if (!this.openai) {
       throw new Error(
-        'Service LLM non disponible - Configuration manquante (OPENAI_API_KEY ou TICKET_PROMPT_ID)',
+        'Service LLM non disponible - Configuration manquante (OPENAI_API_KEY)',
       );
     }
 
-    this.logger.log(
-      `Analyse du ticket avec prompt OpenAI (ID: ${this.promptId})...`,
-    );
+    this.logger.log(`Analyse rapide du ticket avec OpenAI (${this.model})...`);
     this.logger.debug(`Texte à analyser: ${receiptText.length} caractères`);
 
     try {
-      const response = await this.openai.responses.create({
-        prompt: {
-          id: this.promptId,
-          version: '2',
-        },
-        input: [
-          {
-            role: 'user',
-            content: receiptText,
+      const response = await this.openai.responses.create(
+        {
+          model: this.model,
+          input: this.buildFastExtractionPrompt(receiptText),
+          max_output_tokens: 1800,
+          temperature: 0,
+          text: {
+            format: {
+              type: 'json_object',
+            },
           },
-        ],
-      });
+        } as any,
+        {
+          timeout: this.timeoutMs,
+        },
+      );
 
       const processingTime = Date.now() - startTime;
 
       // Extraire le texte de la réponse
-      const responseText = this.extractResponseText(response.output);
+      const responseText =
+        (response as any).output_text ||
+        this.extractResponseText(response.output);
 
-      this.logger.log(`Analyse LLM terminée en ${processingTime}ms`);
+      this.logger.log(`Analyse LLM rapide terminée en ${processingTime}ms`);
 
       // Parser et valider la réponse JSON
       const analysis = this.parseAndValidateResponse(responseText);
 
-      this.logger.log(
-        `${analysis.products.length} produits détectés avec suggestions EAN`,
-      );
+      this.logger.log(`${analysis.products.length} produits détectés`);
 
       return analysis;
     } catch (error) {
@@ -214,6 +211,43 @@ export class LlmService {
         `Erreur analyse LLM: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       );
     }
+  }
+
+  /**
+   * Prompt volontairement court et sans recherche externe.
+   */
+  private buildFastExtractionPrompt(receiptText: string): string {
+    return `Tu extrais les données structurées d'un ticket de caisse OCR français.
+
+Contraintes:
+- N'utilise aucune recherche externe.
+- Retourne uniquement un objet JSON valide.
+- Détecte les lignes produits alimentaires uniquement.
+- Ignore les lignes de paiement, taxes, TVA, carte bancaire, ticket, fidélité, totaux intermédiaires, remises isolées.
+- Garde les libellés produits courts et lisibles.
+- suggestedEans doit toujours être un tableau vide; l'enrichissement EAN est fait après.
+- Si une information est absente ou incertaine, mets null.
+
+Format:
+{
+  "merchantName": string | null,
+  "purchaseDate": string | null,
+  "totalAmount": number | null,
+  "confidence": number,
+  "products": [
+    {
+      "name": string,
+      "quantity": number | null,
+      "unitPrice": number | null,
+      "totalPrice": number | null,
+      "confidence": number,
+      "suggestedEans": []
+    }
+  ]
+}
+
+Texte OCR:
+${receiptText}`;
   }
 
   /**
