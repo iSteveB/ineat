@@ -58,6 +58,26 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+## API Error Responses
+
+All uncaught HTTP errors are normalized by the global exception filter:
+
+```json
+{
+  "success": false,
+  "code": "BAD_REQUEST",
+  "message": "Message safe pour l'utilisateur",
+  "requestId": "req_..."
+}
+```
+
+Client-facing messages must be safe and actionable. Technical details such as
+provider errors, credentials, stack traces, environment variable names, and raw
+dependency messages must stay in backend logs and observability tools. Unknown
+or non-public `5xx` errors are returned as `Une erreur est survenue. Veuillez
+réessayer.`. If a server error has a deliberately public message, throw an
+`HttpException` response object with a stable `code` and safe `message`.
+
 ## Support
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
