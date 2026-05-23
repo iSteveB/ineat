@@ -18,6 +18,7 @@ import {
 
 // ===== IMPORTS SERVICES =====
 import { inventoryService } from '@/services/inventoryService';
+import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
 // ===== INTERFACES DU STORE =====
 
@@ -329,10 +330,10 @@ export const useInventoryStore = create<InventoryState>()(
 						}
 					} catch (error) {
 						set({
-							error:
-								error instanceof Error
-									? error.message
-									: "Erreur lors du chargement de l'inventaire",
+							error: getUserFacingErrorMessage(
+								error,
+								"Impossible de charger l'inventaire. Veuillez réessayer."
+							),
 							isLoading: false,
 						});
 					}
@@ -381,10 +382,10 @@ export const useInventoryStore = create<InventoryState>()(
 						// Réinitialiser le formulaire
 						get().clearDraftProduct();
 					} catch (error) {
-						const errorMessage =
-							error instanceof Error
-								? error.message
-								: "Erreur lors de l'ajout du produit";
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							"Impossible d'ajouter le produit. Veuillez réessayer."
+						);
 
 						set({
 							error: errorMessage,
@@ -421,10 +422,10 @@ export const useInventoryStore = create<InventoryState>()(
 							isLoading: false,
 						}));
 					} catch (error) {
-						const errorMessage =
-							error instanceof Error
-								? error.message
-								: 'Erreur lors de la mise à jour du produit';
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							'Impossible de mettre à jour le produit. Veuillez réessayer.'
+						);
 
 						set({
 							error: errorMessage,
@@ -451,10 +452,10 @@ export const useInventoryStore = create<InventoryState>()(
 							isLoading: false,
 						}));
 					} catch (error) {
-						const errorMessage =
-							error instanceof Error
-								? error.message
-								: 'Erreur lors de la suppression du produit';
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							'Impossible de supprimer le produit. Veuillez réessayer.'
+						);
 
 						set({
 							error: errorMessage,
