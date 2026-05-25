@@ -36,12 +36,22 @@ export interface ReceiptStatusResponse {
  * Résultat de recherche manuelle OpenFoodFacts
  */
 export interface ProductSearchResult {
-	ean: string;
+	id: string;
+	ean?: string | null;
 	name: string;
-	brand: string;
-	image: string | null;
-	nutriScore: string | null;
-	categories: string[];
+	brand?: string | null;
+	image?: string | null;
+	barcode?: string | null;
+	imageUrl?: string | null;
+	nutriScore?: string | null;
+	category?: {
+		id: string;
+		name: string;
+		slug: string;
+		icon?: string | null;
+	};
+	categories?: string[];
+	relevanceScore?: number;
 }
 
 /**
