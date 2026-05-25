@@ -76,6 +76,11 @@ const initialState = {
 	skippedProductsCount: 0,
 };
 
+const countProductsByStatus = (
+	products: DetectedProduct[],
+	status: ProductStatus,
+): number => products.filter((product) => product.status === status).length;
+
 // ===== STORE =====
 
 /**
@@ -393,21 +398,41 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 					);
 
 				if (currentPhase === 1) {
+					const updated = updateProducts(state.phase1Products);
 					set(
 						{
-							phase1Products: updateProducts(
-								state.phase1Products,
-							),
+							phase1Products: updated,
+							validatedProductsCount:
+								countProductsByStatus(updated, 'validated') +
+								countProductsByStatus(
+									state.phase2Products,
+									'validated',
+								),
+							skippedProductsCount:
+								countProductsByStatus(updated, 'skipped') +
+								countProductsByStatus(
+									state.phase2Products,
+									'skipped',
+								),
 						},
 						false,
 						'updateProduct/phase1',
 					);
 				} else {
+					const updated = updateProducts(state.phase2Products);
 					set(
 						{
-							phase2Products: updateProducts(
-								state.phase2Products,
-							),
+							phase2Products: updated,
+							validatedProductsCount:
+								countProductsByStatus(
+									state.phase1Products,
+									'validated',
+								) + countProductsByStatus(updated, 'validated'),
+							skippedProductsCount:
+								countProductsByStatus(
+									state.phase1Products,
+									'skipped',
+								) + countProductsByStatus(updated, 'skipped'),
 						},
 						false,
 						'updateProduct/phase2',
@@ -461,7 +486,9 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 				// Récupérer tous les produits validés (Phase 1 + Phase 2)
 				const allProducts = [...phase1Products, ...phase2Products];
 				const validatedProducts = allProducts.filter(
-					(p) => p.status === 'validated' && p.selectedEan,
+					(p) =>
+						p.status === 'validated' &&
+						(p.selectedEan || p.category === 'fresh_produce'),
 				);
 
 				if (validatedProducts.length === 0) {

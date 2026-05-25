@@ -3,10 +3,10 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { ReceiptSummary } from '@/features/receipt/ReceiptSummary';
 import { ProductCardConfident } from '@/features/receipt/ProductCardConfident';
+import { ProductCardPhase2 } from '@/features/receipt/ProductCardPhase2';
 import { Phase1Actions } from '@/features/receipt/Phase1Actions';
 import {
 	useReceiptStore,
@@ -44,6 +44,7 @@ export const ReceiptResultsPage = () => {
 
 	const selectEan = useReceiptStore((s) => s.selectEan);
 	const skipProduct = useReceiptStore((s) => s.skipProduct);
+	const updateProduct = useReceiptStore((s) => s.updateProduct);
 	const validatePhase1 = useReceiptStore((s) => s.validatePhase1);
 	const goToPhase2 = useReceiptStore((s) => s.goToPhase2);
 	const addToInventory = useReceiptStore((s) => s.addToInventory);
@@ -96,6 +97,16 @@ export const ReceiptResultsPage = () => {
 	const handleSkipProduct = useCallback((productId: string) => {
 		skipProduct(productId);
 	}, [skipProduct]);
+
+	/**
+	 * Met à jour un produit corrigé en Phase 2
+	 */
+	const handleUpdateProduct = useCallback(
+		(productId: string, updates: Parameters<typeof updateProduct>[1]) => {
+			updateProduct(productId, updates);
+		},
+		[updateProduct]
+	);
 
 	/**
 	 * Valide Phase 1 et passe à Phase 2
@@ -266,19 +277,14 @@ export const ReceiptResultsPage = () => {
 				{/* Liste des produits Phase 2 */}
 				<div className='space-y-4'>
 					{phase2Products.map((product) => (
-						<Card key={product.id}>
-							<CardContent className='p-4'>
-								<p className='font-medium'>{product.name}</p>
-								<p className='text-sm text-muted-foreground'>
-									Quantité : {product.quantity || 1} • Prix :{' '}
-									{product.totalPrice?.toFixed(2)}€
-								</p>
-								<p className='text-xs text-orange-600 mt-2'>
-									Phase 2 : Produit difficile à identifier
-								</p>
-								{/* TODO: Actions Phase 2 (recherche, scan, création manuelle) */}
-							</CardContent>
-						</Card>
+						<ProductCardPhase2
+							key={product.id}
+							product={product}
+							onUpdate={(updates) =>
+								handleUpdateProduct(product.id, updates)
+							}
+							onSkip={() => handleSkipProduct(product.id)}
+						/>
 					))}
 				</div>
 
