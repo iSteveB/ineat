@@ -269,7 +269,7 @@ export const ProductCardPhase2 = ({
 						Enregistrer
 					</Button>
 					<Button
-						variant={mode === 'search' ? 'default' : 'outline'}
+						variant={mode === 'search' ? 'primary' : 'outline'}
 						size='sm'
 						onClick={() =>
 							setMode(mode === 'search' ? 'edit' : 'search')
@@ -278,7 +278,7 @@ export const ProductCardPhase2 = ({
 						Rechercher
 					</Button>
 					<Button
-						variant={mode === 'scan' ? 'default' : 'outline'}
+						variant={mode === 'scan' ? 'primary' : 'outline'}
 						size='sm'
 						onClick={() =>
 							setMode(mode === 'scan' ? 'edit' : 'scan')
