@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import AuthGuard from './AuthGuard';
 import { useAuthStore } from '@/stores/authStore';
-import { useLocation, redirect } from '@tanstack/react-router';
+import { useLocation, useNavigate } from '@tanstack/react-router';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
@@ -10,7 +10,7 @@ vi.mock('@tanstack/react-router', () => ({
 		<div data-testid='outlet-content'>Protected Content</div>
 	)),
 	useLocation: vi.fn(),
-	redirect: vi.fn(),
+	useNavigate: vi.fn(),
 }));
 
 vi.mock('@/stores/authStore', () => ({
@@ -28,6 +28,7 @@ describe('AuthGuard', () => {
 		pathname: '/dashboard',
 		search: '?param=value',
 	};
+	const navigateMock = vi.fn();
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -36,14 +37,8 @@ describe('AuthGuard', () => {
 		(useLocation as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
 			mockLocation
 		);
-		(redirect as unknown as ReturnType<typeof vi.fn>).mockImplementation(
-			(options) => {
-				const error = new Error(
-					`Redirect to: ${JSON.stringify(options)}`
-				);
-				error.name = 'RedirectError';
-				return error;
-			}
+		(useNavigate as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+			navigateMock
 		);
 	});
 
@@ -78,11 +73,12 @@ describe('AuthGuard', () => {
 
 		// Attendre que la redirection soit appelée
 		await waitFor(() => {
-			expect(redirect).toHaveBeenCalledWith({
+			expect(navigateMock).toHaveBeenCalledWith({
 				to: '/login',
 				search: {
 					redirect: encodeURIComponent('/dashboard?param=value'),
 				},
+				replace: true,
 			});
 		});
 
@@ -104,12 +100,13 @@ describe('AuthGuard', () => {
 		// Attendre que la vérification asynchrone se termine
 		await waitFor(() => {
 			// Vérifier que redirect a été appelé avec les bons paramètres
-			expect(redirect).toHaveBeenCalledWith({
+			expect(navigateMock).toHaveBeenCalledWith({
 				to: '/login',
 				search: {
 					redirect: encodeURIComponent('/dashboard?param=value'),
 					session: 'expired',
 				},
+				replace: true,
 			});
 		});
 	});
@@ -130,12 +127,13 @@ describe('AuthGuard', () => {
 		// Attendre que la vérification asynchrone se termine
 		await waitFor(() => {
 			// Vérifier que redirect a été appelé avec les bons paramètres
-			expect(redirect).toHaveBeenCalledWith({
+			expect(navigateMock).toHaveBeenCalledWith({
 				to: '/login',
 				search: {
 					redirect: encodeURIComponent('/dashboard?param=value'),
 					session: 'expired',
 				},
+				replace: true,
 			});
 		});
 	});

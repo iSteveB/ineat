@@ -3,6 +3,8 @@ import { getQueueToken } from '@nestjs/bull';
 import { NotFoundException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ObservabilityService } from './observability/observability.service';
+import { PrismaService } from './prisma/prisma.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -14,8 +16,26 @@ describe('AppController', () => {
       providers: [
         AppService,
         {
+          provide: ObservabilityService,
+          useValue: {
+            getSnapshot: jest.fn(),
+          },
+        },
+        {
+          provide: PrismaService,
+          useValue: {
+            $queryRawUnsafe: jest.fn(),
+          },
+        },
+        {
           provide: getQueueToken('receipt-processing'),
-          useValue: {},
+          useValue: {
+            isReady: jest.fn(),
+            getWaiting: jest.fn(),
+            getActive: jest.fn(),
+            getCompleted: jest.fn(),
+            getFailed: jest.fn(),
+          },
         },
       ],
     }).compile();

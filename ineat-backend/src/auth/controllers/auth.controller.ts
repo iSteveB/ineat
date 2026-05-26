@@ -8,6 +8,7 @@ import {
   Response,
   BadRequestException,
   SetMetadata,
+  HttpException,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
@@ -18,8 +19,10 @@ import {
   validateLoginDto,
   LoginDto,
 } from '../dto/auth.dto';
-import { Request as ExpressRequest } from 'express';
-import { Response as ExpressResponse } from 'express';
+import {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
 
 interface RequestWithUser extends ExpressRequest {
@@ -50,6 +53,9 @@ export class AuthController {
       const registerDto = validateRegisterDto(body);
       return this.authService.register(registerDto, response);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new BadRequestException(error.message);
     }
   }
@@ -67,6 +73,9 @@ export class AuthController {
       validateLoginDto(body);
       return this.authService.login(req.user as User, response);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new BadRequestException(error.message);
     }
   }

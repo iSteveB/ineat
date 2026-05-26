@@ -5,7 +5,7 @@
     "buildCommand": "pnpm install --frozen-lockfile && pnpm prisma generate && pnpm run build"
   },
   "deploy": {
-    "startCommand": "node dist/src/main.js",
+    "startCommand": "pnpm run deploy:start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",

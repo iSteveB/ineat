@@ -12,7 +12,9 @@ import { UserModule } from './user/user.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ReceiptModule } from './receipt/receipt.module';
+import { NotificationModule } from './notification/notification.module';
 import { BullModule } from '@nestjs/bull';
+import { ObservabilityModule } from './observability/observability.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SentryModule } from '@sentry/nestjs/setup';
@@ -30,6 +32,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
     BullModule.registerQueue({
       name: 'receipt-processing',
     }),
+    ObservabilityModule,
     PrismaModule,
     AuthModule,
     InventoryModule,
@@ -39,6 +42,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
     CloudinaryModule,
     AvatarModule,
     ReceiptModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

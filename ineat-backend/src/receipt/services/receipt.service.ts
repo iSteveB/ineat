@@ -29,6 +29,9 @@ import {
 } from '../../../prisma/generated/prisma/client';
 import { randomUUID } from 'crypto';
 import { OpenFoodFactsService } from './openfoodfacts.service';
+import { NotificationService } from '../../notification/notification.service';
+import { ReceiptProcessingQueue } from '../queues/receipt-processing.queue';
+import { ObservabilityService } from '../../observability/observability.service';
 
 /**
  * Mapper notre enum DocumentType vers l'enum Prisma
@@ -90,6 +93,9 @@ export class ReceiptService {
     private readonly llmService: LlmService,
     private readonly openFoodFactsService: OpenFoodFactsService,
     private readonly cloudinaryStorage: CloudinaryStorageService,
+    private readonly notificationService: NotificationService,
+    private readonly receiptProcessingQueue: ReceiptProcessingQueue,
+    private readonly observabilityService: ObservabilityService,
   ) {}
 
   /**
@@ -99,6 +105,20 @@ export class ReceiptService {
    * @returns Receipt créé avec status PROCESSING
    */
   async createReceipt(dto: CreateReceiptDto) {
+    const uploadStartTime = Date.now();
+
+    this.observabilityService.increment('receipt.upload.requested');
+    this.observabilityService.trackEvent(
+      'receipt.upload.requested',
+      'info',
+      'Receipt upload requested',
+      {
+        userId: dto.userId,
+        documentType: dto.documentType,
+        fileSize: dto.fileBuffer.length,
+      },
+    );
+
     this.logger.log(
       `Création receipt pour user ${dto.userId}, type: ${dto.documentType}`,
     );
@@ -110,6 +130,15 @@ export class ReceiptService {
         dto.fileBuffer,
         dto.userId,
         dto.documentType,
+      );
+      this.observabilityService.recordTiming(
+        'cloudinary.receipt_upload.duration_ms',
+        Date.now() - uploadStartTime,
+        {
+          userId: dto.userId,
+          documentType: dto.documentType,
+          fileSize: dto.fileBuffer.length,
+        },
       );
 
       // 2. Créer le receipt en DB avec status PROCESSING
@@ -134,26 +163,96 @@ export class ReceiptService {
       });
 
       this.logger.log(`✓ Receipt créé: ${receipt.id}`);
+      this.observabilityService.trackEvent(
+        'receipt.created',
+        'info',
+        'Receipt created and ready for queue',
+        {
+          userId: dto.userId,
+          receiptId: receipt.id,
+          documentType: dto.documentType,
+        },
+      );
 
-      // 3. Lancer le traitement OCR + LLM en arrière-plan
-      // Note: Pour l'instant on fait en synchrone,
-      // plus tard on utilisera une queue (Bull) pour async
-      this.processReceiptOcrAndLlm(
-        receipt.id,
-        dto.fileBuffer,
-        dto.documentType,
-      ).catch((error) => {
-        this.logger.error(
-          `Erreur traitement receipt ${receipt.id}: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
-        );
-      });
+      // 3. Planifier le traitement OCR + LLM via Bull/Redis.
+      await this.scheduleReceiptProcessing(receipt.id, dto);
 
       return receipt;
     } catch (error) {
+      this.observabilityService.increment('receipt.upload.failed');
+      this.observabilityService.trackEvent(
+        'receipt.upload.failed',
+        'error',
+        'Receipt upload failed',
+        {
+          userId: dto.userId,
+          documentType: dto.documentType,
+          error,
+        },
+      );
       this.logger.error(
         `Erreur création receipt: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
       );
       throw error;
+    }
+  }
+
+  private async scheduleReceiptProcessing(
+    receiptId: string,
+    dto: CreateReceiptDto,
+  ): Promise<void> {
+    const jobData = {
+      receiptId,
+      fileBuffer: dto.fileBuffer,
+      documentType: dto.documentType,
+      userId: dto.userId,
+      metadata: {
+        originalFileName: dto.fileName,
+        fileSize: dto.fileBuffer.length,
+        uploadedAt: new Date(),
+      },
+    };
+
+    try {
+      await this.receiptProcessingQueue.addReceiptProcessingJob(jobData);
+      return;
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erreur inconnue';
+
+      this.logger.error(
+        `Impossible d'ajouter le receipt ${receiptId} à la queue, traitement local de secours: ${errorMessage}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      this.observabilityService.increment('receipt.queue.enqueue.failed');
+      this.observabilityService.trackEvent(
+        'receipt.queue.enqueue.failed',
+        'error',
+        'Receipt processing queue enqueue failed, using local fallback',
+        {
+          receiptId,
+          userId: dto.userId,
+          documentType: dto.documentType,
+          error,
+        },
+      );
+
+      setImmediate(() => {
+        void this.processReceiptOcrAndLlm(
+          receiptId,
+          dto.fileBuffer,
+          dto.documentType,
+        ).catch((fallbackError) => {
+          const fallbackErrorMessage =
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : 'Erreur inconnue';
+          this.logger.error(
+            `Traitement local de secours échoué pour receipt ${receiptId}: ${fallbackErrorMessage}`,
+            fallbackError instanceof Error ? fallbackError.stack : undefined,
+          );
+        });
+      });
     }
   }
 
@@ -169,10 +268,11 @@ export class ReceiptService {
    * @param fileBuffer - Buffer du fichier
    * @param documentType - Type de document
    */
-  private async processReceiptOcrAndLlm(
+  async processReceiptOcrAndLlm(
     receiptId: string,
     fileBuffer: Buffer,
     documentType: DocumentType,
+    options: { throwOnError?: boolean } = {},
   ): Promise<void> {
     this.logger.log(`Traitement OCR + LLM receipt ${receiptId}...`);
     const startTime = Date.now();
@@ -180,14 +280,37 @@ export class ReceiptService {
     try {
       // === ÉTAPE 1 : OCR avec Tesseract ===
       this.logger.debug(`[${receiptId}] Étape 1: OCR Tesseract...`);
+      const ocrStartTime = Date.now();
       const ocrResult = await this.ocrService.processDocument(
         fileBuffer,
         documentType,
       );
+      this.observabilityService.recordTiming(
+        'receipt.ocr.duration_ms',
+        Date.now() - ocrStartTime,
+        {
+          receiptId,
+          documentType,
+          success: ocrResult.success,
+          confidence: ocrResult.data?.confidence,
+        },
+      );
 
       if (!ocrResult.success || !ocrResult.data) {
+        this.observabilityService.increment('receipt.ocr.failed');
+        this.observabilityService.trackEvent(
+          'receipt.ocr.failed',
+          'error',
+          'Receipt OCR failed',
+          {
+            receiptId,
+            documentType,
+            error: ocrResult.error,
+          },
+        );
         throw new Error(ocrResult.error || 'Erreur OCR inconnue');
       }
+      this.observabilityService.increment('receipt.ocr.completed');
 
       const ocrText = this.extractTextFromOcrResult(ocrResult);
       this.logger.debug(
@@ -200,11 +323,33 @@ export class ReceiptService {
       if (this.llmService.isAvailable()) {
         this.logger.debug(`[${receiptId}] Étape 2: Analyse OpenAI rapide...`);
         try {
+          const llmStartTime = Date.now();
           llmAnalysis = await this.llmService.analyzeReceiptText(ocrText);
+          this.observabilityService.recordTiming(
+            'receipt.llm.openai.duration_ms',
+            Date.now() - llmStartTime,
+            {
+              receiptId,
+              provider: 'openai_fast',
+              productsCount: llmAnalysis.products.length,
+              confidence: llmAnalysis.confidence,
+            },
+          );
+          this.observabilityService.increment('receipt.llm.openai.completed');
           this.logger.debug(
             `[${receiptId}] OpenAI terminé: ${llmAnalysis.products.length} produits détectés`,
           );
         } catch (llmError) {
+          this.observabilityService.increment('receipt.llm.openai.failed');
+          this.observabilityService.trackEvent(
+            'receipt.llm.openai.failed',
+            'warn',
+            'OpenAI receipt analysis failed, using OCR only',
+            {
+              receiptId,
+              error: llmError,
+            },
+          );
           this.logger.warn(
             `[${receiptId}] OpenAI échoué (fallback sur OCR seul): ${llmError instanceof Error ? llmError.message : 'Erreur inconnue'}`,
           );
@@ -225,12 +370,32 @@ export class ReceiptService {
               llmAnalysis.products,
             ),
           };
+          this.observabilityService.recordTiming(
+            'receipt.enrichment.openfoodfacts.duration_ms',
+            Date.now() - enrichmentStart,
+            {
+              receiptId,
+              productsCount: llmAnalysis.products.length,
+            },
+          );
           this.logger.debug(
             `[${receiptId}] Enrichissement OpenFoodFacts terminé en ${
               Date.now() - enrichmentStart
             }ms`,
           );
         } catch (enrichmentError) {
+          this.observabilityService.increment(
+            'receipt.enrichment.openfoodfacts.failed',
+          );
+          this.observabilityService.trackEvent(
+            'receipt.enrichment.openfoodfacts.failed',
+            'warn',
+            'OpenFoodFacts receipt enrichment failed',
+            {
+              receiptId,
+              error: enrichmentError,
+            },
+          );
           this.logger.warn(
             `[${receiptId}] Enrichissement EAN ignoré: ${
               enrichmentError instanceof Error
@@ -260,12 +425,57 @@ export class ReceiptService {
       this.logger.log(
         `✓ Traitement réussi pour receipt ${receiptId} en ${processingTime}ms`,
       );
+      this.observabilityService.increment('receipt.processing.completed');
+      this.observabilityService.recordTiming(
+        'receipt.processing.duration_ms',
+        processingTime,
+        {
+          receiptId,
+          documentType,
+          productsCount: llmAnalysis?.products.length ?? 0,
+          usedLlm: Boolean(llmAnalysis),
+        },
+      );
+      this.observabilityService.trackEvent(
+        'receipt.processing.completed',
+        'info',
+        'Receipt processing completed',
+        {
+          receiptId,
+          documentType,
+          durationMs: processingTime,
+          productsCount: llmAnalysis?.products.length ?? 0,
+        },
+      );
+      await this.notificationService.createReceiptNotification(
+        receiptId,
+        ReceiptStatus.COMPLETED,
+      );
     } catch (error) {
-      // Exception : marquer comme FAILED
-      const processingTime = Date.now() - startTime;
       const errorMessage =
         error instanceof Error ? error.message : 'Erreur inconnue';
 
+      this.logger.error(
+        `✗ Exception traitement receipt ${receiptId}: ${errorMessage}`,
+      );
+      this.observabilityService.increment('receipt.processing.failed');
+      this.observabilityService.trackEvent(
+        'receipt.processing.failed',
+        'error',
+        'Receipt processing failed',
+        {
+          receiptId,
+          documentType,
+          durationMs: Date.now() - startTime,
+          error,
+        },
+      );
+
+      if (options.throwOnError) {
+        throw error;
+      }
+
+      const processingTime = Date.now() - startTime;
       await this.prisma.receipt.update({
         where: { id: receiptId },
         data: {
@@ -274,11 +484,43 @@ export class ReceiptService {
           processingTime,
         },
       });
-
-      this.logger.error(
-        `✗ Exception traitement receipt ${receiptId}: ${errorMessage}`,
+      await this.notificationService.createReceiptNotification(
+        receiptId,
+        ReceiptStatus.FAILED,
+        errorMessage,
       );
     }
+  }
+
+  async markReceiptAsFailed(
+    receiptId: string,
+    errorMessage: string,
+  ): Promise<void> {
+    this.observabilityService.increment('receipt.processing.final_failed');
+    this.observabilityService.trackEvent(
+      'receipt.processing.final_failed',
+      'error',
+      'Receipt processing permanently failed',
+      {
+        receiptId,
+        errorMessage,
+      },
+    );
+
+    await this.prisma.receipt.update({
+      where: { id: receiptId },
+      data: {
+        status: ReceiptStatus.FAILED,
+        errorMessage,
+        updatedAt: new Date(),
+      },
+    });
+
+    await this.notificationService.createReceiptNotification(
+      receiptId,
+      ReceiptStatus.FAILED,
+      errorMessage,
+    );
   }
 
   /**

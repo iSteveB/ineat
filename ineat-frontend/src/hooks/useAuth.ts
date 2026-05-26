@@ -56,5 +56,8 @@ export function usePrefetchUser() {
 export function useHasRole(role: string): boolean {
 	const { user } = useAuthStore();
 
-	return Boolean(user?.subscription?.includes(role));
+	return (
+		user?.subscription === role ||
+		(user as { role?: string } | null)?.role === role
+	);
 }

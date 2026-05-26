@@ -20,6 +20,24 @@ import { randomUUID } from 'crypto';
 export class BudgetService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private normalizePeriodStart(date: string): Date {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+    return normalizedDate;
+  }
+
+  private normalizePeriodEnd(date: string): Date {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(23, 59, 59, 999);
+    return normalizedDate;
+  }
+
+  private formatDateInput(year: number, month: number, day: number): string {
+    const paddedMonth = String(month + 1).padStart(2, '0');
+    const paddedDay = String(day).padStart(2, '0');
+    return `${year}-${paddedMonth}-${paddedDay}`;
+  }
+
   /**
    * Récupère ou crée le budget du mois courant pour un utilisateur
    */
@@ -58,8 +76,8 @@ export class BudgetService {
    * Crée un nouveau budget mensuel
    */
   async createBudget(userId: string, data: CreateBudgetData): Promise<Budget> {
-    const startDate = new Date(data.periodStart);
-    const endDate = new Date(data.periodEnd);
+    const startDate = this.normalizePeriodStart(data.periodStart);
+    const endDate = this.normalizePeriodEnd(data.periodEnd);
 
     // Désactiver les budgets précédents qui chevauchent avec cette période
     await this.deactivateBudgetsForPeriod(userId, startDate, endDate);
@@ -90,13 +108,12 @@ export class BudgetService {
     const year = options?.year ?? new Date().getFullYear();
     const month = options?.month ?? new Date().getMonth();
 
-    const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
     return this.createBudget(userId, {
       amount,
-      periodStart: startOfMonth.toISOString().split('T')[0],
-      periodEnd: endOfMonth.toISOString().split('T')[0],
+      periodStart: this.formatDateInput(year, month, 1),
+      periodEnd: this.formatDateInput(year, month, endOfMonth.getDate()),
       isActive: true,
     });
   }
@@ -121,8 +138,10 @@ export class BudgetService {
 
     if (data.amount !== undefined) updateData.amount = data.amount;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
-    if (data.periodStart) updateData.periodStart = new Date(data.periodStart);
-    if (data.periodEnd) updateData.periodEnd = new Date(data.periodEnd);
+    if (data.periodStart)
+      updateData.periodStart = this.normalizePeriodStart(data.periodStart);
+    if (data.periodEnd)
+      updateData.periodEnd = this.normalizePeriodEnd(data.periodEnd);
 
     return this.prisma.budget.update({
       where: { id: budgetId },

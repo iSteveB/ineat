@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Outlet, useLocation, redirect } from '@tanstack/react-router';
+import { useCallback, useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import Spinner from '../ui/spinner';
 
@@ -7,20 +7,26 @@ const AuthGuard = () => {
 	const [isVerifying, setIsVerifying] = useState(true);
 	const { isAuthenticated, verifyAuthentication, user } = useAuthStore();
 	const location = useLocation();
+	const navigate = useNavigate();
+
+	const redirectToLogin = useCallback((sessionExpired = false) => {
+		navigate({
+			to: '/login',
+			search: {
+				redirect: encodeURIComponent(location.pathname + location.search),
+				...(sessionExpired ? { session: 'expired' } : {}),
+			},
+			replace: true,
+		});
+	}, [location.pathname, location.search, navigate]);
 
 	useEffect(() => {
 		const checkAuth = async () => {
 			if (!isAuthenticated || !user) {
 				// Si l'utilisateur n'est pas authentifié selon notre état local,
 				// rediriger vers la page de connexion
-				throw redirect({
-					to: '/login',
-					search: {
-						redirect: encodeURIComponent(
-							location.pathname + location.search
-						),
-					},
-				});
+				redirectToLogin();
+				return;
 			}
 
 			// Vérifier l'authentification auprès du serveur
@@ -28,27 +34,13 @@ const AuthGuard = () => {
 				const isValid = await verifyAuthentication();
 				if (!isValid) {
 					// Si l'authentification n'est pas valide, rediriger vers la page de connexion
-					throw redirect({
-						to: '/login',
-						search: {
-							redirect: encodeURIComponent(
-								location.pathname + location.search
-							),
-							session: 'expired',
-						},
-					});
+					redirectToLogin(true);
+					return;
 				}
 			} catch {
 				// En cas d'erreur, rediriger vers la page de connexion
-				throw redirect({
-					to: '/login',
-					search: {
-						redirect: encodeURIComponent(
-							location.pathname + location.search
-						),
-						session: 'expired',
-					},
-				});
+				redirectToLogin(true);
+				return;
 			} finally {
 				setIsVerifying(false);
 			}
@@ -59,6 +51,8 @@ const AuthGuard = () => {
 		isAuthenticated,
 		location.pathname,
 		location.search,
+		navigate,
+		redirectToLogin,
 		verifyAuthentication,
 		user,
 	]);

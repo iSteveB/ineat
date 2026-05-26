@@ -93,7 +93,11 @@ export class BudgetController {
 
       return {
         success: true,
-        data: { hasAnyBudget },
+        data: {
+          hasAnyBudget,
+          exists: hasAnyBudget,
+          currentBudget: null,
+        },
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -118,6 +122,64 @@ export class BudgetController {
         data: budgets,
       };
     } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
+   * Récupère l'historique des budgets.
+   * GET /budget/history
+   */
+  @Get('history')
+  async getBudgetHistory(@Req() req: Request) {
+    try {
+      const userId = (req.user as { id: string }).id;
+      const budgets = await this.budgetService.getBudgets(userId);
+
+      return {
+        success: true,
+        data: budgets,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  /**
+   * Récupère un budget par mois au format YYYY-MM.
+   * GET /budget/month/:month
+   */
+  @Get('month/:month')
+  async getBudgetByMonth(
+    @Req() req: Request,
+    @Param('month') month: string,
+  ) {
+    try {
+      if (!/^\d{4}-\d{2}$/.test(month)) {
+        throw new BadRequestException('Le mois doit être au format YYYY-MM');
+      }
+
+      const userId = (req.user as { id: string }).id;
+      const [year, monthNumber] = month.split('-').map(Number);
+      const monthStart = new Date(year, monthNumber - 1, 1, 0, 0, 0, 0);
+      const monthEnd = new Date(year, monthNumber, 0, 23, 59, 59, 999);
+      const budgets = await this.budgetService.getBudgets(userId);
+      const budget =
+        budgets.find(
+          (candidate) =>
+            candidate.periodStart <= monthEnd &&
+            candidate.periodEnd >= monthStart &&
+            candidate.isActive,
+        ) || null;
+
+      return {
+        success: true,
+        data: budget,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       throw new BadRequestException(error.message);
     }
   }

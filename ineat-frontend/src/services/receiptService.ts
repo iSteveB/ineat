@@ -182,22 +182,29 @@ class ReceiptService {
 	async uploadReceipt(file: File): Promise<UploadReceiptResponse> {
 		try {
 			// Validation côté client
-			const maxSize = 5 * 1024 * 1024; // 5MB
+			const maxSize = 10 * 1024 * 1024; // 10MB, aligned with backend
 			if (file.size > maxSize) {
-				throw new Error('Le fichier est trop volumineux (maximum 5MB)');
+				throw new Error('Le fichier est trop volumineux (maximum 10MB)');
 			}
 
-			const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+			const allowedTypes = [
+				'image/jpeg',
+				'image/png',
+				'image/webp',
+				'image/heic',
+				'image/heif',
+				'application/pdf',
+			];
 			if (!allowedTypes.includes(file.type)) {
 				throw new Error(
-					'Format de fichier non supporté (formats acceptés: JPEG, PNG, WEBP)'
+					'Format de fichier non supporté (formats acceptés: JPEG, PNG, WEBP, HEIC, PDF)'
 				);
 			}
 
 			// Création du FormData
 			const formData = new FormData();
 			formData.append('file', file);
-			formData.append('documentType', 'receipt_image'); 
+			formData.append('documentType', 'receipt_image');
 
 			const response = await fetch(`${API_URL}/receipt/upload`, {
 				method: 'POST',
@@ -229,7 +236,6 @@ class ReceiptService {
 				receiptId: data.data?.receiptId || data.receiptId || data.id,
 			};
 		} catch (error) {
-			console.error('Erreur upload receipt:', error);
 			if (error instanceof Error) {
 				throw error;
 			}
@@ -267,7 +273,6 @@ class ReceiptService {
 		}
 
 		const data = await response.json();
-		console.log('📊 Status response:', data);
 
 		// Extraire les données (support multiple formats de réponse)
 		const responseData = data.data || data;
@@ -336,7 +341,6 @@ class ReceiptService {
 		}
 
 		const data = await response.json();
-		console.log('📊 Analysis response:', data);
 
 		// Extraire les données brutes (support multiple formats)
 		const rawAnalysis: BackendReceiptAnalysis = data.data || data;
@@ -581,12 +585,13 @@ class ReceiptService {
 		if (filters.merchantName) {
 			params.append('merchantName', filters.merchantName);
 		}
-		if (filters.limit !== undefined) {
-			params.append('limit', filters.limit.toString());
-		}
-		if (filters.offset !== undefined) {
-			params.append('offset', filters.offset.toString());
-		}
+	if (filters.limit !== undefined) {
+		params.append('limit', filters.limit.toString());
+	}
+	if (filters.offset !== undefined) {
+		const limit = filters.limit || 20;
+		params.append('page', `${Math.floor(filters.offset / limit) + 1}`);
+	}
 
 		const queryString = params.toString();
 		const url = `${API_URL}/receipt/history${
@@ -613,8 +618,28 @@ class ReceiptService {
 			throw new Error(errorMessage);
 		}
 
-		const data = await response.json();
-		return data.data || data;
+	const data = await response.json();
+	const responseData = data.data || data;
+
+	if (responseData.pagination) {
+		return {
+			receipts: responseData.receipts || [],
+			total: responseData.pagination.totalItems || 0,
+			limit:
+				responseData.pagination.pageSize ||
+				responseData.pagination.itemsPerPage ||
+				filters.limit ||
+				20,
+			offset:
+				((responseData.pagination.currentPage || 1) - 1) *
+				(responseData.pagination.pageSize ||
+					responseData.pagination.itemsPerPage ||
+					filters.limit ||
+					20),
+		};
+	}
+
+	return responseData;
 	}
 
 	/**

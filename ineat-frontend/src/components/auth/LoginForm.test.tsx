@@ -4,8 +4,6 @@ import LoginForm from './LoginForm';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import userEvent from '@testing-library/user-event';
-import { LoginCredentialsSchema } from '@/schemas';
-import { z } from 'zod';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
@@ -15,12 +13,6 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/stores/authStore', () => ({
 	useAuthStore: vi.fn(),
-}));
-
-vi.mock('../../schemas/authSchema', () => ({
-	LoginCredentialsSchema: {
-		parse: vi.fn(),
-	},
 }));
 
 describe('LoginForm', () => {
@@ -44,9 +36,6 @@ describe('LoginForm', () => {
 			isLoading: false,
 			error: null,
 		});
-		(
-			LoginCredentialsSchema.parse as ReturnType<typeof vi.fn>
-		).mockImplementation(() => true);
 	});
 
 	it('rend correctement le formulaire initial', () => {
@@ -142,32 +131,14 @@ describe('LoginForm', () => {
 	});
 
 	it('affiche une erreur si la validation du formulaire échoue', async () => {
-		// Créer une instance typée de ZodError
-		const zodErrors: z.ZodIssue[] = [
-			{
-				code: 'custom',
-				path: ['password'],
-				message: 'Le mot de passe doit contenir au moins 8 caractères',
-			},
-		];
+		render(<LoginForm />);
 
-		const validationError = new z.ZodError(zodErrors);
-
-		// Modifier directement l'implémentation pour garantir que validateForm échoue
-		(
-			LoginCredentialsSchema.parse as ReturnType<typeof vi.fn>
-		).mockImplementation(() => {
-			throw validationError;
-		});
-
-		const { rerender } = render(<LoginForm />);
+		await user.type(screen.getByTestId('email-input'), 'email-invalide');
+		await user.type(screen.getByTestId('password-input'), 'motdepasse');
 
 		// Soumettre le formulaire directement via l'événement submit
 		const form = screen.getByTestId('login-form');
 		fireEvent.submit(form);
-
-		// Forcer un re-rendu pour s'assurer que l'état est mis à jour
-		rerender(<LoginForm />);
 
 		// Attendre et vérifier que l'erreur s'affiche
 		await waitFor(() => {
@@ -176,7 +147,7 @@ describe('LoginForm', () => {
 
 		// Vérifier le contenu de l'erreur
 		expect(screen.getByTestId('error-message')).toHaveTextContent(
-			'Le mot de passe doit contenir au moins 8 caractères'
+			"Format d'email invalide"
 		);
 
 		// Vérifier que la fonction login n'a pas été appelée
@@ -265,32 +236,13 @@ describe('LoginForm', () => {
 	});
 
 	it('efface les erreurs lors de la modification des champs', async () => {
-		// Créer une instance typée de ZodError
-		const zodErrors: z.ZodIssue[] = [
-			{
-				code: 'custom',
-				path: ['email'],
-				message: 'Email invalide',
-			},
-		];
+		render(<LoginForm />);
 
-		const validationError = new z.ZodError(zodErrors);
-
-		// Faire échouer la validation lors du premier appel uniquement
-		(LoginCredentialsSchema.parse as ReturnType<typeof vi.fn>)
-			.mockImplementationOnce(() => {
-				throw validationError;
-			})
-			.mockImplementation(() => true);
-
-		const { rerender } = render(<LoginForm />);
+		await user.type(screen.getByTestId('email-input'), 'email-invalide');
 
 		// Soumettre le formulaire pour générer une erreur
 		const form = screen.getByTestId('login-form');
 		fireEvent.submit(form);
-
-		// Forcer un re-rendu
-		rerender(<LoginForm />);
 
 		// Vérifier que l'erreur est affichée
 		await waitFor(() => {
@@ -299,8 +251,8 @@ describe('LoginForm', () => {
 
 		// Modifier l'email et forcer un re-rendu pour voir les changements
 		const emailInput = screen.getByTestId('email-input');
+		await user.clear(emailInput);
 		await user.type(emailInput, 'nouvel.email@exemple.com');
-		rerender(<LoginForm />);
 
 		// Vérifier que l'erreur a disparu
 		expect(screen.queryByTestId('error-container')).not.toBeInTheDocument();

@@ -18,7 +18,7 @@
     }
     
     # Health check pour Railway
-    rewrite /health /*
+    respond /health "ok" 200
     
     # Servir depuis le dossier de build (dist pour Vite, build pour CRA)
     root * dist

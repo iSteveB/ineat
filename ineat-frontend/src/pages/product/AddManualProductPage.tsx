@@ -60,20 +60,24 @@ const AddManualProductPage: React.FC = () => {
 	const handleProductAddedSuccess = (
 		result: ProductAddedWithBudgetResult
 	): void => {
+		const budgetDescription = result.budgetInfo.expenseCreated
+			? result.budgetInfo.remainingBudget !== undefined
+				? `Budget restant : ${result.budgetInfo.remainingBudget.toFixed(2)} €`
+				: 'Dépense ajoutée au budget'
+			: "Aucune dépense n'a été créée";
+
 		switch (result.type) {
 			case 'success':
 				toast.success(result.message);
 				break;
 			case 'info':
 				toast.info(result.message, {
-					description: result.budgetInfo.expenseCreated
-						? `Dépense ajoutée au budget`
-						: 'Prix non renseigné - aucune dépense créée',
+					description: budgetDescription,
 				});
 				break;
 			case 'warning':
 				toast.warning(result.message, {
-					description: 'Attention à votre budget !',
+					description: budgetDescription,
 				});
 				break;
 		}

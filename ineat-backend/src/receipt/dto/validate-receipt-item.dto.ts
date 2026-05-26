@@ -1,5 +1,19 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, IsUUID, IsBoolean, Min, Max, IsEnum, ValidateNested } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsISO8601,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  Matches,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 // ===== ENUMS =====
@@ -25,6 +39,7 @@ export class CreateProductFromReceiptDto {
     maxLength: 100,
   })
   @IsString()
+  @IsNotEmpty({ message: 'Le nom du produit est obligatoire' })
   @Transform(({ value }) => value?.trim())
   name: string;
 
@@ -41,10 +56,14 @@ export class CreateProductFromReceiptDto {
   @ApiPropertyOptional({
     description: 'Code-barres du produit',
     example: '3560070364021',
-    pattern: '^[0-9]{8,14}$',
+    pattern: '^[0-9]{8,13}$',
   })
   @IsOptional()
   @IsString()
+  @Matches(/^\d{8,13}$/, {
+    message:
+      'Le code-barres doit contenir entre 8 et 13 chiffres',
+  })
   @Transform(({ value }) => value?.trim())
   barcode?: string;
 
@@ -53,6 +72,7 @@ export class CreateProductFromReceiptDto {
     example: 'dairy-products',
   })
   @IsString()
+  @IsNotEmpty({ message: 'La catégorie est obligatoire' })
   categorySlug: string;
 
   @ApiPropertyOptional({
@@ -60,7 +80,7 @@ export class CreateProductFromReceiptDto {
     example: 'https://example.com/product.jpg',
   })
   @IsOptional()
-  @IsString()
+  @IsUrl({}, { message: "L'URL de l'image doit être valide" })
   imageUrl?: string;
 
   @ApiProperty({
@@ -183,7 +203,10 @@ export class ValidateReceiptItemDto {
     format: 'date-time',
   })
   @IsOptional()
-  @IsString()
+  @IsISO8601(
+    {},
+    { message: 'La date de péremption doit être une date ISO 8601 valide' },
+  )
   expiryDate?: string;
 
   @ApiPropertyOptional({

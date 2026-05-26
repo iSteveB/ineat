@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
-import { QuickAddProductDto } from 'src/DTOs';
-import { BudgetService } from 'src/budget/services/budget.service';
-import { ExpenseService } from 'src/budget/services/expense.service';
+import { QuickAddProductDto } from '../../DTOs';
+import { BudgetService } from '../../budget/services/budget.service';
+import { ExpenseService } from '../../budget/services/expense.service';
 import { randomUUID } from 'crypto';
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
@@ -56,6 +56,23 @@ export interface ProductCreatedWithBudgetDto extends ProductCreatedResponseDto {
 }
 
 type ExpiryStatus = 'GOOD' | 'WARNING' | 'CRITICAL' | 'EXPIRED' | 'UNKNOWN';
+
+export interface InventoryPaginationOptions {
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedInventoryResult {
+  items: any[];
+  pagination: {
+    currentPage: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
 
 @Injectable()
 export class InventoryService {
@@ -234,7 +251,8 @@ export class InventoryService {
       storageLocation?: string;
       expiringWithinDays?: number;
     },
-  ) {
+    pagination?: InventoryPaginationOptions,
+  ): Promise<any[] | PaginatedInventoryResult> {
     const where: any = {
       userId,
     };
@@ -244,7 +262,7 @@ export class InventoryService {
       if (filters.category) {
         where.Product = {
           Category: {
-            slug: filters.category,
+            OR: [{ id: filters.category }, { slug: filters.category }],
           },
         };
       }
@@ -264,7 +282,14 @@ export class InventoryService {
       }
     }
 
-    return await this.prisma.inventoryItem.findMany({
+    const page =
+      pagination?.page && pagination.page > 0 ? Math.floor(pagination.page) : 1;
+    const limit =
+      pagination?.limit && pagination.limit > 0
+        ? Math.min(Math.floor(pagination.limit), 100)
+        : undefined;
+
+    const query = {
       where,
       include: {
         Product: {
@@ -274,9 +299,48 @@ export class InventoryService {
         },
       },
       orderBy: [
-        { expiryDate: 'asc' }, // Produits qui périment en premier
-        { createdAt: 'desc' }, // Plus récents en premier pour ceux sans date
+        { expiryDate: 'asc' as const }, // Produits qui périment en premier
+        { createdAt: 'desc' as const }, // Plus récents en premier pour ceux sans date
       ],
+      ...(limit ? { skip: (page - 1) * limit, take: limit } : {}),
+    };
+
+    if (!limit) {
+      return await this.prisma.inventoryItem.findMany(query);
+    }
+
+    const [items, totalItems] = await Promise.all([
+      this.prisma.inventoryItem.findMany(query),
+      this.prisma.inventoryItem.count({ where }),
+    ]);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return {
+      items,
+      pagination: {
+        currentPage: page,
+        pageSize: limit,
+        totalItems,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
+
+  async getInventoryItemById(userId: string, inventoryItemId: string) {
+    return await this.prisma.inventoryItem.findFirst({
+      where: {
+        id: inventoryItemId,
+        userId,
+      },
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
+      },
     });
   }
 
@@ -404,6 +468,13 @@ export class InventoryService {
   private async validateProductData(
     addProductDto: AddManualProductDto,
   ): Promise<void> {
+    this.validateInventoryDates(
+      addProductDto.purchaseDate,
+      addProductDto.expiryDate,
+    );
+    this.validatePositiveQuantity(addProductDto.quantity);
+    this.validatePurchasePrice(addProductDto.purchasePrice);
+
     // Vérifier que la catégorie existe
     const category = await this.prisma.category.findFirst({
       where: { slug: addProductDto.category },
@@ -435,16 +506,57 @@ export class InventoryService {
       }
     }
 
-    // Vérifier la cohérence des dates
-    if (addProductDto.expiryDate && addProductDto.purchaseDate) {
-      const purchaseDate = new Date(addProductDto.purchaseDate);
-      const expiryDate = new Date(addProductDto.expiryDate);
+  }
 
-      if (expiryDate <= purchaseDate) {
-        throw new BadRequestException(
-          "La date de péremption doit être postérieure à la date d'achat",
-        );
-      }
+  private validateInventoryDates(
+    purchaseDateInput: string,
+    expiryDateInput?: string,
+  ): void {
+    const purchaseDate = new Date(purchaseDateInput);
+
+    if (Number.isNaN(purchaseDate.getTime())) {
+      throw new BadRequestException("La date d'achat doit être valide");
+    }
+
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    if (purchaseDate > today) {
+      throw new BadRequestException(
+        "La date d'achat ne peut pas être dans le futur",
+      );
+    }
+
+    if (!expiryDateInput) {
+      return;
+    }
+
+    const expiryDate = new Date(expiryDateInput);
+
+    if (Number.isNaN(expiryDate.getTime())) {
+      throw new BadRequestException('La date de péremption doit être valide');
+    }
+
+    if (expiryDate <= purchaseDate) {
+      throw new BadRequestException(
+        "La date de péremption doit être postérieure à la date d'achat",
+      );
+    }
+  }
+
+  private validatePositiveQuantity(quantity: number): void {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new BadRequestException('La quantité doit être supérieure à 0');
+    }
+  }
+
+  private validatePurchasePrice(purchasePrice?: number): void {
+    if (purchasePrice === undefined || purchasePrice === null) {
+      return;
+    }
+
+    if (!Number.isFinite(purchasePrice) || purchasePrice < 0) {
+      throw new BadRequestException("Le prix d'achat ne peut pas être négatif");
     }
   }
 
@@ -456,7 +568,7 @@ export class InventoryService {
   private isValidBarcodeFormat(barcode: string): boolean {
     // Validation basique pour codes-barres courants
     // EAN-8 (8 chiffres), EAN-13 (13 chiffres), UPC-A (12 chiffres), etc.
-    const barcodeRegex = /^(\d{8}|\d{12,14})$/;
+    const barcodeRegex = /^\d{8,13}$/;
     return barcodeRegex.test(barcode.trim());
   }
 
@@ -686,62 +798,41 @@ export class InventoryService {
     }
 
     try {
-      // Utilise les méthodes existantes du BudgetService
-      // Trouver le budget actif (méthode à implémenter si elle n'existe pas)
-      const budgets = await this.prisma.budget.findMany({
-        where: {
-          userId,
-          isActive: true,
-          periodStart: { lte: new Date() },
-          periodEnd: { gte: new Date() },
+      const expenseResult = await this.expenseService.createExpenseFromProduct(
+        userId,
+        {
+          productName: expenseData?.productName || 'Produit',
+          amount: purchasePrice,
+          purchaseDate:
+            expenseData?.purchaseDate ||
+            new Date().toISOString().split('T')[0],
+          source: expenseData?.source || 'Inventaire',
+          notes: expenseData?.notes,
+          inventoryItemId: expenseData?.inventoryItemId,
         },
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      });
+        {
+          findOrCreateBudget: false,
+          autoDetectCategory: true,
+        },
+      );
 
-      if (budgets.length === 0) {
+      if (!expenseResult.expense || !expenseResult.budgetId) {
         return {
           expenseCreated: false,
-          message: 'Aucun budget actif trouvé',
+          message: expenseResult.message,
         };
       }
 
-      const activeBudget = budgets[0];
-
-      // Crée la dépense directement avec Prisma
-      const expense = await this.prisma.expense.create({
-        data: {
-          id: randomUUID(),
-          userId,
-          budgetId: activeBudget.id,
-          amount: purchasePrice,
-          date: new Date(expenseData?.purchaseDate || new Date()),
-          source: expenseData?.source || 'Inventaire',
-          category: 'Alimentation',
-          notes:
-            `${expenseData?.productName || 'Produit'} - ${expenseData?.notes || ''}`.trim(),
-          updatedAt: new Date(),
-        },
-      });
-
-      // Calcule le budget restant directement
-      const totalExpenses = await this.prisma.expense.aggregate({
-        where: {
-          budgetId: activeBudget.id,
-        },
-        _sum: {
-          amount: true,
-        },
-      });
-
-      const totalSpent = totalExpenses._sum.amount || 0;
-      const remainingBudget = activeBudget.amount - totalSpent;
+      const stats = await this.budgetService.getBudgetStats(
+        expenseResult.budgetId,
+        userId,
+      );
 
       return {
         expenseCreated: true,
-        message: `Dépense de ${purchasePrice}€ ajoutée au budget`,
-        budgetId: activeBudget.id,
-        remainingBudget: Math.max(0, remainingBudget),
+        message: expenseResult.message,
+        budgetId: expenseResult.budgetId,
+        remainingBudget: stats.remaining,
       };
     } catch (error) {
       console.error('Erreur lors de la gestion budgétaire:', error);
@@ -760,17 +851,9 @@ export class InventoryService {
   private async validateQuickAddData(
     quickAddDto: QuickAddProductDto,
   ): Promise<void> {
-    // Vérifier la cohérence des dates
-    if (quickAddDto.expiryDate && quickAddDto.purchaseDate) {
-      const purchaseDate = new Date(quickAddDto.purchaseDate);
-      const expiryDate = new Date(quickAddDto.expiryDate);
-
-      if (expiryDate <= purchaseDate) {
-        throw new BadRequestException(
-          "La date de péremption doit être postérieure à la date d'achat",
-        );
-      }
-    }
+    this.validateInventoryDates(quickAddDto.purchaseDate, quickAddDto.expiryDate);
+    this.validatePositiveQuantity(quickAddDto.quantity);
+    this.validatePurchasePrice(quickAddDto.purchasePrice);
   }
 
   /**
@@ -855,25 +938,105 @@ export class InventoryService {
    * Récupère les statistiques d'inventaire pour un utilisateur
    */
   async getInventoryStats(userId: string): Promise<InventoryStats> {
-    // Implémentation existante des statistiques...
-    // (Code non modifié car pas concerné par les nouveaux champs)
+    const now = new Date();
+    const twoDaysFromNow = new Date(now);
+    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+    const fiveDaysFromNow = new Date(now);
+    fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    const [
+      totalItems,
+      valueStats,
+      expired,
+      critical,
+      warning,
+      good,
+      unknown,
+      storageStats,
+      itemsAddedThisWeek,
+    ] = await Promise.all([
+      this.prisma.inventoryItem.count({ where: { userId } }),
+      this.prisma.inventoryItem.aggregate({
+        where: { userId },
+        _sum: {
+          purchasePrice: true,
+          quantity: true,
+        },
+        _avg: {
+          purchasePrice: true,
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, expiryDate: { lt: now } },
+      }),
+      this.prisma.inventoryItem.count({
+        where: {
+          userId,
+          expiryDate: {
+            gte: now,
+            lte: twoDaysFromNow,
+          },
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: {
+          userId,
+          expiryDate: {
+            gt: twoDaysFromNow,
+            lte: fiveDaysFromNow,
+          },
+        },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, expiryDate: { gt: fiveDaysFromNow } },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, expiryDate: null },
+      }),
+      this.prisma.inventoryItem.groupBy({
+        by: ['storageLocation'],
+        where: { userId },
+        _count: { _all: true },
+      }),
+      this.prisma.inventoryItem.count({
+        where: { userId, createdAt: { gte: oneWeekAgo } },
+      }),
+    ]);
+
+    const storageBreakdown = Object.fromEntries(
+      storageStats.map((stat) => {
+        const key = stat.storageLocation || 'unknown';
+        const count = stat._count._all;
+
+        return [
+          key,
+          {
+            count,
+            percentage:
+              totalItems > 0 ? Math.round((count / totalItems) * 100) : 0,
+          },
+        ];
+      }),
+    );
 
     return {
-      totalItems: 0,
-      totalValue: 0,
-      totalQuantity: 0,
-      averageItemValue: 0,
+      totalItems,
+      totalValue: valueStats._sum.purchasePrice || 0,
+      totalQuantity: valueStats._sum.quantity || 0,
+      averageItemValue: valueStats._avg.purchasePrice || 0,
       expiryBreakdown: {
-        good: 0,
-        warning: 0,
-        critical: 0,
-        expired: 0,
-        unknown: 0,
+        good,
+        warning,
+        critical,
+        expired,
+        unknown,
       },
       categoryBreakdown: [],
-      storageBreakdown: {},
+      storageBreakdown,
       recentActivity: {
-        itemsAddedThisWeek: 0,
+        itemsAddedThisWeek,
         itemsConsumedThisWeek: 0,
       },
     };

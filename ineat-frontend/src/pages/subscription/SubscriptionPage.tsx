@@ -56,12 +56,13 @@ const subscriptionPlans: SubscriptionPlan[] = [
       'Gestion de base de l\'inventaire',
       'Ajout manuel des produits',
       'Suivi des dates d\'expiration',
-      'Listes de courses simples',
-      'Jusqu\'à 50 produits',
+      'Suggestions de recettes depuis le stock',
+      'Budget alimentaire manuel',
     ],
     limitations: [
-      'Pas de scan de tickets',
-      'Pas d\'analyses avancées',
+      'Pas de scan de tickets OCR',
+      'Pas d\'analyse automatique des tickets',
+      'Pas d\'import de facture Drive',
       'Support par email uniquement',
     ],
     buttonText: 'Plan actuel',
@@ -72,17 +73,16 @@ const subscriptionPlans: SubscriptionPlan[] = [
     name: 'Premium',
     price: 4.99,
     priceDisplay: '4,99€',
-    description: 'Toutes les fonctionnalités pour une gestion optimale',
+    description: 'Automatisation des tickets et inventaire plus rapide',
     features: [
       'Tout du plan Gratuit',
-      '📸 Scan de tickets de caisse',
-      '📊 Analyses et statistiques détaillées',
-      '👥 Partage familial (jusqu\'à 5 membres)',
-      '🔄 Synchronisation multi-appareils',
-      '🎯 Suggestions personnalisées',
-      '📈 Rapports de consommation',
-      '🛡️ Support prioritaire',
-      '♾️ Produits illimités',
+      'Scan de tickets de caisse',
+      'OCR et analyse automatique des lignes',
+      'Validation des articles avant ajout au stock',
+      'Import de factures Drive',
+      'Synchronisation avec le budget alimentaire',
+      'Support prioritaire',
+      'Produits illimités',
     ],
     popular: true,
     buttonText: 'Commencer Premium',
@@ -102,7 +102,7 @@ export const SubscriptionPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const currentPlan = user?.subscription || 'FREE';
-  const isPremium = currentPlan === 'PREMIUM';
+  const isPremium = currentPlan === 'PREMIUM' || currentPlan === 'ADMIN';
 
   // ===== HANDLERS =====
 
@@ -179,9 +179,9 @@ export const SubscriptionPage: React.FC = () => {
         </div>
       </div>
 
-      <h1 className="text-3xl font-bold mb-2">Choisissez votre plan</h1>
+      <h1 className="text-3xl font-bold mb-2">Abonnement InEat</h1>
       <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-        Débloquez toutes les fonctionnalités d'InEat avec Premium
+        Premium débloque les flux automatisés: scan OCR des tickets, analyse des articles et import Drive.
       </p>
     </div>
   );
@@ -196,7 +196,7 @@ export const SubscriptionPage: React.FC = () => {
           <Camera className="size-12 text-primary mx-auto mb-4" />
           <h3 className="font-semibold mb-2">Scan de tickets</h3>
           <p className="text-sm text-muted-foreground">
-            Ajoutez vos courses instantanément en photographiant vos tickets
+            Photographiez un ticket et récupérez les articles à valider.
           </p>
         </CardContent>
       </Card>
@@ -204,9 +204,9 @@ export const SubscriptionPage: React.FC = () => {
       <Card className="text-center">
         <CardContent className="p-6">
           <BarChart3 className="size-12 text-primary mx-auto mb-4" />
-          <h3 className="font-semibold mb-2">Analyses détaillées</h3>
+          <h3 className="font-semibold mb-2">OCR et analyse</h3>
           <p className="text-sm text-muted-foreground">
-            Suivez vos habitudes et optimisez vos dépenses alimentaires
+            Le traitement automatique prépare les lignes du ticket pour l’inventaire.
           </p>
         </CardContent>
       </Card>
@@ -214,9 +214,9 @@ export const SubscriptionPage: React.FC = () => {
       <Card className="text-center">
         <CardContent className="p-6">
           <Users className="size-12 text-primary mx-auto mb-4" />
-          <h3 className="font-semibold mb-2">Partage familial</h3>
+          <h3 className="font-semibold mb-2">Budget synchronisé</h3>
           <p className="text-sm text-muted-foreground">
-            Gérez l'inventaire à plusieurs avec votre famille
+            Les achats importés gardent le budget alimentaire à jour.
           </p>
         </CardContent>
       </Card>

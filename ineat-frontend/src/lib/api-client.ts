@@ -133,6 +133,10 @@ const getPublicErrorMessage = (
 	errorData: ApiErrorResponse | null,
 	rawMessage?: string
 ): string => {
+	if (status === 403 && /premium|abonnement/i.test(rawMessage || '')) {
+		return 'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.';
+	}
+
 	if (errorData?.code && PUBLIC_ERROR_MESSAGES_BY_CODE[errorData.code]) {
 		return PUBLIC_ERROR_MESSAGES_BY_CODE[errorData.code];
 	}

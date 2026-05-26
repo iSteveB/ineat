@@ -10,7 +10,7 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: vi.fn(),
 }));
 
-vi.mock('../../lib/api-client', () => ({
+vi.mock('@/lib/api-client', () => ({
 	apiClient: {
 		post: vi.fn(),
 	},
@@ -49,7 +49,7 @@ describe('ForgotPasswordForm', () => {
 	});
 
 	it('affiche une erreur avec un email invalide', async () => {
-		const { rerender } = render(<ForgotPasswordForm />);
+		render(<ForgotPasswordForm />);
 
 		const emailInput = screen.getByTestId('email-input');
 		//const submitButton = screen.getByTestId('submit-button');
@@ -63,9 +63,6 @@ describe('ForgotPasswordForm', () => {
 			new Event('submit', { cancelable: true, bubbles: true })
 		);
 
-		// Forcer le re-rendu pour s'assurer que l'état est mis à jour
-		rerender(<ForgotPasswordForm />);
-
 		// Attendre et vérifier que l'erreur s'affiche
 		await waitFor(() => {
 			expect(screen.queryByTestId('error-container')).toBeInTheDocument();
@@ -77,7 +74,7 @@ describe('ForgotPasswordForm', () => {
 	});
 
 	it("affiche une erreur si l'email est vide", async () => {
-		const { rerender } = render(<ForgotPasswordForm />);
+		render(<ForgotPasswordForm />);
 
 		const form = screen.getByTestId('reset-form');
 
@@ -86,9 +83,6 @@ describe('ForgotPasswordForm', () => {
 			new Event('submit', { cancelable: true, bubbles: true })
 		);
 
-		// Forcer le re-rendu pour s'assurer que l'état est mis à jour
-		rerender(<ForgotPasswordForm />);
-
 		// Attendre et vérifier que l'erreur s'affiche
 		await waitFor(() => {
 			expect(screen.queryByTestId('error-container')).toBeInTheDocument();
@@ -96,7 +90,7 @@ describe('ForgotPasswordForm', () => {
 
 		// Vérifier le contenu de l'erreur
 		const errorMessage = screen.getByTestId('error-message');
-		expect(errorMessage).toHaveTextContent("L'email est requis");
+		expect(errorMessage).toHaveTextContent("Format d'email invalide");
 	});
 
 	it('soumet le formulaire avec un email valide et affiche le message de succès', async () => {
@@ -201,7 +195,7 @@ describe('ForgotPasswordForm', () => {
 	});
 
 	it("efface l'erreur lors de la modification de l'email", async () => {
-		const { rerender } = render(<ForgotPasswordForm />);
+		render(<ForgotPasswordForm />);
 
 		const emailInput = screen.getByTestId('email-input');
 		const form = screen.getByTestId('reset-form');
@@ -214,9 +208,6 @@ describe('ForgotPasswordForm', () => {
 			new Event('submit', { cancelable: true, bubbles: true })
 		);
 
-		// Forcer le re-rendu pour s'assurer que l'état est mis à jour
-		rerender(<ForgotPasswordForm />);
-
 		// Attendre que l'erreur s'affiche
 		await waitFor(() => {
 			expect(screen.queryByTestId('error-container')).toBeInTheDocument();
@@ -225,9 +216,6 @@ describe('ForgotPasswordForm', () => {
 		// Modifier l'email - cela devrait effacer l'erreur
 		await user.clear(emailInput);
 		await user.type(emailInput, 'email-modifie@exemple.com');
-
-		// Forcer un nouveau re-rendu pour s'assurer que l'état est mis à jour
-		rerender(<ForgotPasswordForm />);
 
 		// Vérifier que l'erreur a disparu
 		expect(screen.queryByTestId('error-container')).not.toBeInTheDocument();

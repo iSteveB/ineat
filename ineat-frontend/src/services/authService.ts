@@ -28,6 +28,11 @@ interface AuthServiceMethods {
 	loginWithGoogle(): void;
 }
 
+const getApiBaseUrl = () => {
+	const apiOrigin = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+	return `${apiOrigin.replace(/\/api\/?$/, '').replace(/\/$/, '')}/api`;
+};
+
 // ===== SERVICE D'AUTHENTIFICATION =====
 export const authService: AuthServiceMethods = {
 	/**
@@ -220,9 +225,7 @@ export const authService: AuthServiceMethods = {
 	 * Redirection vers l'authentification Google
 	 */
 	loginWithGoogle(): void {
-		const apiUrl =
-			import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-		window.location.href = `${apiUrl}/auth/google`;
+		window.location.href = `${getApiBaseUrl()}/auth/google`;
 	},
 };
 

@@ -1,54 +1,165 @@
-# React + TypeScript + Vite
+# InEat Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Application React/Vite de InEat. Elle fournit l'interface utilisateur pour le dashboard, l'inventaire, les tickets de caisse, le budget, les recettes, le profil, les parametres et l'abonnement.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- TypeScript
+- Vite
+- TanStack Router
+- TanStack Query
+- Zustand
+- Tailwind CSS v4
+- Radix UI
+- Zod
+- Vitest, Testing Library et MSW
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+pnpm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Variables D'environnement
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Creer un fichier `.env` dans `ineat-frontend`.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+Pour demarrer rapidement:
+
+```bash
+cp .env.example .env
 ```
+
+| Variable | Obligatoire | Usage |
+| --- | --- | --- |
+| `VITE_API_URL` | Oui | URL du backend sans suffixe `/api`, par exemple `http://localhost:3000` |
+
+Exemple:
+
+```bash
+VITE_API_URL=http://localhost:3000
+```
+
+Les services construisent ensuite leurs appels avec `${VITE_API_URL}/api`.
+
+## Lancement
+
+Serveur de developpement:
+
+```bash
+pnpm run dev
+```
+
+Par defaut, Vite ecoute sur `http://localhost:5173`.
+
+Preview de build:
+
+```bash
+pnpm run build
+pnpm run preview
+```
+
+## Commandes
+
+```bash
+pnpm run dev        # serveur Vite
+pnpm run build      # typecheck + build production
+pnpm run lint       # ESLint
+pnpm run test       # Vitest watch
+pnpm run test:run   # Vitest one-shot
+pnpm run test:ui    # UI Vitest
+pnpm run coverage   # couverture
+pnpm run preview    # preview du build
+```
+
+## Architecture
+
+Repertoires principaux:
+
+| Dossier | Role |
+| --- | --- |
+| `src/routes` | Routes TanStack Router fichier par fichier |
+| `src/pages` | Pages ecran reutilisees par les routes |
+| `src/features` | Composants metier par domaine |
+| `src/components` | Composants UI, auth et layout |
+| `src/services` | Clients API et integrations externes |
+| `src/stores` | Stores Zustand |
+| `src/schemas` | Types et schemas Zod |
+| `src/hooks` | Hooks applicatifs |
+| `src/lib` | Utilitaires transverses |
+| `src/test` | Setup tests et mocks MSW |
+
+## Routes
+
+Routes publiques:
+
+- `/`
+- `/login`
+- `/register`
+- `/forgot-password`
+- `/callback`
+
+Routes protegees sous `/app`:
+
+- `/app` dashboard
+- `/app/inventory`
+- `/app/inventory/:productId`
+- `/app/inventory/add`
+- `/app/inventory/add/manual`
+- `/app/inventory/add/search`
+- `/app/inventory/add/scan`
+- `/app/inventory/add/receipt`
+- `/app/inventory/add/drive`
+- `/app/budget`
+- `/app/receipt`
+- `/app/receipt/:receiptId/results`
+- `/app/recipes`
+- `/app/recipes/:recipeId`
+- `/app/recipes/suggestions`
+- `/app/notifications`
+- `/app/profile`
+- `/app/settings`
+- `/app/settings/personal-info`
+- `/app/settings/diet-restrictions`
+- `/app/settings/security`
+- `/app/subscription`
+
+La route parente `/app` verifie l'authentification et redirige vers `/login` si la session est absente ou expiree.
+
+## Donnees Et Etat
+
+- `TanStack Query` gere les requetes serveur et le cache.
+- `Zustand` gere les etats globaux: auth, inventaire, budget, receipt, navigation.
+- `api-client.ts` fournit un client JSON commun avec cookies (`credentials: include`).
+- `receiptService.ts` utilise aussi `fetch` directement pour les uploads `FormData`.
+- Les schemas Zod normalisent les donnees metier recues du backend.
+
+## Flux Ticket Cote Frontend
+
+1. L'utilisateur importe une photo de ticket.
+2. `receiptService.uploadReceipt` envoie un `FormData` a `/api/receipt/upload`.
+3. Le store receipt garde le `receiptId`.
+4. Le frontend poll `/api/receipt/:id/status`.
+5. Quand le traitement est termine, il charge `/api/receipt/:id/analysis`.
+6. L'utilisateur valide, ignore ou corrige les produits.
+7. Les produits valides sont envoyes a l'API pour ajout a l'inventaire.
+
+## HTTPS Local
+
+En developpement, Vite essaie de charger:
+
+- `~/localhost+3-key.pem`
+- `~/localhost+3.pem`
+
+Si les certificats ne sont pas presents, Vite demarre en HTTP.
+
+## Tests
+
+Les tests utilisent Vitest, Testing Library et MSW:
+
+```bash
+pnpm run test:run
+```
+
+Le setup global est dans `src/test/setup.ts`; les handlers MSW sont dans `src/test/mocks`.

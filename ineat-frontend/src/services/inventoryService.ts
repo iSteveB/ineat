@@ -140,6 +140,15 @@ interface UnknownApiResponse {
 	name?: string;
 }
 
+interface PaginatedInventoryResponse {
+	data?: {
+		items?: InventoryItem[];
+		pagination?: unknown;
+	};
+	items?: InventoryItem[];
+	pagination?: unknown;
+}
+
 /**
  * Extrait les informations de notification depuis une réponse enrichie
  * Version défensive qui gère les cas où la structure n'est pas exactement celle attendue
@@ -191,7 +200,7 @@ export const extractNotificationDataDefensive = (
 			}
 			return 'info'; // Dépense créée
 		}
-		return 'success'; // Par défaut
+		return 'info'; // Produit ajouté, mais sans impact budgétaire
 	};
 
 	return {
@@ -234,13 +243,29 @@ export const inventoryService = {
 			);
 		}
 
+		if (filters?.page !== undefined) {
+			searchParams.append('page', filters.page.toString());
+		}
+
+		if (filters?.limit !== undefined) {
+			searchParams.append('limit', filters.limit.toString());
+		}
+
 		// FILTRES pour les scores (si disponibles dans InventoryFilters)
 		// Note: Ces filtres peuvent être ajoutés si le schéma InventoryFilters les supporte
 
 		const queryString = searchParams.toString();
 		const endpoint = `/inventory${queryString ? `?${queryString}` : ''}`;
 
-		return await apiClient.get<InventoryItem[]>(endpoint);
+		const response = await apiClient.get<
+			InventoryItem[] | PaginatedInventoryResponse
+		>(endpoint);
+
+		if (Array.isArray(response)) {
+			return response;
+		}
+
+		return response.data?.items || response.items || [];
 	},
 
 	/**

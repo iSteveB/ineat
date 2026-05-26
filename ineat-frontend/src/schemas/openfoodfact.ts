@@ -391,6 +391,7 @@ export interface OffError {
 		| 'PRODUCT_NOT_FOUND'
 		| 'INVALID_BARCODE'
 		| 'RATE_LIMIT'
+		| 'TIMEOUT'
 		| 'UNKNOWN_ERROR';
 	message: string;
 	details?: unknown;

@@ -5,7 +5,7 @@ NPM_CONFIG_FUND = 'false'
 
 # Phase de build
 [phases.build]
-cmds = ['npm run build']
+cmds = ['pnpm run build']
 
 # Installation de Caddy depuis Nix
 [phases.caddy]

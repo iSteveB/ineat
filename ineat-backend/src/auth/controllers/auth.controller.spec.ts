@@ -27,17 +27,6 @@ interface AuthResponse {
   accessToken: string;
 }
 
-// Mock pour les DTOs
-jest.mock('../dto/register.dto', () => ({
-  validateRegisterDto: jest.fn((dto) => dto),
-  RegisterDto: class MockRegisterDto {},
-}));
-
-jest.mock('../dto/login.dto', () => ({
-  validateLoginDto: jest.fn((dto) => dto),
-  LoginDto: class MockLoginDto {},
-}));
-
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
@@ -86,6 +75,10 @@ describe('AuthController', () => {
   beforeEach(async () => {
     // Réinitialiser tous les mocks avant chaque test
     jest.clearAllMocks();
+    jest
+      .spyOn(authDtos, 'validateRegisterDto')
+      .mockReturnValue(mockRegisterDto);
+    jest.spyOn(authDtos, 'validateLoginDto').mockReturnValue(mockLoginDto);
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],

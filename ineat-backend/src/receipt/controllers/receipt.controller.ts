@@ -41,6 +41,49 @@ import { UpdateReceiptItemDto } from '../dto/receipt.dto';
 import { DocumentType } from '../interfaces/ocr-provider.interface';
 import { ReceiptStatus, User } from '../../../prisma/generated/prisma/client';
 
+function normalizeDocumentType(documentType: string): DocumentType | null {
+  const trimmedDocumentType = documentType.trim();
+
+  if (
+    Object.values(DocumentType).includes(trimmedDocumentType as DocumentType)
+  ) {
+    return trimmedDocumentType as DocumentType;
+  }
+
+  const enumKey = trimmedDocumentType.toUpperCase();
+  if (enumKey in DocumentType) {
+    return DocumentType[enumKey as keyof typeof DocumentType];
+  }
+
+  return null;
+}
+
+const MAX_RECEIPT_FILE_SIZE = 10 * 1024 * 1024;
+const RECEIPT_UPLOAD_TYPES: Record<
+  DocumentType,
+  { mimeTypes: string[]; extensions: string[]; label: string }
+> = {
+  [DocumentType.RECEIPT_IMAGE]: {
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'],
+    extensions: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'],
+    label: 'image de ticket',
+  },
+  [DocumentType.INVOICE_PDF]: {
+    mimeTypes: ['application/pdf'],
+    extensions: ['pdf'],
+    label: 'facture PDF',
+  },
+  [DocumentType.INVOICE_HTML]: {
+    mimeTypes: ['text/html'],
+    extensions: ['html', 'htm'],
+    label: 'facture HTML',
+  },
+};
+
+function getFileExtension(fileName: string): string {
+  return fileName.split('.').pop()?.toLowerCase() || '';
+}
+
 /**
  * Contrôleur Receipt
  *
@@ -84,7 +127,7 @@ export class ReceiptController {
         data: {
           receiptId: '123e4567-e89b-12d3-a456-426614174000',
           status: 'PROCESSING',
-          documentType: 'RECEIPT_IMAGE',
+          documentType: 'receipt_image',
           createdAt: '2025-10-17T10:30:00Z',
         },
         message: 'Ticket uploadé avec succès, traitement en cours',
@@ -106,10 +149,10 @@ export class ReceiptController {
       new ParseFilePipe({
         validators: [
           // Max 10MB
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }),
+          new MaxFileSizeValidator({ maxSize: MAX_RECEIPT_FILE_SIZE }),
           // Types autorisés
           new FileTypeValidator({
-            fileType: /(jpg|jpeg|png|heic|pdf)$/,
+            fileType: /(jpg|jpeg|png|webp|heic|heif|pdf|html|htm)$/,
           }),
         ],
       }),
@@ -123,14 +166,18 @@ export class ReceiptController {
       throw new BadRequestException('Le type de document est requis');
     }
 
-    if (!Object.values(DocumentType).includes(documentType as DocumentType)) {
+    const normalizedDocumentType = normalizeDocumentType(documentType);
+
+    if (!normalizedDocumentType) {
       throw new BadRequestException('Type de document invalide');
     }
+
+    this.validateUploadedReceiptFile(file, normalizedDocumentType);
 
     // Créer le receipt
     const receipt = await this.receiptService.createReceipt({
       userId: user.id,
-      documentType: documentType as DocumentType,
+      documentType: normalizedDocumentType,
       fileBuffer: file.buffer,
       fileName: file.originalname,
       merchantName: merchantName,
@@ -147,6 +194,31 @@ export class ReceiptController {
       },
       message: 'Ticket reçu avec succès, traitement en cours',
     };
+  }
+
+  private validateUploadedReceiptFile(
+    file: Express.Multer.File,
+    documentType: DocumentType,
+  ): void {
+    if (!file) {
+      throw new BadRequestException('Le fichier est requis');
+    }
+
+    if (file.size > MAX_RECEIPT_FILE_SIZE) {
+      throw new BadRequestException('Le fichier est trop volumineux (maximum 10MB)');
+    }
+
+    const expected = RECEIPT_UPLOAD_TYPES[documentType];
+    const extension = getFileExtension(file.originalname);
+
+    if (
+      !expected.mimeTypes.includes(file.mimetype) ||
+      !expected.extensions.includes(extension)
+    ) {
+      throw new BadRequestException(
+        `Format de fichier invalide pour ${expected.label}. Formats acceptés: ${expected.extensions.join(', ')}`,
+      );
+    }
   }
 
   /**

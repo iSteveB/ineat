@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { UserMenu } from './UserMenu';
 import { useAuthStore } from '@/stores/authStore';
@@ -218,11 +218,11 @@ describe('UserMenu', () => {
 
 		// Vérifier que la navigation est appelée avec la bonne destination
 		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/app/profile/settings',
+			to: '/app/settings',
 		});
 	});
 
-	it("se déconnecte et redirige vers la page de connexion quand on clique sur l'élément correspondant", () => {
+	it("se déconnecte et redirige vers la page de connexion quand on clique sur l'élément correspondant", async () => {
 		// Simuler un utilisateur connecté
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
@@ -254,6 +254,11 @@ describe('UserMenu', () => {
 		expect(logoutMock).toHaveBeenCalledTimes(1);
 
 		// Vérifier que la navigation est appelée avec la bonne destination
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/login' });
+		await waitFor(() => {
+			expect(navigateMock).toHaveBeenCalledWith({
+				to: '/login',
+				replace: true,
+			});
+		});
 	});
 });

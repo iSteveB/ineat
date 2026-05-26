@@ -1,0 +1,352 @@
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { InventoryService } from './inventory.service';
+
+describe('InventoryService', () => {
+  const tx = {
+    product: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    category: {
+      findFirst: jest.fn(),
+    },
+    inventoryItem: {
+      findFirst: jest.fn(),
+      create: jest.fn(),
+    },
+  };
+
+  const prisma = {
+    $transaction: jest.fn(),
+    category: {
+      findFirst: jest.fn(),
+    },
+    inventoryItem: {
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    product: {
+      findUnique: jest.fn(),
+    },
+  };
+
+  const budgetService = {
+    getBudgetStats: jest.fn(),
+  };
+
+  const expenseService = {
+    createExpenseFromProduct: jest.fn(),
+  };
+
+  let service: InventoryService;
+
+  const category = {
+    id: 'category-1',
+    name: 'Fruits',
+    slug: 'fruits',
+    icon: 'apple',
+  };
+
+  const product = {
+    id: 'product-1',
+    name: 'Pommes',
+    brand: null,
+    barcode: null,
+    unitType: 'KG',
+    nutriscore: null,
+    ecoscore: null,
+    novascore: null,
+    ingredients: null,
+    imageUrl: null,
+    nutrients: null,
+    Category: category,
+  };
+
+  const inventoryItem = {
+    id: 'item-1',
+    quantity: 2,
+    purchaseDate: new Date('2026-05-01'),
+    expiryDate: new Date('2026-05-10'),
+    purchasePrice: 4.5,
+    storageLocation: 'frigo',
+    notes: 'bio',
+    createdAt: new Date('2026-05-01T08:00:00Z'),
+    updatedAt: new Date('2026-05-01T08:00:00Z'),
+    Product: product,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    service = new InventoryService(
+      prisma as any,
+      budgetService as any,
+      expenseService as any,
+    );
+    prisma.$transaction.mockImplementation((callback) => callback(tx));
+    prisma.category.findFirst.mockResolvedValue(category);
+    tx.category.findFirst.mockResolvedValue(category);
+    tx.product.findUnique.mockResolvedValue(null);
+    tx.product.findFirst.mockResolvedValue(null);
+    tx.product.create.mockResolvedValue(product);
+    tx.inventoryItem.findFirst.mockResolvedValue(null);
+    tx.inventoryItem.create.mockResolvedValue(inventoryItem);
+    expenseService.createExpenseFromProduct.mockResolvedValue({
+      expense: null,
+      budgetId: null,
+      budgetUpdated: false,
+      message: 'Aucun budget disponible',
+    });
+  });
+
+  it('adds a manual product and returns budget impact without external calls', async () => {
+    const result = await service.addManualProduct('user-1', {
+      name: 'Pommes',
+      category: 'fruits',
+      quantity: 2,
+      unitType: 'KG',
+      purchaseDate: '2026-05-01',
+      expiryDate: '2026-05-10',
+      purchasePrice: 4.5,
+      storageLocation: 'frigo',
+      notes: 'bio',
+    } as any);
+
+    expect(tx.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'Pommes',
+          categoryId: 'category-1',
+          unitType: 'KG',
+        }),
+        include: { Category: true },
+      }),
+    );
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: 'user-1',
+          productId: 'product-1',
+          quantity: 2,
+        }),
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: 'item-1',
+        name: 'Pommes',
+        category: 'fruits',
+        budgetImpact: {
+          expenseCreated: false,
+          message: 'Aucun budget disponible',
+        },
+      }),
+    );
+  });
+
+  it('rejects manual products with unknown categories', async () => {
+    prisma.category.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'missing',
+        quantity: 1,
+        unitType: 'KG',
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects manual products with invalid business values before writing', async () => {
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 0,
+        unitType: 'KG',
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toThrow('La quantité doit être supérieure à 0');
+
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 1,
+        unitType: 'KG',
+        purchaseDate: '2999-05-01',
+      } as any),
+    ).rejects.toThrow("La date d'achat ne peut pas être dans le futur");
+
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 1,
+        unitType: 'KG',
+        purchaseDate: '2026-05-10',
+        expiryDate: '2026-05-01',
+      } as any),
+    ).rejects.toThrow(
+      "La date de péremption doit être postérieure à la date d'achat",
+    );
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+  });
+
+  it('adds an existing product with quick add', async () => {
+    tx.product.findUnique.mockResolvedValue(product);
+
+    const result = await service.addExistingProductToInventory('user-1', {
+      productId: 'product-1',
+      quantity: 1,
+      purchaseDate: '2026-05-01',
+      expiryDate: '2026-05-10',
+    } as any);
+
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: 'user-1',
+          productId: 'product-1',
+          quantity: 1,
+        }),
+      }),
+    );
+    expect(result.name).toBe('Pommes');
+  });
+
+  it('rejects quick add with invalid quantity, price or dates', async () => {
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'product-1',
+        quantity: -1,
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toThrow('La quantité doit être supérieure à 0');
+
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'product-1',
+        quantity: 1,
+        purchaseDate: '2026-05-01',
+        purchasePrice: -2,
+      } as any),
+    ).rejects.toThrow("Le prix d'achat ne peut pas être négatif");
+
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'product-1',
+        quantity: 1,
+        purchaseDate: 'not-a-date',
+      } as any),
+    ).rejects.toThrow("La date d'achat doit être valide");
+
+    expect(tx.product.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('rejects quick add when the product does not exist', async () => {
+    tx.product.findUnique.mockResolvedValue(null);
+
+    await expect(
+      service.addExistingProductToInventory('user-1', {
+        productId: 'missing-product',
+        quantity: 1,
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('passes inventory filters to Prisma', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([]);
+
+    await service.getUserInventory('user-1', {
+      category: 'fruits',
+      storageLocation: 'frigo',
+      expiringWithinDays: 7,
+    });
+
+    expect(prisma.inventoryItem.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: 'user-1',
+          Product: {
+            Category: {
+              OR: [{ id: 'fruits' }, { slug: 'fruits' }],
+            },
+          },
+          storageLocation: 'frigo',
+          expiryDate: expect.objectContaining({
+            lte: expect.any(Date),
+            gte: expect.any(Date),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('updates an inventory item owned by the user', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue({ id: 'item-1' });
+    prisma.inventoryItem.update.mockResolvedValue({
+      ...inventoryItem,
+      quantity: 3,
+    });
+
+    const result = await service.updateInventoryItem('user-1', 'item-1', {
+      quantity: 3,
+    });
+
+    expect(prisma.inventoryItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'item-1' },
+        data: { quantity: 3 },
+      }),
+    );
+    expect(result.quantity).toBe(3);
+  });
+
+  it('rejects update for missing inventory item', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updateInventoryItem('user-1', 'missing-item', { quantity: 3 }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('deletes an inventory item owned by the user', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue({ id: 'item-1' });
+    prisma.inventoryItem.delete.mockResolvedValue({ id: 'item-1' });
+
+    await expect(
+      service.removeInventoryItem('user-1', 'item-1'),
+    ).resolves.toEqual({
+      success: true,
+      message: "Produit supprimé de l'inventaire",
+    });
+    expect(prisma.inventoryItem.delete).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+    });
+  });
+
+  it('rejects duplicate manual inventory items', async () => {
+    tx.inventoryItem.findFirst.mockResolvedValue({ id: 'duplicate' });
+
+    await expect(
+      service.addManualProduct('user-1', {
+        name: 'Pommes',
+        category: 'fruits',
+        quantity: 1,
+        unitType: 'KG',
+        purchaseDate: '2026-05-01',
+      } as any),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+});

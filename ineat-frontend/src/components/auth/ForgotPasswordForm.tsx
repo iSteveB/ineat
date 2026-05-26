@@ -29,7 +29,7 @@ const ForgotPasswordForm = () => {
 	// Validation du formulaire
 	const validateForm = (): boolean => {
 		try {
-			EmailSchema.parse({ email });
+			EmailSchema.parse(email);
 			setFormError(null);
 			return true;
 		} catch (error) {

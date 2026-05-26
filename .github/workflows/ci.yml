@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ineat-frontend
+    env:
+      VITE_API_URL: http://localhost:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: ineat-frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test:run
+
+      - name: Build
+        run: pnpm run build
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ineat-backend
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://user:password@localhost:5432/ineat
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-jwt-secret
+      JWT_EXPIRES_IN: 1d
+      COOKIE_SECRET: ci-cookie-secret
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173
+      CLIENT_URL: http://localhost:5173
+      GOOGLE_CLIENT_ID: ci-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-google-client-secret
+      GOOGLE_CALLBACK_URL: http://localhost:3000/api/auth/google/callback
+      CLOUDINARY_CLOUD_NAME: ci-cloud
+      CLOUDINARY_API_KEY: ci-api-key
+      CLOUDINARY_API_SECRET: ci-api-secret
+      CLOUDINARY_AVATAR_PRESET: ci-avatar-preset
+      CLOUDINARY_RECEIPT_PRESET: ci-receipt-preset
+      OCR_DEFAULT_PROVIDER: tesseract
+      OCR_ENABLE_FALLBACK: "false"
+      MINDEE_API_KEY: ""
+      MINDEE_RECEIPT_MODEL_ID: mindee/expense_receipts
+      MINDEE_INVOICE_MODEL_ID: mindee/invoices
+      ANTHROPIC_API_KEY: ""
+      MCP_OPENFOODFACTS_URL: ""
+      OPENAI_API_KEY: ""
+      TICKET_PROMPT_ID: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: ineat-backend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint:check
+
+      - name: Test
+        run: pnpm exec jest --runInBand --no-watchman
+
+      - name: Build
+        run: pnpm run build
