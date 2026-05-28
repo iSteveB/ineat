@@ -41,6 +41,25 @@ describe('CloudinaryStorageService', () => {
     jest.clearAllMocks();
   });
 
+  it('utilise CLOUDINARY_UPLOAD_PRESET comme fallback pour les receipts', () => {
+    const fallbackConfigService = {
+      get: jest.fn((key: string) => {
+        const values: Record<string, string> = {
+          CLOUDINARY_CLOUD_NAME: 'test-cloud',
+          CLOUDINARY_API_KEY: 'test-api-key',
+          CLOUDINARY_API_SECRET: 'test-api-secret',
+          CLOUDINARY_UPLOAD_PRESET: 'legacy-receipt-preset',
+        };
+
+        return values[key];
+      }),
+    } as unknown as ConfigService;
+
+    const service = new CloudinaryStorageService(fallbackConfigService);
+
+    expect((service as any).receiptPreset).toBe('legacy-receipt-preset');
+  });
+
   it.each([
     'Invalid api_key 738474456436988',
     'Invalid Signature abc123 for Cloudinary upload',

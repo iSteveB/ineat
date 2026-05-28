@@ -87,9 +87,9 @@ export class CloudinaryStorageService {
     const cloudName = this.configService.get<string>('CLOUDINARY_CLOUD_NAME');
     const apiKey = this.configService.get<string>('CLOUDINARY_API_KEY');
     const apiSecret = this.configService.get<string>('CLOUDINARY_API_SECRET');
-    const receiptPreset = this.configService.get<string>(
-      'CLOUDINARY_RECEIPT_PRESET',
-    );
+    const receiptPreset =
+      this.configService.get<string>('CLOUDINARY_RECEIPT_PRESET') ||
+      this.configService.get<string>('CLOUDINARY_UPLOAD_PRESET');
 
     if (!cloudName || !apiKey || !apiSecret) {
       this.logger.error(
