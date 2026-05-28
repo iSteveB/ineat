@@ -9,6 +9,7 @@ import { Response } from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
 import { SafeUserDto } from '../dto/auth.dto';
 import { ObservabilityService } from '../../observability/observability.service';
+import { authUserSelect } from '../auth-user.select';
 
 // Mock des modules externes
 jest.mock('bcryptjs');
@@ -126,6 +127,7 @@ describe('AuthService', () => {
       });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
+        select: authUserSelect,
       });
       expect(bcrypt.compare).toHaveBeenCalledWith(
         'password',
@@ -144,6 +146,7 @@ describe('AuthService', () => {
       expect(result).toBeNull();
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
+        select: authUserSelect,
       });
       expect(bcrypt.compare).not.toHaveBeenCalled();
     });
@@ -175,6 +178,7 @@ describe('AuthService', () => {
       expect(result).toBeNull();
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
+        select: authUserSelect,
       });
       expect(bcrypt.compare).toHaveBeenCalledWith(
         'wrong-password',
@@ -290,10 +294,11 @@ describe('AuthService', () => {
       // Assert
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'new@example.com' },
+        select: authUserSelect,
       });
       expect(bcrypt.hash).toHaveBeenCalledWith('Password123', 10);
       expect(prismaService.user.create).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           id: expect.any(String),
           email: 'new@example.com',
           passwordHash: 'hashed-new-password',
@@ -303,7 +308,8 @@ describe('AuthService', () => {
           subscription: 'FREE',
           preferences: {},
           updatedAt: expect.any(Date),
-        },
+        }),
+        select: authUserSelect,
       });
       expect(mockResponse.cookie).toHaveBeenCalled();
       expectStandardAuthResponse(result, {
@@ -337,6 +343,7 @@ describe('AuthService', () => {
       );
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'existing@example.com' },
+        select: authUserSelect,
       });
       expect(bcrypt.hash).not.toHaveBeenCalled();
       expect(prismaService.user.create).not.toHaveBeenCalled();
@@ -407,6 +414,7 @@ describe('AuthService', () => {
       });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'user-id' },
+        select: authUserSelect,
       });
     });
 
@@ -420,6 +428,7 @@ describe('AuthService', () => {
       );
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'non-existent-id' },
+        select: authUserSelect,
       });
     });
   });
@@ -459,6 +468,7 @@ describe('AuthService', () => {
       // Assert
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'google@example.com' },
+        select: authUserSelect,
       });
       expect(prismaService.user.create).not.toHaveBeenCalled();
       expect(mockResponse.cookie).toHaveBeenCalled();
@@ -506,9 +516,10 @@ describe('AuthService', () => {
       // Assert
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'new-google@example.com' },
+        select: authUserSelect,
       });
       expect(prismaService.user.create).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           id: expect.any(String),
           email: 'new-google@example.com',
           firstName: 'New',
@@ -521,7 +532,8 @@ describe('AuthService', () => {
             oauth: 'google',
           },
           updatedAt: expect.any(Date),
-        },
+        }),
+        select: authUserSelect,
       });
       expect(mockResponse.cookie).toHaveBeenCalled();
       expectStandardAuthResponse(result, {

@@ -8,10 +8,11 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegisterDto, SafeUserDto } from '../dto/auth.dto';
 import * as bcrypt from 'bcryptjs';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
 import { randomUUID } from 'crypto';
 import { ObservabilityService } from '../../observability/observability.service';
+import { AuthUser, authUserSelect } from '../auth-user.select';
 
 interface GoogleUserData {
   email: string;
@@ -29,7 +30,7 @@ export class AuthService {
     private observabilityService: ObservabilityService,
   ) {}
 
-  private getAuthCookieOptions() {
+  private getAuthCookieOptions(): CookieOptions {
     const isProd = this.configService.get('NODE_ENV') === 'production';
 
     return {
@@ -47,6 +48,7 @@ export class AuthService {
   ): Promise<SafeUserDto | null> {
     const user = await this.prisma.user.findUnique({
       where: { email },
+      select: authUserSelect,
     });
 
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
@@ -122,6 +124,7 @@ export class AuthService {
     // Vérifier si l'email existe déjà
     const existingUser = await this.prisma.user.findUnique({
       where: { email: registerDto.email },
+      select: authUserSelect,
     });
 
     if (existingUser) {
@@ -154,6 +157,7 @@ export class AuthService {
         preferences: registerDto.preferences || {},
         updatedAt: new Date(),
       },
+      select: authUserSelect,
     });
 
     // Supprimer le mot de passe avant de renvoyer l'utilisateur
@@ -178,8 +182,9 @@ export class AuthService {
     const { email, firstName, lastName, photo } = googleUser;
 
     // Chercher l'utilisateur par email
-    let user = await this.prisma.user.findUnique({
+    let user: AuthUser | null = await this.prisma.user.findUnique({
       where: { email },
+      select: authUserSelect,
     });
 
     // Si l'utilisateur n'existe pas, le créer
@@ -199,6 +204,7 @@ export class AuthService {
           },
           updatedAt: new Date(),
         },
+        select: authUserSelect,
       });
     }
 
@@ -213,6 +219,7 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
+      select: authUserSelect,
     });
 
     if (!user) {
@@ -244,4 +251,5 @@ export class AuthService {
       },
     };
   }
+
 }

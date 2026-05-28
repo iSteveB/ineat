@@ -4,6 +4,7 @@ import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Request } from 'express';
+import { authUserSelect } from '../auth-user.select';
 
 // Interface pour le payload JWT
 interface JwtPayload {
@@ -47,6 +48,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // Récupérer l'utilisateur depuis la base de données
     const user = await this.prisma.user.findUnique({
       where: { id },
+      select: authUserSelect,
     });
 
     // Si l'utilisateur n'existe pas, lancer une exception
