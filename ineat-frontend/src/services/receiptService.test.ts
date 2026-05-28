@@ -75,16 +75,23 @@ describe('receiptService', () => {
 	});
 
 	it('mappe les états backend de traitement en états frontend', async () => {
+		let hasContentTypeHeader = true;
+
 		server.use(
-			http.get(`${API_URL}/receipt/:receiptId/status`, ({ params }) =>
-				HttpResponse.json({
-					data: {
-						id: params.receiptId,
-						status: 'PROCESSING',
-						progress: 65,
-						currentStep: 'llm',
-					},
-				})
+			http.get(
+				`${API_URL}/receipt/:receiptId/status`,
+				({ params, request }) => {
+					hasContentTypeHeader = request.headers.has('content-type');
+
+					return HttpResponse.json({
+						data: {
+							id: params.receiptId,
+							status: 'PROCESSING',
+							progress: 65,
+							currentStep: 'llm',
+						},
+					});
+				}
 			)
 		);
 
@@ -96,6 +103,7 @@ describe('receiptService', () => {
 			progress: 65,
 			currentStep: 'llm',
 		});
+		expect(hasContentTypeHeader).toBe(false);
 	});
 
 	it('expose les erreurs de traitement ticket', async () => {

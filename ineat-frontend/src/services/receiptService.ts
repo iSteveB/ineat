@@ -255,9 +255,6 @@ class ReceiptService {
 		const response = await fetch(`${API_URL}/receipt/${receiptId}/status`, {
 			method: 'GET',
 			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-			},
 		});
 
 		if (!response.ok) {
@@ -322,9 +319,6 @@ class ReceiptService {
 			{
 				method: 'GET',
 				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
 			}
 		);
 
@@ -425,9 +419,6 @@ class ReceiptService {
 			{
 				method: 'GET',
 				credentials: 'include',
-				headers: {
-					'Content-Type': 'application/json',
-				},
 			}
 		);
 
@@ -601,9 +592,6 @@ class ReceiptService {
 		const response = await fetch(url, {
 			method: 'GET',
 			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/json',
-			},
 		});
 
 		if (!response.ok) {
