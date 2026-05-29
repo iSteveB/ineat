@@ -10,6 +10,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import {
   IOcrProvider,
   DocumentType,
@@ -37,6 +39,11 @@ export class TesseractOcrProvider implements IOcrProvider {
   readonly name = 'tesseract';
   private readonly logger = new Logger(TesseractOcrProvider.name);
   private worker: Worker | null = null;
+  private readonly languageDataPath = process.cwd();
+  private readonly languageDataFile = join(
+    this.languageDataPath,
+    'fra.traineddata',
+  );
 
   /**
    * Initialise le worker Tesseract
@@ -49,7 +56,17 @@ export class TesseractOcrProvider implements IOcrProvider {
     this.logger.debug('Initialisation du worker Tesseract...');
 
     try {
+      if (!existsSync(this.languageDataFile)) {
+        this.logger.warn(
+          `Données Tesseract françaises introuvables: ${this.languageDataFile}. ` +
+            'Tesseract.js tentera le chargement par défaut.',
+        );
+      }
+
       const worker = await createWorker('fra', 1, {
+        langPath: this.languageDataPath,
+        cachePath: this.languageDataPath,
+        gzip: false,
         logger: (m) => {
           if (m.status === 'recognizing text') {
             this.logger.debug(`OCR en cours: ${Math.round(m.progress * 100)}%`);

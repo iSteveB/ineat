@@ -81,6 +81,18 @@ const countProductsByStatus = (
 	status: ProductStatus,
 ): number => products.filter((product) => product.status === status).length;
 
+const MAX_TRANSIENT_POLLING_ERRORS = 10;
+
+const isTransientPollingError = (error: unknown): boolean => {
+	if (!(error instanceof Error)) {
+		return false;
+	}
+
+	return /failed to fetch|network|bad gateway|temporarily unavailable|502|503|504/i.test(
+		error.message
+	);
+};
+
 // ===== STORE =====
 
 /**
@@ -158,6 +170,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 			pollAnalysis: async (receiptId: string) => {
 				const maxAttempts = 240; // 240 tentatives = 4 minutes max
 				let attempts = 0;
+				let transientErrors = 0;
 
 				const poll = async (): Promise<void> => {
 					try {
@@ -171,6 +184,7 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 
 						const statusResponse =
 							await receiptService.getReceiptStatus(receiptId);
+						transientErrors = 0;
 
 						if (statusResponse.status === 'completed') {
 							// Récupérer l'analyse complète
@@ -221,6 +235,19 @@ export const useReceiptStore = create<ReceiptStoreState>()(
 							await poll();
 						}
 					} catch (error) {
+						if (
+							attempts <= maxAttempts &&
+							transientErrors < MAX_TRANSIENT_POLLING_ERRORS &&
+							isTransientPollingError(error)
+						) {
+							transientErrors++;
+							await new Promise((resolve) =>
+								setTimeout(resolve, 2000),
+							);
+							await poll();
+							return;
+						}
+
 						const errorMessage = getUserFacingErrorMessage(
 							error,
 							"Impossible d'analyser le ticket. Veuillez réessayer."
