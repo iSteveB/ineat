@@ -11,9 +11,7 @@ import { BudgetModule } from './budget/budget.module';
 import { UserModule } from './user/user.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { ReceiptModule } from './receipt/receipt.module';
 import { NotificationModule } from './notification/notification.module';
-import { BullModule } from '@nestjs/bull';
 import { ObservabilityModule } from './observability/observability.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -26,12 +24,6 @@ import { SentryModule } from '@sentry/nestjs/setup';
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
-    BullModule.forRoot({
-      redis: process.env.REDIS_URL,
-    }),
-    BullModule.registerQueue({
-      name: 'receipt-processing',
-    }),
     ObservabilityModule,
     PrismaModule,
     AuthModule,
@@ -41,7 +33,6 @@ import { SentryModule } from '@sentry/nestjs/setup';
     UserModule,
     CloudinaryModule,
     AvatarModule,
-    ReceiptModule,
     NotificationModule,
   ],
   controllers: [AppController],

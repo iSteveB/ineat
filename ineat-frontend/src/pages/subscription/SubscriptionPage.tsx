@@ -60,8 +60,6 @@ const subscriptionPlans: SubscriptionPlan[] = [
       'Budget alimentaire manuel',
     ],
     limitations: [
-      'Pas de scan de tickets OCR',
-      'Pas d\'analyse automatique des tickets',
       'Pas d\'import de facture Drive',
       'Support par email uniquement',
     ],
@@ -73,12 +71,9 @@ const subscriptionPlans: SubscriptionPlan[] = [
     name: 'Premium',
     price: 4.99,
     priceDisplay: '4,99€',
-    description: 'Automatisation des tickets et inventaire plus rapide',
+    description: 'Automatisation Drive et inventaire plus rapide',
     features: [
       'Tout du plan Gratuit',
-      'Scan de tickets de caisse',
-      'OCR et analyse automatique des lignes',
-      'Validation des articles avant ajout au stock',
       'Import de factures Drive',
       'Synchronisation avec le budget alimentaire',
       'Support prioritaire',
@@ -181,7 +176,7 @@ export const SubscriptionPage: React.FC = () => {
 
       <h1 className="text-3xl font-bold mb-2">Abonnement InEat</h1>
       <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-        Premium débloque les flux automatisés: scan OCR des tickets, analyse des articles et import Drive.
+        Premium débloque les flux automatisés Drive, le budget synchronisé et les limites étendues.
       </p>
     </div>
   );
@@ -194,9 +189,9 @@ export const SubscriptionPage: React.FC = () => {
       <Card className="text-center">
         <CardContent className="p-6">
           <Camera className="size-12 text-primary mx-auto mb-4" />
-          <h3 className="font-semibold mb-2">Scan de tickets</h3>
+          <h3 className="font-semibold mb-2">Import Drive</h3>
           <p className="text-sm text-muted-foreground">
-            Photographiez un ticket et récupérez les articles à valider.
+            Importez vos factures Drive pour accélérer l'ajout au stock.
           </p>
         </CardContent>
       </Card>
@@ -204,9 +199,9 @@ export const SubscriptionPage: React.FC = () => {
       <Card className="text-center">
         <CardContent className="p-6">
           <BarChart3 className="size-12 text-primary mx-auto mb-4" />
-          <h3 className="font-semibold mb-2">OCR et analyse</h3>
+          <h3 className="font-semibold mb-2">Analyse assistée</h3>
           <p className="text-sm text-muted-foreground">
-            Le traitement automatique prépare les lignes du ticket pour l’inventaire.
+            Les documents importés préparent les lignes utiles pour l’inventaire.
           </p>
         </CardContent>
       </Card>

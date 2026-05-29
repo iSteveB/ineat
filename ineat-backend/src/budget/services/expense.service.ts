@@ -73,7 +73,6 @@ export class ExpenseService {
         source: data.source,
         category: data.category,
         notes: data.notes,
-        receiptId: data.receiptId,
         updatedAt: new Date(),
       },
     });
@@ -176,7 +175,6 @@ export class ExpenseService {
     if (data.source !== undefined) updateData.source = data.source;
     if (data.category !== undefined) updateData.category = data.category;
     if (data.notes !== undefined) updateData.notes = data.notes;
-    if (data.receiptId !== undefined) updateData.receiptId = data.receiptId;
 
     return this.prisma.expense.update({
       where: { id: expenseId },
@@ -246,10 +244,6 @@ export class ExpenseService {
 
     if (filters?.category) {
       where.category = { contains: filters.category, mode: 'insensitive' };
-    }
-
-    if (filters?.hasReceipt !== undefined) {
-      where.receiptId = filters.hasReceipt ? { not: null } : null;
     }
 
     if (filters?.hasAmount !== undefined) {

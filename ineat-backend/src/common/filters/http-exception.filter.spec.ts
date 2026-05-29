@@ -105,9 +105,9 @@ describe('HttpExceptionFilter', () => {
 
     filter.catch(
       new InternalServerErrorException({
-        code: 'RECEIPT_UPLOAD_FAILED',
+        code: 'AVATAR_UPLOAD_FAILED',
         message:
-          "Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants.",
+          'Impossible de mettre à jour la photo de profil. Veuillez réessayer.',
       }),
       host,
     );
@@ -115,9 +115,9 @@ describe('HttpExceptionFilter', () => {
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith({
       success: false,
-      code: 'RECEIPT_UPLOAD_FAILED',
+      code: 'AVATAR_UPLOAD_FAILED',
       message:
-        "Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants.",
+        'Impossible de mettre à jour la photo de profil. Veuillez réessayer.',
       requestId: 'req-public',
     });
   });

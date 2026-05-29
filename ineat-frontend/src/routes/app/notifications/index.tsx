@@ -6,7 +6,7 @@ import {
 	Check,
 	CircleDollarSign,
 	Clock,
-	ReceiptText,
+	Info,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,7 @@ export const Route = createFileRoute('/app/notifications/')({
 const typeLabels: Record<NotificationType, string> = {
 	EXPIRY: 'Péremption',
 	BUDGET: 'Budget',
-	SYSTEM: 'Ticket',
+	SYSTEM: 'Système',
 };
 
 const typeStyles: Record<NotificationType, string> = {
@@ -36,7 +36,7 @@ const typeStyles: Record<NotificationType, string> = {
 function NotificationIcon({ type }: { type: NotificationType }) {
 	if (type === 'EXPIRY') return <AlertTriangle className='size-5' />;
 	if (type === 'BUDGET') return <CircleDollarSign className='size-5' />;
-	return <ReceiptText className='size-5' />;
+	return <Info className='size-5' />;
 }
 
 function formatNotificationDate(date: string) {
@@ -48,7 +48,7 @@ function formatNotificationDate(date: string) {
 	}).format(new Date(date));
 }
 
-type NotificationTarget = '/app/inventory' | '/app/budget' | '/app/receipt';
+type NotificationTarget = '/app/inventory' | '/app/budget';
 
 function getNotificationTarget(
 	notification: AppNotification
@@ -58,9 +58,6 @@ function getNotificationTarget(
 	}
 	if (notification.referenceType?.startsWith('budget')) {
 		return '/app/budget';
-	}
-	if (notification.referenceType === 'receipt') {
-		return '/app/receipt';
 	}
 	return null;
 }
@@ -132,8 +129,7 @@ function NotificationsPage() {
 						Rien à signaler
 					</h2>
 					<p className='mt-1 text-sm text-neutral-600'>
-						Les alertes de péremption, budget et tickets
-						apparaîtront ici.
+						Les alertes de péremption et de budget apparaîtront ici.
 					</p>
 				</section>
 			) : (

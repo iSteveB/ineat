@@ -6,11 +6,8 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
 import { AppService } from './app.service';
 import { Response } from 'express';
-import { ReceiptProcessingJobData } from './receipt/processors/receipt.processor';
 import { ObservabilityService } from './observability/observability.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AdminGuard } from './auth/guards/admin.guard';
@@ -24,55 +21,12 @@ export class AppController {
     private readonly appService: AppService,
     private readonly observabilityService: ObservabilityService,
     private readonly prismaService: PrismaService,
-    @InjectQueue('receipt-processing')
-    private readonly receiptQueue: Queue<ReceiptProcessingJobData>,
   ) {}
-
-  @Get('health/redis')
-  async redisHealthCheck(@Res() res: Response): Promise<void> {
-    try {
-      // Tester la connexion Redis via la queue
-      await this.receiptQueue.isReady();
-
-      // Récupérer quelques statistiques
-      const [waiting, active, completed, failed] = await Promise.all([
-        this.receiptQueue.getWaiting(),
-        this.receiptQueue.getActive(),
-        this.receiptQueue.getCompleted(),
-        this.receiptQueue.getFailed(),
-      ]);
-
-      res.status(HttpStatus.OK).json({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        redis: {
-          connected: true,
-          queue: 'receipt-processing',
-          stats: {
-            waiting: waiting.length,
-            active: active.length,
-            completed: completed.length,
-            failed: failed.length,
-          },
-        },
-      });
-    } catch (error) {
-      res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
-        status: 'error',
-        timestamp: new Date().toISOString(),
-        redis: {
-          connected: false,
-          error: error.message,
-        },
-      });
-    }
-  }
 
   @Get('health')
   async healthCheck(@Res() res: Response): Promise<void> {
     const checks = {
       database: false,
-      redis: false,
     };
 
     try {
@@ -82,14 +36,7 @@ export class AppController {
       checks.database = false;
     }
 
-    try {
-      await this.receiptQueue.isReady();
-      checks.redis = true;
-    } catch {
-      checks.redis = false;
-    }
-
-    const isHealthy = checks.database && checks.redis;
+    const isHealthy = checks.database;
 
     res.status(isHealthy ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).json({
       status: isHealthy ? 'ok' : 'error',

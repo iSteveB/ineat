@@ -16,9 +16,6 @@ describe('NotificationService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
-    receipt: {
-      findUnique: jest.fn(),
-    },
   };
 
   let service: NotificationService;
@@ -122,31 +119,6 @@ describe('NotificationService', () => {
     });
     await expect(service.markAllAsRead('user-1')).resolves.toEqual({
       count: 3,
-    });
-  });
-
-  it('creates receipt status notifications', async () => {
-    prisma.receipt.findUnique.mockResolvedValue({
-      id: 'receipt-1',
-      userId: 'user-1',
-      merchantName: 'Marché central',
-      totalAmount: 24.9,
-    });
-    prisma.notification.findFirst.mockResolvedValue(null);
-    prisma.notification.create.mockImplementation(({ data }) =>
-      Promise.resolve(data),
-    );
-
-    await service.createReceiptNotification('receipt-1', 'COMPLETED');
-
-    expect(prisma.notification.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        userId: 'user-1',
-        type: 'SYSTEM',
-        title: 'Ticket traité',
-        referenceId: 'receipt-1',
-        referenceType: 'receipt',
-      }),
     });
   });
 });

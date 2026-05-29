@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { Scan, Receipt, Car, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Scan, Car, ShoppingCart, ArrowLeft } from 'lucide-react';
 import AddMethodCard from '@/components/common/AddMethodCard';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -78,23 +78,6 @@ const AddProductPage: React.FC = () => {
 							to='' // Pas de 'to' car on gère le clic manuellement
 						/>
 					</div>
-
-					{/* Scanner un ticket de caisse */}
-					<AddMethodCard
-						icon={<Receipt className='size-6 text-blue-600' />}
-						title='Scanner un ticket de caisse'
-						description={
-							isPremiumUser
-								? 'OCR et analyse automatique pour importer les articles du ticket.'
-								: 'Réservé Premium: OCR et analyse automatique des articles du ticket.'
-						}
-						to={
-							isPremiumUser
-								? '/app/inventory/add/receipt'
-								: '/app/subscription'
-						}
-						isPremium={true}
-					/>
 
 					{/* Importer une facture Drive */}
 					<AddMethodCard

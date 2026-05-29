@@ -1,6 +1,6 @@
 # InEat Frontend
 
-Application React/Vite de InEat. Elle fournit l'interface utilisateur pour le dashboard, l'inventaire, les tickets de caisse, le budget, les recettes, le profil, les parametres et l'abonnement.
+Application React/Vite de InEat. Elle fournit l'interface utilisateur pour le dashboard, l'inventaire, le budget, les recettes, le profil, les parametres et l'abonnement.
 
 ## Stack
 
@@ -109,11 +109,8 @@ Routes protegees sous `/app`:
 - `/app/inventory/add/manual`
 - `/app/inventory/add/search`
 - `/app/inventory/add/scan`
-- `/app/inventory/add/receipt`
 - `/app/inventory/add/drive`
 - `/app/budget`
-- `/app/receipt`
-- `/app/receipt/:receiptId/results`
 - `/app/recipes`
 - `/app/recipes/:recipeId`
 - `/app/recipes/suggestions`
@@ -130,20 +127,9 @@ La route parente `/app` verifie l'authentification et redirige vers `/login` si 
 ## Donnees Et Etat
 
 - `TanStack Query` gere les requetes serveur et le cache.
-- `Zustand` gere les etats globaux: auth, inventaire, budget, receipt, navigation.
+- `Zustand` gere les etats globaux: auth, inventaire, budget, navigation.
 - `api-client.ts` fournit un client JSON commun avec cookies (`credentials: include`).
-- `receiptService.ts` utilise aussi `fetch` directement pour les uploads `FormData`.
 - Les schemas Zod normalisent les donnees metier recues du backend.
-
-## Flux Ticket Cote Frontend
-
-1. L'utilisateur importe une photo de ticket.
-2. `receiptService.uploadReceipt` envoie un `FormData` a `/api/receipt/upload`.
-3. Le store receipt garde le `receiptId`.
-4. Le frontend poll `/api/receipt/:id/status`.
-5. Quand le traitement est termine, il charge `/api/receipt/:id/analysis`.
-6. L'utilisateur valide, ignore ou corrige les produits.
-7. Les produits valides sont envoyes a l'API pour ajout a l'inventaire.
 
 ## HTTPS Local
 

@@ -51,7 +51,6 @@ export const ExpenseSchema = z
 			.string()
 			.max(100, 'La source ne peut pas dépasser 100 caractères')
 			.optional(),
-		receiptId: z.string().optional(), // Référence vers un ticket importé
 		category: z
 			.string()
 			.max(50, 'La catégorie ne peut pas dépasser 50 caractères')
@@ -129,7 +128,6 @@ export const CreateExpenseSchema = z.object({
 		.max(50, 'La catégorie ne peut pas dépasser 50 caractères')
 		.optional(),
 	notes: MediumTextSchema.optional(),
-	receiptId: z.string().optional(),
 });
 
 export type CreateExpenseData = z.infer<typeof CreateExpenseSchema>;
@@ -169,7 +167,6 @@ export const ExpenseFiltersSchema = z.object({
 		.optional(),
 	source: z.string().optional(),
 	category: z.string().optional(),
-	hasReceipt: z.boolean().optional(),
 });
 export type ExpenseFilters = z.infer<typeof ExpenseFiltersSchema>;
 

@@ -15,7 +15,7 @@ import {
 	DateRangeFilterSchema,
 	SearchFilterSchema,
 } from './common';
-import { ProductSchema, ProductSummarySchema } from './product';
+import { ProductSchema } from './product';
 import { getBudgetNotificationType } from './budget';
 
 // ===== SCHÉMA ÉLÉMENT D'INVENTAIRE =====
@@ -371,44 +371,6 @@ export const extractNotificationData = (
 		item,
 	};
 };
-
-// ===== SCHÉMAS D'IMPORT =====
-
-// Import de ticket de caisse OCR
-export const TicketImportSchema = z.object({
-	imageBase64: z.string().min(1, "L'image est requise"),
-	storeInfo: z
-		.object({
-			name: z.string().optional(),
-			location: z.string().optional(),
-		})
-		.optional(),
-});
-export type TicketImportData = z.infer<typeof TicketImportSchema>;
-
-// Résultat d'analyse de ticket
-export const TicketAnalysisResultSchema = z.object({
-	items: z.array(
-		z.object({
-			name: z.string(),
-			quantity: z.number().optional(),
-			unitPrice: z.number().optional(),
-			totalPrice: z.number().optional(),
-			confidence: z.number().min(0).max(1), // Niveau de confiance de l'OCR
-			suggestedCategory: z.string().optional(),
-			suggestedProduct: ProductSummarySchema.optional(),
-		})
-	),
-	purchaseDate: z.string().datetime().optional(),
-	totalAmount: z.number().optional(),
-	storeInfo: z
-		.object({
-			name: z.string().optional(),
-			location: z.string().optional(),
-		})
-		.optional(),
-});
-export type TicketAnalysisResult = z.infer<typeof TicketAnalysisResultSchema>;
 
 // ===== UTILITAIRES =====
 

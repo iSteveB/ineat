@@ -115,10 +115,6 @@ describe('DashboardPage', () => {
 			'href',
 			'/app/inventory/add/scan'
 		);
-		expect(screen.getByText('Ticket')).toHaveAttribute(
-			'href',
-			'/app/inventory/add/receipt'
-		);
 		expect(screen.getByText('Ajouter un produit')).toHaveAttribute(
 			'href',
 			'/app/inventory/add'

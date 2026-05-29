@@ -11,14 +11,14 @@ export const REQUIRES_PREMIUM_KEY = 'requiresPremium';
  * Utilisation sur une méthode:
  * @RequiresPremium()
  * @UseGuards(JwtAuthGuard, PremiumGuard)
- * @Post('upload')
- * async uploadReceipt() { ... }
+ * @Post('drive/import')
+ * async importDriveInvoice() { ... }
  * 
  * Utilisation sur un contrôleur (toutes les routes deviennent premium):
- * @Controller('receipt')
+ * @Controller('inventory')
  * @RequiresPremium()
  * @UseGuards(JwtAuthGuard, PremiumGuard)
- * export class ReceiptController { ... }
+ * export class InventoryController { ... }
  * 
  * Important: Ce décorateur doit être utilisé en combinaison avec:
  * 1. JwtAuthGuard (pour vérifier l'authentification)

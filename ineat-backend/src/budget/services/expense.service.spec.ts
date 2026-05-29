@@ -43,7 +43,6 @@ describe('ExpenseService', () => {
       source: 'Ajout manuel',
       category: 'Fruits & Légumes',
       notes: 'Pommes',
-      receiptId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

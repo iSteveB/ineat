@@ -4,7 +4,6 @@ import { Link } from '@tanstack/react-router';
 import {
 	ArrowRight,
 	PackagePlus,
-	ReceiptText,
 	ScanLine,
 	TriangleAlert,
 } from 'lucide-react';
@@ -105,7 +104,7 @@ const Dashboard: FC = () => {
 				: {
 						title: 'Inventaire à jour',
 						description:
-							'Ajoutez vos derniers achats ou importez un ticket pour garder le stock fiable.',
+							'Ajoutez vos derniers achats pour garder le stock fiable.',
 						to: '/app/inventory/add',
 						tone: 'normal',
 					};
@@ -202,7 +201,7 @@ const Dashboard: FC = () => {
 						</div>
 					</div>
 
-					<div className='grid grid-cols-1 gap-2 sm:grid-cols-3 lg:min-w-[420px]'>
+					<div className='grid grid-cols-1 gap-2 sm:grid-cols-2 lg:min-w-[320px]'>
 						<Button asChild>
 							<Link to={priorityAction.to}>
 								<ArrowRight className='size-4' />
@@ -215,16 +214,10 @@ const Dashboard: FC = () => {
 								Scanner
 							</Link>
 						</Button>
-						<Button asChild variant='outline'>
-							<Link to='/app/inventory/add/receipt'>
-								<ReceiptText className='size-4' />
-								Ticket
-							</Link>
-						</Button>
 						<Button
 							asChild
 							variant='secondary'
-							className='sm:col-span-3'>
+							className='sm:col-span-2'>
 							<Link to='/app/inventory/add'>
 								<PackagePlus className='size-4' />
 								Ajouter un produit

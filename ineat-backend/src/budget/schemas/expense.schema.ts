@@ -32,7 +32,6 @@ const BaseExpenseSchema = z.object({
     .max(500, 'Les notes ne peuvent pas dépasser 500 caractères')
     .transform((val) => val.trim())
     .optional(),
-  receiptId: z.string().optional(),
 });
 
 // Schéma pour la création d'une dépense
@@ -73,7 +72,6 @@ export const ExpenseFiltersSchema = z.object({
     .optional(),
   source: z.string().optional(),
   category: z.string().optional(),
-  hasReceipt: z.boolean().optional(),
   hasAmount: z.boolean().optional(), // Pour filtrer les dépenses avec/sans montant
   search: z
     .object({
@@ -151,7 +149,6 @@ export interface ExpenseWithDisplay extends Expense {
   displayAmount: string; // "25.50€" ou "-" si pas de montant
   categoryName?: string;
   sourceName?: string;
-  hasReceipt: boolean;
 }
 
 /**
@@ -223,7 +220,6 @@ export function formatExpenseDisplay(expense: Expense): ExpenseWithDisplay {
   return {
     ...expense,
     displayAmount,
-    hasReceipt: !!expense.receiptId,
   };
 }
 

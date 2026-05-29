@@ -175,13 +175,13 @@ describe('apiClient', () => {
 				);
 
 				try {
-					await apiClient.fetch('/receipt/upload');
+					await apiClient.fetch('/avatar/upload');
 					fail('Devrait lancer une erreur');
 				} catch (error) {
 					expect(error).toBeInstanceOf(ApiRequestError);
 					expect((error as ApiRequestError).status).toBe(500);
 					expect((error as ApiRequestError).message).toBe(
-						'Impossible de traiter le ticket. Veuillez réessayer.'
+						'Impossible de mettre à jour la photo de profil. Veuillez réessayer.'
 					);
 					expect((error as ApiRequestError).requestId).toBe(
 						'req-500'
@@ -223,35 +223,6 @@ describe('apiClient', () => {
 			}
 		});
 
-		it('devrait mapper les codes publics connus vers leur message safe', async () => {
-			const mockResponse = {
-				ok: false,
-				status: 500,
-				json: vi.fn().mockResolvedValue({
-					code: 'RECEIPT_UPLOAD_FAILED',
-					message: 'Internal provider details',
-					requestId: 'req-upload',
-				}),
-			};
-
-			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
-				mockResponse
-			);
-
-			try {
-				await apiClient.fetch('/receipt/upload');
-				fail('Devrait lancer une erreur');
-			} catch (error) {
-				expect(error).toBeInstanceOf(ApiRequestError);
-				expect((error as ApiRequestError).code).toBe(
-					'RECEIPT_UPLOAD_FAILED'
-				);
-				expect((error as ApiRequestError).message).toBe(
-					"Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants."
-				);
-			}
-		});
-
 		it('devrait normaliser les erreurs premium 403', async () => {
 			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
 				ok: false,
@@ -262,10 +233,9 @@ describe('apiClient', () => {
 				}),
 			});
 
-			await expect(apiClient.fetch('/receipt/upload')).rejects.toMatchObject({
+			await expect(apiClient.fetch('/inventory/add')).rejects.toMatchObject({
 				status: 403,
-				message:
-					'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.',
+				message: 'Cette action nécessite Premium.',
 			});
 		});
 

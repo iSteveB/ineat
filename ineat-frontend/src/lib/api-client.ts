@@ -55,10 +55,7 @@ const SENSITIVE_ERROR_PATTERNS = [
 	/exception/i,
 ];
 
-const PUBLIC_ERROR_MESSAGES_BY_CODE: Record<string, string> = {
-	RECEIPT_UPLOAD_FAILED:
-		"Impossible d'envoyer le ticket. Veuillez réessayer dans quelques instants.",
-};
+const PUBLIC_ERROR_MESSAGES_BY_CODE: Record<string, string> = {};
 
 const getResponseHeader = (response: Response, name: string): string | null => {
 	if (!response.headers || typeof response.headers.get !== 'function') {
@@ -108,10 +105,6 @@ const getEndpointFallbackMessage = (
 		return "Impossible de finaliser l'authentification. Veuillez réessayer.";
 	}
 
-	if (endpoint.includes('/receipt')) {
-		return 'Impossible de traiter le ticket. Veuillez réessayer.';
-	}
-
 	if (endpoint.includes('/avatar')) {
 		return 'Impossible de mettre à jour la photo de profil. Veuillez réessayer.';
 	}
@@ -134,7 +127,7 @@ const getPublicErrorMessage = (
 	rawMessage?: string
 ): string => {
 	if (status === 403 && /premium|abonnement/i.test(rawMessage || '')) {
-		return 'Cette action nécessite Premium: scan de tickets, OCR et analyse automatique sont réservés aux abonnés.';
+		return 'Cette action nécessite Premium.';
 	}
 
 	if (errorData?.code && PUBLIC_ERROR_MESSAGES_BY_CODE[errorData.code]) {

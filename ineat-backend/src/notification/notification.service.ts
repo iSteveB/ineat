@@ -3,7 +3,6 @@ import { randomUUID } from 'crypto';
 import {
   Notification,
   NotificationType,
-  ReceiptStatus,
 } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -75,40 +74,6 @@ export class NotificationService {
     });
 
     return { count: result.count };
-  }
-
-  async createReceiptNotification(
-    receiptId: string,
-    status: ReceiptStatus,
-    errorMessage?: string,
-  ): Promise<void> {
-    const receipt = await this.prisma.receipt.findUnique({
-      where: { id: receiptId },
-      select: {
-        id: true,
-        userId: true,
-        merchantName: true,
-        totalAmount: true,
-      },
-    });
-
-    if (!receipt) {
-      return;
-    }
-
-    const isFailed = status === ReceiptStatus.FAILED;
-    const merchant = receipt.merchantName ?? 'votre ticket';
-
-    await this.createOrUpdateNotification({
-      userId: receipt.userId,
-      type: NotificationType.SYSTEM,
-      title: isFailed ? 'Ticket en échec' : 'Ticket traité',
-      message: isFailed
-        ? `Le traitement de ${merchant} a échoué${errorMessage ? `: ${errorMessage}` : '.'}`
-        : `${merchant} est prêt à être vérifié et ajouté à votre inventaire.`,
-      referenceId: receipt.id,
-      referenceType: 'receipt',
-    });
   }
 
   private async syncActionableNotifications(userId: string): Promise<void> {

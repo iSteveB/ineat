@@ -38,22 +38,22 @@ describe('ObservabilityService', () => {
   });
 
   it('summarizes timing samples', () => {
-    service.recordTiming('receipt.ocr.duration_ms', 100, {
-      receiptId: 'receipt-1',
+    service.recordTiming('inventory.import.duration_ms', 100, {
+      importId: 'import-1',
     });
-    service.recordTiming('receipt.ocr.duration_ms', 300, {
-      receiptId: 'receipt-2',
+    service.recordTiming('inventory.import.duration_ms', 300, {
+      importId: 'import-2',
     });
 
     expect(service.getSnapshot().timings).toMatchObject({
-      'receipt.ocr.duration_ms': {
+      'inventory.import.duration_ms': {
         count: 2,
         minMs: 100,
         maxMs: 300,
         avgMs: 200,
         lastMs: 300,
         lastContext: {
-          receiptId: 'receipt-2',
+          importId: 'import-2',
         },
       },
     });

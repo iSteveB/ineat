@@ -1,6 +1,6 @@
 # InEat Backend
 
-API NestJS de l'application InEat. Elle gere l'authentification, les utilisateurs, l'inventaire alimentaire, les produits, les budgets, les depenses, les avatars et le traitement des tickets de caisse.
+API NestJS de l'application InEat. Elle gere l'authentification, les utilisateurs, l'inventaire alimentaire, les produits, les budgets, les depenses, les avatars et les notifications.
 
 ## Stack
 
@@ -8,10 +8,7 @@ API NestJS de l'application InEat. Elle gere l'authentification, les utilisateur
 - Prisma 7 avec PostgreSQL
 - Passport, JWT et cookies pour l'authentification
 - Google OAuth
-- Bull/Redis pour les traitements asynchrones
 - Cloudinary pour le stockage des fichiers
-- Tesseract.js pour l'OCR local
-- Anthropic Claude et OpenAI pour l'analyse LLM des tickets
 - Swagger en developpement
 
 ## Prerequis
@@ -19,7 +16,6 @@ API NestJS de l'application InEat. Elle gere l'authentification, les utilisateur
 - Node.js `>=20`
 - pnpm `10.7.0`
 - PostgreSQL accessible via `DATABASE_URL`
-- Redis accessible via `REDIS_URL`
 
 ## Installation
 
@@ -48,7 +44,6 @@ Variables principales:
 | `NODE_ENV` | Non | `development` par defaut |
 | `PORT` | Non | Port HTTP, `3000` par defaut |
 | `DATABASE_URL` | Oui | Connexion PostgreSQL Prisma |
-| `REDIS_URL` | Oui | Connexion Redis pour Bull |
 | `JWT_SECRET` | Oui | Signature des JWT |
 | `JWT_EXPIRES_IN` | Non | Duree de vie JWT, `1d` par defaut |
 | `COOKIE_SECRET` | Recommande | Signature des cookies; fallback sur `JWT_SECRET` |
@@ -62,16 +57,6 @@ Variables principales:
 | `CLOUDINARY_API_KEY` | Uploads | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Uploads | Cloudinary API secret |
 | `CLOUDINARY_AVATAR_PRESET` | Optionnel | Preset Cloudinary pour avatars |
-| `CLOUDINARY_RECEIPT_PRESET` | Optionnel | Preset Cloudinary pour tickets |
-| `OPENAI_API_KEY` | Optionnel | Fallback LLM ticket |
-| `TICKET_PROMPT_ID` | Optionnel | Prompt OpenAI specifique |
-| `ANTHROPIC_API_KEY` | Optionnel | Analyse Claude prioritaire |
-| `MCP_OPENFOODFACTS_URL` | Optionnel | MCP OpenFoodFacts pour Claude |
-| `MINDEE_API_KEY` | Optionnel | Provider OCR Mindee |
-| `MINDEE_RECEIPT_MODEL_ID` | Optionnel | Modele receipt Mindee |
-| `MINDEE_INVOICE_MODEL_ID` | Optionnel | Modele invoice Mindee |
-| `OCR_DEFAULT_PROVIDER` | Non | `tesseract` par defaut |
-| `OCR_ENABLE_FALLBACK` | Non | Active un fallback OCR si implemente |
 
 ## Lancement
 
@@ -186,7 +171,6 @@ Modules principaux:
 | `InventoryModule` | Stock utilisateur, ajout manuel, quick add, filtres |
 | `ProductsModule` | Recherche produits et categories |
 | `BudgetModule` | Budgets mensuels et depenses |
-| `ReceiptModule` | Upload ticket, OCR, analyse LLM, validation, ajout inventaire |
 | `PrismaModule` | Acces base de donnees |
 
 ## Observabilite Production
@@ -203,31 +187,11 @@ Le snapshot contient:
 
 Signaux a surveiller en priorite:
 
-- `receipt.upload.failed`: echec Cloudinary ou creation receipt.
-- `receipt.ocr.failed`: echec OCR avec `receiptId` et `documentType`.
-- `receipt.llm.claude.failed` et `receipt.llm.openai.failed`: erreurs LLM et fallback.
-- `receipt.processing.final_failed`: ticket definitivement echoue apres retries Bull.
 - `auth.login.failure`: hausse anormale des echecs de connexion.
-- `receipt.processing.duration_ms`, `receipt.ocr.duration_ms`, `receipt.llm.*.duration_ms`: derive des temps de traitement.
 
-Les contextes exposent des identifiants utiles (`userId`, `receiptId`) sans secrets.
+Les contextes exposent des identifiants utiles (`userId`, etc.) sans secrets.
 Les cles sensibles (`password`, `token`, `secret`, `cookie`, `authorization`,
 `apiKey`, etc.) sont remplacees par `[redacted]`.
-
-## Flux Ticket De Caisse
-
-1. `POST /api/receipt/upload` recoit une image ou un PDF.
-2. Le fichier est uploade sur Cloudinary.
-3. Un `Receipt` est cree en base avec le statut `PROCESSING`.
-4. Tesseract extrait le texte.
-5. Claude est utilise en priorite si configure.
-6. OpenAI sert de fallback si Claude echoue ou n'est pas configure.
-7. Les items detectes sont enregistres en `ReceiptItem`.
-8. Le frontend poll le statut et affiche les resultats.
-9. L'utilisateur valide, ignore ou corrige les produits.
-10. Les produits valides sont ajoutes a l'inventaire.
-
-Les routes receipt sont protegees par `JwtAuthGuard` et `PremiumGuard`.
 
 ## Base De Donnees
 
@@ -238,8 +202,6 @@ Les modeles Prisma centraux sont:
 - `InventoryItem`
 - `Budget`
 - `Expense`
-- `Receipt`
-- `ReceiptItem`
 - `Recipe`
 - `RecipeIngredient`
 - `Notification`

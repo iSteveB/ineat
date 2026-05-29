@@ -265,12 +265,6 @@ export {
 	hasBudgetImpact,
 	extractNotificationData,
 
-	// Import OCR
-	TicketImportSchema,
-	TicketAnalysisResultSchema,
-	type TicketImportData,
-	type TicketAnalysisResult,
-
 	// Utilitaires
 	addExpiryStatusToItem,
 	filterInventoryItems,
