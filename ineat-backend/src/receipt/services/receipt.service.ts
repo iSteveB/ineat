@@ -17,7 +17,10 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { OcrService } from './ocr.service';
 import { LlmService, LlmReceiptAnalysis } from './llm.service';
-import { CloudinaryStorageService } from './cloudinary-storage.service';
+import {
+  CloudinaryStorageService,
+  CloudinaryUploadResult,
+} from './cloudinary-storage.service';
 import {
   DocumentType,
   OcrProcessingResult,
@@ -141,6 +144,12 @@ export class ReceiptService {
         },
       );
 
+      const processingFileBuffer = await this.prepareFileBufferForProcessing(
+        dto.fileBuffer,
+        dto.documentType,
+        uploadResult,
+      );
+
       // 2. Créer le receipt en DB avec status PROCESSING
       const receipt = await this.prisma.receipt.create({
         data: {
@@ -175,7 +184,10 @@ export class ReceiptService {
       );
 
       // 3. Planifier le traitement OCR + LLM via Bull/Redis.
-      await this.scheduleReceiptProcessing(receipt.id, dto);
+      await this.scheduleReceiptProcessing(receipt.id, {
+        ...dto,
+        fileBuffer: processingFileBuffer,
+      });
 
       return receipt;
     } catch (error) {
@@ -195,6 +207,31 @@ export class ReceiptService {
       );
       throw error;
     }
+  }
+
+  private async prepareFileBufferForProcessing(
+    originalBuffer: Buffer,
+    documentType: DocumentType,
+    uploadResult: CloudinaryUploadResult,
+  ): Promise<Buffer> {
+    if (documentType !== DocumentType.RECEIPT_IMAGE) {
+      return originalBuffer;
+    }
+
+    const optimizedBuffer =
+      await this.cloudinaryStorage.downloadOptimizedReceiptImage(uploadResult);
+
+    this.observabilityService.trackEvent(
+      'receipt.ocr.image_optimized',
+      'info',
+      'Receipt image optimized before OCR',
+      {
+        originalBytes: originalBuffer.length,
+        optimizedBytes: optimizedBuffer.length,
+      },
+    );
+
+    return optimizedBuffer;
   }
 
   private async scheduleReceiptProcessing(

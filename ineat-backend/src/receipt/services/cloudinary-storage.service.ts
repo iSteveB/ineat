@@ -46,6 +46,8 @@ export interface CloudinaryUploadResult {
   height?: number;
 }
 
+export const OPTIMIZED_RECEIPT_IMAGE_MAX_WIDTH = 1400;
+
 /**
  * Service de stockage sur Cloudinary spécifique aux receipts
  *
@@ -146,6 +148,46 @@ export class CloudinaryStorageService {
         message: RECEIPT_UPLOAD_ERROR_MESSAGE,
       });
     }
+  }
+
+  async downloadOptimizedReceiptImage(
+    uploadResult: CloudinaryUploadResult,
+  ): Promise<Buffer> {
+    if (uploadResult.resourceType !== 'image') {
+      throw new Error(
+        `Optimisation OCR non supportée pour resource_type=${uploadResult.resourceType}`,
+      );
+    }
+
+    const optimizedUrl = cloudinary.url(uploadResult.publicId, {
+      secure: true,
+      resource_type: 'image',
+      transformation: [
+        {
+          width: OPTIMIZED_RECEIPT_IMAGE_MAX_WIDTH,
+          crop: 'limit',
+          quality: 'auto:good',
+          fetch_format: 'jpg',
+        },
+      ],
+    });
+
+    this.logger.debug(`Téléchargement image optimisée OCR: ${optimizedUrl}`);
+
+    const response = await fetch(optimizedUrl);
+
+    if (!response.ok) {
+      throw new Error(
+        `Téléchargement image optimisée échoué (${response.status})`,
+      );
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+    this.logger.log(
+      `✓ Image optimisée OCR téléchargée: ${buffer.length} bytes (original Cloudinary: ${uploadResult.bytes} bytes)`,
+    );
+
+    return buffer;
   }
 
   /**

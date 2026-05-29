@@ -20,6 +20,7 @@ describe('ReceiptService', () => {
   };
   const cloudinaryStorage = {
     uploadReceipt: jest.fn(),
+    downloadOptimizedReceiptImage: jest.fn(),
   };
   const notificationService = {
     createReceiptNotification: jest.fn(),
@@ -51,6 +52,7 @@ describe('ReceiptService', () => {
 
   it('creates a processing receipt and enqueues OCR/LLM work', async () => {
     const fileBuffer = Buffer.from('receipt-image');
+    const optimizedBuffer = Buffer.from('optimized-receipt-image');
     const receipt = {
       id: 'receipt-1',
       userId: 'user-1',
@@ -60,7 +62,13 @@ describe('ReceiptService', () => {
 
     cloudinaryStorage.uploadReceipt.mockResolvedValue({
       secureUrl: 'https://cdn.example.com/receipt.png',
+      publicId: 'receipts/user-1/123',
+      resourceType: 'image',
+      bytes: fileBuffer.length,
     });
+    cloudinaryStorage.downloadOptimizedReceiptImage.mockResolvedValue(
+      optimizedBuffer,
+    );
     prisma.receipt.create.mockResolvedValue(receipt);
     receiptProcessingQueue.addReceiptProcessingJob.mockResolvedValue({
       id: 'receipt-receipt-1',
@@ -85,12 +93,12 @@ describe('ReceiptService', () => {
     });
     expect(receiptProcessingQueue.addReceiptProcessingJob).toHaveBeenCalledWith({
       receiptId: 'receipt-1',
-      fileBuffer,
+      fileBuffer: optimizedBuffer,
       documentType: DocumentType.RECEIPT_IMAGE,
       userId: 'user-1',
       metadata: expect.objectContaining({
         originalFileName: 'ticket.png',
-        fileSize: fileBuffer.length,
+        fileSize: optimizedBuffer.length,
         uploadedAt: expect.any(Date),
       }),
     });
@@ -99,6 +107,7 @@ describe('ReceiptService', () => {
 
   it('returns the created receipt and starts a local fallback when the queue is unavailable', async () => {
     const fileBuffer = Buffer.from('receipt-image');
+    const optimizedBuffer = Buffer.from('optimized-receipt-image');
     const receipt = {
       id: 'receipt-1',
       userId: 'user-1',
@@ -111,7 +120,13 @@ describe('ReceiptService', () => {
 
     cloudinaryStorage.uploadReceipt.mockResolvedValue({
       secureUrl: 'https://cdn.example.com/receipt.png',
+      publicId: 'receipts/user-1/123',
+      resourceType: 'image',
+      bytes: fileBuffer.length,
     });
+    cloudinaryStorage.downloadOptimizedReceiptImage.mockResolvedValue(
+      optimizedBuffer,
+    );
     prisma.receipt.create.mockResolvedValue(receipt);
     receiptProcessingQueue.addReceiptProcessingJob.mockRejectedValue(
       new Error('Redis unavailable'),
@@ -130,7 +145,7 @@ describe('ReceiptService', () => {
 
     expect(processSpy).toHaveBeenCalledWith(
       'receipt-1',
-      fileBuffer,
+      optimizedBuffer,
       DocumentType.RECEIPT_IMAGE,
     );
     expect(observabilityService.increment).toHaveBeenCalledWith(

@@ -2,6 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   CloudinaryStorageService,
+  OPTIMIZED_RECEIPT_IMAGE_MAX_WIDTH,
   RECEIPT_UPLOAD_ERROR_CODE,
   RECEIPT_UPLOAD_ERROR_MESSAGE,
 } from './cloudinary-storage.service';
@@ -58,6 +59,36 @@ describe('CloudinaryStorageService', () => {
     const service = new CloudinaryStorageService(fallbackConfigService);
 
     expect((service as any).receiptPreset).toBe('legacy-receipt-preset');
+  });
+
+  it("télécharge une image optimisée pour l'OCR depuis Cloudinary", async () => {
+    const service = new CloudinaryStorageService(configService);
+    const fetchMock = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue({
+        ok: true,
+        arrayBuffer: async () => Buffer.from('optimized-image'),
+      } as unknown as Response);
+
+    await expect(
+      service.downloadOptimizedReceiptImage({
+        url: 'http://res.cloudinary.com/test/image/upload/receipt.jpg',
+        secureUrl: 'https://res.cloudinary.com/test/image/upload/receipt.jpg',
+        publicId: 'receipts/user-123/receipt',
+        format: 'jpg',
+        resourceType: 'image',
+        bytes: 5_000_000,
+      }),
+    ).resolves.toEqual(Buffer.from('optimized-image'));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `w_${OPTIMIZED_RECEIPT_IMAGE_MAX_WIDTH}`,
+      ),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('f_jpg'));
+
+    fetchMock.mockRestore();
   });
 
   it.each([
