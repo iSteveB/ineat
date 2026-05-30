@@ -10,8 +10,8 @@ import { AppService } from './app.service';
 import { Response } from 'express';
 import { ObservabilityService } from './observability/observability.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
-import { AdminGuard } from './auth/guards/admin.guard';
-import { RequiresAdmin } from './auth/decorators/requires-admin.decorator';
+import { RoleGuard } from './auth/guards/role.guard';
+import { RequiresRole } from './auth/decorators/requires-role.decorator';
 import { PrismaService } from './prisma/prisma.service';
 import * as Sentry from '@sentry/nestjs';
 
@@ -48,8 +48,8 @@ export class AppController {
   }
 
   @Get('health/observability')
-  @RequiresAdmin()
-  @UseGuards(JwtAuthGuard, AdminGuard)
+  @RequiresRole('ADMIN')
+  @UseGuards(JwtAuthGuard, RoleGuard)
   observabilitySnapshot() {
     return {
       status: 'ok',
