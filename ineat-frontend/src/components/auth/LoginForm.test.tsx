@@ -20,6 +20,7 @@ describe('LoginForm', () => {
 	const navigateMock = vi.fn();
 	const loginMock = vi.fn();
 	const loginWithGoogleMock = vi.fn();
+	const setErrorMock = vi.fn();
 	const user = userEvent.setup();
 
 	beforeEach(() => {
@@ -33,6 +34,7 @@ describe('LoginForm', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
 			loginWithGoogle: loginWithGoogleMock,
+			setError: setErrorMock,
 			isLoading: false,
 			error: null,
 		});
@@ -159,6 +161,7 @@ describe('LoginForm', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
 			loginWithGoogle: loginWithGoogleMock,
+			setError: setErrorMock,
 			isLoading: false,
 			error: 'Identifiants incorrects',
 		});
@@ -177,6 +180,7 @@ describe('LoginForm', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
 			loginWithGoogle: loginWithGoogleMock,
+			setError: setErrorMock,
 			isLoading: true,
 			error: null,
 		});
@@ -232,7 +236,14 @@ describe('LoginForm', () => {
 		await user.click(registerButton);
 
 		// Vérifier que la navigation a été appelée
+		expect(setErrorMock).toHaveBeenCalledWith(null);
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/register' });
+	});
+
+	it("efface l'erreur globale au montage", () => {
+		render(<LoginForm />);
+
+		expect(setErrorMock).toHaveBeenCalledWith(null);
 	});
 
 	it('efface les erreurs lors de la modification des champs', async () => {

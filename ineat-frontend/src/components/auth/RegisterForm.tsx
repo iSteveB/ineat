@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { RegisterDataSchema } from '@/schemas';
@@ -34,7 +34,16 @@ const RegisterForm = () => {
 	const navigate = useNavigate();
 
 	// État global d'authentification avec Zustand
-	const { register, loginWithGoogle, isLoading, error } = useAuthStore();
+	const { register, loginWithGoogle, isLoading, error, setError } =
+		useAuthStore();
+
+	useEffect(() => {
+		setError(null);
+
+		return () => {
+			setError(null);
+		};
+	}, [setError]);
 
 	// Mise à jour des champs du formulaire
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,6 +53,7 @@ const RegisterForm = () => {
 			[name]: value,
 		}));
 		setFormError(null);
+		setError(null);
 	};
 
 	// Mise à jour du type de profil (radiogroup)
@@ -53,6 +63,7 @@ const RegisterForm = () => {
 			profileType: value,
 		}));
 		setFormError(null);
+		setError(null);
 	};
 
 	// Validation du formulaire
@@ -256,7 +267,10 @@ const RegisterForm = () => {
 					type='button'
 					variant='outline'
 					className='w-full mb-4'
-					onClick={() => loginWithGoogle()}
+					onClick={() => {
+						setError(null);
+						loginWithGoogle();
+					}}
 					disabled={isLoading}
 					data-testid='google-button'>
 					<svg
@@ -291,7 +305,10 @@ const RegisterForm = () => {
 						type='button'
 						variant='secondary'
 						className='w-full'
-						onClick={() => setShowForm(true)}
+						onClick={() => {
+							setError(null);
+							setShowForm(true);
+						}}
 						disabled={isLoading}
 						data-testid='show-email-form-button'>
 						S'inscrire avec mon email
@@ -304,7 +321,10 @@ const RegisterForm = () => {
 					<Button
 						variant='link'
 						className='p-0 h-auto'
-						onClick={() => navigate({ to: '/login' })}
+						onClick={() => {
+							setError(null);
+							navigate({ to: '/login' });
+						}}
 						disabled={isLoading}
 						data-testid='login-button'>
 						Se connecter

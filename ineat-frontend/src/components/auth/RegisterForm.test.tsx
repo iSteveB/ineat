@@ -19,6 +19,7 @@ describe('RegisterForm', () => {
 	const navigateMock = vi.fn();
 	const registerMock = vi.fn();
 	const loginWithGoogleMock = vi.fn();
+	const setErrorMock = vi.fn();
 	const user = userEvent.setup();
 
 	beforeEach(() => {
@@ -31,6 +32,7 @@ describe('RegisterForm', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
 			loginWithGoogle: loginWithGoogleMock,
+			setError: setErrorMock,
 			isLoading: false,
 			error: null,
 		});
@@ -99,6 +101,7 @@ describe('RegisterForm', () => {
 		await user.click(loginButton);
 
 		// Vérifier que la fonction navigate a été appelée avec la bonne destination
+		expect(setErrorMock).toHaveBeenCalledWith(null);
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/login' });
 	});
 
@@ -224,6 +227,7 @@ describe('RegisterForm', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
 			loginWithGoogle: loginWithGoogleMock,
+			setError: setErrorMock,
 			isLoading: false,
 			error: 'Cette adresse email est déjà utilisée',
 		});
@@ -257,6 +261,7 @@ describe('RegisterForm', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
 			loginWithGoogle: loginWithGoogleMock,
+			setError: setErrorMock,
 			isLoading: true,
 			error: null,
 		});
@@ -309,5 +314,11 @@ describe('RegisterForm', () => {
 
 		// Vérifier que l'erreur a disparu
 		expect(screen.queryByTestId('error-container')).not.toBeInTheDocument();
+	});
+
+	it("efface l'erreur globale au montage", () => {
+		render(<RegisterForm />);
+
+		expect(setErrorMock).toHaveBeenCalledWith(null);
 	});
 });

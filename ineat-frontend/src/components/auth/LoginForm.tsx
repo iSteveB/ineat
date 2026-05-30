@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GoogleLogo from '@/assets/google-logo.svg';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
@@ -36,7 +36,16 @@ const LoginForm = () => {
 	const sessionExpired = search.session === 'expired';
 
 	// État global d'authentification avec Zustand
-	const { login, loginWithGoogle, isLoading, error } = useAuthStore();
+	const { login, loginWithGoogle, isLoading, error, setError } =
+		useAuthStore();
+
+	useEffect(() => {
+		setError(null);
+
+		return () => {
+			setError(null);
+		};
+	}, [setError]);
 
 	// Validation du formulaire
 	const validateForm = (): boolean => {
@@ -129,6 +138,7 @@ const LoginForm = () => {
 							onChange={(e) => {
 								setEmail(e.target.value);
 								setFormError(null);
+								setError(null);
 							}}
 							required
 							disabled={isLoading}
@@ -143,9 +153,10 @@ const LoginForm = () => {
 							<Button
 								variant='link'
 								className='p-0 h-auto text-xs'
-								onClick={() =>
-									navigate({ to: '/forgot-password' })
-								}
+								onClick={() => {
+									setError(null);
+									navigate({ to: '/forgot-password' });
+								}}
 								type='button'
 								disabled={isLoading}
 								data-testid='forgot-password-button'>
@@ -161,6 +172,7 @@ const LoginForm = () => {
 							onChange={(e) => {
 								setPassword(e.target.value);
 								setFormError(null);
+								setError(null);
 							}}
 							required
 							disabled={isLoading}
@@ -190,7 +202,10 @@ const LoginForm = () => {
 						type='button'
 						variant='outline'
 						className='w-full'
-						onClick={() => loginWithGoogle()}
+						onClick={() => {
+							setError(null);
+							loginWithGoogle();
+						}}
 						disabled={isLoading}
 						data-testid='google-button'>
 						<span className='p-1 bg-neutral-50 rounded-full'>
@@ -206,7 +221,10 @@ const LoginForm = () => {
 					<Button
 						variant='link'
 						className='p-0 h-auto'
-						onClick={() => navigate({ to: '/register' })}
+						onClick={() => {
+							setError(null);
+							navigate({ to: '/register' });
+						}}
 						disabled={isLoading}
 						data-testid='register-button'>
 						S'inscrire
