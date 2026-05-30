@@ -92,3 +92,8 @@ export type RecipeIngredient = Prisma.RecipeIngredientModel
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model UsageQuota
+ * 
+ */
+export type UsageQuota = Prisma.UsageQuotaModel

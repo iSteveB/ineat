@@ -87,13 +87,22 @@ export const RecipeDifficulty = {
 export type RecipeDifficulty = (typeof RecipeDifficulty)[keyof typeof RecipeDifficulty]
 
 
-export const Subscription = {
+export const SubscriptionPlan = {
   FREE: 'FREE',
-  PREMIUM: 'PREMIUM',
-  ADMIN: 'ADMIN'
+  TRIAL: 'TRIAL',
+  PREMIUM: 'PREMIUM'
 } as const
 
-export type Subscription = (typeof Subscription)[keyof typeof Subscription]
+export type SubscriptionPlan = (typeof SubscriptionPlan)[keyof typeof SubscriptionPlan]
+
+
+export const SubscriptionStatus = {
+  ACTIVE: 'ACTIVE',
+  EXPIRED: 'EXPIRED',
+  CANCELLED: 'CANCELLED'
+} as const
+
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
 
 
 export const UnitType = {
@@ -105,3 +114,19 @@ export const UnitType = {
 } as const
 
 export type UnitType = (typeof UnitType)[keyof typeof UnitType]
+
+
+export const UserRole = {
+  USER: 'USER',
+  ADMIN: 'ADMIN'
+} as const
+
+export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const UsageType = {
+  AI_RECIPE_GENERATION: 'AI_RECIPE_GENERATION',
+  DRIVE_IMPORT: 'DRIVE_IMPORT'
+} as const
+
+export type UsageType = (typeof UsageType)[keyof typeof UsageType]

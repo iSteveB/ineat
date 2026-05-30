@@ -33,7 +33,13 @@ export type UserMinAggregateOutputType = {
   profileType: $Enums.ProfileType | null
   createdAt: Date | null
   updatedAt: Date | null
-  subscription: $Enums.Subscription | null
+  role: $Enums.UserRole | null
+  subscriptionPlan: $Enums.SubscriptionPlan | null
+  subscriptionStatus: $Enums.SubscriptionStatus | null
+  trialStartedAt: Date | null
+  trialEndsAt: Date | null
+  currentPeriodStartedAt: Date | null
+  currentPeriodEndsAt: Date | null
   avatarUrl: string | null
 }
 
@@ -46,7 +52,13 @@ export type UserMaxAggregateOutputType = {
   profileType: $Enums.ProfileType | null
   createdAt: Date | null
   updatedAt: Date | null
-  subscription: $Enums.Subscription | null
+  role: $Enums.UserRole | null
+  subscriptionPlan: $Enums.SubscriptionPlan | null
+  subscriptionStatus: $Enums.SubscriptionStatus | null
+  trialStartedAt: Date | null
+  trialEndsAt: Date | null
+  currentPeriodStartedAt: Date | null
+  currentPeriodEndsAt: Date | null
   avatarUrl: string | null
 }
 
@@ -60,7 +72,13 @@ export type UserCountAggregateOutputType = {
   preferences: number
   createdAt: number
   updatedAt: number
-  subscription: number
+  role: number
+  subscriptionPlan: number
+  subscriptionStatus: number
+  trialStartedAt: number
+  trialEndsAt: number
+  currentPeriodStartedAt: number
+  currentPeriodEndsAt: number
   avatarUrl: number
   _all: number
 }
@@ -75,7 +93,13 @@ export type UserMinAggregateInputType = {
   profileType?: true
   createdAt?: true
   updatedAt?: true
-  subscription?: true
+  role?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
+  trialStartedAt?: true
+  trialEndsAt?: true
+  currentPeriodStartedAt?: true
+  currentPeriodEndsAt?: true
   avatarUrl?: true
 }
 
@@ -88,7 +112,13 @@ export type UserMaxAggregateInputType = {
   profileType?: true
   createdAt?: true
   updatedAt?: true
-  subscription?: true
+  role?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
+  trialStartedAt?: true
+  trialEndsAt?: true
+  currentPeriodStartedAt?: true
+  currentPeriodEndsAt?: true
   avatarUrl?: true
 }
 
@@ -102,7 +132,13 @@ export type UserCountAggregateInputType = {
   preferences?: true
   createdAt?: true
   updatedAt?: true
-  subscription?: true
+  role?: true
+  subscriptionPlan?: true
+  subscriptionStatus?: true
+  trialStartedAt?: true
+  trialEndsAt?: true
+  currentPeriodStartedAt?: true
+  currentPeriodEndsAt?: true
   avatarUrl?: true
   _all?: true
 }
@@ -189,7 +225,13 @@ export type UserGroupByOutputType = {
   preferences: runtime.JsonValue
   createdAt: Date
   updatedAt: Date
-  subscription: $Enums.Subscription
+  role: $Enums.UserRole
+  subscriptionPlan: $Enums.SubscriptionPlan
+  subscriptionStatus: $Enums.SubscriptionStatus
+  trialStartedAt: Date | null
+  trialEndsAt: Date | null
+  currentPeriodStartedAt: Date | null
+  currentPeriodEndsAt: Date | null
   avatarUrl: string | null
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
@@ -224,13 +266,20 @@ export type UserWhereInput = {
   preferences?: Prisma.JsonFilter<"User">
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  subscription?: Prisma.EnumSubscriptionFilter<"User"> | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFilter<"User"> | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFilter<"User"> | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  currentPeriodStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  currentPeriodEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   Budget?: Prisma.BudgetListRelationFilter
   Expense?: Prisma.ExpenseListRelationFilter
   InventoryItem?: Prisma.InventoryItemListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
   Receipt?: Prisma.ReceiptListRelationFilter
+  UsageQuota?: Prisma.UsageQuotaListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -243,13 +292,20 @@ export type UserOrderByWithRelationInput = {
   preferences?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  subscription?: Prisma.SortOrder
+  role?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
+  trialStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  currentPeriodStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  currentPeriodEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   Budget?: Prisma.BudgetOrderByRelationAggregateInput
   Expense?: Prisma.ExpenseOrderByRelationAggregateInput
   InventoryItem?: Prisma.InventoryItemOrderByRelationAggregateInput
   Notification?: Prisma.NotificationOrderByRelationAggregateInput
   Receipt?: Prisma.ReceiptOrderByRelationAggregateInput
+  UsageQuota?: Prisma.UsageQuotaOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -265,13 +321,20 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   preferences?: Prisma.JsonFilter<"User">
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
-  subscription?: Prisma.EnumSubscriptionFilter<"User"> | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFilter<"User"> | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFilter<"User"> | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  currentPeriodStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  currentPeriodEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   avatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   Budget?: Prisma.BudgetListRelationFilter
   Expense?: Prisma.ExpenseListRelationFilter
   InventoryItem?: Prisma.InventoryItemListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
   Receipt?: Prisma.ReceiptListRelationFilter
+  UsageQuota?: Prisma.UsageQuotaListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -284,7 +347,13 @@ export type UserOrderByWithAggregationInput = {
   preferences?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  subscription?: Prisma.SortOrder
+  role?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
+  trialStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  currentPeriodStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  currentPeriodEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   avatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -304,7 +373,13 @@ export type UserScalarWhereWithAggregatesInput = {
   preferences?: Prisma.JsonWithAggregatesFilter<"User">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
-  subscription?: Prisma.EnumSubscriptionWithAggregatesFilter<"User"> | $Enums.Subscription
+  role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanWithAggregatesFilter<"User"> | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusWithAggregatesFilter<"User"> | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  trialEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  currentPeriodStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  currentPeriodEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   avatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
@@ -318,13 +393,20 @@ export type UserCreateInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -337,13 +419,20 @@ export type UserUncheckedCreateInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -356,13 +445,20 @@ export type UserUpdateInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -375,13 +471,20 @@ export type UserUncheckedUpdateInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -394,7 +497,13 @@ export type UserCreateManyInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
 }
 
@@ -408,7 +517,13 @@ export type UserUpdateManyMutationInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -422,7 +537,13 @@ export type UserUncheckedUpdateManyInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
@@ -441,7 +562,13 @@ export type UserCountOrderByAggregateInput = {
   preferences?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  subscription?: Prisma.SortOrder
+  role?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
+  trialStartedAt?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrder
+  currentPeriodStartedAt?: Prisma.SortOrder
+  currentPeriodEndsAt?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
 }
 
@@ -454,7 +581,13 @@ export type UserMaxOrderByAggregateInput = {
   profileType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  subscription?: Prisma.SortOrder
+  role?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
+  trialStartedAt?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrder
+  currentPeriodStartedAt?: Prisma.SortOrder
+  currentPeriodEndsAt?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
 }
 
@@ -467,7 +600,13 @@ export type UserMinOrderByAggregateInput = {
   profileType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  subscription?: Prisma.SortOrder
+  role?: Prisma.SortOrder
+  subscriptionPlan?: Prisma.SortOrder
+  subscriptionStatus?: Prisma.SortOrder
+  trialStartedAt?: Prisma.SortOrder
+  trialEndsAt?: Prisma.SortOrder
+  currentPeriodStartedAt?: Prisma.SortOrder
+  currentPeriodEndsAt?: Prisma.SortOrder
   avatarUrl?: Prisma.SortOrder
 }
 
@@ -545,8 +684,30 @@ export type EnumProfileTypeFieldUpdateOperationsInput = {
   set?: $Enums.ProfileType
 }
 
-export type EnumSubscriptionFieldUpdateOperationsInput = {
-  set?: $Enums.Subscription
+export type EnumUserRoleFieldUpdateOperationsInput = {
+  set?: $Enums.UserRole
+}
+
+export type EnumSubscriptionPlanFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionPlan
+}
+
+export type EnumSubscriptionStatusFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionStatus
+}
+
+export type UserCreateNestedOneWithoutUsageQuotaInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUsageQuotaInput, Prisma.UserUncheckedCreateWithoutUsageQuotaInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUsageQuotaInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutUsageQuotaNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutUsageQuotaInput, Prisma.UserUncheckedCreateWithoutUsageQuotaInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutUsageQuotaInput
+  upsert?: Prisma.UserUpsertWithoutUsageQuotaInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutUsageQuotaInput, Prisma.UserUpdateWithoutUsageQuotaInput>, Prisma.UserUncheckedUpdateWithoutUsageQuotaInput>
 }
 
 export type UserCreateWithoutBudgetInput = {
@@ -559,12 +720,19 @@ export type UserCreateWithoutBudgetInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBudgetInput = {
@@ -577,12 +745,19 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBudgetInput = {
@@ -611,12 +786,19 @@ export type UserUpdateWithoutBudgetInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBudgetInput = {
@@ -629,12 +811,19 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutExpenseInput = {
@@ -647,12 +836,19 @@ export type UserCreateWithoutExpenseInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutExpenseInput = {
@@ -665,12 +861,19 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutExpenseInput = {
@@ -699,12 +902,19 @@ export type UserUpdateWithoutExpenseInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutExpenseInput = {
@@ -717,12 +927,19 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutInventoryItemInput = {
@@ -735,12 +952,19 @@ export type UserCreateWithoutInventoryItemInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutInventoryItemInput = {
@@ -753,12 +977,19 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutInventoryItemInput = {
@@ -787,12 +1018,19 @@ export type UserUpdateWithoutInventoryItemInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInventoryItemInput = {
@@ -805,12 +1043,19 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationInput = {
@@ -823,12 +1068,19 @@ export type UserCreateWithoutNotificationInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationInput = {
@@ -841,12 +1093,19 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationInput = {
@@ -875,12 +1134,19 @@ export type UserUpdateWithoutNotificationInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationInput = {
@@ -893,12 +1159,19 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReceiptInput = {
@@ -911,12 +1184,19 @@ export type UserCreateWithoutReceiptInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReceiptInput = {
@@ -929,12 +1209,19 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
-  subscription?: $Enums.Subscription
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
   avatarUrl?: string | null
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReceiptInput = {
@@ -963,12 +1250,19 @@ export type UserUpdateWithoutReceiptInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceiptInput = {
@@ -981,12 +1275,135 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  subscription?: Prisma.EnumSubscriptionFieldUpdateOperationsInput | $Enums.Subscription
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutUsageQuotaInput = {
+  id: string
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  profileType: $Enums.ProfileType
+  preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt: Date | string
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
+  avatarUrl?: string | null
+  Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
+  Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutUsageQuotaInput = {
+  id: string
+  email: string
+  passwordHash: string
+  firstName: string
+  lastName: string
+  profileType: $Enums.ProfileType
+  preferences: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt: Date | string
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
+  avatarUrl?: string | null
+  Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
+  Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
+  InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutUsageQuotaInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutUsageQuotaInput, Prisma.UserUncheckedCreateWithoutUsageQuotaInput>
+}
+
+export type UserUpsertWithoutUsageQuotaInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutUsageQuotaInput, Prisma.UserUncheckedUpdateWithoutUsageQuotaInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutUsageQuotaInput, Prisma.UserUncheckedCreateWithoutUsageQuotaInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutUsageQuotaInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutUsageQuotaInput, Prisma.UserUncheckedUpdateWithoutUsageQuotaInput>
+}
+
+export type UserUpdateWithoutUsageQuotaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  profileType?: Prisma.EnumProfileTypeFieldUpdateOperationsInput | $Enums.ProfileType
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
+  Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutUsageQuotaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  profileType?: Prisma.EnumProfileTypeFieldUpdateOperationsInput | $Enums.ProfileType
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
+  Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
+  InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1000,6 +1417,7 @@ export type UserCountOutputType = {
   InventoryItem: number
   Notification: number
   Receipt: number
+  UsageQuota: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1008,6 +1426,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   InventoryItem?: boolean | UserCountOutputTypeCountInventoryItemArgs
   Notification?: boolean | UserCountOutputTypeCountNotificationArgs
   Receipt?: boolean | UserCountOutputTypeCountReceiptArgs
+  UsageQuota?: boolean | UserCountOutputTypeCountUsageQuotaArgs
 }
 
 /**
@@ -1055,6 +1474,13 @@ export type UserCountOutputTypeCountReceiptArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.ReceiptWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountUsageQuotaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UsageQuotaWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1066,13 +1492,20 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean
+  role?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
+  trialStartedAt?: boolean
+  trialEndsAt?: boolean
+  currentPeriodStartedAt?: boolean
+  currentPeriodEndsAt?: boolean
   avatarUrl?: boolean
   Budget?: boolean | Prisma.User$BudgetArgs<ExtArgs>
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
   InventoryItem?: boolean | Prisma.User$InventoryItemArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
   Receipt?: boolean | Prisma.User$ReceiptArgs<ExtArgs>
+  UsageQuota?: boolean | Prisma.User$UsageQuotaArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1086,7 +1519,13 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean
+  role?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
+  trialStartedAt?: boolean
+  trialEndsAt?: boolean
+  currentPeriodStartedAt?: boolean
+  currentPeriodEndsAt?: boolean
   avatarUrl?: boolean
 }, ExtArgs["result"]["user"]>
 
@@ -1100,7 +1539,13 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean
+  role?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
+  trialStartedAt?: boolean
+  trialEndsAt?: boolean
+  currentPeriodStartedAt?: boolean
+  currentPeriodEndsAt?: boolean
   avatarUrl?: boolean
 }, ExtArgs["result"]["user"]>
 
@@ -1114,17 +1559,24 @@ export type UserSelectScalar = {
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  subscription?: boolean
+  role?: boolean
+  subscriptionPlan?: boolean
+  subscriptionStatus?: boolean
+  trialStartedAt?: boolean
+  trialEndsAt?: boolean
+  currentPeriodStartedAt?: boolean
+  currentPeriodEndsAt?: boolean
   avatarUrl?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "firstName" | "lastName" | "profileType" | "preferences" | "createdAt" | "updatedAt" | "subscription" | "avatarUrl", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "firstName" | "lastName" | "profileType" | "preferences" | "createdAt" | "updatedAt" | "role" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "avatarUrl", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Budget?: boolean | Prisma.User$BudgetArgs<ExtArgs>
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
   InventoryItem?: boolean | Prisma.User$InventoryItemArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
   Receipt?: boolean | Prisma.User$ReceiptArgs<ExtArgs>
+  UsageQuota?: boolean | Prisma.User$UsageQuotaArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1138,6 +1590,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     InventoryItem: Prisma.$InventoryItemPayload<ExtArgs>[]
     Notification: Prisma.$NotificationPayload<ExtArgs>[]
     Receipt: Prisma.$ReceiptPayload<ExtArgs>[]
+    UsageQuota: Prisma.$UsageQuotaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1149,7 +1602,13 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     preferences: runtime.JsonValue
     createdAt: Date
     updatedAt: Date
-    subscription: $Enums.Subscription
+    role: $Enums.UserRole
+    subscriptionPlan: $Enums.SubscriptionPlan
+    subscriptionStatus: $Enums.SubscriptionStatus
+    trialStartedAt: Date | null
+    trialEndsAt: Date | null
+    currentPeriodStartedAt: Date | null
+    currentPeriodEndsAt: Date | null
     avatarUrl: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
@@ -1550,6 +2009,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   InventoryItem<T extends Prisma.User$InventoryItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$InventoryItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Notification<T extends Prisma.User$NotificationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotificationArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Receipt<T extends Prisma.User$ReceiptArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ReceiptArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReceiptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  UsageQuota<T extends Prisma.User$UsageQuotaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$UsageQuotaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsageQuotaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1588,7 +2048,13 @@ export interface UserFieldRefs {
   readonly preferences: Prisma.FieldRef<"User", 'Json'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
-  readonly subscription: Prisma.FieldRef<"User", 'Subscription'>
+  readonly role: Prisma.FieldRef<"User", 'UserRole'>
+  readonly subscriptionPlan: Prisma.FieldRef<"User", 'SubscriptionPlan'>
+  readonly subscriptionStatus: Prisma.FieldRef<"User", 'SubscriptionStatus'>
+  readonly trialStartedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly trialEndsAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly currentPeriodStartedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly currentPeriodEndsAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly avatarUrl: Prisma.FieldRef<"User", 'String'>
 }
     
@@ -2095,6 +2561,30 @@ export type User$ReceiptArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.ReceiptScalarFieldEnum | Prisma.ReceiptScalarFieldEnum[]
+}
+
+/**
+ * User.UsageQuota
+ */
+export type User$UsageQuotaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UsageQuota
+   */
+  select?: Prisma.UsageQuotaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UsageQuota
+   */
+  omit?: Prisma.UsageQuotaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UsageQuotaInclude<ExtArgs> | null
+  where?: Prisma.UsageQuotaWhereInput
+  orderBy?: Prisma.UsageQuotaOrderByWithRelationInput | Prisma.UsageQuotaOrderByWithRelationInput[]
+  cursor?: Prisma.UsageQuotaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UsageQuotaScalarFieldEnum | Prisma.UsageQuotaScalarFieldEnum[]
 }
 
 /**

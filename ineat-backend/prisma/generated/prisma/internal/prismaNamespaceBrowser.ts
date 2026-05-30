@@ -61,7 +61,8 @@ export const ModelName = {
   ReceiptItem: 'ReceiptItem',
   Recipe: 'Recipe',
   RecipeIngredient: 'RecipeIngredient',
-  User: 'User'
+  User: 'User',
+  UsageQuota: 'UsageQuota'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -266,11 +267,32 @@ export const UserScalarFieldEnum = {
   preferences: 'preferences',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  subscription: 'subscription',
+  role: 'role',
+  subscriptionPlan: 'subscriptionPlan',
+  subscriptionStatus: 'subscriptionStatus',
+  trialStartedAt: 'trialStartedAt',
+  trialEndsAt: 'trialEndsAt',
+  currentPeriodStartedAt: 'currentPeriodStartedAt',
+  currentPeriodEndsAt: 'currentPeriodEndsAt',
   avatarUrl: 'avatarUrl'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const UsageQuotaScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  usageType: 'usageType',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  usedCount: 'usedCount',
+  limit: 'limit',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UsageQuotaScalarFieldEnum = (typeof UsageQuotaScalarFieldEnum)[keyof typeof UsageQuotaScalarFieldEnum]
 
 
 export const SortOrder = {

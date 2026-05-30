@@ -394,7 +394,8 @@ export const ModelName = {
   ReceiptItem: 'ReceiptItem',
   Recipe: 'Recipe',
   RecipeIngredient: 'RecipeIngredient',
-  User: 'User'
+  User: 'User',
+  UsageQuota: 'UsageQuota'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "product" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "product" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "usageQuota"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1228,6 +1229,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UsageQuota: {
+      payload: Prisma.$UsageQuotaPayload<ExtArgs>
+      fields: Prisma.UsageQuotaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UsageQuotaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UsageQuotaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>
+        }
+        findFirst: {
+          args: Prisma.UsageQuotaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UsageQuotaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>
+        }
+        findMany: {
+          args: Prisma.UsageQuotaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>[]
+        }
+        create: {
+          args: Prisma.UsageQuotaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>
+        }
+        createMany: {
+          args: Prisma.UsageQuotaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UsageQuotaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>[]
+        }
+        delete: {
+          args: Prisma.UsageQuotaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>
+        }
+        update: {
+          args: Prisma.UsageQuotaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>
+        }
+        deleteMany: {
+          args: Prisma.UsageQuotaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UsageQuotaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UsageQuotaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>[]
+        }
+        upsert: {
+          args: Prisma.UsageQuotaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UsageQuotaPayload>
+        }
+        aggregate: {
+          args: Prisma.UsageQuotaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUsageQuota>
+        }
+        groupBy: {
+          args: Prisma.UsageQuotaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UsageQuotaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UsageQuotaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UsageQuotaCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1453,11 +1528,32 @@ export const UserScalarFieldEnum = {
   preferences: 'preferences',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  subscription: 'subscription',
+  role: 'role',
+  subscriptionPlan: 'subscriptionPlan',
+  subscriptionStatus: 'subscriptionStatus',
+  trialStartedAt: 'trialStartedAt',
+  trialEndsAt: 'trialEndsAt',
+  currentPeriodStartedAt: 'currentPeriodStartedAt',
+  currentPeriodEndsAt: 'currentPeriodEndsAt',
   avatarUrl: 'avatarUrl'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const UsageQuotaScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  usageType: 'usageType',
+  periodStart: 'periodStart',
+  periodEnd: 'periodEnd',
+  usedCount: 'usedCount',
+  limit: 'limit',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UsageQuotaScalarFieldEnum = (typeof UsageQuotaScalarFieldEnum)[keyof typeof UsageQuotaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1718,16 +1814,58 @@ export type ListEnumProfileTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
- * Reference to a field of type 'Subscription'
+ * Reference to a field of type 'UserRole'
  */
-export type EnumSubscriptionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Subscription'>
+export type EnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole'>
     
 
 
 /**
- * Reference to a field of type 'Subscription[]'
+ * Reference to a field of type 'UserRole[]'
  */
-export type ListEnumSubscriptionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Subscription[]'>
+export type ListEnumUserRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionPlan'
+ */
+export type EnumSubscriptionPlanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionPlan'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionPlan[]'
+ */
+export type ListEnumSubscriptionPlanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionPlan[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionStatus'
+ */
+export type EnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SubscriptionStatus[]'
+ */
+export type ListEnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SubscriptionStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'UsageType'
+ */
+export type EnumUsageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UsageType'>
+    
+
+
+/**
+ * Reference to a field of type 'UsageType[]'
+ */
+export type ListEnumUsageTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UsageType[]'>
     
 
 /**
@@ -1836,6 +1974,7 @@ export type GlobalOmitConfig = {
   recipe?: Prisma.RecipeOmit
   recipeIngredient?: Prisma.RecipeIngredientOmit
   user?: Prisma.UserOmit
+  usageQuota?: Prisma.UsageQuotaOmit
 }
 
 /* Types for Logging */

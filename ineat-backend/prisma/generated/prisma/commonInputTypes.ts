@@ -501,11 +501,25 @@ export type EnumProfileTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel> | $Enums.ProfileType
 }
 
-export type EnumSubscriptionFilter<$PrismaModel = never> = {
-  equals?: $Enums.Subscription | Prisma.EnumSubscriptionFieldRefInput<$PrismaModel>
-  in?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumSubscriptionFilter<$PrismaModel> | $Enums.Subscription
+export type EnumUserRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
+}
+
+export type EnumSubscriptionPlanFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionPlan | Prisma.EnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionPlanFilter<$PrismaModel> | $Enums.SubscriptionPlan
+}
+
+export type EnumSubscriptionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionStatus | Prisma.EnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel> | $Enums.SubscriptionStatus
 }
 
 export type EnumProfileTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -518,14 +532,51 @@ export type EnumProfileTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel>
 }
 
-export type EnumSubscriptionWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.Subscription | Prisma.EnumSubscriptionFieldRefInput<$PrismaModel>
-  in?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumSubscriptionWithAggregatesFilter<$PrismaModel> | $Enums.Subscription
+export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUserRoleWithAggregatesFilter<$PrismaModel> | $Enums.UserRole
   _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumSubscriptionFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumSubscriptionFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUserRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUserRoleFilter<$PrismaModel>
+}
+
+export type EnumSubscriptionPlanWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionPlan | Prisma.EnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionPlanWithAggregatesFilter<$PrismaModel> | $Enums.SubscriptionPlan
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSubscriptionPlanFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSubscriptionPlanFilter<$PrismaModel>
+}
+
+export type EnumSubscriptionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionStatus | Prisma.EnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionStatusWithAggregatesFilter<$PrismaModel> | $Enums.SubscriptionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
+}
+
+export type EnumUsageTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.UsageType | Prisma.EnumUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUsageTypeFilter<$PrismaModel> | $Enums.UsageType
+}
+
+export type EnumUsageTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UsageType | Prisma.EnumUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUsageTypeWithAggregatesFilter<$PrismaModel> | $Enums.UsageType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUsageTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUsageTypeFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -952,11 +1003,25 @@ export type NestedEnumProfileTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel> | $Enums.ProfileType
 }
 
-export type NestedEnumSubscriptionFilter<$PrismaModel = never> = {
-  equals?: $Enums.Subscription | Prisma.EnumSubscriptionFieldRefInput<$PrismaModel>
-  in?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumSubscriptionFilter<$PrismaModel> | $Enums.Subscription
+export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUserRoleFilter<$PrismaModel> | $Enums.UserRole
+}
+
+export type NestedEnumSubscriptionPlanFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionPlan | Prisma.EnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionPlanFilter<$PrismaModel> | $Enums.SubscriptionPlan
+}
+
+export type NestedEnumSubscriptionStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionStatus | Prisma.EnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel> | $Enums.SubscriptionStatus
 }
 
 export type NestedEnumProfileTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -969,14 +1034,51 @@ export type NestedEnumProfileTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel>
 }
 
-export type NestedEnumSubscriptionWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.Subscription | Prisma.EnumSubscriptionFieldRefInput<$PrismaModel>
-  in?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  notIn?: $Enums.Subscription[] | Prisma.ListEnumSubscriptionFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumSubscriptionWithAggregatesFilter<$PrismaModel> | $Enums.Subscription
+export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UserRole | Prisma.EnumUserRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UserRole[] | Prisma.ListEnumUserRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUserRoleWithAggregatesFilter<$PrismaModel> | $Enums.UserRole
   _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumSubscriptionFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumSubscriptionFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUserRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUserRoleFilter<$PrismaModel>
+}
+
+export type NestedEnumSubscriptionPlanWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionPlan | Prisma.EnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionPlan[] | Prisma.ListEnumSubscriptionPlanFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionPlanWithAggregatesFilter<$PrismaModel> | $Enums.SubscriptionPlan
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSubscriptionPlanFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSubscriptionPlanFilter<$PrismaModel>
+}
+
+export type NestedEnumSubscriptionStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SubscriptionStatus | Prisma.EnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SubscriptionStatus[] | Prisma.ListEnumSubscriptionStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSubscriptionStatusWithAggregatesFilter<$PrismaModel> | $Enums.SubscriptionStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSubscriptionStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumUsageTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.UsageType | Prisma.EnumUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUsageTypeFilter<$PrismaModel> | $Enums.UsageType
+}
+
+export type NestedEnumUsageTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.UsageType | Prisma.EnumUsageTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.UsageType[] | Prisma.ListEnumUsageTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumUsageTypeWithAggregatesFilter<$PrismaModel> | $Enums.UsageType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumUsageTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumUsageTypeFilter<$PrismaModel>
 }
 
 
