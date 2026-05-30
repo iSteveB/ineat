@@ -24,6 +24,9 @@ import {
   Response as ExpressResponse,
 } from 'express';
 import { User } from '../../../prisma/generated/prisma/client';
+import { toSafeUserResponseWithUsage } from '../auth-user-response';
+import { AccessPolicyService } from '../services/access-policy.service';
+import { UsageQuotaService } from '../services/usage-quota.service';
 
 interface RequestWithUser extends ExpressRequest {
   user: {
@@ -32,7 +35,13 @@ interface RequestWithUser extends ExpressRequest {
     firstName: string;
     lastName: string;
     profileType: string;
-    subscription?: string;
+    role?: string;
+    subscriptionPlan?: string;
+    subscriptionStatus?: string;
+    trialStartedAt?: Date | null;
+    trialEndsAt?: Date | null;
+    currentPeriodStartedAt?: Date | null;
+    currentPeriodEndsAt?: Date | null;
     preferences?: any;
     createdAt: Date;
     updatedAt: Date;
@@ -41,7 +50,11 @@ interface RequestWithUser extends ExpressRequest {
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private accessPolicyService: AccessPolicyService,
+    private usageQuotaService: UsageQuotaService,
+  ) {}
 
   @Post('register')
   @SetMetadata('isPublic', true)
@@ -88,7 +101,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('check')
-  checkAuth(@Request() req: RequestWithUser) {
+  async checkAuth(@Request() req: RequestWithUser) {
     // Si cette route est atteinte, cela signifie que l'utilisateur est authentifié
     // car JwtAuthGuard aurait rejeté la requête sinon
     return {
@@ -96,15 +109,11 @@ export class AuthController {
       data: {
         isAuthenticated: true,
         user: {
-          id: req.user.id,
-          email: req.user.email,
-          firstName: req.user.firstName,
-          lastName: req.user.lastName,
-          profileType: req.user.profileType,
-          subscription: req.user.subscription || 'FREE',
-          preferences: req.user.preferences,
-          createdAt: req.user.createdAt.toISOString(),
-          updatedAt: req.user.updatedAt.toISOString(),
+          ...(await toSafeUserResponseWithUsage(
+            req.user as any,
+            this.accessPolicyService,
+            this.usageQuotaService,
+          )),
         },
       },
     };

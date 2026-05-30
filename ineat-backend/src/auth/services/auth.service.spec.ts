@@ -10,6 +10,8 @@ import { User } from '../../../prisma/generated/prisma/client';
 import { SafeUserDto } from '../dto/auth.dto';
 import { ObservabilityService } from '../../observability/observability.service';
 import { authUserSelect } from '../auth-user.select';
+import { AccessPolicyService } from './access-policy.service';
+import { UsageQuotaService } from './usage-quota.service';
 
 // Mock des modules externes
 jest.mock('bcryptjs');
@@ -32,12 +34,18 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
+        AccessPolicyService,
+        UsageQuotaService,
         {
           provide: PrismaService,
           useValue: {
             user: {
               findUnique: jest.fn(),
               create: jest.fn(),
+            },
+            usageQuota: {
+              findUnique: jest.fn().mockResolvedValue(null),
+              upsert: jest.fn(),
             },
           },
         },
@@ -86,6 +94,40 @@ describe('AuthService', () => {
       },
       timestamp: expect.any(String),
     });
+    expectAuthContract((result as { data: { user: Record<string, unknown> } }).data.user);
+  };
+
+  const expectAuthContract = (user: Record<string, unknown>) => {
+    expect(user).toEqual(
+      expect.objectContaining({
+        role: expect.any(String),
+        subscriptionPlan: expect.any(String),
+        subscriptionStatus: expect.any(String),
+        effectivePlan: expect.any(String),
+        capabilities: expect.objectContaining({
+          inventoryLimit: expect.any(Number),
+          canUseRecipes: expect.any(Boolean),
+          canGenerateAiRecipes: expect.any(Boolean),
+          aiRecipeGenerationRemaining: expect.any(Number),
+          canImportDrive: expect.any(Boolean),
+          driveImportsRemaining: expect.any(Number),
+          canUseAutomaticBudgetSync: expect.any(Boolean),
+          canAccessAdmin: expect.any(Boolean),
+        }),
+      }),
+    );
+    expect(user).not.toHaveProperty('passwordHash');
+  };
+
+  const rbacUserFields = {
+    role: 'USER' as const,
+    subscriptionPlan: 'FREE' as const,
+    subscriptionStatus: 'ACTIVE' as const,
+    trialStartedAt: null,
+    trialEndsAt: null,
+    currentPeriodStartedAt: null,
+    currentPeriodEndsAt: null,
+    avatarUrl: null,
   };
 
   it('should be defined', () => {
@@ -106,6 +148,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
@@ -124,6 +167,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: expect.any(Date),
         updatedAt: expect.any(Date),
+        ...rbacUserFields,
       });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
@@ -163,6 +207,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
@@ -200,6 +245,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       };
 
       // Act
@@ -244,6 +290,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       };
 
       // Act
@@ -280,6 +327,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
@@ -305,7 +353,9 @@ describe('AuthService', () => {
           firstName: 'New',
           lastName: 'User',
           profileType: 'SINGLE',
-          subscription: 'FREE',
+          role: 'USER',
+          subscriptionPlan: 'FREE',
+          subscriptionStatus: 'ACTIVE',
           preferences: {},
           updatedAt: expect.any(Date),
         }),
@@ -331,6 +381,14 @@ describe('AuthService', () => {
       const mockExistingUser = {
         id: 'existing-user-id',
         email: 'existing@example.com',
+        passwordHash: 'hashed-password',
+        firstName: 'Existing',
+        lastName: 'User',
+        profileType: 'SINGLE',
+        preferences: {},
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(
@@ -390,6 +448,7 @@ describe('AuthService', () => {
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
 
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
@@ -406,12 +465,31 @@ describe('AuthService', () => {
           firstName: 'Test',
           lastName: 'User',
           profileType: 'SINGLE',
+          role: 'USER',
+          subscriptionPlan: 'FREE',
+          subscriptionStatus: 'ACTIVE',
+          trialStartedAt: null,
+          trialEndsAt: null,
+          currentPeriodStartedAt: null,
+          currentPeriodEndsAt: null,
+          effectivePlan: 'FREE',
+          capabilities: {
+            inventoryLimit: 50,
+            canUseRecipes: false,
+            canGenerateAiRecipes: false,
+            aiRecipeGenerationRemaining: 0,
+            canImportDrive: false,
+            driveImportsRemaining: 0,
+            canUseAutomaticBudgetSync: false,
+            canAccessAdmin: false,
+          },
           subscription: 'FREE',
           preferences: {},
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
         },
       });
+      expectAuthContract(result.data as Record<string, unknown>);
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: 'user-id' },
         select: authUserSelect,
@@ -450,10 +528,10 @@ describe('AuthService', () => {
         firstName: 'Google',
         lastName: 'User',
         profileType: 'SINGLE',
-        subscription: 'FREE',
         preferences: {},
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(
         mockExistingGoogleUser,
@@ -493,7 +571,6 @@ describe('AuthService', () => {
         firstName: 'New',
         lastName: 'Google',
         profileType: 'SINGLE',
-        subscription: 'FREE',
         avatarUrl: null,
         preferences: {
           profilePicture: 'photo-url',
@@ -501,6 +578,7 @@ describe('AuthService', () => {
         },
         createdAt: new Date(),
         updatedAt: new Date(),
+        ...rbacUserFields,
       } as User;
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
       (prismaService.user.create as jest.Mock).mockResolvedValue(
@@ -526,7 +604,9 @@ describe('AuthService', () => {
           lastName: 'Google',
           passwordHash: '',
           profileType: 'SINGLE',
-          subscription: 'FREE',
+          role: 'USER',
+          subscriptionPlan: 'FREE',
+          subscriptionStatus: 'ACTIVE',
           preferences: {
             profilePicture: 'photo-url',
             oauth: 'google',

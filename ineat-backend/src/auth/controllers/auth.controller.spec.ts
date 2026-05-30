@@ -7,6 +7,8 @@ import { Request, Response } from 'express';
 import * as authDtos from '../dto/auth.dto';
 import { RegisterDto, LoginDto } from '../dto/auth.dto';
 import { ProfileType, User } from '../../../prisma/generated/prisma/client';
+import { AccessPolicyService } from '../services/access-policy.service';
+import { UsageQuotaService } from '../services/usage-quota.service';
 
 // Type pour l'utilisateur sans le mot de passe
 type UserWithoutPassword = Omit<User, 'passwordHash'>;
@@ -46,6 +48,14 @@ describe('AuthController', () => {
     preferences: {},
     createdAt: new Date(),
     updatedAt: new Date(),
+    role: 'USER',
+    subscriptionPlan: 'FREE',
+    subscriptionStatus: 'ACTIVE',
+    trialStartedAt: null,
+    trialEndsAt: null,
+    currentPeriodStartedAt: null,
+    currentPeriodEndsAt: null,
+    avatarUrl: null,
   };
 
   const mockAuthResponse: AuthResponse = {
@@ -93,6 +103,20 @@ describe('AuthController', () => {
               success: true,
               message: 'Déconnexion réussie',
             }),
+          },
+        },
+        AccessPolicyService,
+        {
+          provide: UsageQuotaService,
+          useValue: {
+            getUsageState: jest.fn().mockImplementation((_user, usageType) => ({
+              usageType,
+              limit: 0,
+              usedCount: 0,
+              remaining: 0,
+              periodStart: null,
+              periodEnd: null,
+            })),
           },
         },
       ],
@@ -200,6 +224,38 @@ describe('AuthController', () => {
       // Assert
       expect(authService.getProfile).toHaveBeenCalledWith('user-id');
       expect(result).toEqual(mockUser);
+    });
+  });
+
+  describe('checkAuth', () => {
+    it('doit retourner le contrat auth avec capabilities', async () => {
+      const req = {
+        user: { ...mockUser, id: 'user-id' },
+      } as unknown as Request;
+
+      const result = await controller.checkAuth(req as RequestWithUser);
+
+      expect(result).toEqual({
+        success: true,
+        data: {
+          isAuthenticated: true,
+          user: expect.objectContaining({
+            id: 'user-id',
+            role: 'USER',
+            subscriptionPlan: 'FREE',
+            subscriptionStatus: 'ACTIVE',
+            effectivePlan: 'FREE',
+            capabilities: expect.objectContaining({
+              inventoryLimit: 50,
+              canUseRecipes: false,
+              canGenerateAiRecipes: false,
+              canImportDrive: false,
+              canAccessAdmin: false,
+            }),
+          }),
+        },
+      });
+      expect(result.data.user).not.toHaveProperty('passwordHash');
     });
   });
 

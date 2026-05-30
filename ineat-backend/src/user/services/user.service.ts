@@ -9,6 +9,9 @@ import {
   UpdateDietaryRestrictionsDto,
   DietaryPreferences,
 } from '../dto/update-dietary-restrictions.dto';
+import { toSafeUserResponseWithUsage } from '../../auth/auth-user-response';
+import { AccessPolicyService } from '../../auth/services/access-policy.service';
+import { UsageQuotaService } from '../../auth/services/usage-quota.service';
 
 interface UpdatePersonalInfoDto {
   firstName?: string;
@@ -19,7 +22,11 @@ interface UpdatePersonalInfoDto {
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private accessPolicyService: AccessPolicyService,
+    private usageQuotaService: UsageQuotaService,
+  ) {}
 
   /**
    * Met à jour les informations personnelles d'un utilisateur
@@ -63,15 +70,11 @@ export class UserService {
     return {
       success: true,
       data: {
-        id: userWithoutPassword.id,
-        email: userWithoutPassword.email,
-        firstName: userWithoutPassword.firstName,
-        lastName: userWithoutPassword.lastName,
-        profileType: userWithoutPassword.profileType,
-        subscription: userWithoutPassword.subscription || 'FREE',
-        preferences: userWithoutPassword.preferences,
-        createdAt: userWithoutPassword.createdAt.toISOString(),
-        updatedAt: userWithoutPassword.updatedAt.toISOString(),
+        ...(await toSafeUserResponseWithUsage(
+          userWithoutPassword as any,
+          this.accessPolicyService,
+          this.usageQuotaService,
+        )),
       },
     };
   }
@@ -95,15 +98,11 @@ export class UserService {
     return {
       success: true,
       data: {
-        id: userWithoutPassword.id,
-        email: userWithoutPassword.email,
-        firstName: userWithoutPassword.firstName,
-        lastName: userWithoutPassword.lastName,
-        profileType: userWithoutPassword.profileType,
-        subscription: userWithoutPassword.subscription || 'FREE',
-        preferences: userWithoutPassword.preferences,
-        createdAt: userWithoutPassword.createdAt.toISOString(),
-        updatedAt: userWithoutPassword.updatedAt.toISOString(),
+        ...(await toSafeUserResponseWithUsage(
+          userWithoutPassword as any,
+          this.accessPolicyService,
+          this.usageQuotaService,
+        )),
       },
     };
   }
@@ -153,15 +152,11 @@ export class UserService {
       success: true,
       message: 'Restrictions alimentaires mises à jour avec succès',
       data: {
-        id: userWithoutPassword.id,
-        email: userWithoutPassword.email,
-        firstName: userWithoutPassword.firstName,
-        lastName: userWithoutPassword.lastName,
-        profileType: userWithoutPassword.profileType,
-        subscription: userWithoutPassword.subscription || 'FREE',
-        preferences: userWithoutPassword.preferences,
-        createdAt: userWithoutPassword.createdAt.toISOString(),
-        updatedAt: userWithoutPassword.updatedAt.toISOString(),
+        ...(await toSafeUserResponseWithUsage(
+          userWithoutPassword as any,
+          this.accessPolicyService,
+          this.usageQuotaService,
+        )),
       },
     };
   }

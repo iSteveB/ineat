@@ -13,6 +13,9 @@ import { User } from '../../../prisma/generated/prisma/client';
 import { randomUUID } from 'crypto';
 import { ObservabilityService } from '../../observability/observability.service';
 import { AuthUser, authUserSelect } from '../auth-user.select';
+import { toSafeUserResponseWithUsage } from '../auth-user-response';
+import { AccessPolicyService } from './access-policy.service';
+import { UsageQuotaService } from './usage-quota.service';
 
 interface GoogleUserData {
   email: string;
@@ -28,6 +31,8 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private observabilityService: ObservabilityService,
+    private accessPolicyService: AccessPolicyService,
+    private usageQuotaService: UsageQuotaService,
   ) {}
 
   private getAuthCookieOptions(): CookieOptions {
@@ -85,15 +90,11 @@ export class AuthService {
       message: 'Authentification réussie',
       data: {
         user: {
-          id: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          profileType: user.profileType,
-          subscription: user.subscription || 'FREE',
-          preferences: user.preferences,
-          createdAt: user.createdAt.toISOString(),
-          updatedAt: user.updatedAt.toISOString(),
+          ...(await toSafeUserResponseWithUsage(
+            user,
+            this.accessPolicyService,
+            this.usageQuotaService,
+          )),
         },
         accessToken, // Pour compatibilité avec les clients mobiles
       },
@@ -153,7 +154,9 @@ export class AuthService {
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         profileType: registerDto.profileType,
-        subscription: 'FREE',
+        role: 'USER',
+        subscriptionPlan: 'FREE',
+        subscriptionStatus: 'ACTIVE',
         preferences: registerDto.preferences || {},
         updatedAt: new Date(),
       },
@@ -197,7 +200,9 @@ export class AuthService {
           lastName,
           passwordHash: '',
           profileType: 'SINGLE',
-          subscription: 'FREE',
+          role: 'USER',
+          subscriptionPlan: 'FREE',
+          subscriptionStatus: 'ACTIVE',
           preferences: {
             profilePicture: photo,
             oauth: 'google',
@@ -239,15 +244,11 @@ export class AuthService {
     return {
       success: true,
       data: {
-        id: result.id,
-        email: result.email,
-        firstName: result.firstName,
-        lastName: result.lastName,
-        profileType: result.profileType,
-        subscription: result.subscription || 'FREE',
-        preferences: result.preferences,
-        createdAt: result.createdAt.toISOString(),
-        updatedAt: result.updatedAt.toISOString(),
+        ...(await toSafeUserResponseWithUsage(
+          result as SafeUserDto,
+          this.accessPolicyService,
+          this.usageQuotaService,
+        )),
       },
     };
   }
