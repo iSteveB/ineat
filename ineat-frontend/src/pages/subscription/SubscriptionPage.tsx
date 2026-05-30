@@ -44,6 +44,16 @@ interface SubscriptionPlan {
   buttonVariant: 'outline';
 }
 
+const formatDate = (date?: string | null) => {
+  if (!date) return null;
+
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(date));
+};
+
 // ===== DONNÉES DES PLANS =====
 
 const subscriptionPlans: SubscriptionPlan[] = [
@@ -105,6 +115,19 @@ export const SubscriptionPage: React.FC = () => {
   const isTrialExpired =
     currentPlan === 'TRIAL' && user?.subscriptionStatus === 'EXPIRED';
   const capabilities = user?.capabilities;
+  const trialEndsAt = formatDate(user?.trialEndsAt);
+  const aiQuotaReached = Boolean(
+    capabilities &&
+      isPremium &&
+      capabilities.canGenerateAiRecipes &&
+      capabilities.aiRecipeGenerationRemaining === 0
+  );
+  const driveQuotaReached = Boolean(
+    capabilities &&
+      isPremium &&
+      capabilities.canImportDrive &&
+      capabilities.driveImportsRemaining === 0
+  );
 
   // ===== HANDLERS =====
 
@@ -194,16 +217,71 @@ export const SubscriptionPage: React.FC = () => {
     </div>
   );
 
+  const renderPlanStatus = () => {
+    if (isTrialExpired) {
+      return (
+        <Alert className="mb-8 border-orange-200 bg-orange-50">
+          <X className="size-4 text-orange-700" />
+          <AlertDescription className="text-orange-800">
+            Votre essai Premium est terminé. Vos données sont conservées.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (isTrial) {
+      return (
+        <Alert className="mb-8 border-primary/30 bg-primary/5">
+          <Crown className="size-4 text-primary" />
+          <AlertDescription>
+            Trial actif: vous avez les droits Premium jusqu’au {trialEndsAt ?? 'terme de l’essai'}.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    if (!isPremium) {
+      return (
+        <Alert className="mb-8">
+          <Sparkles className="size-4" />
+          <AlertDescription>
+            Les recettes sont incluses avec Premium. Activez votre essai de 3 jours pour les débloquer.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return null;
+  };
+
   const renderQuotaSummary = () => {
     if (!capabilities) return null;
 
     return (
-      <Alert className="mb-8">
-        <Sparkles className="size-4" />
-        <AlertDescription>
-          Inventaire: {capabilities.inventoryLimit} articles maximum. IA recette: {capabilities.aiRecipeGenerationRemaining} restante{capabilities.aiRecipeGenerationRemaining > 1 ? 's' : ''}. Drive: {capabilities.driveImportsRemaining} import{capabilities.driveImportsRemaining > 1 ? 's' : ''} restant{capabilities.driveImportsRemaining > 1 ? 's' : ''}.
-        </AlertDescription>
-      </Alert>
+      <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+          <p className="text-xs font-medium uppercase text-muted-foreground">Inventaire</p>
+          <p className="mt-1 text-lg font-semibold">{capabilities.inventoryLimit} articles</p>
+        </div>
+        <div className={`rounded-lg border p-4 ${aiQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-neutral-50'}`}>
+          <p className="text-xs font-medium uppercase text-muted-foreground">IA recettes</p>
+          <p className="mt-1 text-lg font-semibold">{capabilities.aiRecipeGenerationRemaining} restante{capabilities.aiRecipeGenerationRemaining > 1 ? 's' : ''}</p>
+          {aiQuotaReached && (
+            <p className="mt-1 text-sm text-orange-800">
+              {isTrial ? 'Vous avez utilisé vos 10 générations d’essai.' : 'Vous avez atteint vos 100 générations ce mois-ci.'}
+            </p>
+          )}
+        </div>
+        <div className={`rounded-lg border p-4 ${driveQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-neutral-50'}`}>
+          <p className="text-xs font-medium uppercase text-muted-foreground">Drive</p>
+          <p className="mt-1 text-lg font-semibold">{capabilities.driveImportsRemaining} import{capabilities.driveImportsRemaining > 1 ? 's' : ''}</p>
+          {driveQuotaReached && (
+            <p className="mt-1 text-sm text-orange-800">
+              Quota Drive atteint. Le prochain import sera disponible au renouvellement.
+            </p>
+          )}
+        </div>
+      </div>
     );
   };
 
@@ -328,6 +406,17 @@ export const SubscriptionPage: React.FC = () => {
             )}
           </Button>
 
+          {!isPremium && plan.id === 'PREMIUM' && (
+            <Button
+              onClick={() => handleSubscribe('TRIAL')}
+              disabled={isProcessing}
+              variant="outline"
+              className="w-full"
+            >
+              Activer l’essai 3 jours
+            </Button>
+          )}
+
           {(isCurrentPlan || isTrialCurrentPlan) && (
             <div className="text-center">
               <Badge variant="secondary" className="gap-1">
@@ -392,6 +481,7 @@ export const SubscriptionPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
         {renderHeader()}
+        {renderPlanStatus()}
         {renderQuotaSummary()}
         {renderPremiumHighlights()}
         

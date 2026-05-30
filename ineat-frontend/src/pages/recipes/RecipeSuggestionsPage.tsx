@@ -22,6 +22,11 @@ export function RecipeSuggestionsPage() {
 	);
 	const aiRecipeGenerationRemaining =
 		user?.capabilities.aiRecipeGenerationRemaining ?? 0;
+	const isTrial = user?.subscriptionPlan === 'TRIAL';
+	const isTrialExpired =
+		user?.subscriptionPlan === 'TRIAL' &&
+		user?.subscriptionStatus === 'EXPIRED';
+	const aiQuotaReached = canGenerateAiRecipes && aiRecipeGenerationRemaining === 0;
 	const {
 		data: suggestions = [],
 		isLoading,
@@ -41,7 +46,9 @@ export function RecipeSuggestionsPage() {
 						Recettes réservées Premium
 					</h1>
 					<p className='mt-2 text-sm text-neutral-600'>
-						Passez Premium pour consulter les recettes depuis votre inventaire et générer des idées avec l’IA.
+						{isTrialExpired
+							? 'Votre essai Premium est terminé. Vos données sont conservées.'
+							: 'Les recettes sont incluses avec Premium. Activez votre essai de 3 jours pour les débloquer.'}
 					</p>
 					<Button asChild className='mt-5'>
 						<Link to='/app/subscription'>Voir les plans</Link>
@@ -81,11 +88,20 @@ export function RecipeSuggestionsPage() {
 						Recettes depuis l’inventaire
 					</h1>
 					{canGenerateAiRecipes && (
-						<p className='mt-1 text-sm text-neutral-600'>
-							{aiRecipeGenerationRemaining} génération
-							{aiRecipeGenerationRemaining > 1 ? 's' : ''} IA restante
-							{aiRecipeGenerationRemaining > 1 ? 's' : ''}
-						</p>
+						<div className='mt-2 space-y-1'>
+							<p className='text-sm text-neutral-600'>
+								{aiRecipeGenerationRemaining} génération
+								{aiRecipeGenerationRemaining > 1 ? 's' : ''} IA restante
+								{aiRecipeGenerationRemaining > 1 ? 's' : ''}
+							</p>
+							{aiQuotaReached && (
+								<p className='rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-800'>
+									{isTrial
+										? 'Vous avez utilisé vos 10 générations d’essai.'
+										: 'Vous avez atteint vos 100 générations ce mois-ci.'}
+								</p>
+							)}
+						</div>
 					)}
 				</div>
 				<Button asChild variant='secondary'>

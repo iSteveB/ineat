@@ -5,12 +5,18 @@ import { ArrowLeft, CheckCircle2, Clock, ShoppingBasket } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { recipeSuggestionService } from '@/services/recipeSuggestionService';
+import { useAuthStore } from '@/stores/authStore';
 
 type RecipeDetailPageProps = {
 	recipeId: string;
 };
 
 export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
+	const user = useAuthStore((state) => state.user);
+	const canUseRecipes = Boolean(user?.capabilities.canUseRecipes);
+	const isTrialExpired =
+		user?.subscriptionPlan === 'TRIAL' &&
+		user?.subscriptionStatus === 'EXPIRED';
 	const {
 		data: recipe,
 		isLoading,
@@ -58,6 +64,14 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 					Retour
 				</Link>
 			</Button>
+
+			{!canUseRecipes && (
+				<div className='rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-800'>
+					{isTrialExpired
+						? 'Votre essai Premium est terminé. Vos données sont conservées. Cette recette reste consultable en lecture seule.'
+						: 'Les recettes sont incluses avec Premium. Activez votre essai de 3 jours pour les débloquer.'}
+				</div>
+			)}
 
 			<header className='rounded-lg border border-neutral-200 bg-neutral-50 p-5 shadow-sm'>
 				<div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>

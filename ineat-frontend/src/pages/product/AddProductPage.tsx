@@ -8,8 +8,12 @@ const AddProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
-	const canImportDrive = Boolean(user?.capabilities.canImportDrive);
+	const hasDriveAccess = Boolean(user?.capabilities.canImportDrive);
 	const driveImportsRemaining = user?.capabilities.driveImportsRemaining ?? 0;
+	const canImportDrive = hasDriveAccess && driveImportsRemaining > 0;
+	const driveBlockedMessage = hasDriveAccess
+		? 'Quota Drive atteint. Le prochain import sera disponible au renouvellement.'
+		: 'Réservé Premium: import et analyse automatique des factures Drive.';
 
 	/**
 	 * Utilitaire pour obtenir les initiales de l'utilisateur
@@ -86,7 +90,7 @@ const AddProductPage: React.FC = () => {
 						description={
 							canImportDrive
 								? `Analyse automatique des factures Drive pour préparer l’ajout au stock. ${driveImportsRemaining} import${driveImportsRemaining > 1 ? 's' : ''} restant${driveImportsRemaining > 1 ? 's' : ''}.`
-								: 'Réservé Premium: import et analyse automatique des factures Drive.'
+								: driveBlockedMessage
 						}
 						to={
 							canImportDrive

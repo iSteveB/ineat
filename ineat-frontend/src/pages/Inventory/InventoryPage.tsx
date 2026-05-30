@@ -38,6 +38,8 @@ const InventoryPage: React.FC = () => {
 	const { user } = useAuthStore();
 	const inventoryLimit = user?.capabilities.inventoryLimit ?? 50;
 	const hasReachedInventoryLimit = items.length >= inventoryLimit;
+	const hasExceededInventoryLimit = items.length > inventoryLimit;
+	const isFreeLimit = inventoryLimit === 50;
 
 	const {
 		data: categories = [],
@@ -178,7 +180,9 @@ const InventoryPage: React.FC = () => {
 			{hasReachedInventoryLimit && (
 				<div className='px-6 pt-4'>
 					<div className='rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800'>
-						Limite d’inventaire atteinte. Passez Premium pour gérer jusqu’à 500 articles.
+						{hasExceededInventoryLimit && isFreeLimit
+							? 'Votre inventaire dépasse la limite Free de 50 articles. Supprimez des articles ou passez Premium pour en ajouter.'
+							: `Limite d’inventaire atteinte: ${inventoryLimit} articles. Passez Premium pour en ajouter.`}
 					</div>
 				</div>
 			)}
