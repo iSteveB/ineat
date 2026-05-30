@@ -10,6 +10,7 @@ import {
 	CreditCard,
 	Utensils,
 	Eye,
+	PanelTop,
 } from 'lucide-react';
 import { User as UserType } from '@/schemas';
 
@@ -27,6 +28,7 @@ const isUserPremium = (user: UserType): boolean => {
 const SettingsPage = () => {
 	const user = useAuthStore((state) => state.user);
 	const logout = useAuthStore((state) => state.logout);
+	const canAccessAdmin = Boolean(user?.capabilities.canAccessAdmin);
 
 	const profileItems: MenuItem[] = [
 		{
@@ -50,6 +52,16 @@ const SettingsPage = () => {
 	];
 
 	const systemSettingsItems: MenuItem[] = [
+		...(canAccessAdmin
+			? [
+					{
+						title: 'Administration',
+						href: '/app/admin',
+						icon: PanelTop,
+						description: 'Utilisateurs, rôles, plans et quotas',
+					},
+				]
+			: []),
 		{
 			title: 'Sécurité & Confidentialité',
 			href: '/app/settings/security',
