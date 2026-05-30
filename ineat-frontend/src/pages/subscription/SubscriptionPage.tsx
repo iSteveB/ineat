@@ -19,13 +19,14 @@ import {
   Star
 } from 'lucide-react';
 import { useUser } from '@/hooks/useAuth';
+import type { SubscriptionPlan as UserSubscriptionPlan } from '@/schemas';
 
 // ===== TYPES =====
 
 /**
  * Types d'abonnement disponibles
  */
-type SubscriptionType = 'FREE' | 'PREMIUM';
+type SubscriptionType = 'FREE' | 'TRIAL' | 'PREMIUM';
 
 /**
  * Détails d'un plan d'abonnement
@@ -53,15 +54,15 @@ const subscriptionPlans: SubscriptionPlan[] = [
     priceDisplay: '0€',
     description: 'Parfait pour débuter avec InEat',
     features: [
-      'Gestion de base de l\'inventaire',
+      'Inventaire limité à 50 articles',
       'Ajout manuel des produits',
       'Suivi des dates d\'expiration',
-      'Suggestions de recettes depuis le stock',
       'Budget alimentaire manuel',
     ],
     limitations: [
+      'Pas de recettes',
+      'Pas de génération IA de recettes',
       'Pas d\'import de facture Drive',
-      'Support par email uniquement',
     ],
     buttonText: 'Plan actuel',
     buttonVariant: 'outline',
@@ -74,10 +75,11 @@ const subscriptionPlans: SubscriptionPlan[] = [
     description: 'Automatisation Drive et inventaire plus rapide',
     features: [
       'Tout du plan Gratuit',
-      'Import de factures Drive',
+      'Inventaire jusqu’à 500 articles',
+      'Recettes depuis l’inventaire',
+      '100 générations IA de recettes par mois',
+      '25 imports Drive par mois',
       'Synchronisation avec le budget alimentaire',
-      'Support prioritaire',
-      'Produits illimités',
     ],
     popular: true,
     buttonText: 'Commencer Premium',
@@ -96,8 +98,13 @@ export const SubscriptionPage: React.FC = () => {
   const { data: user, isLoading: userLoading } = useUser();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const currentPlan = user?.subscription || 'FREE';
-  const isPremium = currentPlan === 'PREMIUM' || currentPlan === 'ADMIN';
+  const currentPlan: UserSubscriptionPlan = user?.subscriptionPlan || 'FREE';
+  const effectivePlan = user?.effectivePlan || 'FREE';
+  const isPremium = effectivePlan === 'PREMIUM';
+  const isTrial = currentPlan === 'TRIAL';
+  const isTrialExpired =
+    currentPlan === 'TRIAL' && user?.subscriptionStatus === 'EXPIRED';
+  const capabilities = user?.capabilities;
 
   // ===== HANDLERS =====
 
@@ -105,7 +112,7 @@ export const SubscriptionPage: React.FC = () => {
    * Gère la souscription à un plan
    */
   const handleSubscribe = async (planId: SubscriptionType) => {
-    if (planId === currentPlan) {
+    if (planId === currentPlan && !isTrialExpired) {
       toast.info('Vous êtes déjà sur ce plan');
       return;
     }
@@ -163,7 +170,13 @@ export const SubscriptionPage: React.FC = () => {
         {isPremium && (
           <Badge variant="outline" className="gap-1">
             <Crown className="size-3 text-yellow-500" />
-            Premium actif
+            {isTrial ? 'Trial actif' : 'Premium actif'}
+          </Badge>
+        )}
+        {isTrialExpired && (
+          <Badge variant="outline" className="gap-1">
+            <X className="size-3 text-muted-foreground" />
+            Trial expiré
           </Badge>
         )}
       </div>
@@ -176,10 +189,23 @@ export const SubscriptionPage: React.FC = () => {
 
       <h1 className="text-3xl font-bold mb-2">Abonnement InEat</h1>
       <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-        Premium débloque les flux automatisés Drive, le budget synchronisé et les limites étendues.
+        Premium débloque les recettes, l’IA, les imports Drive, le budget synchronisé et les limites étendues.
       </p>
     </div>
   );
+
+  const renderQuotaSummary = () => {
+    if (!capabilities) return null;
+
+    return (
+      <Alert className="mb-8">
+        <Sparkles className="size-4" />
+        <AlertDescription>
+          Inventaire: {capabilities.inventoryLimit} articles maximum. IA recette: {capabilities.aiRecipeGenerationRemaining} restante{capabilities.aiRecipeGenerationRemaining > 1 ? 's' : ''}. Drive: {capabilities.driveImportsRemaining} import{capabilities.driveImportsRemaining > 1 ? 's' : ''} restant{capabilities.driveImportsRemaining > 1 ? 's' : ''}.
+        </AlertDescription>
+      </Alert>
+    );
+  };
 
   /**
    * Rendu des fonctionnalités premium en avant
@@ -201,7 +227,7 @@ export const SubscriptionPage: React.FC = () => {
           <BarChart3 className="size-12 text-primary mx-auto mb-4" />
           <h3 className="font-semibold mb-2">Analyse assistée</h3>
           <p className="text-sm text-muted-foreground">
-            Les documents importés préparent les lignes utiles pour l’inventaire.
+            Générez des idées de recettes avec l’IA et gardez un quota visible.
           </p>
         </CardContent>
       </Card>
@@ -224,12 +250,13 @@ export const SubscriptionPage: React.FC = () => {
   const renderPlanCard = (plan: SubscriptionPlan) => {
     const isCurrentPlan = plan.id === currentPlan;
     const isUpgrade = plan.id === 'PREMIUM' && currentPlan === 'FREE';
+    const isTrialCurrentPlan = plan.id === 'PREMIUM' && isTrial && !isTrialExpired;
 
     return (
       <Card 
         key={plan.id}
         className={`relative ${plan.popular ? 'border-primary shadow-lg' : ''} ${
-          isCurrentPlan ? 'ring-2 ring-primary' : ''
+          isCurrentPlan || isTrialCurrentPlan ? 'ring-2 ring-primary' : ''
         }`}
       >
         {plan.popular && (
@@ -279,7 +306,7 @@ export const SubscriptionPage: React.FC = () => {
           {/* Bouton d'action */}
           <Button
             onClick={() => handleSubscribe(plan.id)}
-            disabled={isCurrentPlan || isProcessing}
+            disabled={isCurrentPlan || isTrialCurrentPlan || isProcessing}
             variant={plan.buttonVariant}
             className="w-full"
             size="lg"
@@ -289,8 +316,8 @@ export const SubscriptionPage: React.FC = () => {
                 <div className="animate-spin size-4 border-2 border-current border-t-transparent rounded-full" />
                 Traitement...
               </div>
-            ) : isCurrentPlan ? (
-              plan.buttonText
+            ) : isCurrentPlan || isTrialCurrentPlan ? (
+              isTrialCurrentPlan ? 'Trial actif' : plan.buttonText
             ) : isUpgrade ? (
               <div className="flex items-center gap-2">
                 <Zap className="size-4" />
@@ -301,11 +328,11 @@ export const SubscriptionPage: React.FC = () => {
             )}
           </Button>
 
-          {isCurrentPlan && (
+          {(isCurrentPlan || isTrialCurrentPlan) && (
             <div className="text-center">
               <Badge variant="secondary" className="gap-1">
                 <Shield className="size-3" />
-                Plan actuel
+                {isTrialCurrentPlan ? 'Droits Premium temporaires' : 'Plan actuel'}
               </Badge>
             </div>
           )}
@@ -322,7 +349,7 @@ export const SubscriptionPage: React.FC = () => {
       <Alert>
         <Sparkles className="size-4" />
         <AlertDescription>
-          <strong>Garantie satisfait ou remboursé 30 jours.</strong> Vous pouvez annuler votre abonnement à tout moment.
+          L’essai Trial donne les droits Premium pendant 3 jours. Une fois expiré, les droits Free s’appliquent automatiquement.
         </AlertDescription>
       </Alert>
 
@@ -337,7 +364,7 @@ export const SubscriptionPage: React.FC = () => {
         </div>
         <div className="flex items-center justify-center gap-2">
           <Crown className="size-4" />
-          <span>Support prioritaire</span>
+          <span>Quotas visibles</span>
         </div>
       </div>
     </div>
@@ -365,6 +392,7 @@ export const SubscriptionPage: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-6xl mx-auto">
         {renderHeader()}
+        {renderQuotaSummary()}
         {renderPremiumHighlights()}
         
         {/* Plans d'abonnement */}

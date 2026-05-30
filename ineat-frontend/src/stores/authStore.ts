@@ -8,6 +8,8 @@ import {
 	RegisterData,
 	AuthResponse,
 	ProfileType,
+	isAdminUser,
+	isPremiumUser,
 } from '@/schemas';
 
 // ===== IMPORTS SERVICES =====
@@ -397,10 +399,7 @@ export const useAuthStore = create<AuthState>()(
 			 */
 			isUserPremium: () => {
 				const user = get().user;
-				return (
-					user?.subscription === 'PREMIUM' ||
-					user?.subscription === 'ADMIN'
-				);
+				return user ? isPremiumUser(user) : false;
 			},
 
 			/**
@@ -408,7 +407,7 @@ export const useAuthStore = create<AuthState>()(
 			 */
 			isUserAdmin: () => {
 				const user = get().user;
-				return user?.subscription === 'ADMIN';
+				return user ? isAdminUser(user) : false;
 			},
 		}),
 		{

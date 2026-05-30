@@ -21,7 +21,7 @@ interface MenuItem {
 }
 
 const isUserPremium = (user: UserType): boolean => {
-	return user?.subscription === 'PREMIUM';
+	return user.effectivePlan === 'PREMIUM';
 };
 
 const SettingsPage = () => {

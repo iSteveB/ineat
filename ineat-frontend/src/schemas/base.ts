@@ -6,9 +6,25 @@ import { z } from 'zod';
 export const ProfileTypeSchema = z.enum(['FAMILY', 'STUDENT', 'SINGLE']);
 export type ProfileType = z.infer<typeof ProfileTypeSchema>;
 
-// Types d'abonnement
-export const SubscriptionSchema = z.enum(['FREE', 'PREMIUM', 'ADMIN']);
+// Types d'abonnement legacy exposés temporairement par le backend
+export const SubscriptionSchema = z.enum(['FREE', 'TRIAL', 'PREMIUM', 'ADMIN']);
 export type Subscription = z.infer<typeof SubscriptionSchema>;
+
+export const UserRoleSchema = z.enum(['USER', 'ADMIN']);
+export type UserRole = z.infer<typeof UserRoleSchema>;
+
+export const SubscriptionPlanSchema = z.enum(['FREE', 'TRIAL', 'PREMIUM']);
+export type SubscriptionPlan = z.infer<typeof SubscriptionPlanSchema>;
+
+export const SubscriptionStatusSchema = z.enum([
+	'ACTIVE',
+	'EXPIRED',
+	'CANCELLED',
+]);
+export type SubscriptionStatus = z.infer<typeof SubscriptionStatusSchema>;
+
+export const EffectivePlanSchema = z.enum(['FREE', 'PREMIUM']);
+export type EffectivePlan = z.infer<typeof EffectivePlanSchema>;
 
 // Types d'unité de mesure
 export const UnitTypeSchema = z.enum(['KG', 'G', 'L', 'ML', 'UNIT']);

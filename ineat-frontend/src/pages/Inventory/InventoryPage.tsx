@@ -36,6 +36,8 @@ const InventoryPage: React.FC = () => {
 	const error = useInventoryError();
 	const { fetchInventoryItems, clearError } = useInventoryActions();
 	const { user } = useAuthStore();
+	const inventoryLimit = user?.capabilities.inventoryLimit ?? 50;
+	const hasReachedInventoryLimit = items.length >= inventoryLimit;
 
 	const {
 		data: categories = [],
@@ -156,16 +158,30 @@ const InventoryPage: React.FC = () => {
 						<p className='text-gray-600 text-sm'>
 							{items.length} produit
 							{items.length > 1 ? 's' : ''} dans votre inventaire
+							{' '}sur {inventoryLimit}
 						</p>
 					</div>
 					<Link
-						to='/app/inventory/add'
+						to={
+							hasReachedInventoryLimit
+								? '/app/subscription'
+								: '/app/inventory/add'
+						}
 						className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-success-50 to-emerald-700 text-neutral-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'>
 						<Plus className='size-4' />
-						<span className='font-semibold'>Ajouter</span>
+						<span className='font-semibold'>
+							{hasReachedInventoryLimit ? 'Débloquer' : 'Ajouter'}
+						</span>
 					</Link>
 				</div>
 			</div>
+			{hasReachedInventoryLimit && (
+				<div className='px-6 pt-4'>
+					<div className='rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800'>
+						Limite d’inventaire atteinte. Passez Premium pour gérer jusqu’à 500 articles.
+					</div>
+				</div>
+			)}
 
 			{/* ===== BARRE DE RECHERCHE ===== */}
 			<div className='px-6 py-5'>

@@ -52,7 +52,7 @@ const mockStatistics = {
 
 const ProfilePage = () => {
 	const user = useAuthStore((state) => state.user);
-	const isPremium = user?.subscription === 'PREMIUM';
+	const isPremium = user?.effectivePlan === 'PREMIUM';
 
 	//TODO: Récupérer les restrictions alimentaires (à implémenter)
 	const dietaryRestrictions = ['Sans Gluten', 'Végétarien'];

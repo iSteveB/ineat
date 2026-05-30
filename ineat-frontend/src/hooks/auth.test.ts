@@ -4,6 +4,7 @@ import {
 	useRefreshUser,
 	usePrefetchUser,
 	useHasRole,
+	useHasCapability,
 	authKeys,
 } from './useAuth';
 import { authService } from '@/services/authService';
@@ -17,6 +18,10 @@ interface User {
 	lastName: string;
 	email: string;
 	role: string;
+	capabilities: {
+		canImportDrive: boolean;
+		canUseRecipes: boolean;
+	};
 }
 
 // Type pour le store d'authentification
@@ -61,6 +66,10 @@ describe("Hooks d'authentification", () => {
 			lastName: 'Dupont',
 			email: 'jean.dupont@example.com',
 			role: 'USER',
+			capabilities: {
+				canImportDrive: false,
+				canUseRecipes: true,
+			},
 		};
 
 		// Mock de la fonction setUser
@@ -289,6 +298,44 @@ describe("Hooks d'authentification", () => {
 
 			// Vérification
 			expect(useHasRole('ADMIN')).toBe(false);
+		});
+	});
+
+	describe('useHasCapability', () => {
+		it("devrait retourner true si l'utilisateur a la capacité demandée", () => {
+			vi.mocked(useAuthStore).mockReturnValue({
+				user: {
+					...mockUser,
+					capabilities: {
+						...mockUser.capabilities,
+						canImportDrive: true,
+					},
+				},
+			} as AuthStore);
+
+			expect(useHasCapability('canImportDrive')).toBe(true);
+		});
+
+		it("devrait retourner false si l'utilisateur n'a pas la capacité demandée", () => {
+			vi.mocked(useAuthStore).mockReturnValue({
+				user: {
+					...mockUser,
+					capabilities: {
+						...mockUser.capabilities,
+						canImportDrive: false,
+					},
+				},
+			} as AuthStore);
+
+			expect(useHasCapability('canImportDrive')).toBe(false);
+		});
+
+		it("devrait retourner false si l'utilisateur n'est pas défini", () => {
+			vi.mocked(useAuthStore).mockReturnValue({
+				user: null,
+			} as AuthStore);
+
+			expect(useHasCapability('canUseRecipes')).toBe(false);
 		});
 	});
 });

@@ -8,8 +8,8 @@ const AddProductPage: React.FC = () => {
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
-	const isPremiumUser =
-		user?.subscription === 'PREMIUM' || user?.subscription === 'ADMIN';
+	const canImportDrive = Boolean(user?.capabilities.canImportDrive);
+	const driveImportsRemaining = user?.capabilities.driveImportsRemaining ?? 0;
 
 	/**
 	 * Utilitaire pour obtenir les initiales de l'utilisateur
@@ -84,12 +84,12 @@ const AddProductPage: React.FC = () => {
 						icon={<Car className='size-6 text-blue-600' />}
 						title='Importer une facture Drive'
 						description={
-							isPremiumUser
-								? 'Analyse automatique des factures Drive pour préparer l’ajout au stock.'
+							canImportDrive
+								? `Analyse automatique des factures Drive pour préparer l’ajout au stock. ${driveImportsRemaining} import${driveImportsRemaining > 1 ? 's' : ''} restant${driveImportsRemaining > 1 ? 's' : ''}.`
 								: 'Réservé Premium: import et analyse automatique des factures Drive.'
 						}
 						to={
-							isPremiumUser
+							canImportDrive
 								? '/app/inventory/add/drive'
 								: '/app/subscription'
 						}

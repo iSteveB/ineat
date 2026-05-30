@@ -12,8 +12,16 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { recipeSuggestionService } from '@/services/recipeSuggestionService';
+import { useAuthStore } from '@/stores/authStore';
 
 export function RecipeSuggestionsPage() {
+	const user = useAuthStore((state) => state.user);
+	const canUseRecipes = Boolean(user?.capabilities.canUseRecipes);
+	const canGenerateAiRecipes = Boolean(
+		user?.capabilities.canGenerateAiRecipes
+	);
+	const aiRecipeGenerationRemaining =
+		user?.capabilities.aiRecipeGenerationRemaining ?? 0;
 	const {
 		data: suggestions = [],
 		isLoading,
@@ -21,7 +29,27 @@ export function RecipeSuggestionsPage() {
 	} = useQuery({
 		queryKey: ['recipes', 'suggestions'],
 		queryFn: () => recipeSuggestionService.getSuggestions(),
+		enabled: canUseRecipes,
 	});
+
+	if (!canUseRecipes) {
+		return (
+			<div className='mx-auto max-w-3xl p-4'>
+				<section className='rounded-lg border border-neutral-200 bg-neutral-50 p-8 text-center'>
+					<ListChecks className='mx-auto mb-3 size-8 text-success-600' />
+					<h1 className='text-xl font-semibold text-neutral-900'>
+						Recettes réservées Premium
+					</h1>
+					<p className='mt-2 text-sm text-neutral-600'>
+						Passez Premium pour consulter les recettes depuis votre inventaire et générer des idées avec l’IA.
+					</p>
+					<Button asChild className='mt-5'>
+						<Link to='/app/subscription'>Voir les plans</Link>
+					</Button>
+				</section>
+			</div>
+		);
+	}
 
 	if (isLoading) {
 		return (
@@ -52,6 +80,13 @@ export function RecipeSuggestionsPage() {
 					<h1 className='text-2xl font-semibold text-neutral-900'>
 						Recettes depuis l’inventaire
 					</h1>
+					{canGenerateAiRecipes && (
+						<p className='mt-1 text-sm text-neutral-600'>
+							{aiRecipeGenerationRemaining} génération
+							{aiRecipeGenerationRemaining > 1 ? 's' : ''} IA restante
+							{aiRecipeGenerationRemaining > 1 ? 's' : ''}
+						</p>
+					)}
 				</div>
 				<Button asChild variant='secondary'>
 					<Link to='/app/inventory/add'>

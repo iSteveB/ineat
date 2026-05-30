@@ -6,6 +6,10 @@ import {
 	ShortTextSchema,
 	ProfileTypeSchema,
 	SubscriptionSchema,
+	UserRoleSchema,
+	SubscriptionPlanSchema,
+	SubscriptionStatusSchema,
+	EffectivePlanSchema,
 } from './base';
 import {
   DietaryPreferencesSchema,
@@ -16,6 +20,31 @@ import {
 
 // ===== SCHÉMA UTILISATEUR PRINCIPAL =====
 
+export const AccessCapabilitiesSchema = z.object({
+	inventoryLimit: z.number().int().positive(),
+	canUseRecipes: z.boolean(),
+	canGenerateAiRecipes: z.boolean(),
+	aiRecipeGenerationRemaining: z.number().int().min(0),
+	canImportDrive: z.boolean(),
+	driveImportsRemaining: z.number().int().min(0),
+	canUseAutomaticBudgetSync: z.boolean(),
+	canAccessAdmin: z.boolean(),
+});
+
+export type AccessCapabilities = z.infer<typeof AccessCapabilitiesSchema>;
+export type AccessCapability = keyof AccessCapabilities;
+
+export const DEFAULT_ACCESS_CAPABILITIES: AccessCapabilities = {
+	inventoryLimit: 50,
+	canUseRecipes: false,
+	canGenerateAiRecipes: false,
+	aiRecipeGenerationRemaining: 0,
+	canImportDrive: false,
+	driveImportsRemaining: 0,
+	canUseAutomaticBudgetSync: false,
+	canAccessAdmin: false,
+};
+
 export const UserSchema = z
 	.object({
 		id: UuidSchema,
@@ -25,6 +54,17 @@ export const UserSchema = z
 		avatarUrl: z.string().url("URL d'avatar invalide").optional(),
 		profileType: ProfileTypeSchema,
 		subscription: SubscriptionSchema,
+		role: UserRoleSchema.default('USER'),
+		subscriptionPlan: SubscriptionPlanSchema.default('FREE'),
+		subscriptionStatus: SubscriptionStatusSchema.default('ACTIVE'),
+		trialStartedAt: z.string().datetime().nullable().optional(),
+		trialEndsAt: z.string().datetime().nullable().optional(),
+		currentPeriodStartedAt: z.string().datetime().nullable().optional(),
+		currentPeriodEndsAt: z.string().datetime().nullable().optional(),
+		effectivePlan: EffectivePlanSchema.default('FREE'),
+		capabilities: AccessCapabilitiesSchema.default(
+			DEFAULT_ACCESS_CAPABILITIES
+		),
 		dietaryPreferences: DietaryPreferencesSchema.optional(),
 		uiPreferences: UiPreferencesSchema.optional(),
 	})
@@ -204,14 +244,21 @@ export type DeleteAccountData = z.infer<typeof DeleteAccountSchema>;
  * Vérifie si un utilisateur a un abonnement premium
  */
 export const isPremiumUser = (user: User): boolean => {
-	return user.subscription === 'PREMIUM' || user.subscription === 'ADMIN';
+	return user.effectivePlan === 'PREMIUM';
 };
 
 /**
  * Vérifie si un utilisateur est administrateur
  */
 export const isAdminUser = (user: User): boolean => {
-	return user.subscription === 'ADMIN';
+	return user.capabilities.canAccessAdmin;
+};
+
+export const hasCapability = (
+	user: User | null | undefined,
+	capability: AccessCapability
+): boolean => {
+	return Boolean(user?.capabilities[capability]);
 };
 
 /**

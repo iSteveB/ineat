@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
 import { authService } from '@/services/authService';
+import type { AccessCapability } from '@/schemas';
 
 // Clés de cache pour les requêtes d'authentification
 export const authKeys = {
@@ -56,8 +57,11 @@ export function usePrefetchUser() {
 export function useHasRole(role: string): boolean {
 	const { user } = useAuthStore();
 
-	return (
-		user?.subscription === role ||
-		(user as { role?: string } | null)?.role === role
-	);
+	return user?.role === role;
+}
+
+export function useHasCapability(capability: AccessCapability): boolean {
+	const { user } = useAuthStore();
+
+	return Boolean(user?.capabilities[capability]);
 }

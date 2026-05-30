@@ -7,6 +7,10 @@ export {
 	// Enums
 	ProfileTypeSchema,
 	SubscriptionSchema,
+	UserRoleSchema,
+	SubscriptionPlanSchema,
+	SubscriptionStatusSchema,
+	EffectivePlanSchema,
 	UnitTypeSchema,
 	NutriScoreSchema,
 	EcoscoreSchema,
@@ -19,6 +23,10 @@ export {
 	// Types
 	type ProfileType,
 	type Subscription,
+	type UserRole,
+	type SubscriptionPlan,
+	type SubscriptionStatus,
+	type EffectivePlan,
 	type UnitType,
 	type NutriScore,
 	type Ecoscore,
@@ -105,8 +113,11 @@ export {
 export {
 	// Utilisateur
 	UserSchema,
+	AccessCapabilitiesSchema,
 	PublicUserSchema,
 	type User,
+	type AccessCapabilities,
+	type AccessCapability,
 	type PublicUser,
 
 	// Authentification
@@ -160,6 +171,7 @@ export {
 	// Utilitaires
 	isPremiumUser,
 	isAdminUser,
+	hasCapability,
 	getUserFullName,
 	getUserInitials,
 	hasCompleteProfile,
@@ -464,5 +476,9 @@ export const SCHEMA_DEFAULTS = {
 	},
 	USER: {
 		subscription: 'FREE' as const,
+		role: 'USER' as const,
+		subscriptionPlan: 'FREE' as const,
+		subscriptionStatus: 'ACTIVE' as const,
+		effectivePlan: 'FREE' as const,
 	},
 } as const;
