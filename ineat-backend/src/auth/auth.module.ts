@@ -17,10 +17,14 @@ import { OAuthController } from './controllers/oauth.controller';
 
 // Services
 import { AuthService } from './services/auth.service';
+import { AccessPolicyService } from './services/access-policy.service';
+import { UsageQuotaService } from './services/usage-quota.service';
 
 // Guards
 import { AdminGuard } from './guards/admin.guard';
 import { PremiumGuard } from './guards/premium.guard';
+import { RoleGuard } from './guards/role.guard';
+import { CapabilityGuard } from './guards/capability.guard';
 
 @Module({
   imports: [
@@ -45,12 +49,24 @@ import { PremiumGuard } from './guards/premium.guard';
   controllers: [AuthController, OAuthController],
   providers: [
     AuthService,
+    AccessPolicyService,
+    UsageQuotaService,
     LocalStrategy,
     JwtStrategy,
     GoogleStrategy,
+    RoleGuard,
+    CapabilityGuard,
     AdminGuard,
     PremiumGuard,
   ],
-  exports: [AuthService, AdminGuard, PremiumGuard],
+  exports: [
+    AuthService,
+    AccessPolicyService,
+    UsageQuotaService,
+    RoleGuard,
+    CapabilityGuard,
+    AdminGuard,
+    PremiumGuard,
+  ],
 })
 export class AuthModule {}
