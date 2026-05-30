@@ -216,22 +216,47 @@ model RecipeIngredient {
 }
 
 model User {
-  id            String          @id
-  email         String          @unique
-  passwordHash  String
-  firstName     String
-  lastName      String
-  profileType   ProfileType
-  preferences   Json
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  subscription  Subscription    @default(FREE)
-  avatarUrl     String?
-  Budget        Budget[]
-  Expense       Expense[]
-  InventoryItem InventoryItem[]
-  Notification  Notification[]
-  Receipt       Receipt[]
+  id                     String             @id
+  email                  String             @unique
+  passwordHash           String
+  firstName              String
+  lastName               String
+  profileType            ProfileType
+  preferences            Json
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime
+  role                   UserRole           @default(USER)
+  subscriptionPlan       SubscriptionPlan   @default(FREE)
+  subscriptionStatus     SubscriptionStatus @default(ACTIVE)
+  trialStartedAt         DateTime?
+  trialEndsAt            DateTime?
+  currentPeriodStartedAt DateTime?
+  currentPeriodEndsAt    DateTime?
+  avatarUrl              String?
+  Budget                 Budget[]
+  Expense                Expense[]
+  InventoryItem          InventoryItem[]
+  Notification           Notification[]
+  Receipt                Receipt[]
+  UsageQuota             UsageQuota[]
+}
+
+model UsageQuota {
+  id          String    @id
+  userId      String
+  usageType   UsageType
+  periodStart DateTime
+  periodEnd   DateTime
+  usedCount   Int       @default(0)
+  limit       Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, usageType, periodStart, periodEnd])
+  @@index([periodEnd])
+  @@index([usageType])
+  @@index([userId])
 }
 
 enum DocumentType {
@@ -288,10 +313,16 @@ enum RecipeDifficulty {
   HARD
 }
 
-enum Subscription {
+enum SubscriptionPlan {
   FREE
+  TRIAL
   PREMIUM
-  ADMIN
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
 }
 
 enum UnitType {
@@ -300,4 +331,14 @@ enum UnitType {
   L
   ML
   UNIT
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UsageType {
+  AI_RECIPE_GENERATION
+  DRIVE_IMPORT
 }

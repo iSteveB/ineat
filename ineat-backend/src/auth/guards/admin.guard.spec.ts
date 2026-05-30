@@ -2,14 +2,17 @@ import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@ne
 import { Reflector } from '@nestjs/core';
 import { AdminGuard } from './admin.guard';
 import { REQUIRES_ADMIN_KEY } from '../decorators/requires-admin.decorator';
+import { AccessPolicyService } from '../services/access-policy.service';
 
 describe('AdminGuard', () => {
   let guard: AdminGuard;
   let reflector: Reflector;
+  let accessPolicyService: AccessPolicyService;
 
   beforeEach(() => {
     reflector = new Reflector();
-    guard = new AdminGuard(reflector);
+    accessPolicyService = new AccessPolicyService();
+    guard = new AdminGuard(reflector, accessPolicyService);
   });
 
   const createMockExecutionContext = (user?: any, requiresAdmin = true): ExecutionContext => {
@@ -48,9 +51,9 @@ describe('AdminGuard', () => {
       );
     });
 
-    it('devrait lancer ForbiddenException si l\'utilisateur est FREE', () => {
+    it('devrait lancer ForbiddenException si l\'utilisateur a le rôle USER avec plan FREE', () => {
       const context = createMockExecutionContext(
-        { id: '123', email: 'test@test.com', subscription: 'FREE' },
+        { id: '123', email: 'test@test.com', role: 'USER', subscriptionPlan: 'FREE' },
         true,
       );
 
@@ -60,9 +63,9 @@ describe('AdminGuard', () => {
       );
     });
 
-    it('devrait lancer ForbiddenException si l\'utilisateur est PREMIUM', () => {
+    it('devrait lancer ForbiddenException si l\'utilisateur a le rôle USER avec plan PREMIUM', () => {
       const context = createMockExecutionContext(
-        { id: '123', email: 'test@test.com', subscription: 'PREMIUM' },
+        { id: '123', email: 'test@test.com', role: 'USER', subscriptionPlan: 'PREMIUM' },
         true,
       );
 
@@ -72,7 +75,7 @@ describe('AdminGuard', () => {
       );
     });
 
-    it('devrait lancer ForbiddenException si l\'utilisateur n\'a pas de subscription', () => {
+    it('devrait lancer ForbiddenException si l\'utilisateur n\'a pas de rôle', () => {
       const context = createMockExecutionContext(
         { id: '123', email: 'test@test.com' },
         true,
@@ -81,9 +84,9 @@ describe('AdminGuard', () => {
       expect(() => guard.canActivate(context)).toThrow(ForbiddenException);
     });
 
-    it('devrait laisser passer si l\'utilisateur est ADMIN', () => {
+    it('devrait laisser passer si l\'utilisateur a le rôle ADMIN', () => {
       const context = createMockExecutionContext(
-        { id: '123', email: 'test@test.com', subscription: 'ADMIN' },
+        { id: '123', email: 'test@test.com', role: 'ADMIN', subscriptionPlan: 'FREE' },
         true,
       );
 

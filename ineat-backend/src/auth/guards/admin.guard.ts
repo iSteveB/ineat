@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { REQUIRES_ADMIN_KEY } from '../decorators/requires-admin.decorator';
+import { AccessPolicyService } from '../services/access-policy.service';
 
 /**
  * Guard pour protéger les routes nécessitant des droits Administrateur
@@ -21,7 +22,10 @@ import { REQUIRES_ADMIN_KEY } from '../decorators/requires-admin.decorator';
  */
 @Injectable()
 export class AdminGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private accessPolicyService: AccessPolicyService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     // Vérifier si la route nécessite des droits admin
@@ -46,9 +50,8 @@ export class AdminGuard implements CanActivate {
       );
     }
 
-    // Vérifier que l'utilisateur a le rôle ADMIN
-    const subscription = user.subscription || 'FREE';
-    const isAdmin = subscription === 'ADMIN';
+    const isAdmin =
+      this.accessPolicyService.getCapabilities(user).canAccessAdmin;
 
     if (!isAdmin) {
       throw new ForbiddenException(

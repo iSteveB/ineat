@@ -10,7 +10,13 @@ export const authUserSelect = {
   preferences: true,
   createdAt: true,
   updatedAt: true,
-  subscription: true,
+  role: true,
+  subscriptionPlan: true,
+  subscriptionStatus: true,
+  trialStartedAt: true,
+  trialEndsAt: true,
+  currentPeriodStartedAt: true,
+  currentPeriodEndsAt: true,
 } satisfies Prisma.UserSelect;
 
 export type AuthUser = Prisma.UserGetPayload<{

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { REQUIRES_PREMIUM_KEY } from '../decorators/requires-premium.decorator';
+import { AccessPolicyService } from '../services/access-policy.service';
 
 /**
  * Guard pour protéger les routes nécessitant un abonnement Premium
@@ -17,11 +18,14 @@ import { REQUIRES_PREMIUM_KEY } from '../decorators/requires-premium.decorator';
  * 
  * Le guard vérifie que:
  * 1. L'utilisateur est authentifié (doit être utilisé après JwtAuthGuard)
- * 2. L'utilisateur a un abonnement PREMIUM ou ADMIN
+ * 2. L'utilisateur a un abonnement PREMIUM ou un TRIAL actif
  */
 @Injectable()
 export class PremiumGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private accessPolicyService: AccessPolicyService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     // Vérifier si la route nécessite un abonnement premium
@@ -46,9 +50,8 @@ export class PremiumGuard implements CanActivate {
       );
     }
 
-    // Vérifier que l'utilisateur a un abonnement premium
-    const subscription = user.subscription || 'FREE';
-    const isPremium = subscription === 'PREMIUM' || subscription === 'ADMIN';
+    const isPremium =
+      this.accessPolicyService.getEffectivePlan(user) === 'PREMIUM';
 
     if (!isPremium) {
       throw new ForbiddenException(

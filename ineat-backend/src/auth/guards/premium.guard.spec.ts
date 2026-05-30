@@ -2,14 +2,17 @@ import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@ne
 import { Reflector } from '@nestjs/core';
 import { PremiumGuard } from './premium.guard';
 import { REQUIRES_PREMIUM_KEY } from '../decorators/requires-premium.decorator';
+import { AccessPolicyService } from '../services/access-policy.service';
 
 describe('PremiumGuard', () => {
   let guard: PremiumGuard;
   let reflector: Reflector;
+  let accessPolicyService: AccessPolicyService;
 
   beforeEach(() => {
     reflector = new Reflector();
-    guard = new PremiumGuard(reflector);
+    accessPolicyService = new AccessPolicyService();
+    guard = new PremiumGuard(reflector, accessPolicyService);
   });
 
   const createMockExecutionContext = (user?: any, requiresPremium = true): ExecutionContext => {
@@ -50,7 +53,12 @@ describe('PremiumGuard', () => {
 
     it('devrait lancer ForbiddenException si l\'utilisateur est FREE', () => {
       const context = createMockExecutionContext(
-        { id: '123', email: 'test@test.com', subscription: 'FREE' },
+        {
+          id: '123',
+          email: 'test@test.com',
+          subscriptionPlan: 'FREE',
+          subscriptionStatus: 'ACTIVE',
+        },
         true,
       );
 
@@ -60,7 +68,7 @@ describe('PremiumGuard', () => {
       );
     });
 
-    it('devrait lancer ForbiddenException si l\'utilisateur n\'a pas de subscription', () => {
+    it('devrait lancer ForbiddenException si l\'utilisateur n\'a pas de plan', () => {
       const context = createMockExecutionContext(
         { id: '123', email: 'test@test.com' },
         true,
@@ -71,20 +79,46 @@ describe('PremiumGuard', () => {
 
     it('devrait laisser passer si l\'utilisateur est PREMIUM', () => {
       const context = createMockExecutionContext(
-        { id: '123', email: 'test@test.com', subscription: 'PREMIUM' },
+        {
+          id: '123',
+          email: 'test@test.com',
+          subscriptionPlan: 'PREMIUM',
+          subscriptionStatus: 'ACTIVE',
+        },
         true,
       );
 
       expect(guard.canActivate(context)).toBe(true);
     });
 
-    it('devrait laisser passer si l\'utilisateur est ADMIN', () => {
+    it('devrait laisser passer si l\'utilisateur est TRIAL actif', () => {
       const context = createMockExecutionContext(
-        { id: '123', email: 'test@test.com', subscription: 'ADMIN' },
+        {
+          id: '123',
+          email: 'test@test.com',
+          subscriptionPlan: 'TRIAL',
+          subscriptionStatus: 'ACTIVE',
+          trialEndsAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
         true,
       );
 
       expect(guard.canActivate(context)).toBe(true);
+    });
+
+    it('devrait lancer ForbiddenException si l\'utilisateur est TRIAL expiré', () => {
+      const context = createMockExecutionContext(
+        {
+          id: '123',
+          email: 'test@test.com',
+          subscriptionPlan: 'TRIAL',
+          subscriptionStatus: 'EXPIRED',
+          trialEndsAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+        },
+        true,
+      );
+
+      expect(() => guard.canActivate(context)).toThrow(ForbiddenException);
     });
   });
 
