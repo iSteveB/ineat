@@ -20,8 +20,8 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
 
 const legacyAuthPaths = new Set([
-  '/profile',
-  '/check',
+  '/api/auth/profile',
+  '/api/auth/check',
 ]);
 
 const isLegacyAuthPath = (path: string) => legacyAuthPaths.has(path);
@@ -93,7 +93,8 @@ async function bootstrap() {
   console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
 
   const betterAuthHandler = toNodeHandler(auth);
-  app.use('/api/auth', (req: Request, res: Response, next: NextFunction) => {
+  const expressApp = app.getHttpAdapter().getInstance();
+  expressApp.all('/api/auth/*', (req: Request, res: Response, next: NextFunction) => {
     if (isLegacyAuthPath(req.path)) {
       return next();
     }

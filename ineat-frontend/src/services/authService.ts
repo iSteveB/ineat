@@ -36,10 +36,11 @@ const toAuthResponse = (user: User): AuthResponse => ({
 	},
 });
 
-const getBetterAuthErrorMessage = (
+export const getBetterAuthErrorMessage = (
 	error: { message?: string; code?: string } | null | undefined,
-	fallback: string
-) => error?.message || error?.code || fallback;
+	fallback: string,
+	publicMessages: Record<string, string> = {}
+) => (error?.code ? publicMessages[error.code] : undefined) || fallback;
 
 // ===== SERVICE D'AUTHENTIFICATION =====
 export const authService: AuthServiceMethods = {
@@ -66,7 +67,11 @@ export const authService: AuthServiceMethods = {
 				throw new Error(
 					getBetterAuthErrorMessage(
 						error,
-						'Identifiants incorrects'
+						'Connexion impossible. Veuillez réessayer.',
+						{
+							INVALID_EMAIL_OR_PASSWORD:
+								'Identifiants incorrects',
+						}
 					)
 				);
 			}
