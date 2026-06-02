@@ -80,6 +80,12 @@ export type DietType = z.infer<typeof DietTypeSchema>;
 // UUID valide
 export const UuidSchema = z.string().uuid('UUID invalide');
 
+// Les comptes historiques utilisent des UUID, Better Auth génère des IDs opaques.
+export const UserIdSchema = z
+	.string()
+	.min(1, 'Identifiant utilisateur invalide')
+	.max(128, 'Identifiant utilisateur invalide');
+
 // Email valide
 export const EmailSchema = z.string().email("Format d'email invalide");
 

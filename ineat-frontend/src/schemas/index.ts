@@ -38,6 +38,7 @@ export {
 
 	// Schémas de base réutilisables
 	UuidSchema,
+	UserIdSchema,
 	EmailSchema,
 	DateStringSchema,
 	DateInputSchema,

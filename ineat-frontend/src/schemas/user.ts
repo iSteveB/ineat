@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import {
-	UuidSchema,
+	UserIdSchema,
 	EmailSchema,
 	PasswordSchema,
 	ShortTextSchema,
@@ -47,7 +47,7 @@ export const DEFAULT_ACCESS_CAPABILITIES: AccessCapabilities = {
 
 export const UserSchema = z
 	.object({
-		id: UuidSchema,
+		id: UserIdSchema,
 		email: EmailSchema,
 		firstName: ShortTextSchema,
 		lastName: ShortTextSchema,
