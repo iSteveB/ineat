@@ -129,7 +129,11 @@ export const authService: AuthServiceMethods = {
 				throw new Error(
 					getBetterAuthErrorMessage(
 						error,
-						"Impossible de finaliser l'inscription"
+						"Impossible de finaliser l'inscription",
+						{
+							USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+								'Un compte existe déjà avec cette adresse. Connectez-vous.',
+						}
 					)
 				);
 			}
