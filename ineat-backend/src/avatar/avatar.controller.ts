@@ -26,7 +26,7 @@ import {
   AvatarUpdatedResponseDto,
   CloudinaryUploadParamsDto,
 } from './dto/update-avatar.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { Request as ExpressRequest } from 'express';
 
 interface AuthenticatedRequest extends ExpressRequest {
@@ -40,7 +40,7 @@ interface AuthenticatedRequest extends ExpressRequest {
 
 @ApiTags('Avatar')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 @Controller('avatar')
 export class AvatarController {
   constructor(private readonly avatarService: AvatarService) {}

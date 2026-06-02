@@ -9,11 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { NotificationService } from './notification.service';
 
 @Controller('notifications')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 

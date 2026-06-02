@@ -1,6 +1,3 @@
-// DTOs pour l'authentification
-export { LoginDto, RegisterDto } from '../auth/dto/auth.dto';
-
 // DTOs pour l'ajout de produit manuel
 export {
   AddManualProductDto,

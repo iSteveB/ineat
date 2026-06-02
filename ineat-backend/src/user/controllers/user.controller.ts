@@ -16,7 +16,7 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { UserService } from '../services/user.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { ProfileType } from '../../../prisma/generated/prisma/client';
 import { UpdateDietaryRestrictionsDto } from '../dto/update-dietary-restrictions.dto';
 
@@ -38,7 +38,7 @@ interface UpdatePersonalInfoDto {
 
 @ApiTags('User')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}

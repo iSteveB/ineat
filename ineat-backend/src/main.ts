@@ -2,7 +2,6 @@ import './instrument';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import { ConfigService } from '@nestjs/config';
@@ -10,6 +9,22 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { homedir } from 'os';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {
+  json,
+  urlencoded,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './lib/auth';
+
+const legacyAuthPaths = new Set([
+  '/profile',
+  '/check',
+]);
+
+const isLegacyAuthPath = (path: string) => legacyAuthPaths.has(path);
 
 async function bootstrap() {
   const configService = new (await import('@nestjs/config')).ConfigService();
@@ -36,27 +51,9 @@ async function bootstrap() {
   // Création de l'application (avec ou sans HTTPS)
   const app = await NestFactory.create(AppModule, {
     httpsOptions,
+    bodyParser: false,
   });
   const configServiceInstance = app.get(ConfigService);
-
-  // Utilisation de Swagger pour la documentation API (uniquement en dev)
-  if (!isProduction) {
-    const swaggerConfig = new DocumentBuilder()
-      .setTitle('InEat API')
-      .setDescription("API pour la gestion d'inventaire alimentaire")
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup('docs', app, document);
-    console.log('📚 Swagger documentation available at /docs');
-  }
-
-  // Récupérer la clé secrète pour signer les cookies
-  const cookieSecret =
-    configServiceInstance.get<string>('COOKIE_SECRET') ||
-    configServiceInstance.get<string>('JWT_SECRET') ||
-    'fallback-secret-key';
 
   // Middlewares de sécurité et performance
   app.use(
@@ -65,7 +62,6 @@ async function bootstrap() {
     }),
   );
   app.use(compression());
-  app.use(cookieParser(cookieSecret));
 
   // Configuration CORS dynamique selon l'environnement
   const frontendUrl = configServiceInstance.get<string>('FRONTEND_URL');
@@ -95,6 +91,30 @@ async function bootstrap() {
   });
 
   console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
+
+  const betterAuthHandler = toNodeHandler(auth);
+  app.use('/api/auth', (req: Request, res: Response, next: NextFunction) => {
+    if (isLegacyAuthPath(req.path)) {
+      return next();
+    }
+
+    return betterAuthHandler(req, res);
+  });
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
+
+  // Utilisation de Swagger pour la documentation API (uniquement en dev)
+  if (!isProduction) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('InEat API')
+      .setDescription("API pour la gestion d'inventaire alimentaire")
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('docs', app, document);
+    console.log('📚 Swagger documentation available at /docs');
+  }
 
   // Préfixe global pour les API
   app.setGlobalPrefix('api', {

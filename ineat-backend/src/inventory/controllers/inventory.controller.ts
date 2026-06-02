@@ -29,7 +29,7 @@ import {
   ProductCreatedWithBudgetDto,
 } from '../services/inventory.service';
 import { AddManualProductDto, QuickAddProductDto } from '../../DTOs';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { Request } from 'express';
 
 interface AuthenticatedRequest extends Request {
@@ -42,7 +42,7 @@ interface AuthenticatedRequest extends Request {
 
 @ApiTags('Inventory')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}

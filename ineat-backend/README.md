@@ -6,8 +6,7 @@ API NestJS de l'application InEat. Elle gere l'authentification, les utilisateur
 
 - NestJS 10
 - Prisma 7 avec PostgreSQL
-- Passport, JWT et cookies pour l'authentification
-- Google OAuth
+- Better Auth pour les sessions web, email/password et Google OAuth
 - Cloudinary pour le stockage des fichiers
 - Swagger en developpement
 
@@ -44,15 +43,12 @@ Variables principales:
 | `NODE_ENV` | Non | `development` par defaut |
 | `PORT` | Non | Port HTTP, `3000` par defaut |
 | `DATABASE_URL` | Oui | Connexion PostgreSQL Prisma |
-| `JWT_SECRET` | Oui | Signature des JWT |
-| `JWT_EXPIRES_IN` | Non | Duree de vie JWT, `1d` par defaut |
-| `COOKIE_SECRET` | Recommande | Signature des cookies; fallback sur `JWT_SECRET` |
+| `BETTER_AUTH_SECRET` | Oui | Secret de signature/chiffrement Better Auth |
+| `BETTER_AUTH_URL` | Oui | URL publique du backend Better Auth, sans chemin `/api/auth` |
 | `FRONTEND_URL` | Production | Origine frontend autorisee en prod |
 | `CORS_ORIGIN` | Production | Origine CORS supplementaire |
-| `CLIENT_URL` | OAuth | URL frontend de redirection OAuth |
-| `GOOGLE_CLIENT_ID` | OAuth | Client ID Google |
-| `GOOGLE_CLIENT_SECRET` | OAuth | Secret Google |
-| `GOOGLE_CALLBACK_URL` | OAuth | Callback Google |
+| `GOOGLE_CLIENT_ID` | OAuth | Client ID Google utilise par Better Auth |
+| `GOOGLE_CLIENT_SECRET` | OAuth | Secret Google utilise par Better Auth |
 | `CLOUDINARY_CLOUD_NAME` | Uploads | Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Uploads | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Uploads | Cloudinary API secret |
@@ -66,6 +62,19 @@ En developpement:
 pnpm run prisma:migrate
 pnpm run dev
 ```
+
+## Authentification
+
+Les nouveaux flux web utilisent Better Auth sous `/api/auth/*`:
+
+- email/password: `/api/auth/sign-in/email` et `/api/auth/sign-up/email`;
+- Google OAuth: endpoints Better Auth, avec callback serveur `/api/auth/callback/google`;
+- session courante: cookie Better Auth HTTP-only, lu par `SessionAuthGuard` via
+  `BetterAuthSessionService`.
+
+Les routes Nest `/api/auth/profile` et `/api/auth/check` restent presentes pour
+le profil metier et la compatibilite du frontend. La
+creation et la revocation des sessions sont gerees par Better Auth.
 
 ## API Error Responses
 
@@ -164,7 +173,7 @@ Modules principaux:
 
 | Module | Role |
 | --- | --- |
-| `AuthModule` | Register, login, logout, JWT, Google OAuth, guards |
+| `AuthModule` | Sessions Better Auth, email/password, Google OAuth, guards |
 | `UserModule` | Profil, informations personnelles, restrictions alimentaires |
 | `AvatarModule` | Upload et gestion d'avatar |
 | `CloudinaryModule` | Integration Cloudinary |
@@ -176,7 +185,7 @@ Modules principaux:
 ## Observabilite Production
 
 Le backend expose un snapshot d'observabilite sur `GET /health/observability`.
-La route est protegee par `JwtAuthGuard` et `AdminGuard`; elle doit etre utilisee
+La route est protegee par `SessionAuthGuard` et `AdminGuard`; elle doit etre utilisee
 avec un compte `ADMIN`.
 
 Le snapshot contient:

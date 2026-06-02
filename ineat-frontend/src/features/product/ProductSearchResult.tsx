@@ -137,7 +137,7 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 							size='sm'
 							variant='ghost'
 							className='opacity-0 group-hover:opacity-100 transition-opacity'
-							onClick={(e) => {
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
 								e.stopPropagation();
 								onSelectProduct(product);
 							}}>

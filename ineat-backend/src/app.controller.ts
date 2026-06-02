@@ -9,7 +9,7 @@ import {
 import { AppService } from './app.service';
 import { Response } from 'express';
 import { ObservabilityService } from './observability/observability.service';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from './auth/guards/session-auth.guard';
 import { RoleGuard } from './auth/guards/role.guard';
 import { RequiresRole } from './auth/decorators/requires-role.decorator';
 import { PrismaService } from './prisma/prisma.service';
@@ -49,7 +49,7 @@ export class AppController {
 
   @Get('health/observability')
   @RequiresRole('ADMIN')
-  @UseGuards(JwtAuthGuard, RoleGuard)
+  @UseGuards(SessionAuthGuard, RoleGuard)
   observabilitySnapshot() {
     return {
       status: 'ok',

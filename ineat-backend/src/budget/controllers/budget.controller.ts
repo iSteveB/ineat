@@ -28,7 +28,7 @@ import {
   BudgetParamsSchema,
 } from '../schemas/budget.schema';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 
 // Pipes Zod pour validation
 const CreateBudgetPipe = new ZodValidationPipe(CreateBudgetSchema);
@@ -37,7 +37,7 @@ const BudgetFiltersPipe = new ZodValidationPipe(BudgetFiltersSchema);
 const BudgetParamsPipe = new ZodValidationPipe(BudgetParamsSchema);
 
 @Controller('budget')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 export class BudgetController {
   constructor(
     private readonly budgetService: BudgetService,

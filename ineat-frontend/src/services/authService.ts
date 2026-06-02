@@ -16,6 +16,7 @@ import {
 
 // ===== IMPORTS UTILITAIRES =====
 import { apiClient } from '../lib/api-client';
+import { authClient } from '../lib/auth-client';
 
 // ===== INTERFACE DU SERVICE D'AUTHENTIFICATION =====
 interface AuthServiceMethods {
@@ -25,13 +26,20 @@ interface AuthServiceMethods {
 	logout(): Promise<{ success: boolean; message: string }>;
 	verifyAuthentication(): Promise<boolean>;
 	checkAuthentication(): Promise<AuthCheckResponse>;
-	loginWithGoogle(): void;
+	loginWithGoogle(): Promise<void>;
 }
 
-const getApiBaseUrl = () => {
-	const apiOrigin = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-	return `${apiOrigin.replace(/\/api\/?$/, '').replace(/\/$/, '')}/api`;
-};
+const toAuthResponse = (user: User): AuthResponse => ({
+	success: true,
+	data: {
+		user,
+	},
+});
+
+const getBetterAuthErrorMessage = (
+	error: { message?: string; code?: string } | null | undefined,
+	fallback: string
+) => error?.message || error?.code || fallback;
 
 // ===== SERVICE D'AUTHENTIFICATION =====
 export const authService: AuthServiceMethods = {
@@ -48,22 +56,33 @@ export const authService: AuthServiceMethods = {
 		}
 
 		try {
-			const response = await apiClient.post<AuthResponse>(
-				'/auth/login',
-				credentials
-			);
+			const { error } = await authClient.signIn.email({
+				email: credentials.email,
+				password: credentials.password,
+				rememberMe: true,
+			});
 
-			// Validation de la réponse
+			if (error) {
+				throw new Error(
+					getBetterAuthErrorMessage(
+						error,
+						'Identifiants incorrects'
+					)
+				);
+			}
+
+			const user = await authService.getProfile();
+			const response = toAuthResponse(user);
 			const responseValidation = validateSchema(
 				AuthResponseSchema,
 				response
 			);
+
 			if (!responseValidation.success) {
 				console.warn(
 					'Réponse de connexion invalide:',
 					responseValidation.error
 				);
-				console.warn('Réponse reçue:', response);
 			}
 
 			return response;
@@ -86,22 +105,39 @@ export const authService: AuthServiceMethods = {
 		}
 
 		try {
-			const response = await apiClient.post<AuthResponse>(
-				'/auth/register',
-				data
+			const signUpPayload = {
+				email: data.email,
+				password: data.password,
+				name: `${data.firstName} ${data.lastName}`.trim(),
+				firstName: data.firstName,
+				lastName: data.lastName,
+				profileType: data.profileType,
+			};
+			const { error } = await authClient.signUp.email(
+				signUpPayload as Parameters<typeof authClient.signUp.email>[0]
 			);
 
-			// Validation de la réponse
+			if (error) {
+				throw new Error(
+					getBetterAuthErrorMessage(
+						error,
+						"Impossible de finaliser l'inscription"
+					)
+				);
+			}
+
+			const user = await authService.getProfile();
+			const response = toAuthResponse(user);
 			const responseValidation = validateSchema(
 				AuthResponseSchema,
 				response
 			);
+
 			if (!responseValidation.success) {
 				console.warn(
 					"Réponse d'inscription invalide:",
 					responseValidation.error
 				);
-				console.warn('Réponse reçue:', response);
 			}
 
 			return response;
@@ -142,22 +178,16 @@ export const authService: AuthServiceMethods = {
 	 * Déconnexion - supprime le cookie côté serveur
 	 */
 	async logout(): Promise<{ success: boolean; message: string }> {
-		try {
-			const response = await apiClient.post<{
-				success: boolean;
-				message: string;
-			}>('/auth/logout');
-
-			// Validation basique de la réponse
-			if (typeof response.success !== 'boolean') {
-				console.warn('Réponse de déconnexion invalide');
-			}
-
-			return response;
-		} catch (error) {
-			console.error('Erreur lors de la déconnexion:', error);
-			throw error;
+		const { error } = await authClient.signOut();
+		if (error) {
+			console.error('Déconnexion Better Auth incomplète:', error);
+			throw new Error('Impossible de révoquer la session');
 		}
+
+		return {
+			success: true,
+			message: 'Déconnexion réussie',
+		};
 	},
 
 	/**
@@ -224,8 +254,26 @@ export const authService: AuthServiceMethods = {
 	/**
 	 * Redirection vers l'authentification Google
 	 */
-	loginWithGoogle(): void {
-		window.location.href = `${getApiBaseUrl()}/auth/google`;
+	async loginWithGoogle(): Promise<void> {
+		const callbackURL = `${window.location.origin}/auth/callback`;
+		const { data, error } = await authClient.signIn.social({
+			provider: 'google',
+			callbackURL,
+		});
+
+		if (error) {
+			throw new Error(
+				getBetterAuthErrorMessage(
+					error,
+					'Impossible de démarrer la connexion Google'
+				)
+			);
+		}
+
+		if (data?.url) {
+			window.location.href = data.url;
+			return;
+		}
 	},
 };
 

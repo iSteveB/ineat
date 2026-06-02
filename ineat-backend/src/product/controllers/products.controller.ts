@@ -16,12 +16,12 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { ProductsService } from '../services/products.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { SearchProductsDto, ProductSearchResultDto } from '../../DTOs';
 
 @ApiTags('Products')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}

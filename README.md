@@ -1,6 +1,6 @@
 # InEat
 
-InEat est une application de gestion des stocks alimentaires pour particuliers. Elle aide a suivre les produits disponibles, les dates de peremption, les achats, le budget alimentaire et les tickets de caisse analyses par OCR/LLM.
+InEat est une application de gestion des stocks alimentaires pour particuliers. Elle aide a suivre les produits disponibles, les dates de peremption, les achats et le budget alimentaire.
 
 ## Structure
 
@@ -8,7 +8,7 @@ Le depot est organise en deux applications principales:
 
 | Dossier | Role | Stack |
 | --- | --- | --- |
-| `ineat-backend` | API REST, authentification, inventaire, budget, tickets, OCR/LLM | NestJS, Prisma, PostgreSQL, Redis/Bull |
+| `ineat-backend` | API REST, authentification, inventaire et budget | NestJS, Prisma, PostgreSQL, Redis/Bull |
 | `ineat-frontend` | Interface utilisateur SPA | React, Vite, TanStack Router, TanStack Query, Zustand |
 
 ## Fonctionnalites
@@ -18,7 +18,6 @@ Le depot est organise en deux applications principales:
 - Gestion d'inventaire alimentaire avec dates d'achat, peremption, prix et lieu de stockage.
 - Recherche et ajout de produits, avec donnees enrichies OpenFoodFacts cote frontend.
 - Budget mensuel et depenses, dont depenses creees depuis les achats alimentaires.
-- Upload de tickets de caisse ou factures, stockage Cloudinary, OCR Tesseract, analyse Claude/OpenAI, validation des produits detectes.
 - Notifications, recettes et suggestions en cours de structuration.
 
 ## Prerequis
@@ -29,9 +28,7 @@ Le depot est organise en deux applications principales:
 - Redis, requis pour la configuration Bull et les traitements asynchrones
 - Comptes/API externes selon les fonctionnalites activees:
   - Cloudinary pour les uploads
-  - OpenAI et/ou Anthropic Claude pour l'analyse LLM des tickets
   - Google OAuth pour la connexion sociale
-  - Mindee optionnel, le provider OCR principal actuel etant Tesseract
 
 ## Lancement Local
 
@@ -120,14 +117,6 @@ Le coeur produit repose sur ce flux:
 1. L'utilisateur ajoute ou scanne des produits dans son inventaire.
 2. Les produits alimentent les widgets du dashboard: stock, produits recents, produits proches de peremption, score global.
 3. Les prix d'achat peuvent creer des depenses et impacter le budget mensuel.
-4. Les tickets de caisse permettent d'alimenter plus rapidement l'inventaire:
-   - upload du fichier;
-   - stockage Cloudinary;
-   - extraction OCR;
-   - analyse Claude/OpenAI;
-   - suggestions EAN;
-   - validation utilisateur;
-   - ajout a l'inventaire.
 
 ## Documentation Detaillee
 

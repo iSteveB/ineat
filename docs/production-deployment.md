@@ -22,16 +22,13 @@ Backend:
 - `NODE_ENV=production`
 - `DATABASE_URL`
 - `REDIS_URL`
-- `JWT_SECRET`
-- `COOKIE_SECRET`
+- `BETTER_AUTH_SECRET`, genere aleatoirement avec au moins 32 caracteres
+- `BETTER_AUTH_URL`, origine publique du backend sans suffixe `/api/auth`
 - `FRONTEND_URL`
 - `CORS_ORIGIN`
-- `CLIENT_URL`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` si OAuth est actif
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` si Google OAuth Better Auth est actif
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-- `CLOUDINARY_AVATAR_PRESET`, `CLOUDINARY_RECEIPT_PRESET`
-- `ANTHROPIC_API_KEY` et/ou `OPENAI_API_KEY` pour l'analyse LLM des tickets
-- Variables Mindee si ce provider OCR est active
+- `CLOUDINARY_AVATAR_PRESET`
 
 Frontend:
 
@@ -45,8 +42,31 @@ Frontend:
    `${VITE_API_URL}/api`.
 4. Controler les logs backend pour confirmer que `prisma migrate deploy` s'est
    termine avant le demarrage NestJS.
-5. Tester un parcours authentifie simple puis un upload receipt si les secrets
-   Cloudinary et LLM sont disponibles.
+5. Tester un parcours authentifie simple puis un upload d'avatar si les secrets
+   Cloudinary sont disponibles.
+
+## Auth Better Auth
+
+Avant mise en production:
+
+1. Verifier que la migration Prisma Better Auth est presente et appliquee par
+   `prisma migrate deploy`: tables `session`, `account`, `verification` et
+   colonnes utilisateur `name`, `emailVerified`.
+2. Confirmer que `BETTER_AUTH_URL` correspond exactement a l'origine publique du
+   backend, par exemple `https://ineat-backend-production.up.railway.app`.
+3. Confirmer que le frontend utilise `VITE_API_URL` sans suffixe `/api`, afin
+   que le client Better Auth cible `${VITE_API_URL}/api/auth`.
+4. Tester `sign-in/email`, `sign-up/email`, `sign-out` et `/api/auth/profile`
+   depuis le frontend avec cookies `Secure` et `SameSite=None` en production.
+5. Tester Google OAuth via Better Auth si `GOOGLE_CLIENT_ID` et
+   `GOOGLE_CLIENT_SECRET` sont configures. Le callback attendu cote Google est
+   `/api/auth/callback/google`.
+6. Surveiller les logs pour les erreurs d'origine/CSRF Better Auth. Les origines
+   autorisees doivent couvrir `FRONTEND_URL` et `CORS_ORIGIN`.
+
+Les flux web utilisent exclusivement les sessions Better Auth. Les anciens JWT,
+cookies `auth_token`, strategies Passport et endpoints Nest `login/register`
+ont ete retires.
 
 ## Rollback
 
@@ -55,8 +75,7 @@ Frontend:
 2. Si une migration destructive est en cause, restaurer un backup PostgreSQL avant
    de redeployer le code compatible.
 3. Verifier `/health` backend et frontend.
-4. Controler les logs `receipt-processing` Redis/Bull apres rollback si des jobs
-   etaient en cours.
+4. Controler les logs backend apres rollback.
 
 Ne pas modifier manuellement le schema de production hors migration Prisma
 commitee, sauf procedure de recuperation documentee.

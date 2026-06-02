@@ -31,7 +31,7 @@ import {
   ExpenseParamsSchema,
 } from '../schemas/expense.schema';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 
 // Pipes Zod pour validation
 const CreateExpensePipe = new ZodValidationPipe(CreateExpenseSchema);
@@ -41,7 +41,7 @@ const ExpenseFiltersPipe = new ZodValidationPipe(ExpenseFiltersSchema);
 const ExpenseParamsPipe = new ZodValidationPipe(ExpenseParamsSchema);
 
 @Controller('expense')
-@UseGuards(JwtAuthGuard)
+@UseGuards(SessionAuthGuard)
 export class ExpenseController {
   constructor(private readonly expenseService: ExpenseService) {}
 

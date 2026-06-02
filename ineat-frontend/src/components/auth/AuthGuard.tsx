@@ -5,7 +5,7 @@ import Spinner from '../ui/spinner';
 
 const AuthGuard = () => {
 	const [isVerifying, setIsVerifying] = useState(true);
-	const { isAuthenticated, verifyAuthentication, user } = useAuthStore();
+	const { checkAuthentication, user } = useAuthStore();
 	const location = useLocation();
 	const navigate = useNavigate();
 
@@ -22,19 +22,12 @@ const AuthGuard = () => {
 
 	useEffect(() => {
 		const checkAuth = async () => {
-			if (!isAuthenticated || !user) {
-				// Si l'utilisateur n'est pas authentifié selon notre état local,
-				// rediriger vers la page de connexion
-				redirectToLogin();
-				return;
-			}
-
 			// Vérifier l'authentification auprès du serveur
 			try {
-				const isValid = await verifyAuthentication();
+				const isValid = await checkAuthentication();
 				if (!isValid) {
 					// Si l'authentification n'est pas valide, rediriger vers la page de connexion
-					redirectToLogin(true);
+					redirectToLogin(Boolean(user));
 					return;
 				}
 			} catch {
@@ -48,12 +41,11 @@ const AuthGuard = () => {
 
 		checkAuth();
 	}, [
-		isAuthenticated,
+		checkAuthentication,
 		location.pathname,
 		location.search,
 		navigate,
 		redirectToLogin,
-		verifyAuthentication,
 		user,
 	]);
 

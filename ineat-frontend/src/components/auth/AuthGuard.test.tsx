@@ -23,7 +23,7 @@ vi.mock('../ui/spinner', () => ({
 
 describe('AuthGuard', () => {
 	// Configuration pour les tests
-	const mockVerifyAuthentication = vi.fn();
+	const mockCheckAuthentication = vi.fn();
 	const mockLocation = {
 		pathname: '/dashboard',
 		search: '?param=value',
@@ -45,9 +45,7 @@ describe('AuthGuard', () => {
 	it('affiche un spinner pendant la vérification', async () => {
 		// Configuration du store avec authentification en cours
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-			isAuthenticated: true,
-			user: { id: '1', name: 'Test User' },
-			verifyAuthentication: () => new Promise(() => {}), // Promise qui ne se résout jamais pour maintenir l'état de chargement
+			checkAuthentication: () => new Promise(() => {}), // Promise qui ne se résout jamais pour maintenir l'état de chargement
 		});
 
 		render(<AuthGuard />);
@@ -59,12 +57,9 @@ describe('AuthGuard', () => {
 		expect(screen.queryByTestId('outlet-content')).not.toBeInTheDocument();
 	});
 
-	it("redirige vers la page de connexion si l'utilisateur n'est pas authentifié localement", async () => {
-		// Configuration du store sans authentification
+	it("redirige vers la page de connexion si l'utilisateur n'est pas authentifié côté serveur", async () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-			isAuthenticated: false,
-			user: null,
-			verifyAuthentication: mockVerifyAuthentication,
+			checkAuthentication: mockCheckAuthentication.mockResolvedValue(false),
 		});
 
 		// Rendre le composant - nous ne pouvons pas capturer directement l'erreur de redirection
@@ -82,16 +77,14 @@ describe('AuthGuard', () => {
 			});
 		});
 
-		// Vérifier que verifyAuthentication n'a pas été appelé
-		expect(mockVerifyAuthentication).not.toHaveBeenCalled();
+		expect(mockCheckAuthentication).toHaveBeenCalledTimes(1);
 	});
 
 	it("redirige si la vérification d'authentification échoue", async () => {
 		// Configuration du store avec authentification locale mais vérification serveur qui échoue
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-			isAuthenticated: true,
 			user: { id: '1', name: 'Test User' },
-			verifyAuthentication: vi.fn().mockResolvedValue(false),
+			checkAuthentication: vi.fn().mockResolvedValue(false),
 		});
 
 		// Rendre le composant
@@ -114,9 +107,7 @@ describe('AuthGuard', () => {
 	it("redirige si la vérification d'authentification génère une erreur", async () => {
 		// Configuration du store avec authentification locale mais vérification serveur qui échoue avec une erreur
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-			isAuthenticated: true,
-			user: { id: '1', name: 'Test User' },
-			verifyAuthentication: vi
+			checkAuthentication: vi
 				.fn()
 				.mockRejectedValue(new Error('Auth verification failed')),
 		});
@@ -141,9 +132,7 @@ describe('AuthGuard', () => {
 	it("rend les composants enfants si l'authentification réussit", async () => {
 		// Configuration du store avec authentification réussie
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-			isAuthenticated: true,
-			user: { id: '1', name: 'Test User' },
-			verifyAuthentication: vi.fn().mockResolvedValue(true),
+			checkAuthentication: vi.fn().mockResolvedValue(true),
 		});
 
 		render(<AuthGuard />);

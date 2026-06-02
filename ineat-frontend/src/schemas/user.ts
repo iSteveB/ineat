@@ -116,7 +116,6 @@ export type RegisterFormData = z.infer<typeof RegisterFormSchema>;
 export const AuthResponseSchema = ApiSuccessResponseSchema(
 	z.object({
 		user: UserSchema,
-		accessToken: z.string().optional(), // Optionnel car on utilise des cookies HTTP-only
 	})
 );
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;

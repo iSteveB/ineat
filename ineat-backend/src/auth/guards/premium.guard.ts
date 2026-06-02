@@ -13,11 +13,11 @@ import { AccessPolicyService } from '../services/access-policy.service';
  * Guard pour protéger les routes nécessitant un abonnement Premium
  * 
  * Utilisation:
- * @UseGuards(JwtAuthGuard, PremiumGuard)
+ * @UseGuards(SessionAuthGuard, PremiumGuard)
  * @RequiresPremium()
  * 
  * Le guard vérifie que:
- * 1. L'utilisateur est authentifié (doit être utilisé après JwtAuthGuard)
+ * 1. L'utilisateur est authentifié (doit être utilisé après SessionAuthGuard)
  * 2. L'utilisateur a un abonnement PREMIUM ou un TRIAL actif
  */
 @Injectable()
@@ -39,11 +39,11 @@ export class PremiumGuard implements CanActivate {
       return true;
     }
 
-    // Récupérer l'utilisateur depuis la requête (injecté par JwtAuthGuard)
+    // Récupérer l'utilisateur depuis la requête (injecté par SessionAuthGuard)
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    // Si pas d'utilisateur, c'est que JwtAuthGuard n'a pas été appliqué
+    // Si pas d'utilisateur, c'est que SessionAuthGuard n'a pas été appliqué
     if (!user) {
       throw new UnauthorizedException(
         'Authentification requise pour accéder à cette ressource',

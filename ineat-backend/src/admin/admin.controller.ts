@@ -13,7 +13,7 @@ import {
   UserRole,
 } from '../../prisma/generated/prisma/enums';
 import { RequiresRole } from '../auth/decorators/requires-role.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AdminService } from './admin.service';
 
@@ -29,7 +29,7 @@ type UpdateSubscriptionPlanBody = {
 @ApiBearerAuth()
 @Controller('admin')
 @RequiresRole('ADMIN')
-@UseGuards(JwtAuthGuard, RoleGuard)
+@UseGuards(SessionAuthGuard, RoleGuard)
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

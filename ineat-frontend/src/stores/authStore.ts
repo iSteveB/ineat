@@ -204,23 +204,7 @@ export const useAuthStore = create<AuthState>()(
 			 */
 			verifyAuthentication: async () => {
 				try {
-					// Vérification simple: Pas d'utilisateur dans le state = pas besoin d'aller plus loin
-					const currentUser = get().user;
-					if (!currentUser) {
-						return false;
-					}
-
-					const isValid = await authService.verifyAuthentication();
-
-					// Si la vérification échoue, effacer l'utilisateur
-					if (!isValid) {
-						set({
-							user: null,
-							isAuthenticated: false,
-						});
-					}
-
-					return isValid;
+					return await get().checkAuthentication();
 				} catch (error) {
 					// En cas d'erreur, considérer l'utilisateur comme non authentifié
 					set({
@@ -282,7 +266,16 @@ export const useAuthStore = create<AuthState>()(
 			 * Redirection vers l'authentification Google
 			 */
 			loginWithGoogle: () => {
-				authService.loginWithGoogle();
+				set({ isLoading: true, error: null });
+				void authService.loginWithGoogle().catch((error) => {
+					set({
+						isLoading: false,
+						error:
+							error instanceof Error
+								? error.message
+								: 'Impossible de démarrer la connexion Google',
+					});
+				});
 			},
 
 			/**
