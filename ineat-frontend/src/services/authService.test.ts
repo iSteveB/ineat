@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { getBetterAuthErrorMessage } from './authService';
+import {
+	getBetterAuthErrorMessage,
+	normalizeAuthEmail,
+} from './authService';
 
 describe('getBetterAuthErrorMessage', () => {
 	const fallback = 'Connexion impossible. Veuillez réessayer.';
@@ -28,5 +31,13 @@ describe('getBetterAuthErrorMessage', () => {
 				fallback
 			)
 		).toBe(fallback);
+	});
+});
+
+describe('normalizeAuthEmail', () => {
+	it("normalise la casse et les espaces avant l'authentification", () => {
+		expect(normalizeAuthEmail('  UsER@Example.COM ')).toBe(
+			'user@example.com'
+		);
 	});
 });

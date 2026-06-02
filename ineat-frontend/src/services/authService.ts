@@ -36,6 +36,9 @@ const toAuthResponse = (user: User): AuthResponse => ({
 	},
 });
 
+export const normalizeAuthEmail = (email: string) =>
+	email.trim().toLowerCase();
+
 export const getBetterAuthErrorMessage = (
 	error: { message?: string; code?: string } | null | undefined,
 	fallback: string,
@@ -58,7 +61,7 @@ export const authService: AuthServiceMethods = {
 
 		try {
 			const { error } = await authClient.signIn.email({
-				email: credentials.email,
+				email: normalizeAuthEmail(credentials.email),
 				password: credentials.password,
 				rememberMe: true,
 			});
@@ -111,7 +114,7 @@ export const authService: AuthServiceMethods = {
 
 		try {
 			const signUpPayload = {
-				email: data.email,
+				email: normalizeAuthEmail(data.email),
 				password: data.password,
 				name: `${data.firstName} ${data.lastName}`.trim(),
 				firstName: data.firstName,

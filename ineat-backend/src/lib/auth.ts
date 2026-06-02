@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { betterAuth } from 'better-auth';
+import { createAuthMiddleware } from 'better-auth/api';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../prisma/generated/prisma/client';
@@ -20,6 +21,10 @@ const configuredTrustedOrigins = [
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+const emailAuthPaths = new Set(['/sign-in/email', '/sign-up/email']);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
 export const auth = betterAuth({
   appName: 'InEat',
@@ -67,6 +72,27 @@ export const auth = betterAuth({
       hash: hashPassword,
       verify: verifyPassword,
     },
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (
+        !emailAuthPaths.has(ctx.path) ||
+        !isRecord(ctx.body) ||
+        typeof ctx.body.email !== 'string'
+      ) {
+        return;
+      }
+
+      return {
+        context: {
+          ...ctx,
+          body: {
+            ...ctx.body,
+            email: ctx.body.email.trim().toLowerCase(),
+          },
+        },
+      };
+    }),
   },
   socialProviders:
     googleClientId && googleClientSecret
