@@ -105,6 +105,10 @@ export const auth = betterAuth({
       : undefined,
   advanced: {
     cookiePrefix: 'ineat',
+    defaultCookieAttributes: {
+      sameSite: 'none',
+      secure: true,
+    },
   },
 });
 
