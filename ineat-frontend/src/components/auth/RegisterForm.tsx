@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
-import { RegisterDataSchema } from '@/schemas';
+import { RegisterFormSchema } from '@/schemas';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -23,6 +23,7 @@ const RegisterForm = () => {
 	const [formData, setFormData] = useState({
 		email: '',
 		password: '',
+		confirmPassword: '',
 		firstName: '',
 		lastName: '',
 		profileType: 'FAMILY',
@@ -69,7 +70,7 @@ const RegisterForm = () => {
 	// Validation du formulaire
 	const validateForm = (): boolean => {
 		try {
-			RegisterDataSchema.parse(formData);
+			RegisterFormSchema.parse(formData);
 			setFormError(null);
 			return true;
 		} catch (error) {
@@ -95,7 +96,10 @@ const RegisterForm = () => {
 		try {
 			// Tentative d'inscription via le store Zustand
 			await register({
-				...formData,
+				email: formData.email,
+				password: formData.password,
+				firstName: formData.firstName,
+				lastName: formData.lastName,
 				profileType: formData.profileType as
 					| 'FAMILY'
 					| 'STUDENT'
@@ -184,6 +188,25 @@ const RegisterForm = () => {
 					<p className='text-xs text-gray-500'>
 						Au moins 8 caractères
 					</p>
+				</div>
+
+				{/* Champ confirmation du mot de passe */}
+				<div className='space-y-2'>
+					<Label htmlFor='confirmPassword'>
+						Confirmer le mot de passe
+					</Label>
+					<Input
+						id='confirmPassword'
+						name='confirmPassword'
+						type='password'
+						placeholder='Confirmez votre mot de passe'
+						autoComplete='new-password'
+						value={formData.confirmPassword}
+						onChange={handleChange}
+						required
+						disabled={isLoading}
+						data-testid='confirm-password-input'
+					/>
 				</div>
 
 				{/* Type de profil */}

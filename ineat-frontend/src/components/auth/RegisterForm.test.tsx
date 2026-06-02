@@ -69,6 +69,7 @@ describe('RegisterForm', () => {
 		expect(screen.getByTestId('lastName-input')).toBeInTheDocument();
 		expect(screen.getByTestId('email-input')).toBeInTheDocument();
 		expect(screen.getByTestId('password-input')).toBeInTheDocument();
+		expect(screen.getByTestId('confirm-password-input')).toBeInTheDocument();
 		expect(screen.getByTestId('profile-type-group')).toBeInTheDocument();
 		expect(
 			screen.getByTestId('register-submit-button')
@@ -117,12 +118,16 @@ describe('RegisterForm', () => {
 		const lastNameInput = screen.getByTestId('lastName-input');
 		const emailInput = screen.getByTestId('email-input');
 		const passwordInput = screen.getByTestId('password-input');
+		const confirmPasswordInput = screen.getByTestId(
+			'confirm-password-input'
+		);
 		const submitButton = screen.getByTestId('register-submit-button');
 
 		await user.type(firstNameInput, 'John');
 		await user.type(lastNameInput, 'Doe');
 		await user.type(emailInput, 'john.doe@example.com');
 		await user.type(passwordInput, 'Password123');
+		await user.type(confirmPasswordInput, 'Password123');
 
 		// Par défaut, le type de profil est déjà défini à 'FAMILY'
 
@@ -165,12 +170,16 @@ describe('RegisterForm', () => {
 		const lastNameInput = screen.getByTestId('lastName-input');
 		const emailInput = screen.getByTestId('email-input');
 		const passwordInput = screen.getByTestId('password-input');
+		const confirmPasswordInput = screen.getByTestId(
+			'confirm-password-input'
+		);
 		const submitButton = screen.getByTestId('register-submit-button');
 
 		await user.type(firstNameInput, 'John');
 		await user.type(lastNameInput, 'Doe');
 		await user.type(emailInput, 'john.doe@example.com');
 		await user.type(passwordInput, 'Password123');
+		await user.type(confirmPasswordInput, 'Password123');
 
 		// Simuler une inscription réussie
 		registerMock.mockResolvedValue({ success: true });
@@ -222,6 +231,29 @@ describe('RegisterForm', () => {
 		expect(registerMock).not.toHaveBeenCalled();
 	});
 
+	it('affiche une erreur si les mots de passe ne correspondent pas', async () => {
+		render(<RegisterForm />);
+
+		await user.click(screen.getByTestId('show-email-form-button'));
+		await user.type(screen.getByTestId('firstName-input'), 'John');
+		await user.type(screen.getByTestId('lastName-input'), 'Doe');
+		await user.type(screen.getByTestId('email-input'), 'john.doe@example.com');
+		await user.type(screen.getByTestId('password-input'), 'Password123');
+		await user.type(
+			screen.getByTestId('confirm-password-input'),
+			'Password456'
+		);
+
+		fireEvent.submit(screen.getByTestId('register-email-form'));
+
+		await waitFor(() => {
+			expect(screen.getByTestId('error-message')).toHaveTextContent(
+				'Les mots de passe ne correspondent pas'
+			);
+		});
+		expect(registerMock).not.toHaveBeenCalled();
+	});
+
 	it("affiche une erreur provenant du store d'authentification", async () => {
 		// Simuler une erreur dans le store d'authentification
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -255,6 +287,7 @@ describe('RegisterForm', () => {
 		expect(screen.getByTestId('lastName-input')).not.toBeDisabled();
 		expect(screen.getByTestId('email-input')).not.toBeDisabled();
 		expect(screen.getByTestId('password-input')).not.toBeDisabled();
+		expect(screen.getByTestId('confirm-password-input')).not.toBeDisabled();
 		expect(screen.getByTestId('register-submit-button')).not.toBeDisabled();
 
 		// Maintenant, changer le mock pour simuler l'état de chargement
@@ -274,6 +307,7 @@ describe('RegisterForm', () => {
 		expect(screen.getByTestId('lastName-input')).toBeDisabled();
 		expect(screen.getByTestId('email-input')).toBeDisabled();
 		expect(screen.getByTestId('password-input')).toBeDisabled();
+		expect(screen.getByTestId('confirm-password-input')).toBeDisabled();
 		expect(screen.getByTestId('register-submit-button')).toBeDisabled();
 
 		// Vérifier que le texte du bouton d'inscription indique l'état de chargement
