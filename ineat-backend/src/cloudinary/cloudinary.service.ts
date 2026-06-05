@@ -115,6 +115,48 @@ export class CloudinaryService {
   }
 
   /**
+   * Upload un fichier PDF ou brut depuis un buffer (utilisation côté serveur)
+   * @param file - Buffer du fichier
+   * @param folder - Dossier de destination
+   * @param publicId - ID public optionnel
+   * @returns URL sécurisée du fichier uploadé
+   */
+  async uploadRawFile(
+    file: Buffer,
+    folder: string,
+    publicId?: string,
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const uploadOptions = {
+        folder,
+        resource_type: 'raw' as const,
+        public_id: publicId,
+      };
+
+      this.cloudinary.uploader
+        .upload_stream(
+          uploadOptions,
+          (
+            error: UploadApiErrorResponse | undefined,
+            result: UploadApiResponse | undefined,
+          ) => {
+            if (error) {
+              reject(
+                new BadRequestException(
+                  `Erreur lors de l'upload du fichier: ${error.message}`,
+                ),
+              );
+            }
+            if (result) {
+              resolve(result.secure_url);
+            }
+          },
+        )
+        .end(file);
+    });
+  }
+
+  /**
    * Supprime une image de Cloudinary
    * @param publicId - ID public de l'image (ex: 'avatars/user_123')
    * @returns Résultat de la suppression
