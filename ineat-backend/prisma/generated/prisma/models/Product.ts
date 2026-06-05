@@ -259,6 +259,7 @@ export type ProductWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   ingredients?: Prisma.StringNullableFilter<"Product"> | string | null
   InventoryItem?: Prisma.InventoryItemListRelationFilter
+  InvoiceItem?: Prisma.InvoiceItemListRelationFilter
   Category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   ReceiptItem?: Prisma.ReceiptItemListRelationFilter
   RecipeIngredient?: Prisma.RecipeIngredientListRelationFilter
@@ -281,6 +282,7 @@ export type ProductOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   ingredients?: Prisma.SortOrderInput | Prisma.SortOrder
   InventoryItem?: Prisma.InventoryItemOrderByRelationAggregateInput
+  InvoiceItem?: Prisma.InvoiceItemOrderByRelationAggregateInput
   Category?: Prisma.CategoryOrderByWithRelationInput
   ReceiptItem?: Prisma.ReceiptItemOrderByRelationAggregateInput
   RecipeIngredient?: Prisma.RecipeIngredientOrderByRelationAggregateInput
@@ -306,6 +308,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   ingredients?: Prisma.StringNullableFilter<"Product"> | string | null
   InventoryItem?: Prisma.InventoryItemListRelationFilter
+  InvoiceItem?: Prisma.InvoiceItemListRelationFilter
   Category?: Prisma.XOR<Prisma.CategoryScalarRelationFilter, Prisma.CategoryWhereInput>
   ReceiptItem?: Prisma.ReceiptItemListRelationFilter
   RecipeIngredient?: Prisma.RecipeIngredientListRelationFilter
@@ -369,6 +372,7 @@ export type ProductCreateInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutProductInput
   Category: Prisma.CategoryCreateNestedOneWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutProductInput
@@ -391,6 +395,7 @@ export type ProductUncheckedCreateInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutProductInput
 }
@@ -411,6 +416,7 @@ export type ProductUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutProductNestedInput
   Category?: Prisma.CategoryUpdateOneRequiredWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutProductNestedInput
@@ -433,6 +439,7 @@ export type ProductUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutProductNestedInput
 }
@@ -634,6 +641,22 @@ export type EnumUnitTypeFieldUpdateOperationsInput = {
   set?: $Enums.UnitType
 }
 
+export type ProductCreateNestedOneWithoutInvoiceItemInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutInvoiceItemInput, Prisma.ProductUncheckedCreateWithoutInvoiceItemInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutInvoiceItemInput
+  connect?: Prisma.ProductWhereUniqueInput
+}
+
+export type ProductUpdateOneWithoutInvoiceItemNestedInput = {
+  create?: Prisma.XOR<Prisma.ProductCreateWithoutInvoiceItemInput, Prisma.ProductUncheckedCreateWithoutInvoiceItemInput>
+  connectOrCreate?: Prisma.ProductCreateOrConnectWithoutInvoiceItemInput
+  upsert?: Prisma.ProductUpsertWithoutInvoiceItemInput
+  disconnect?: Prisma.ProductWhereInput | boolean
+  delete?: Prisma.ProductWhereInput | boolean
+  connect?: Prisma.ProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutInvoiceItemInput, Prisma.ProductUpdateWithoutInvoiceItemInput>, Prisma.ProductUncheckedUpdateWithoutInvoiceItemInput>
+}
+
 export type ProductCreateNestedOneWithoutReceiptItemInput = {
   create?: Prisma.XOR<Prisma.ProductCreateWithoutReceiptItemInput, Prisma.ProductUncheckedCreateWithoutReceiptItemInput>
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutReceiptItemInput
@@ -680,6 +703,7 @@ export type ProductCreateWithoutCategoryInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutProductInput
 }
@@ -700,6 +724,7 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutProductInput
 }
@@ -766,6 +791,7 @@ export type ProductCreateWithoutInventoryItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutProductInput
   Category: Prisma.CategoryCreateNestedOneWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutProductInput
@@ -787,6 +813,7 @@ export type ProductUncheckedCreateWithoutInventoryItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
+  InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutProductInput
 }
@@ -822,6 +849,7 @@ export type ProductUpdateWithoutInventoryItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutProductNestedInput
   Category?: Prisma.CategoryUpdateOneRequiredWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutProductNestedInput
@@ -843,6 +871,107 @@ export type ProductUncheckedUpdateWithoutInventoryItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutProductNestedInput
+  ReceiptItem?: Prisma.ReceiptItemUncheckedUpdateManyWithoutProductNestedInput
+  RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutProductNestedInput
+}
+
+export type ProductCreateWithoutInvoiceItemInput = {
+  id: string
+  barcode?: string | null
+  name: string
+  brand?: string | null
+  nutriscore?: $Enums.NutriScore | null
+  ecoscore?: $Enums.Ecoscore | null
+  novascore?: $Enums.Novascore | null
+  unitType: $Enums.UnitType
+  nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: string | null
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  ingredients?: string | null
+  InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutProductInput
+  Category: Prisma.CategoryCreateNestedOneWithoutProductInput
+  ReceiptItem?: Prisma.ReceiptItemCreateNestedManyWithoutProductInput
+  RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutProductInput
+}
+
+export type ProductUncheckedCreateWithoutInvoiceItemInput = {
+  id: string
+  barcode?: string | null
+  name: string
+  brand?: string | null
+  categoryId: string
+  nutriscore?: $Enums.NutriScore | null
+  ecoscore?: $Enums.Ecoscore | null
+  novascore?: $Enums.Novascore | null
+  unitType: $Enums.UnitType
+  nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: string | null
+  externalId?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  ingredients?: string | null
+  InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutProductInput
+  ReceiptItem?: Prisma.ReceiptItemUncheckedCreateNestedManyWithoutProductInput
+  RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutProductInput
+}
+
+export type ProductCreateOrConnectWithoutInvoiceItemInput = {
+  where: Prisma.ProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProductCreateWithoutInvoiceItemInput, Prisma.ProductUncheckedCreateWithoutInvoiceItemInput>
+}
+
+export type ProductUpsertWithoutInvoiceItemInput = {
+  update: Prisma.XOR<Prisma.ProductUpdateWithoutInvoiceItemInput, Prisma.ProductUncheckedUpdateWithoutInvoiceItemInput>
+  create: Prisma.XOR<Prisma.ProductCreateWithoutInvoiceItemInput, Prisma.ProductUncheckedCreateWithoutInvoiceItemInput>
+  where?: Prisma.ProductWhereInput
+}
+
+export type ProductUpdateToOneWithWhereWithoutInvoiceItemInput = {
+  where?: Prisma.ProductWhereInput
+  data: Prisma.XOR<Prisma.ProductUpdateWithoutInvoiceItemInput, Prisma.ProductUncheckedUpdateWithoutInvoiceItemInput>
+}
+
+export type ProductUpdateWithoutInvoiceItemInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutriscore?: Prisma.NullableEnumNutriScoreFieldUpdateOperationsInput | $Enums.NutriScore | null
+  ecoscore?: Prisma.NullableEnumEcoscoreFieldUpdateOperationsInput | $Enums.Ecoscore | null
+  novascore?: Prisma.NullableEnumNovascoreFieldUpdateOperationsInput | $Enums.Novascore | null
+  unitType?: Prisma.EnumUnitTypeFieldUpdateOperationsInput | $Enums.UnitType
+  nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  InventoryItem?: Prisma.InventoryItemUpdateManyWithoutProductNestedInput
+  Category?: Prisma.CategoryUpdateOneRequiredWithoutProductNestedInput
+  ReceiptItem?: Prisma.ReceiptItemUpdateManyWithoutProductNestedInput
+  RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutProductNestedInput
+}
+
+export type ProductUncheckedUpdateWithoutInvoiceItemInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  barcode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  brand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  categoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  nutriscore?: Prisma.NullableEnumNutriScoreFieldUpdateOperationsInput | $Enums.NutriScore | null
+  ecoscore?: Prisma.NullableEnumEcoscoreFieldUpdateOperationsInput | $Enums.Ecoscore | null
+  novascore?: Prisma.NullableEnumNovascoreFieldUpdateOperationsInput | $Enums.Novascore | null
+  unitType?: Prisma.EnumUnitTypeFieldUpdateOperationsInput | $Enums.UnitType
+  nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutProductNestedInput
 }
@@ -863,6 +992,7 @@ export type ProductCreateWithoutReceiptItemInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutProductInput
   Category: Prisma.CategoryCreateNestedOneWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutProductInput
 }
@@ -884,6 +1014,7 @@ export type ProductUncheckedCreateWithoutReceiptItemInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutProductInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutProductInput
 }
 
@@ -919,6 +1050,7 @@ export type ProductUpdateWithoutReceiptItemInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutProductNestedInput
   Category?: Prisma.CategoryUpdateOneRequiredWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutProductNestedInput
 }
@@ -940,6 +1072,7 @@ export type ProductUncheckedUpdateWithoutReceiptItemInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutProductNestedInput
 }
 
@@ -959,6 +1092,7 @@ export type ProductCreateWithoutRecipeIngredientInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutProductInput
   Category: Prisma.CategoryCreateNestedOneWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemCreateNestedManyWithoutProductInput
 }
@@ -980,6 +1114,7 @@ export type ProductUncheckedCreateWithoutRecipeIngredientInput = {
   updatedAt: Date | string
   ingredients?: string | null
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutProductInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutProductInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedCreateNestedManyWithoutProductInput
 }
 
@@ -1015,6 +1150,7 @@ export type ProductUpdateWithoutRecipeIngredientInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutProductNestedInput
   Category?: Prisma.CategoryUpdateOneRequiredWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUpdateManyWithoutProductNestedInput
 }
@@ -1036,6 +1172,7 @@ export type ProductUncheckedUpdateWithoutRecipeIngredientInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedUpdateManyWithoutProductNestedInput
 }
 
@@ -1072,6 +1209,7 @@ export type ProductUpdateWithoutCategoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutProductNestedInput
 }
@@ -1092,6 +1230,7 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutProductNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutProductNestedInput
   ReceiptItem?: Prisma.ReceiptItemUncheckedUpdateManyWithoutProductNestedInput
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutProductNestedInput
 }
@@ -1120,12 +1259,14 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
 
 export type ProductCountOutputType = {
   InventoryItem: number
+  InvoiceItem: number
   ReceiptItem: number
   RecipeIngredient: number
 }
 
 export type ProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   InventoryItem?: boolean | ProductCountOutputTypeCountInventoryItemArgs
+  InvoiceItem?: boolean | ProductCountOutputTypeCountInvoiceItemArgs
   ReceiptItem?: boolean | ProductCountOutputTypeCountReceiptItemArgs
   RecipeIngredient?: boolean | ProductCountOutputTypeCountRecipeIngredientArgs
 }
@@ -1145,6 +1286,13 @@ export type ProductCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
  */
 export type ProductCountOutputTypeCountInventoryItemArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InventoryItemWhereInput
+}
+
+/**
+ * ProductCountOutputType without action
+ */
+export type ProductCountOutputTypeCountInvoiceItemArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvoiceItemWhereInput
 }
 
 /**
@@ -1179,6 +1327,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   ingredients?: boolean
   InventoryItem?: boolean | Prisma.Product$InventoryItemArgs<ExtArgs>
+  InvoiceItem?: boolean | Prisma.Product$InvoiceItemArgs<ExtArgs>
   Category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   ReceiptItem?: boolean | Prisma.Product$ReceiptItemArgs<ExtArgs>
   RecipeIngredient?: boolean | Prisma.Product$RecipeIngredientArgs<ExtArgs>
@@ -1244,6 +1393,7 @@ export type ProductSelectScalar = {
 export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "barcode" | "name" | "brand" | "categoryId" | "nutriscore" | "ecoscore" | "novascore" | "unitType" | "nutrients" | "imageUrl" | "externalId" | "createdAt" | "updatedAt" | "ingredients", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   InventoryItem?: boolean | Prisma.Product$InventoryItemArgs<ExtArgs>
+  InvoiceItem?: boolean | Prisma.Product$InvoiceItemArgs<ExtArgs>
   Category?: boolean | Prisma.CategoryDefaultArgs<ExtArgs>
   ReceiptItem?: boolean | Prisma.Product$ReceiptItemArgs<ExtArgs>
   RecipeIngredient?: boolean | Prisma.Product$RecipeIngredientArgs<ExtArgs>
@@ -1260,6 +1410,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Product"
   objects: {
     InventoryItem: Prisma.$InventoryItemPayload<ExtArgs>[]
+    InvoiceItem: Prisma.$InvoiceItemPayload<ExtArgs>[]
     Category: Prisma.$CategoryPayload<ExtArgs>
     ReceiptItem: Prisma.$ReceiptItemPayload<ExtArgs>[]
     RecipeIngredient: Prisma.$RecipeIngredientPayload<ExtArgs>[]
@@ -1675,6 +1826,7 @@ readonly fields: ProductFieldRefs;
 export interface Prisma__ProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   InventoryItem<T extends Prisma.Product$InventoryItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$InventoryItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  InvoiceItem<T extends Prisma.Product$InvoiceItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$InvoiceItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Category<T extends Prisma.CategoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CategoryDefaultArgs<ExtArgs>>): Prisma.Prisma__CategoryClient<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   ReceiptItem<T extends Prisma.Product$ReceiptItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$ReceiptItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReceiptItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   RecipeIngredient<T extends Prisma.Product$RecipeIngredientArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Product$RecipeIngredientArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecipeIngredientPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2139,6 +2291,30 @@ export type Product$InventoryItemArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.InventoryItemScalarFieldEnum | Prisma.InventoryItemScalarFieldEnum[]
+}
+
+/**
+ * Product.InvoiceItem
+ */
+export type Product$InvoiceItemArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvoiceItem
+   */
+  select?: Prisma.InvoiceItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvoiceItem
+   */
+  omit?: Prisma.InvoiceItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoiceItemInclude<ExtArgs> | null
+  where?: Prisma.InvoiceItemWhereInput
+  orderBy?: Prisma.InvoiceItemOrderByWithRelationInput | Prisma.InvoiceItemOrderByWithRelationInput[]
+  cursor?: Prisma.InvoiceItemWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvoiceItemScalarFieldEnum | Prisma.InvoiceItemScalarFieldEnum[]
 }
 
 /**

@@ -717,14 +717,6 @@ export type EnumReceiptStatusFieldUpdateOperationsInput = {
   set?: $Enums.ReceiptStatus
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ReceiptCreateNestedOneWithoutReceiptItemInput = {
   create?: Prisma.XOR<Prisma.ReceiptCreateWithoutReceiptItemInput, Prisma.ReceiptUncheckedCreateWithoutReceiptItemInput>
   connectOrCreate?: Prisma.ReceiptCreateOrConnectWithoutReceiptItemInput

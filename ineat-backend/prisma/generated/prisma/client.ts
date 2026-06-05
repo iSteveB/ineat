@@ -68,6 +68,16 @@ export type Notification = Prisma.NotificationModel
  */
 export type Product = Prisma.ProductModel
 /**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel
+/**
+ * Model InvoiceItem
+ * 
+ */
+export type InvoiceItem = Prisma.InvoiceItemModel
+/**
  * Model Receipt
  * 
  */

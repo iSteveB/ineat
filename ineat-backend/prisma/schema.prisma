@@ -35,23 +35,28 @@ model Category {
 }
 
 model Expense {
-  id        String   @id
-  userId    String
-  budgetId  String
-  amount    Float
-  date      DateTime
-  source    String?
-  receiptId String?
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  category  String?
-  Budget    Budget   @relation(fields: [budgetId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
+  id            String       @id
+  userId        String
+  budgetId      String
+  amount        Float
+  date          DateTime
+  source        String?
+  receiptId     String?
+  invoiceId     String?
+  invoiceItemId String?      @unique
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime
+  category      String?
+  Budget        Budget       @relation(fields: [budgetId], references: [id])
+  Invoice       Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  InvoiceItem   InvoiceItem? @relation(fields: [invoiceItemId], references: [id], onDelete: SetNull)
+  User          User         @relation(fields: [userId], references: [id])
 
   @@index([budgetId])
   @@index([category])
   @@index([date])
+  @@index([invoiceId])
   @@index([userId])
 }
 
@@ -114,12 +119,74 @@ model Product {
   updatedAt        DateTime
   ingredients      String?
   InventoryItem    InventoryItem[]
+  InvoiceItem      InvoiceItem[]
   Category         Category           @relation(fields: [categoryId], references: [id])
   ReceiptItem      ReceiptItem[]
   RecipeIngredient RecipeIngredient[]
 
   @@index([brand])
   @@index([name])
+}
+
+model Invoice {
+  id                 String        @id
+  userId             String
+  pdfUrl             String
+  status             InvoiceStatus @default(PROCESSING)
+  rawAnalysisData    Json?
+  merchantName       String?
+  totalAmount        Float?
+  purchaseDate       DateTime?
+  invoiceNumber      String?
+  orderNumber        String?
+  analysisProvider   String?
+  analysisConfidence Float?
+  processingTime     Int?
+  errorMessage       String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime
+  Expense            Expense[]
+  InvoiceItem        InvoiceItem[]
+  User               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([purchaseDate])
+  @@index([status])
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, status, createdAt])
+  @@index([userId, purchaseDate])
+  @@index([userId, totalAmount])
+}
+
+model InvoiceItem {
+  id              String    @id
+  invoiceId       String
+  productId       String?
+  detectedName    String
+  quantity        Float     @default(1)
+  unitPrice       Float?
+  totalPrice      Float?
+  confidence      Float
+  validated       Boolean   @default(false)
+  productCode     String?
+  category        String?
+  discount        Float?
+  selectedEan     String?
+  suggestedEans   Json      @default("[]")
+  expiryDate      DateTime?
+  storageLocation String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  Expense         Expense?
+  Invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  Product         Product?  @relation(fields: [productId], references: [id])
+
+  @@index([invoiceId])
+  @@index([productCode])
+  @@index([productId])
+  @@index([validated])
 }
 
 model Receipt {
@@ -238,6 +305,7 @@ model User {
   Budget                 Budget[]
   Expense                Expense[]
   InventoryItem          InventoryItem[]
+  Invoice                Invoice[]
   Notification           Notification[]
   Receipt                Receipt[]
   UsageQuota             UsageQuota[]
@@ -325,6 +393,13 @@ enum Ecoscore {
   C
   D
   E
+}
+
+enum InvoiceStatus {
+  PROCESSING
+  COMPLETED
+  FAILED
+  VALIDATED
 }
 
 enum NotificationType {
