@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { InvoiceStatus } from '../../../prisma/generated/prisma/client';
 import { InvoiceService, InvoiceUser } from './invoice.service';
 
@@ -16,6 +16,9 @@ describe('InvoiceService', () => {
     invoice: {
       create: jest.fn(),
       findFirst: jest.fn(),
+      update: jest.fn(),
+    },
+    invoiceItem: {
       update: jest.fn(),
     },
     $transaction: jest.fn(),
@@ -107,6 +110,14 @@ describe('InvoiceService', () => {
     prisma.$transaction.mockImplementation((callback) => callback(tx));
     prisma.invoice.create.mockResolvedValue(createdInvoice);
     prisma.invoice.findFirst.mockResolvedValue(completedInvoice);
+    prisma.invoiceItem.update.mockResolvedValue({
+      ...completedInvoice.InvoiceItem[0],
+      detectedName: 'Pommes bio',
+      quantity: 3,
+      totalPrice: 6.75,
+      storageLocation: 'frigo',
+      updatedAt: new Date('2026-06-05T11:00:00.000Z'),
+    });
     invoiceUploadService.uploadInvoicePdf.mockResolvedValue(
       createdInvoice.pdfUrl,
     );
@@ -216,5 +227,91 @@ describe('InvoiceService', () => {
         },
       }),
     );
+  });
+
+  it('corrige une ligne de facture non validée', async () => {
+    const result = await service.updateInvoiceItemForUser(
+      'user-1',
+      'invoice-1',
+      'item-1',
+      {
+        detectedName: ' Pommes bio ',
+        quantity: 3,
+        totalPrice: 6.75,
+        storageLocation: ' frigo ',
+      },
+    );
+
+    expect(prisma.invoice.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 'invoice-1',
+          userId: 'user-1',
+        },
+        include: {
+          InvoiceItem: {
+            where: { id: 'item-1' },
+            take: 1,
+          },
+        },
+      }),
+    );
+    expect(prisma.invoiceItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: expect.objectContaining({
+        detectedName: 'Pommes bio',
+        quantity: 3,
+        totalPrice: 6.75,
+        storageLocation: 'frigo',
+      }),
+    });
+    expect(result).toMatchObject({
+      id: 'item-1',
+      detectedName: 'Pommes bio',
+      quantity: 3,
+      totalPrice: 6.75,
+    });
+  });
+
+  it("refuse la correction d'une facture non propriétaire ou inconnue", async () => {
+    prisma.invoice.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updateInvoiceItemForUser('user-2', 'invoice-1', 'item-1', {
+        detectedName: 'Pommes',
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.invoiceItem.update).not.toHaveBeenCalled();
+  });
+
+  it('refuse une ligne déjà validée', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          validated: true,
+        },
+      ],
+    });
+
+    await expect(
+      service.updateInvoiceItemForUser('user-1', 'invoice-1', 'item-1', {
+        totalPrice: 10,
+      }),
+    ).rejects.toThrow('Une ligne déjà validée ne peut plus être corrigée');
+
+    expect(prisma.invoiceItem.update).not.toHaveBeenCalled();
+  });
+
+  it('refuse un nom détecté vide', async () => {
+    await expect(
+      service.updateInvoiceItemForUser('user-1', 'invoice-1', 'item-1', {
+        detectedName: '   ',
+      }),
+    ).rejects.toThrow('Le nom détecté est obligatoire');
+
+    expect(prisma.invoiceItem.update).not.toHaveBeenCalled();
   });
 });

@@ -12,6 +12,7 @@ import {
   InvoiceAnalysisService,
 } from './invoice-analysis.service';
 import { InvoiceUploadService } from './invoice-upload.service';
+import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 
 export interface InvoiceUser {
   id: string;
@@ -108,6 +109,97 @@ export class InvoiceService {
     return this.formatInvoice(invoice);
   }
 
+  async updateInvoiceItemForUser(
+    userId: string,
+    invoiceId: string,
+    itemId: string,
+    updateDto: UpdateInvoiceItemDto,
+  ) {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        userId,
+      },
+      include: {
+        InvoiceItem: {
+          where: {
+            id: itemId,
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!invoice || invoice.InvoiceItem.length === 0) {
+      throw new NotFoundException('Ligne de facture non trouvée');
+    }
+
+    const [invoiceItem] = invoice.InvoiceItem;
+
+    if (invoiceItem.validated) {
+      throw new BadRequestException(
+        'Une ligne déjà validée ne peut plus être corrigée',
+      );
+    }
+
+    const updateData: Record<string, unknown> = {
+      updatedAt: new Date(),
+    };
+
+    if (updateDto.detectedName !== undefined) {
+      const detectedName = updateDto.detectedName.trim();
+
+      if (!detectedName) {
+        throw new BadRequestException('Le nom détecté est obligatoire');
+      }
+
+      updateData.detectedName = detectedName;
+    }
+
+    if (updateDto.quantity !== undefined) {
+      updateData.quantity = updateDto.quantity;
+    }
+
+    if (updateDto.unitPrice !== undefined) {
+      updateData.unitPrice = updateDto.unitPrice;
+    }
+
+    if (updateDto.totalPrice !== undefined) {
+      updateData.totalPrice = updateDto.totalPrice;
+    }
+
+    if (updateDto.category !== undefined) {
+      updateData.category = updateDto.category.trim() || null;
+    }
+
+    if (updateDto.productId !== undefined) {
+      updateData.productId = updateDto.productId;
+    }
+
+    if (updateDto.expiryDate !== undefined) {
+      updateData.expiryDate = new Date(updateDto.expiryDate);
+    }
+
+    if (updateDto.storageLocation !== undefined) {
+      updateData.storageLocation = updateDto.storageLocation.trim() || null;
+    }
+
+    if (updateDto.notes !== undefined) {
+      updateData.notes = updateDto.notes.trim() || null;
+    }
+
+    if (updateDto.selectedEan !== undefined) {
+      updateData.selectedEan = updateDto.selectedEan;
+    }
+
+    const updatedItem = await this.prisma.invoiceItem.update({
+      where: { id: itemId },
+      data: updateData,
+    });
+
+    return this.formatInvoiceItem(updatedItem);
+  }
+
   private async completeInvoiceAnalysis(
     invoiceId: string,
     analysis: AnalyzedInvoice,
@@ -171,27 +263,33 @@ export class InvoiceService {
       errorMessage: invoice.errorMessage,
       createdAt: invoice.createdAt.toISOString(),
       updatedAt: invoice.updatedAt.toISOString(),
-      items: (invoice.InvoiceItem ?? []).map((item: any) => ({
-        id: item.id,
-        invoiceId: item.invoiceId,
-        productId: item.productId,
-        detectedName: item.detectedName,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        totalPrice: item.totalPrice,
-        confidence: item.confidence,
-        validated: item.validated,
-        productCode: item.productCode,
-        category: item.category,
-        discount: item.discount,
-        selectedEan: item.selectedEan,
-        suggestedEans: item.suggestedEans,
-        expiryDate: item.expiryDate?.toISOString() ?? null,
-        storageLocation: item.storageLocation,
-        notes: item.notes,
-        createdAt: item.createdAt.toISOString(),
-        updatedAt: item.updatedAt.toISOString(),
-      })),
+      items: (invoice.InvoiceItem ?? []).map((item: any) =>
+        this.formatInvoiceItem(item),
+      ),
+    };
+  }
+
+  private formatInvoiceItem(item: any) {
+    return {
+      id: item.id,
+      invoiceId: item.invoiceId,
+      productId: item.productId,
+      detectedName: item.detectedName,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      totalPrice: item.totalPrice,
+      confidence: item.confidence,
+      validated: item.validated,
+      productCode: item.productCode,
+      category: item.category,
+      discount: item.discount,
+      selectedEan: item.selectedEan,
+      suggestedEans: item.suggestedEans,
+      expiryDate: item.expiryDate?.toISOString() ?? null,
+      storageLocation: item.storageLocation,
+      notes: item.notes,
+      createdAt: item.createdAt.toISOString(),
+      updatedAt: item.updatedAt.toISOString(),
     };
   }
 }

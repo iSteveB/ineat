@@ -1,15 +1,18 @@
 import {
   BadRequestException,
   Controller,
+  Body,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -27,8 +30,10 @@ import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { RequiresCapability } from '../../auth/decorators/requires-capability.decorator';
 import {
   DriveImportResponseDto,
+  InvoiceItemResponseDto,
   InvoiceResponseDto,
 } from '../dto/invoice-response.dto';
+import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { INVOICE_MAX_FILE_SIZE_BYTES } from '../services/invoice-upload.service';
 import { InvoiceService, InvoiceUser } from '../services/invoice.service';
 
@@ -138,5 +143,49 @@ export class InvoiceController {
     @Param('id') invoiceId: string,
   ): Promise<InvoiceResponseDto> {
     return this.invoiceService.getInvoiceForUser(req.user.id, invoiceId);
+  }
+
+  @Patch(':id/items/:itemId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Corriger une ligne de facture',
+    description:
+      "Met à jour une ligne détectée avant validation dans l'inventaire.",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la facture',
+  })
+  @ApiParam({
+    name: 'itemId',
+    description: 'ID de la ligne de facture',
+  })
+  @ApiBody({ type: UpdateInvoiceItemDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Ligne de facture mise à jour',
+    type: InvoiceItemResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Données invalides ou ligne déjà validée',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Facture ou ligne non trouvée',
+  })
+  async updateInvoiceItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') invoiceId: string,
+    @Param('itemId') itemId: string,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    updateDto: UpdateInvoiceItemDto,
+  ): Promise<InvoiceItemResponseDto> {
+    return this.invoiceService.updateInvoiceItemForUser(
+      req.user.id,
+      invoiceId,
+      itemId,
+      updateDto,
+    );
   }
 }
