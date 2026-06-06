@@ -148,9 +148,13 @@ export const apiClient = {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { skipAuth = false, ...fetchOptions } = options;
 
+		const isFormData = fetchOptions.body instanceof FormData;
+
 		// Préparation des en-têtes
 		const headers = new Headers(fetchOptions.headers);
-		headers.set('Content-Type', 'application/json');
+		if (!isFormData) {
+			headers.set('Content-Type', 'application/json');
+		}
 		headers.set('Accept', 'application/json');
 
 		// Construction de l'URL complète
