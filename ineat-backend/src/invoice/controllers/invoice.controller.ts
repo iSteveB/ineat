@@ -34,6 +34,10 @@ import {
   InvoiceResponseDto,
 } from '../dto/invoice-response.dto';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
+import {
+  ValidateInvoiceDto,
+  ValidateInvoiceResponseDto,
+} from '../dto/validate-invoice.dto';
 import { INVOICE_MAX_FILE_SIZE_BYTES } from '../services/invoice-upload.service';
 import { InvoiceService, InvoiceUser } from '../services/invoice.service';
 
@@ -186,6 +190,44 @@ export class InvoiceController {
       invoiceId,
       itemId,
       updateDto,
+    );
+  }
+
+  @Post(':id/validate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Valider les lignes de facture',
+    description:
+      "Crée les produits d'inventaire et les dépenses budget pour les lignes sélectionnées.",
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la facture',
+  })
+  @ApiBody({ type: ValidateInvoiceDto })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lignes de facture validées avec succès',
+    type: ValidateInvoiceResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Facture non validable ou lignes incomplètes',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Facture ou ligne non trouvée',
+  })
+  async validateInvoice(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') invoiceId: string,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    validateDto: ValidateInvoiceDto,
+  ): Promise<ValidateInvoiceResponseDto> {
+    return this.invoiceService.validateInvoiceForUser(
+      req.user.id,
+      invoiceId,
+      validateDto,
     );
   }
 }

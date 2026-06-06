@@ -13,6 +13,7 @@ import {
 } from './invoice-analysis.service';
 import { InvoiceUploadService } from './invoice-upload.service';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
+import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
 
 export interface InvoiceUser {
   id: string;
@@ -200,6 +201,141 @@ export class InvoiceService {
     return this.formatInvoiceItem(updatedItem);
   }
 
+  async validateInvoiceForUser(
+    userId: string,
+    invoiceId: string,
+    validateDto: ValidateInvoiceDto,
+  ) {
+    const uniqueItemIds = Array.from(new Set(validateDto.invoiceItemIds));
+    const invoice = await this.prisma.invoice.findFirst({
+      where: {
+        id: invoiceId,
+        userId,
+      },
+      include: {
+        InvoiceItem: {
+          where: {
+            id: {
+              in: uniqueItemIds,
+            },
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException('Facture non trouvée');
+    }
+
+    if (invoice.status === InvoiceStatus.PROCESSING) {
+      throw new BadRequestException(
+        "La facture est encore en cours d'analyse",
+      );
+    }
+
+    if (invoice.status === InvoiceStatus.FAILED) {
+      throw new BadRequestException(
+        "Une facture en échec d'analyse ne peut pas être validée",
+      );
+    }
+
+    if (invoice.InvoiceItem.length !== uniqueItemIds.length) {
+      throw new NotFoundException('Une ou plusieurs lignes sont introuvables');
+    }
+
+    const purchaseDate = invoice.purchaseDate ?? invoice.createdAt;
+
+    return this.prisma.$transaction(async (tx) => {
+      const summary = {
+        success: true,
+        invoiceId,
+        validatedItemCount: 0,
+        skippedItemCount: 0,
+        inventoryItemCount: 0,
+        expenseCount: 0,
+        totalBudgetAmount: 0,
+        message: 'Lignes de facture validées avec succès',
+      };
+
+      for (const item of invoice.InvoiceItem) {
+        if (item.validated) {
+          summary.skippedItemCount += 1;
+          continue;
+        }
+
+        const product = await this.resolveProductForInvoiceItem(tx, item);
+        const now = new Date();
+
+        await tx.inventoryItem.create({
+          data: {
+            id: randomUUID(),
+            userId,
+            productId: product.id,
+            quantity: item.quantity,
+            purchaseDate,
+            expiryDate: item.expiryDate,
+            purchasePrice: item.totalPrice,
+            storageLocation: item.storageLocation,
+            notes: item.notes,
+            updatedAt: now,
+          },
+        });
+        summary.inventoryItemCount += 1;
+
+        const expense = await this.createExpenseForInvoiceItem(
+          tx,
+          userId,
+          invoiceId,
+          item,
+          purchaseDate,
+        );
+
+        if (expense) {
+          summary.expenseCount += 1;
+          summary.totalBudgetAmount += expense.amount;
+        }
+
+        await tx.invoiceItem.update({
+          where: { id: item.id },
+          data: {
+            productId: product.id,
+            validated: true,
+            updatedAt: now,
+          },
+        });
+        summary.validatedItemCount += 1;
+      }
+
+      const [totalItemCount, totalValidatedItemCount] = await Promise.all([
+        tx.invoiceItem.count({
+          where: { invoiceId },
+        }),
+        tx.invoiceItem.count({
+          where: {
+            invoiceId,
+            validated: true,
+          },
+        }),
+      ]);
+
+      await tx.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          status:
+            totalItemCount > 0 && totalItemCount === totalValidatedItemCount
+              ? InvoiceStatus.VALIDATED
+              : invoice.status,
+          updatedAt: new Date(),
+        },
+      });
+
+      return summary;
+    });
+  }
+
   private async completeInvoiceAnalysis(
     invoiceId: string,
     analysis: AnalyzedInvoice,
@@ -244,6 +380,137 @@ export class InvoiceService {
         })),
       });
     });
+  }
+
+  private async resolveProductForInvoiceItem(tx: any, item: any) {
+    if (item.productId) {
+      const product = await tx.product.findUnique({
+        where: { id: item.productId },
+        include: { Category: true },
+      });
+
+      if (!product) {
+        throw new NotFoundException('Produit associé introuvable');
+      }
+
+      return product;
+    }
+
+    const barcode = this.getValidBarcode(item.selectedEan ?? item.productCode);
+
+    if (barcode) {
+      const productByBarcode = await tx.product.findUnique({
+        where: { barcode },
+        include: { Category: true },
+      });
+
+      if (productByBarcode) {
+        return productByBarcode;
+      }
+    }
+
+    if (!item.category) {
+      throw new BadRequestException(
+        `La catégorie est requise pour "${item.detectedName}"`,
+      );
+    }
+
+    const category = await tx.category.findFirst({
+      where: { slug: item.category },
+    });
+
+    if (!category) {
+      throw new BadRequestException(
+        `La catégorie "${item.category}" n'existe pas`,
+      );
+    }
+
+    const existingProduct = await tx.product.findFirst({
+      where: {
+        name: {
+          equals: item.detectedName,
+          mode: 'insensitive',
+        },
+        brand: null,
+        categoryId: category.id,
+        ...(barcode ? { barcode: null } : {}),
+      },
+      include: { Category: true },
+    });
+
+    if (existingProduct) {
+      if (barcode && !existingProduct.barcode) {
+        return tx.product.update({
+          where: { id: existingProduct.id },
+          data: { barcode },
+          include: { Category: true },
+        });
+      }
+
+      return existingProduct;
+    }
+
+    return tx.product.create({
+      data: {
+        id: randomUUID(),
+        name: item.detectedName,
+        barcode,
+        categoryId: category.id,
+        unitType: 'UNIT',
+        updatedAt: new Date(),
+      },
+      include: { Category: true },
+    });
+  }
+
+  private async createExpenseForInvoiceItem(
+    tx: any,
+    userId: string,
+    invoiceId: string,
+    item: any,
+    purchaseDate: Date,
+  ) {
+    if (!item.totalPrice || item.totalPrice <= 0) {
+      return null;
+    }
+
+    const budget = await tx.budget.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        periodStart: { lte: purchaseDate },
+        periodEnd: { gte: purchaseDate },
+      },
+    });
+
+    if (!budget) {
+      return null;
+    }
+
+    return tx.expense.create({
+      data: {
+        id: randomUUID(),
+        userId,
+        budgetId: budget.id,
+        amount: item.totalPrice,
+        date: purchaseDate,
+        source: 'Facture Drive',
+        category: item.category,
+        notes: item.detectedName,
+        invoiceId,
+        invoiceItemId: item.id,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  private getValidBarcode(value?: string | null): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    return /^\d{8,13}$/.test(trimmed) ? trimmed : null;
   }
 
   private formatInvoice(invoice: any) {

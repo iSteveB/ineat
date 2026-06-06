@@ -9,6 +9,26 @@ describe('InvoiceService', () => {
     },
     invoiceItem: {
       createMany: jest.fn(),
+      update: jest.fn(),
+      count: jest.fn(),
+    },
+    product: {
+      findUnique: jest.fn(),
+      findFirst: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
+    category: {
+      findFirst: jest.fn(),
+    },
+    inventoryItem: {
+      create: jest.fn(),
+    },
+    budget: {
+      findFirst: jest.fn(),
+    },
+    expense: {
+      create: jest.fn(),
     },
   };
 
@@ -108,6 +128,28 @@ describe('InvoiceService', () => {
       usageQuotaService as any,
     );
     prisma.$transaction.mockImplementation((callback) => callback(tx));
+    tx.invoiceItem.count.mockResolvedValue(1);
+    tx.category.findFirst.mockResolvedValue({
+      id: 'category-1',
+      slug: 'fruits-et-legumes',
+    });
+    tx.product.findUnique.mockResolvedValue(null);
+    tx.product.findFirst.mockResolvedValue(null);
+    tx.product.create.mockResolvedValue({
+      id: 'product-1',
+      name: 'Pommes',
+      categoryId: 'category-1',
+    });
+    tx.inventoryItem.create.mockResolvedValue({
+      id: 'inventory-item-1',
+    });
+    tx.budget.findFirst.mockResolvedValue({
+      id: 'budget-1',
+    });
+    tx.expense.create.mockResolvedValue({
+      id: 'expense-1',
+      amount: 4.5,
+    });
     prisma.invoice.create.mockResolvedValue(createdInvoice);
     prisma.invoice.findFirst.mockResolvedValue(completedInvoice);
     prisma.invoiceItem.update.mockResolvedValue({
@@ -313,5 +355,171 @@ describe('InvoiceService', () => {
     ).rejects.toThrow('Le nom détecté est obligatoire');
 
     expect(prisma.invoiceItem.update).not.toHaveBeenCalled();
+  });
+
+  it("valide une ligne vers l'inventaire et le budget", async () => {
+    tx.invoiceItem.count
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(1);
+
+    const result = await service.validateInvoiceForUser(
+      'user-1',
+      'invoice-1',
+      {
+        invoiceItemIds: ['item-1'],
+      },
+    );
+
+    expect(tx.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'Pommes',
+          categoryId: 'category-1',
+          unitType: 'UNIT',
+        }),
+      }),
+    );
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        productId: 'product-1',
+        quantity: 2,
+        purchasePrice: 4.5,
+      }),
+    });
+    expect(tx.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        budgetId: 'budget-1',
+        amount: 4.5,
+        source: 'Facture Drive',
+        invoiceId: 'invoice-1',
+        invoiceItemId: 'item-1',
+      }),
+    });
+    expect(tx.invoiceItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: expect.objectContaining({
+        productId: 'product-1',
+        validated: true,
+      }),
+    });
+    expect(tx.invoice.update).toHaveBeenLastCalledWith({
+      where: { id: 'invoice-1' },
+      data: expect.objectContaining({
+        status: InvoiceStatus.VALIDATED,
+      }),
+    });
+    expect(result).toMatchObject({
+      validatedItemCount: 1,
+      skippedItemCount: 0,
+      inventoryItemCount: 1,
+      expenseCount: 1,
+      totalBudgetAmount: 4.5,
+    });
+  });
+
+  it('réutilise le produit existant si la ligne contient un productId', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          productId: 'product-existing',
+        },
+      ],
+    });
+    tx.product.findUnique.mockResolvedValue({
+      id: 'product-existing',
+      name: 'Pommes',
+    });
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.product.findUnique).toHaveBeenCalledWith({
+      where: { id: 'product-existing' },
+      include: { Category: true },
+    });
+    expect(tx.product.create).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        productId: 'product-existing',
+      }),
+    });
+  });
+
+  it('ignore une ligne déjà validée pour rendre le retry idempotent', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          validated: true,
+        },
+      ],
+    });
+
+    const result = await service.validateInvoiceForUser(
+      'user-1',
+      'invoice-1',
+      {
+        invoiceItemIds: ['item-1'],
+      },
+    );
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+    expect(tx.expense.create).not.toHaveBeenCalled();
+    expect(tx.invoiceItem.update).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      validatedItemCount: 0,
+      skippedItemCount: 1,
+      inventoryItemCount: 0,
+      expenseCount: 0,
+    });
+  });
+
+  it('laisse la facture en COMPLETED lors d’une validation partielle', async () => {
+    tx.invoiceItem.count
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(1);
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.invoice.update).toHaveBeenLastCalledWith({
+      where: { id: 'invoice-1' },
+      data: expect.objectContaining({
+        status: InvoiceStatus.COMPLETED,
+      }),
+    });
+  });
+
+  it('refuse une facture en cours ou en échec', async () => {
+    prisma.invoice.findFirst.mockResolvedValueOnce({
+      ...completedInvoice,
+      status: InvoiceStatus.PROCESSING,
+    });
+
+    await expect(
+      service.validateInvoiceForUser('user-1', 'invoice-1', {
+        invoiceItemIds: ['item-1'],
+      }),
+    ).rejects.toThrow("La facture est encore en cours d'analyse");
+
+    prisma.invoice.findFirst.mockResolvedValueOnce({
+      ...completedInvoice,
+      status: InvoiceStatus.FAILED,
+    });
+
+    await expect(
+      service.validateInvoiceForUser('user-1', 'invoice-1', {
+        invoiceItemIds: ['item-1'],
+      }),
+    ).rejects.toThrow(
+      "Une facture en échec d'analyse ne peut pas être validée",
+    );
   });
 });
