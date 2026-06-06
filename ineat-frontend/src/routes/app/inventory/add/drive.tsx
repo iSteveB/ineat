@@ -330,7 +330,7 @@ function DriveInvoiceImportPage() {
 							</label>
 
 							{localError && (
-								<Alert variant='destructive'>
+								<Alert variant='error'>
 									<AlertDescription>{localError}</AlertDescription>
 								</Alert>
 							)}
