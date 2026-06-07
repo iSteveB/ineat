@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
@@ -29,6 +30,8 @@ export interface InvoiceUser {
 
 @Injectable()
 export class InvoiceService {
+  private readonly logger = new Logger(InvoiceService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly invoiceUploadService: InvoiceUploadService,
@@ -40,10 +43,25 @@ export class InvoiceService {
   async importDriveInvoice(user: InvoiceUser, file: Express.Multer.File) {
     await this.usageQuotaService.assertCanConsume(user, 'DRIVE_IMPORT');
 
-    const pdfUrl = await this.invoiceUploadService.uploadInvoicePdf(
-      user.id,
-      file,
-    );
+    let pdfUrl: string;
+
+    try {
+      pdfUrl = await this.invoiceUploadService.uploadInvoicePdf(user.id, file);
+    } catch (error) {
+      this.logInvoiceEvent({
+        event: 'invoice_import_upload_failed',
+        userId: user.id,
+        status: InvoiceStatus.FAILED,
+        error: error instanceof Error ? error.name : 'UnknownError',
+      });
+
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException("La facture n'a pas pu être chargée");
+    }
+
     const now = new Date();
 
     const invoice = await this.prisma.invoice.create({
@@ -71,6 +89,16 @@ export class InvoiceService {
         'DRIVE_IMPORT',
       );
 
+      this.logInvoiceEvent({
+        event: 'invoice_analysis_completed',
+        invoiceId: invoice.id,
+        userId: user.id,
+        provider: analysis.provider,
+        durationMs: processingTime,
+        status: InvoiceStatus.COMPLETED,
+        itemCount: analysis.items.length,
+      });
+
       return this.getInvoiceForUser(user.id, invoice.id);
     } catch (error) {
       await this.prisma.invoice.update({
@@ -82,9 +110,13 @@ export class InvoiceService {
         },
       });
 
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
+      this.logInvoiceEvent({
+        event: 'invoice_analysis_failed',
+        invoiceId: invoice.id,
+        userId: user.id,
+        status: InvoiceStatus.FAILED,
+        error: error instanceof Error ? error.name : 'UnknownError',
+      });
 
       throw new BadRequestException("La facture n'a pas pu être analysée");
     }
@@ -291,6 +323,22 @@ export class InvoiceService {
 
         const product = await this.resolveProductForInvoiceItem(tx, item);
         const now = new Date();
+        const existingExpense = await tx.expense.findUnique({
+          where: { invoiceItemId: item.id },
+        });
+
+        if (existingExpense) {
+          await tx.invoiceItem.update({
+            where: { id: item.id },
+            data: {
+              productId: product.id,
+              validated: true,
+              updatedAt: now,
+            },
+          });
+          summary.skippedItemCount += 1;
+          continue;
+        }
 
         await tx.inventoryItem.create({
           data: {
@@ -604,5 +652,9 @@ export class InvoiceService {
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
     };
+  }
+
+  private logInvoiceEvent(event: Record<string, unknown>) {
+    this.logger.log(JSON.stringify(event));
   }
 }

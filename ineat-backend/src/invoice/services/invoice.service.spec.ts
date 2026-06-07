@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
 import { InvoiceStatus } from '../../../prisma/generated/prisma/client';
 import { InvoiceService, InvoiceUser } from './invoice.service';
 
@@ -29,6 +29,7 @@ describe('InvoiceService', () => {
       findFirst: jest.fn(),
     },
     expense: {
+      findUnique: jest.fn(),
       create: jest.fn(),
     },
   };
@@ -63,6 +64,7 @@ describe('InvoiceService', () => {
   };
 
   let service: InvoiceService;
+  let loggerSpy: jest.SpyInstance;
 
   const user: InvoiceUser = {
     id: 'user-1',
@@ -126,6 +128,7 @@ describe('InvoiceService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    loggerSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     service = new InvoiceService(
       prisma as any,
       invoiceUploadService as any,
@@ -153,6 +156,7 @@ describe('InvoiceService', () => {
     tx.budget.findFirst.mockResolvedValue({
       id: 'budget-1',
     });
+    tx.expense.findUnique.mockResolvedValue(null);
     tx.expense.create.mockResolvedValue({
       id: 'expense-1',
       amount: 4.5,
@@ -193,6 +197,10 @@ describe('InvoiceService', () => {
     invoiceProductResolverService.resolveItems.mockImplementation(
       async (_tx, items) => items,
     );
+  });
+
+  afterEach(() => {
+    loggerSpy.mockRestore();
   });
 
   it('importe une facture, crée les lignes et consomme le quota après analyse réussie', async () => {
@@ -245,6 +253,9 @@ describe('InvoiceService', () => {
       user,
       'DRIVE_IMPORT',
     );
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.stringContaining('invoice_analysis_completed'),
+    );
     expect(result).toMatchObject({
       id: 'invoice-1',
       status: InvoiceStatus.COMPLETED,
@@ -274,6 +285,35 @@ describe('InvoiceService', () => {
       }),
     });
     expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.stringContaining('invoice_analysis_failed'),
+    );
+  });
+
+  it("masque les erreurs techniques d'upload sans créer de facture", async () => {
+    invoiceUploadService.uploadInvoicePdf.mockRejectedValue(
+      new Error('cloudinary api secret leaked'),
+    );
+
+    await expect(service.importDriveInvoice(user, file)).rejects.toThrow(
+      "La facture n'a pas pu être chargée",
+    );
+
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+    expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.stringContaining('invoice_import_upload_failed'),
+    );
+  });
+
+  it("masque aussi les BadRequest techniques du provider d'analyse", async () => {
+    invoiceAnalysisService.analyzePdf.mockRejectedValue(
+      new BadRequestException('provider private payload'),
+    );
+
+    await expect(service.importDriveInvoice(user, file)).rejects.toThrow(
+      "La facture n'a pas pu être analysée",
+    );
   });
 
   it("récupère uniquement une facture appartenant à l'utilisateur", async () => {
@@ -287,6 +327,18 @@ describe('InvoiceService', () => {
         },
       }),
     );
+  });
+
+  it("refuse la validation d'une facture appartenant à un autre utilisateur", async () => {
+    prisma.invoice.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.validateInvoiceForUser('user-2', 'invoice-1', {
+        invoiceItemIds: ['item-1'],
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it('corrige une ligne de facture non validée', async () => {
@@ -492,6 +544,34 @@ describe('InvoiceService', () => {
       skippedItemCount: 1,
       inventoryItemCount: 0,
       expenseCount: 0,
+    });
+  });
+
+  it('ne recrée pas de dépense ni de budget si une dépense existe déjà pour la ligne', async () => {
+    tx.expense.findUnique.mockResolvedValue({
+      id: 'expense-existing',
+      amount: 4.5,
+    });
+
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+    expect(tx.expense.create).not.toHaveBeenCalled();
+    expect(tx.invoiceItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: expect.objectContaining({
+        productId: 'product-1',
+        validated: true,
+      }),
+    });
+    expect(result).toMatchObject({
+      validatedItemCount: 0,
+      skippedItemCount: 1,
+      inventoryItemCount: 0,
+      expenseCount: 0,
+      totalBudgetAmount: 0,
     });
   });
 

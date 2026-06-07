@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 
-import { invoiceService } from './invoiceService';
+import { INVOICE_MAX_FILE_SIZE_BYTES, invoiceService } from './invoiceService';
 import { server } from '@/test/mocks/server';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
@@ -71,6 +71,18 @@ describe('invoiceService', () => {
 		);
 	});
 
+	it('refuse côté client les PDF trop lourds', async () => {
+		const file = new File(
+			[new Uint8Array(INVOICE_MAX_FILE_SIZE_BYTES + 1)],
+			'facture.pdf',
+			{ type: 'application/pdf' }
+		);
+
+		await expect(invoiceService.importDriveInvoice(file)).rejects.toThrow(
+			'La facture PDF ne doit pas dépasser 5 Mo'
+		);
+	});
+
 	it('met à jour une ligne détectée', async () => {
 		let requestBody: unknown;
 
@@ -95,6 +107,34 @@ describe('invoiceService', () => {
 
 		expect(requestBody).toMatchObject({ detectedName: 'Pommes bio' });
 		expect(result.detectedName).toBe('Pommes bio');
+	});
+
+	it("persiste le choix utilisateur de créer un nouveau produit", async () => {
+		let requestBody: unknown;
+
+		server.use(
+			http.patch(
+				`${API_URL}/invoices/${invoice.id}/items/${invoice.items[0].id}`,
+				async ({ request }) => {
+					requestBody = await request.json();
+					return HttpResponse.json({
+						...invoice.items[0],
+						productId: null,
+						selectedEan: null,
+					});
+				}
+			)
+		);
+
+		await invoiceService.updateInvoiceItem(invoice.id, invoice.items[0].id, {
+			productId: null,
+			selectedEan: null,
+		});
+
+		expect(requestBody).toEqual({
+			productId: null,
+			selectedEan: null,
+		});
 	});
 
 	it('valide une sélection de lignes', async () => {
