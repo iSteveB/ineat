@@ -66,7 +66,7 @@ describe('LogoutButton', () => {
 			expect(navigateMock).toHaveBeenCalledTimes(1);
 		});
 		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/login',
+			to: '/',
 			replace: true,
 		});
 	});

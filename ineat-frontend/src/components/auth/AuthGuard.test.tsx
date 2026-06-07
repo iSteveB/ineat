@@ -57,7 +57,7 @@ describe('AuthGuard', () => {
 		expect(screen.queryByTestId('outlet-content')).not.toBeInTheDocument();
 	});
 
-	it("redirige vers la page de connexion si l'utilisateur n'est pas authentifié côté serveur", async () => {
+	it("redirige vers la landing si l'utilisateur n'est pas authentifié côté serveur", async () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			checkAuthentication: mockCheckAuthentication.mockResolvedValue(false),
 		});
@@ -69,7 +69,7 @@ describe('AuthGuard', () => {
 		// Attendre que la redirection soit appelée
 		await waitFor(() => {
 			expect(navigateMock).toHaveBeenCalledWith({
-				to: '/login',
+				to: '/',
 				search: {
 					redirect: encodeURIComponent('/dashboard?param=value'),
 				},
@@ -94,7 +94,7 @@ describe('AuthGuard', () => {
 		await waitFor(() => {
 			// Vérifier que redirect a été appelé avec les bons paramètres
 			expect(navigateMock).toHaveBeenCalledWith({
-				to: '/login',
+				to: '/',
 				search: {
 					redirect: encodeURIComponent('/dashboard?param=value'),
 					session: 'expired',
@@ -119,7 +119,7 @@ describe('AuthGuard', () => {
 		await waitFor(() => {
 			// Vérifier que redirect a été appelé avec les bons paramètres
 			expect(navigateMock).toHaveBeenCalledWith({
-				to: '/login',
+				to: '/',
 				search: {
 					redirect: encodeURIComponent('/dashboard?param=value'),
 					session: 'expired',

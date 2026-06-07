@@ -18,16 +18,16 @@ export function LogoutButton(props: ButtonProps) {
 			// Attendre que la déconnexion soit terminée
 			await logout();
 
-			// Naviguer vers la page de connexion après la déconnexion
+			// Naviguer vers la landing après la déconnexion
 			navigate({
-				to: '/login',
+				to: '/',
 				replace: true, // Remplacer l'entrée de l'historique pour éviter de revenir en arrière
 			});
 		} catch (error) {
 			console.error('Erreur lors de la déconnexion:', error);
-			// En cas d'erreur, naviguer quand même vers la page de connexion
+			// En cas d'erreur, naviguer quand même vers la landing
 			navigate({
-				to: '/login',
+				to: '/',
 				replace: true,
 			});
 		} finally {

@@ -11,7 +11,7 @@ const AuthGuard = () => {
 
 	const redirectToLogin = useCallback((sessionExpired = false) => {
 		navigate({
-			to: '/login',
+			to: '/',
 			search: {
 				redirect: encodeURIComponent(location.pathname + location.search),
 				...(sessionExpired ? { session: 'expired' } : {}),
@@ -26,12 +26,12 @@ const AuthGuard = () => {
 			try {
 				const isValid = await checkAuthentication();
 				if (!isValid) {
-					// Si l'authentification n'est pas valide, rediriger vers la page de connexion
+					// Si l'authentification n'est pas valide, rediriger vers la landing
 					redirectToLogin(Boolean(user));
 					return;
 				}
 			} catch {
-				// En cas d'erreur, rediriger vers la page de connexion
+				// En cas d'erreur, rediriger vers la landing
 				redirectToLogin(true);
 				return;
 			} finally {
