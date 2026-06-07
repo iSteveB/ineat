@@ -11,6 +11,7 @@ import {
   AnalyzedInvoice,
   InvoiceAnalysisService,
 } from './invoice-analysis.service';
+import { InvoiceProductResolverService } from './invoice-product-resolver.service';
 import { InvoiceUploadService } from './invoice-upload.service';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
@@ -32,6 +33,7 @@ export class InvoiceService {
     private readonly prisma: PrismaService,
     private readonly invoiceUploadService: InvoiceUploadService,
     private readonly invoiceAnalysisService: InvoiceAnalysisService,
+    private readonly invoiceProductResolverService: InvoiceProductResolverService,
     private readonly usageQuotaService: UsageQuotaService,
   ) {}
 
@@ -99,6 +101,13 @@ export class InvoiceService {
           orderBy: {
             createdAt: 'asc',
           },
+          include: {
+            Product: {
+              include: {
+                Category: true,
+              },
+            },
+          },
         },
       },
     });
@@ -127,6 +136,13 @@ export class InvoiceService {
             id: itemId,
           },
           take: 1,
+          include: {
+            Product: {
+              include: {
+                Category: true,
+              },
+            },
+          },
         },
       },
     });
@@ -196,6 +212,13 @@ export class InvoiceService {
     const updatedItem = await this.prisma.invoiceItem.update({
       where: { id: itemId },
       data: updateData,
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
+      },
     });
 
     return this.formatInvoiceItem(updatedItem);
@@ -344,6 +367,12 @@ export class InvoiceService {
     const now = new Date();
 
     await this.prisma.$transaction(async (tx) => {
+      const resolvedItems =
+        await this.invoiceProductResolverService.resolveItems(
+          tx,
+          analysis.items,
+        );
+
       await tx.invoice.update({
         where: { id: invoiceId },
         data: {
@@ -363,9 +392,10 @@ export class InvoiceService {
       });
 
       await tx.invoiceItem.createMany({
-        data: analysis.items.map((item) => ({
+        data: resolvedItems.map((item) => ({
           id: randomUUID(),
           invoiceId,
+          productId: item.productId,
           detectedName: item.detectedName,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
@@ -552,6 +582,22 @@ export class InvoiceService {
       discount: item.discount,
       selectedEan: item.selectedEan,
       suggestedEans: item.suggestedEans,
+      product: item.Product
+        ? {
+            id: item.Product.id,
+            name: item.Product.name,
+            brand: item.Product.brand,
+            barcode: item.Product.barcode,
+            category: item.Product.Category
+              ? {
+                  id: item.Product.Category.id,
+                  name: item.Product.Category.name,
+                  slug: item.Product.Category.slug,
+                  icon: item.Product.Category.icon,
+                }
+              : null,
+          }
+        : null,
       expiryDate: item.expiryDate?.toISOString() ?? null,
       storageLocation: item.storageLocation,
       notes: item.notes,

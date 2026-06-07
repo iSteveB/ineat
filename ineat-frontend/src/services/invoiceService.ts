@@ -18,7 +18,19 @@ export interface InvoiceItem {
 	category?: string | null;
 	discount?: number | null;
 	selectedEan?: string | null;
-	suggestedEans: unknown;
+	suggestedEans: string[];
+	product?: {
+		id: string;
+		name: string;
+		brand?: string | null;
+		barcode?: string | null;
+		category?: {
+			id: string;
+			name: string;
+			slug: string;
+			icon?: string | null;
+		} | null;
+	} | null;
 	expiryDate?: string | null;
 	storageLocation?: string | null;
 	notes?: string | null;
@@ -57,11 +69,11 @@ export interface UpdateInvoiceItemInput {
 	unitPrice?: number;
 	totalPrice?: number;
 	category?: string;
-	productId?: string;
+	productId?: string | null;
 	expiryDate?: string;
 	storageLocation?: string;
 	notes?: string;
-	selectedEan?: string;
+	selectedEan?: string | null;
 }
 
 export interface ValidateInvoiceResponse {

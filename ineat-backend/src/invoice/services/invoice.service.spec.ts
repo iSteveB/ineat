@@ -15,6 +15,7 @@ describe('InvoiceService', () => {
     product: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -50,6 +51,10 @@ describe('InvoiceService', () => {
 
   const invoiceAnalysisService = {
     analyzePdf: jest.fn(),
+  };
+
+  const invoiceProductResolverService = {
+    resolveItems: jest.fn(),
   };
 
   const usageQuotaService = {
@@ -125,6 +130,7 @@ describe('InvoiceService', () => {
       prisma as any,
       invoiceUploadService as any,
       invoiceAnalysisService as any,
+      invoiceProductResolverService as any,
       usageQuotaService as any,
     );
     prisma.$transaction.mockImplementation((callback) => callback(tx));
@@ -135,6 +141,7 @@ describe('InvoiceService', () => {
     });
     tx.product.findUnique.mockResolvedValue(null);
     tx.product.findFirst.mockResolvedValue(null);
+    tx.product.findMany.mockResolvedValue([]);
     tx.product.create.mockResolvedValue({
       id: 'product-1',
       name: 'Pommes',
@@ -183,6 +190,9 @@ describe('InvoiceService', () => {
         },
       ],
     });
+    invoiceProductResolverService.resolveItems.mockImplementation(
+      async (_tx, items) => items,
+    );
   });
 
   it('importe une facture, crée les lignes et consomme le quota après analyse réussie', async () => {
@@ -213,6 +223,14 @@ describe('InvoiceService', () => {
           analysisProvider: 'mock',
         }),
       }),
+    );
+    expect(invoiceProductResolverService.resolveItems).toHaveBeenCalledWith(
+      tx,
+      [
+        expect.objectContaining({
+          detectedName: 'Pommes',
+        }),
+      ],
     );
     expect(tx.invoiceItem.createMany).toHaveBeenCalledWith({
       data: [
@@ -291,10 +309,10 @@ describe('InvoiceService', () => {
           userId: 'user-1',
         },
         include: {
-          InvoiceItem: {
+          InvoiceItem: expect.objectContaining({
             where: { id: 'item-1' },
             take: 1,
-          },
+          }),
         },
       }),
     );
@@ -306,6 +324,13 @@ describe('InvoiceService', () => {
         totalPrice: 6.75,
         storageLocation: 'frigo',
       }),
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
+      },
     });
     expect(result).toMatchObject({
       id: 'item-1',
@@ -358,17 +383,11 @@ describe('InvoiceService', () => {
   });
 
   it("valide une ligne vers l'inventaire et le budget", async () => {
-    tx.invoiceItem.count
-      .mockResolvedValueOnce(1)
-      .mockResolvedValueOnce(1);
+    tx.invoiceItem.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
 
-    const result = await service.validateInvoiceForUser(
-      'user-1',
-      'invoice-1',
-      {
-        invoiceItemIds: ['item-1'],
-      },
-    );
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
 
     expect(tx.product.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -461,13 +480,9 @@ describe('InvoiceService', () => {
       ],
     });
 
-    const result = await service.validateInvoiceForUser(
-      'user-1',
-      'invoice-1',
-      {
-        invoiceItemIds: ['item-1'],
-      },
-    );
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
 
     expect(tx.inventoryItem.create).not.toHaveBeenCalled();
     expect(tx.expense.create).not.toHaveBeenCalled();
@@ -481,9 +496,7 @@ describe('InvoiceService', () => {
   });
 
   it('laisse la facture en COMPLETED lors d’une validation partielle', async () => {
-    tx.invoiceItem.count
-      .mockResolvedValueOnce(2)
-      .mockResolvedValueOnce(1);
+    tx.invoiceItem.count.mockResolvedValueOnce(2).mockResolvedValueOnce(1);
 
     await service.validateInvoiceForUser('user-1', 'invoice-1', {
       invoiceItemIds: ['item-1'],

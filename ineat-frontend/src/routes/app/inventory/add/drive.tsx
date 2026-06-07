@@ -18,6 +18,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import {
 	Table,
 	TableBody,
 	TableCell,
@@ -50,6 +57,7 @@ type InvoiceItemDraft = Pick<
 	| 'storageLocation'
 	| 'notes'
 	| 'selectedEan'
+	| 'productId'
 >;
 
 const formatCurrency = (amount?: number | null): string =>
@@ -73,7 +81,23 @@ const createDraft = (item: InvoiceItem): InvoiceItemDraft => ({
 	storageLocation: item.storageLocation,
 	notes: item.notes,
 	selectedEan: item.selectedEan,
+	productId: item.productId,
 });
+
+const getAssociationValue = (draft: InvoiceItemDraft): string => {
+	if (draft.productId) {
+		return `product:${draft.productId}`;
+	}
+
+	if (draft.selectedEan) {
+		return `ean:${draft.selectedEan}`;
+	}
+
+	return 'new';
+};
+
+const getSuggestedEans = (item: InvoiceItem): string[] =>
+	Array.isArray(item.suggestedEans) ? item.suggestedEans : [];
 
 function DriveInvoiceImportPage() {
 	const navigate = useNavigate();
@@ -211,6 +235,47 @@ function DriveInvoiceImportPage() {
 		}));
 	};
 
+	const updateAssociation = (itemId: string, value: string) => {
+		setDrafts((current) => {
+			const draft = current[itemId];
+
+			if (!draft) {
+				return current;
+			}
+
+			if (value === 'new') {
+				return {
+					...current,
+					[itemId]: {
+						...draft,
+						productId: null,
+						selectedEan: null,
+					},
+				};
+			}
+
+			if (value.startsWith('product:')) {
+				return {
+					...current,
+					[itemId]: {
+						...draft,
+						productId: value.replace('product:', ''),
+						selectedEan: null,
+					},
+				};
+			}
+
+			return {
+				...current,
+				[itemId]: {
+					...draft,
+					productId: null,
+					selectedEan: value.replace('ean:', ''),
+				},
+			};
+		});
+	};
+
 	const saveDraft = (item: InvoiceItem) => {
 		const draft = drafts[item.id];
 
@@ -226,10 +291,13 @@ function DriveInvoiceImportPage() {
 				unitPrice: draft.unitPrice ?? undefined,
 				totalPrice: draft.totalPrice ?? undefined,
 				category: draft.category ?? undefined,
+				productId:
+					draft.productId === null ? null : draft.productId ?? undefined,
 				expiryDate: draft.expiryDate ?? undefined,
 				storageLocation: draft.storageLocation ?? undefined,
 				notes: draft.notes ?? undefined,
-				selectedEan: draft.selectedEan ?? undefined,
+				selectedEan:
+					draft.selectedEan === null ? null : draft.selectedEan ?? undefined,
 			},
 		});
 	};
@@ -396,6 +464,7 @@ function DriveInvoiceImportPage() {
 											<TableHead>Produit</TableHead>
 											<TableHead>Qté</TableHead>
 											<TableHead>Prix</TableHead>
+											<TableHead>Association</TableHead>
 											<TableHead>Catégorie</TableHead>
 											<TableHead>Stockage</TableHead>
 											<TableHead className='w-12'></TableHead>
@@ -405,6 +474,7 @@ function DriveInvoiceImportPage() {
 										{invoice.items.map((item) => {
 											const draft = drafts[item.id] ?? createDraft(item);
 											const isSelected = selectedIds.has(item.id);
+											const suggestedEans = getSuggestedEans(item);
 
 											return (
 												<TableRow
@@ -463,6 +533,53 @@ function DriveInvoiceImportPage() {
 															}
 															disabled={item.validated}
 														/>
+													</TableCell>
+													<TableCell className='min-w-52'>
+														<Select
+															value={getAssociationValue(draft)}
+															onValueChange={(value) =>
+																updateAssociation(item.id, value)
+															}
+															disabled={item.validated}>
+															<SelectTrigger className='w-full'>
+																<SelectValue />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value='new'>
+																	Nouveau produit
+																</SelectItem>
+																{item.product && (
+																	<SelectItem
+																		value={`product:${item.product.id}`}>
+																		{item.product.name}
+																	</SelectItem>
+																)}
+																{suggestedEans.map((ean) => (
+																	<SelectItem
+																		key={ean}
+																		value={`ean:${ean}`}>
+																		EAN {ean}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
+														{item.product ? (
+															<p className='mt-1 text-xs text-neutral-200'>
+																Produit connu
+																{item.product.barcode
+																	? ` · ${item.product.barcode}`
+																	: ''}
+															</p>
+														) : suggestedEans.length > 0 ? (
+															<p className='mt-1 text-xs text-warning-50'>
+																{suggestedEans.length} EAN proposé
+																{suggestedEans.length > 1 ? 's' : ''}
+															</p>
+														) : (
+															<p className='mt-1 text-xs text-neutral-200'>
+																Création à la validation
+															</p>
+														)}
 													</TableCell>
 													<TableCell className='min-w-40'>
 														<Input

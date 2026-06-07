@@ -1,6 +1,37 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { InvoiceStatus } from '../../../prisma/generated/prisma/client';
 
+class InvoiceItemProductCategoryResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  slug: string;
+
+  @ApiPropertyOptional()
+  icon?: string | null;
+}
+
+class InvoiceItemProductResponseDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiPropertyOptional()
+  brand?: string | null;
+
+  @ApiPropertyOptional()
+  barcode?: string | null;
+
+  @ApiPropertyOptional({ type: InvoiceItemProductCategoryResponseDto })
+  category?: InvoiceItemProductCategoryResponseDto | null;
+}
+
 export class InvoiceItemResponseDto {
   @ApiProperty()
   id: string;
@@ -42,7 +73,10 @@ export class InvoiceItemResponseDto {
   selectedEan?: string | null;
 
   @ApiProperty({ type: [String] })
-  suggestedEans: unknown;
+  suggestedEans: string[];
+
+  @ApiPropertyOptional({ type: InvoiceItemProductResponseDto })
+  product?: InvoiceItemProductResponseDto | null;
 
   @ApiPropertyOptional()
   expiryDate?: string | null;

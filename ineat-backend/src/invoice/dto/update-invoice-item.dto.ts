@@ -45,7 +45,7 @@ export class UpdateInvoiceItemDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsUUID('4', { message: "L'ID du produit doit être un UUID valide" })
-  productId?: string;
+  productId?: string | null;
 
   @ApiPropertyOptional({ format: 'date-time' })
   @IsOptional()
@@ -69,5 +69,5 @@ export class UpdateInvoiceItemDto {
   @Matches(/^\d{8,13}$/, {
     message: "L'EAN sélectionné doit contenir entre 8 et 13 chiffres",
   })
-  selectedEan?: string;
+  selectedEan?: string | null;
 }
