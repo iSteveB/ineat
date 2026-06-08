@@ -160,30 +160,35 @@ model Invoice {
 }
 
 model InvoiceItem {
-  id              String    @id
-  invoiceId       String
-  productId       String?
-  detectedName    String
-  quantity        Float     @default(1)
-  unitPrice       Float?
-  totalPrice      Float?
-  confidence      Float
-  validated       Boolean   @default(false)
-  productCode     String?
-  category        String?
-  discount        Float?
-  selectedEan     String?
-  suggestedEans   Json      @default("[]")
-  expiryDate      DateTime?
-  storageLocation String?
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime
-  Expense         Expense?
-  Invoice         Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
-  Product         Product?  @relation(fields: [productId], references: [id])
+  id                      String    @id
+  invoiceId               String
+  productId               String?
+  detectedName            String
+  quantity                Float     @default(1)
+  unitPrice               Float?
+  totalPrice              Float?
+  confidence              Float
+  validated               Boolean   @default(false)
+  productCode             String?
+  category                String?
+  discount                Float?
+  selectedEan             String?
+  suggestedEans           Json      @default("[]")
+  externalProductProvider String?
+  externalProductStatus   String?
+  externalProductData     Json?
+  externalProductError    String?
+  expiryDate              DateTime?
+  storageLocation         String?
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime
+  Expense                 Expense?
+  Invoice                 Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  Product                 Product?  @relation(fields: [productId], references: [id])
 
   @@index([invoiceId])
+  @@index([externalProductStatus])
   @@index([productCode])
   @@index([productId])
   @@index([validated])

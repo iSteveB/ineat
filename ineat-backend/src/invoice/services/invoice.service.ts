@@ -5,7 +5,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { InvoiceStatus } from '../../../prisma/generated/prisma/client';
+import {
+  InvoiceStatus,
+  Prisma,
+} from '../../../prisma/generated/prisma/client';
 import { UsageQuotaService } from '../../auth/services/usage-quota.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -14,6 +17,7 @@ import {
 } from './invoice-analysis.service';
 import { InvoiceProductResolverService } from './invoice-product-resolver.service';
 import { InvoiceUploadService } from './invoice-upload.service';
+import { OpenFoodFactsInvoiceEnrichmentService } from './openfoodfacts-invoice-enrichment.service';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
 
@@ -37,6 +41,7 @@ export class InvoiceService {
     private readonly invoiceUploadService: InvoiceUploadService,
     private readonly invoiceAnalysisService: InvoiceAnalysisService,
     private readonly invoiceProductResolverService: InvoiceProductResolverService,
+    private readonly openFoodFactsInvoiceEnrichmentService: OpenFoodFactsInvoiceEnrichmentService,
     private readonly usageQuotaService: UsageQuotaService,
   ) {}
 
@@ -416,12 +421,16 @@ export class InvoiceService {
     processingTime: number,
   ): Promise<void> {
     const now = new Date();
+    const enrichedItems =
+      await this.openFoodFactsInvoiceEnrichmentService.enrichItems(
+        analysis.items,
+      );
 
     await this.prisma.$transaction(async (tx) => {
       const resolvedItems =
         await this.invoiceProductResolverService.resolveItems(
           tx,
-          analysis.items,
+          enrichedItems,
         );
 
       await tx.invoice.update({
@@ -457,6 +466,12 @@ export class InvoiceService {
           discount: item.discount,
           selectedEan: item.selectedEan,
           suggestedEans: item.suggestedEans ?? [],
+          externalProductProvider: item.externalProductProvider,
+          externalProductStatus: item.externalProductStatus,
+          externalProductData: item.externalProductData
+            ? (item.externalProductData as unknown as Prisma.InputJsonValue)
+            : undefined,
+          externalProductError: item.externalProductError,
           updatedAt: now,
         })),
       });
@@ -633,6 +648,10 @@ export class InvoiceService {
       discount: item.discount,
       selectedEan: item.selectedEan,
       suggestedEans: item.suggestedEans,
+      externalProductProvider: item.externalProductProvider,
+      externalProductStatus: item.externalProductStatus,
+      externalProductData: item.externalProductData,
+      externalProductError: item.externalProductError,
       product: item.Product
         ? {
             id: item.Product.id,

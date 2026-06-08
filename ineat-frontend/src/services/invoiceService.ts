@@ -20,6 +20,26 @@ export interface InvoiceItem {
 	discount?: number | null;
 	selectedEan?: string | null;
 	suggestedEans: string[];
+	externalProductProvider?: string | null;
+	externalProductStatus?:
+		| 'SKIPPED'
+		| 'FOUND'
+		| 'NOT_FOUND'
+		| 'INCOMPLETE'
+		| 'ERROR'
+		| null;
+	externalProductData?: {
+		source: 'openfoodfacts';
+		barcode: string;
+		name?: string | null;
+		brand?: string | null;
+		quantity?: string | null;
+		imageUrl?: string | null;
+		categoriesTags?: string[];
+		completeness?: number | null;
+		raw?: Record<string, unknown>;
+	} | null;
+	externalProductError?: string | null;
 	product?: {
 		id: string;
 		name: string;

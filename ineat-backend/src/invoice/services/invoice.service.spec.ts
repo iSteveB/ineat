@@ -58,6 +58,10 @@ describe('InvoiceService', () => {
     resolveItems: jest.fn(),
   };
 
+  const openFoodFactsInvoiceEnrichmentService = {
+    enrichItems: jest.fn(),
+  };
+
   const usageQuotaService = {
     assertCanConsume: jest.fn(),
     recordSuccessfulUsage: jest.fn(),
@@ -134,6 +138,7 @@ describe('InvoiceService', () => {
       invoiceUploadService as any,
       invoiceAnalysisService as any,
       invoiceProductResolverService as any,
+      openFoodFactsInvoiceEnrichmentService as any,
       usageQuotaService as any,
     );
     prisma.$transaction.mockImplementation((callback) => callback(tx));
@@ -197,6 +202,20 @@ describe('InvoiceService', () => {
     invoiceProductResolverService.resolveItems.mockImplementation(
       async (_tx, items) => items,
     );
+    openFoodFactsInvoiceEnrichmentService.enrichItems.mockImplementation(
+      async (items) =>
+        items.map((item: any) => ({
+          ...item,
+          externalProductProvider: 'openfoodfacts',
+          externalProductStatus: 'FOUND',
+          externalProductData: {
+            source: 'openfoodfacts',
+            barcode: '3017624010701',
+            name: item.detectedName,
+          },
+          externalProductError: null,
+        })),
+    );
   });
 
   afterEach(() => {
@@ -241,6 +260,7 @@ describe('InvoiceService', () => {
       [
         expect.objectContaining({
           detectedName: 'Pommes',
+          externalProductStatus: 'FOUND',
         }),
       ],
     );
@@ -250,6 +270,8 @@ describe('InvoiceService', () => {
           invoiceId: 'invoice-1',
           detectedName: 'Pommes',
           totalPrice: 4.5,
+          externalProductProvider: 'openfoodfacts',
+          externalProductStatus: 'FOUND',
         }),
       ],
     });

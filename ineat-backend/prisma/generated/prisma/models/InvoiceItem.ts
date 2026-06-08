@@ -56,6 +56,9 @@ export type InvoiceItemMinAggregateOutputType = {
   category: string | null
   discount: number | null
   selectedEan: string | null
+  externalProductProvider: string | null
+  externalProductStatus: string | null
+  externalProductError: string | null
   expiryDate: Date | null
   storageLocation: string | null
   notes: string | null
@@ -77,6 +80,9 @@ export type InvoiceItemMaxAggregateOutputType = {
   category: string | null
   discount: number | null
   selectedEan: string | null
+  externalProductProvider: string | null
+  externalProductStatus: string | null
+  externalProductError: string | null
   expiryDate: Date | null
   storageLocation: string | null
   notes: string | null
@@ -99,6 +105,10 @@ export type InvoiceItemCountAggregateOutputType = {
   discount: number
   selectedEan: number
   suggestedEans: number
+  externalProductProvider: number
+  externalProductStatus: number
+  externalProductData: number
+  externalProductError: number
   expiryDate: number
   storageLocation: number
   notes: number
@@ -138,6 +148,9 @@ export type InvoiceItemMinAggregateInputType = {
   category?: true
   discount?: true
   selectedEan?: true
+  externalProductProvider?: true
+  externalProductStatus?: true
+  externalProductError?: true
   expiryDate?: true
   storageLocation?: true
   notes?: true
@@ -159,6 +172,9 @@ export type InvoiceItemMaxAggregateInputType = {
   category?: true
   discount?: true
   selectedEan?: true
+  externalProductProvider?: true
+  externalProductStatus?: true
+  externalProductError?: true
   expiryDate?: true
   storageLocation?: true
   notes?: true
@@ -181,6 +197,10 @@ export type InvoiceItemCountAggregateInputType = {
   discount?: true
   selectedEan?: true
   suggestedEans?: true
+  externalProductProvider?: true
+  externalProductStatus?: true
+  externalProductData?: true
+  externalProductError?: true
   expiryDate?: true
   storageLocation?: true
   notes?: true
@@ -290,6 +310,10 @@ export type InvoiceItemGroupByOutputType = {
   discount: number | null
   selectedEan: string | null
   suggestedEans: runtime.JsonValue
+  externalProductProvider: string | null
+  externalProductStatus: string | null
+  externalProductData: runtime.JsonValue | null
+  externalProductError: string | null
   expiryDate: Date | null
   storageLocation: string | null
   notes: string | null
@@ -335,6 +359,10 @@ export type InvoiceItemWhereInput = {
   discount?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
   selectedEan?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   suggestedEans?: Prisma.JsonFilter<"InvoiceItem">
+  externalProductProvider?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  externalProductStatus?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  externalProductData?: Prisma.JsonNullableFilter<"InvoiceItem">
+  externalProductError?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   expiryDate?: Prisma.DateTimeNullableFilter<"InvoiceItem"> | Date | string | null
   storageLocation?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
@@ -360,6 +388,10 @@ export type InvoiceItemOrderByWithRelationInput = {
   discount?: Prisma.SortOrderInput | Prisma.SortOrder
   selectedEan?: Prisma.SortOrderInput | Prisma.SortOrder
   suggestedEans?: Prisma.SortOrder
+  externalProductProvider?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductData?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductError?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
   storageLocation?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -388,6 +420,10 @@ export type InvoiceItemWhereUniqueInput = Prisma.AtLeast<{
   discount?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
   selectedEan?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   suggestedEans?: Prisma.JsonFilter<"InvoiceItem">
+  externalProductProvider?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  externalProductStatus?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  externalProductData?: Prisma.JsonNullableFilter<"InvoiceItem">
+  externalProductError?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   expiryDate?: Prisma.DateTimeNullableFilter<"InvoiceItem"> | Date | string | null
   storageLocation?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
@@ -413,6 +449,10 @@ export type InvoiceItemOrderByWithAggregationInput = {
   discount?: Prisma.SortOrderInput | Prisma.SortOrder
   selectedEan?: Prisma.SortOrderInput | Prisma.SortOrder
   suggestedEans?: Prisma.SortOrder
+  externalProductProvider?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductData?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalProductError?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
   storageLocation?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -443,6 +483,10 @@ export type InvoiceItemScalarWhereWithAggregatesInput = {
   discount?: Prisma.FloatNullableWithAggregatesFilter<"InvoiceItem"> | number | null
   selectedEan?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   suggestedEans?: Prisma.JsonWithAggregatesFilter<"InvoiceItem">
+  externalProductProvider?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
+  externalProductStatus?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
+  externalProductData?: Prisma.JsonNullableWithAggregatesFilter<"InvoiceItem">
+  externalProductError?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   expiryDate?: Prisma.DateTimeNullableWithAggregatesFilter<"InvoiceItem"> | Date | string | null
   storageLocation?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
@@ -463,6 +507,10 @@ export type InvoiceItemCreateInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -488,6 +536,10 @@ export type InvoiceItemUncheckedCreateInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -509,6 +561,10 @@ export type InvoiceItemUpdateInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -534,6 +590,10 @@ export type InvoiceItemUncheckedUpdateInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -557,6 +617,10 @@ export type InvoiceItemCreateManyInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -577,6 +641,10 @@ export type InvoiceItemUpdateManyMutationInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -599,6 +667,10 @@ export type InvoiceItemUncheckedUpdateManyInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -636,6 +708,10 @@ export type InvoiceItemCountOrderByAggregateInput = {
   discount?: Prisma.SortOrder
   selectedEan?: Prisma.SortOrder
   suggestedEans?: Prisma.SortOrder
+  externalProductProvider?: Prisma.SortOrder
+  externalProductStatus?: Prisma.SortOrder
+  externalProductData?: Prisma.SortOrder
+  externalProductError?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -665,6 +741,9 @@ export type InvoiceItemMaxOrderByAggregateInput = {
   category?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   selectedEan?: Prisma.SortOrder
+  externalProductProvider?: Prisma.SortOrder
+  externalProductStatus?: Prisma.SortOrder
+  externalProductError?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -686,6 +765,9 @@ export type InvoiceItemMinOrderByAggregateInput = {
   category?: Prisma.SortOrder
   discount?: Prisma.SortOrder
   selectedEan?: Prisma.SortOrder
+  externalProductProvider?: Prisma.SortOrder
+  externalProductStatus?: Prisma.SortOrder
+  externalProductError?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
   notes?: Prisma.SortOrder
@@ -814,6 +896,10 @@ export type InvoiceItemCreateWithoutExpenseInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -838,6 +924,10 @@ export type InvoiceItemUncheckedCreateWithoutExpenseInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -874,6 +964,10 @@ export type InvoiceItemUpdateWithoutExpenseInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -898,6 +992,10 @@ export type InvoiceItemUncheckedUpdateWithoutExpenseInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -918,6 +1016,10 @@ export type InvoiceItemCreateWithoutProductInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -941,6 +1043,10 @@ export type InvoiceItemUncheckedCreateWithoutProductInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -993,6 +1099,10 @@ export type InvoiceItemScalarWhereInput = {
   discount?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
   selectedEan?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   suggestedEans?: Prisma.JsonFilter<"InvoiceItem">
+  externalProductProvider?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  externalProductStatus?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  externalProductData?: Prisma.JsonNullableFilter<"InvoiceItem">
+  externalProductError?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   expiryDate?: Prisma.DateTimeNullableFilter<"InvoiceItem"> | Date | string | null
   storageLocation?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
@@ -1013,6 +1123,10 @@ export type InvoiceItemCreateWithoutInvoiceInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -1036,6 +1150,10 @@ export type InvoiceItemUncheckedCreateWithoutInvoiceInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -1084,6 +1202,10 @@ export type InvoiceItemCreateManyProductInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -1104,6 +1226,10 @@ export type InvoiceItemUpdateWithoutProductInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1127,6 +1253,10 @@ export type InvoiceItemUncheckedUpdateWithoutProductInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1149,6 +1279,10 @@ export type InvoiceItemUncheckedUpdateManyWithoutProductInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1170,6 +1304,10 @@ export type InvoiceItemCreateManyInvoiceInput = {
   discount?: number | null
   selectedEan?: string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: string | null
+  externalProductStatus?: string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: string | null
   expiryDate?: Date | string | null
   storageLocation?: string | null
   notes?: string | null
@@ -1190,6 +1328,10 @@ export type InvoiceItemUpdateWithoutInvoiceInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1213,6 +1355,10 @@ export type InvoiceItemUncheckedUpdateWithoutInvoiceInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1235,6 +1381,10 @@ export type InvoiceItemUncheckedUpdateManyWithoutInvoiceInput = {
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   selectedEan?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   suggestedEans?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  externalProductProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  externalProductData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalProductError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1259,6 +1409,10 @@ export type InvoiceItemSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   discount?: boolean
   selectedEan?: boolean
   suggestedEans?: boolean
+  externalProductProvider?: boolean
+  externalProductStatus?: boolean
+  externalProductData?: boolean
+  externalProductError?: boolean
   expiryDate?: boolean
   storageLocation?: boolean
   notes?: boolean
@@ -1284,6 +1438,10 @@ export type InvoiceItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   discount?: boolean
   selectedEan?: boolean
   suggestedEans?: boolean
+  externalProductProvider?: boolean
+  externalProductStatus?: boolean
+  externalProductData?: boolean
+  externalProductError?: boolean
   expiryDate?: boolean
   storageLocation?: boolean
   notes?: boolean
@@ -1308,6 +1466,10 @@ export type InvoiceItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   discount?: boolean
   selectedEan?: boolean
   suggestedEans?: boolean
+  externalProductProvider?: boolean
+  externalProductStatus?: boolean
+  externalProductData?: boolean
+  externalProductError?: boolean
   expiryDate?: boolean
   storageLocation?: boolean
   notes?: boolean
@@ -1332,6 +1494,10 @@ export type InvoiceItemSelectScalar = {
   discount?: boolean
   selectedEan?: boolean
   suggestedEans?: boolean
+  externalProductProvider?: boolean
+  externalProductStatus?: boolean
+  externalProductData?: boolean
+  externalProductError?: boolean
   expiryDate?: boolean
   storageLocation?: boolean
   notes?: boolean
@@ -1339,7 +1505,7 @@ export type InvoiceItemSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InvoiceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceId" | "productId" | "detectedName" | "quantity" | "unitPrice" | "totalPrice" | "confidence" | "validated" | "productCode" | "category" | "discount" | "selectedEan" | "suggestedEans" | "expiryDate" | "storageLocation" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["invoiceItem"]>
+export type InvoiceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceId" | "productId" | "detectedName" | "quantity" | "unitPrice" | "totalPrice" | "confidence" | "validated" | "productCode" | "category" | "discount" | "selectedEan" | "suggestedEans" | "externalProductProvider" | "externalProductStatus" | "externalProductData" | "externalProductError" | "expiryDate" | "storageLocation" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["invoiceItem"]>
 export type InvoiceItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Expense?: boolean | Prisma.InvoiceItem$ExpenseArgs<ExtArgs>
   Invoice?: boolean | Prisma.InvoiceDefaultArgs<ExtArgs>
@@ -1376,6 +1542,10 @@ export type $InvoiceItemPayload<ExtArgs extends runtime.Types.Extensions.Interna
     discount: number | null
     selectedEan: string | null
     suggestedEans: runtime.JsonValue
+    externalProductProvider: string | null
+    externalProductStatus: string | null
+    externalProductData: runtime.JsonValue | null
+    externalProductError: string | null
     expiryDate: Date | null
     storageLocation: string | null
     notes: string | null
@@ -1821,6 +1991,10 @@ export interface InvoiceItemFieldRefs {
   readonly discount: Prisma.FieldRef<"InvoiceItem", 'Float'>
   readonly selectedEan: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly suggestedEans: Prisma.FieldRef<"InvoiceItem", 'Json'>
+  readonly externalProductProvider: Prisma.FieldRef<"InvoiceItem", 'String'>
+  readonly externalProductStatus: Prisma.FieldRef<"InvoiceItem", 'String'>
+  readonly externalProductData: Prisma.FieldRef<"InvoiceItem", 'Json'>
+  readonly externalProductError: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly expiryDate: Prisma.FieldRef<"InvoiceItem", 'DateTime'>
   readonly storageLocation: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly notes: Prisma.FieldRef<"InvoiceItem", 'String'>

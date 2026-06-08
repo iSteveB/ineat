@@ -75,6 +75,20 @@ export class InvoiceItemResponseDto {
   @ApiProperty({ type: [String] })
   suggestedEans: string[];
 
+  @ApiPropertyOptional()
+  externalProductProvider?: string | null;
+
+  @ApiPropertyOptional({
+    enum: ['SKIPPED', 'FOUND', 'NOT_FOUND', 'INCOMPLETE', 'ERROR'],
+  })
+  externalProductStatus?: string | null;
+
+  @ApiPropertyOptional()
+  externalProductData?: Record<string, unknown> | null;
+
+  @ApiPropertyOptional()
+  externalProductError?: string | null;
+
   @ApiPropertyOptional({ type: InvoiceItemProductResponseDto })
   product?: InvoiceItemProductResponseDto | null;
 

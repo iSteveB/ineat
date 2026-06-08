@@ -1,5 +1,24 @@
 import { Prisma } from '../../../../prisma/generated/prisma/client';
 
+export type InvoiceExternalProductStatus =
+  | 'SKIPPED'
+  | 'FOUND'
+  | 'NOT_FOUND'
+  | 'INCOMPLETE'
+  | 'ERROR';
+
+export interface InvoiceExternalProductData {
+  source: 'openfoodfacts';
+  barcode: string;
+  name?: string | null;
+  brand?: string | null;
+  quantity?: string | null;
+  imageUrl?: string | null;
+  categoriesTags?: string[];
+  completeness?: number | null;
+  raw?: Record<string, unknown>;
+}
+
 export interface AnalyzedInvoiceItem {
   detectedName: string;
   quantity: number;
@@ -11,6 +30,10 @@ export interface AnalyzedInvoiceItem {
   discount?: number | null;
   selectedEan?: string | null;
   suggestedEans?: string[];
+  externalProductProvider?: string | null;
+  externalProductStatus?: InvoiceExternalProductStatus | null;
+  externalProductData?: InvoiceExternalProductData | null;
+  externalProductError?: string | null;
 }
 
 export interface AnalyzedInvoice {
