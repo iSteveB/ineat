@@ -24,7 +24,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
     SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env'],
     }),
     ObservabilityModule,
     PrismaModule,

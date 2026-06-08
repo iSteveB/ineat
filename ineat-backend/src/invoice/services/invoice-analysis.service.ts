@@ -31,9 +31,7 @@ export class InvoiceAnalysisService {
     pdfUrl: string,
     pdfBuffer?: Buffer,
   ): Promise<AnalyzedInvoice> {
-    const providerName = (
-      this.configService.get<string>('INVOICE_ANALYSIS_PROVIDER') ?? 'mock'
-    ).toLowerCase();
+    const providerName = this.resolveProviderName();
     const provider = this.providers[providerName];
 
     if (!provider) {
@@ -41,5 +39,17 @@ export class InvoiceAnalysisService {
     }
 
     return provider.analyzePdf(pdfUrl, pdfBuffer);
+  }
+
+  private resolveProviderName(): string {
+    const configuredProvider = this.configService.get<string>(
+      'INVOICE_ANALYSIS_PROVIDER',
+    );
+
+    if (configuredProvider?.trim()) {
+      return configuredProvider.trim().toLowerCase();
+    }
+
+    return this.configService.get<string>('OPENAI_API_KEY') ? 'openai' : 'mock';
   }
 }
