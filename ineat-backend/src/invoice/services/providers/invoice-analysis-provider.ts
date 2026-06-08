@@ -27,5 +27,5 @@ export interface AnalyzedInvoice {
 
 export interface InvoiceAnalysisProvider {
   readonly providerName: string;
-  analyzePdf(pdfUrl: string): Promise<AnalyzedInvoice>;
+  analyzePdf(pdfUrl: string, pdfBuffer?: Buffer): Promise<AnalyzedInvoice>;
 }

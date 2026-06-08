@@ -1,48 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from '../../../../prisma/generated/prisma/client';
 import {
   AnalyzedInvoice,
-  AnalyzedInvoiceItem,
   InvoiceAnalysisProvider,
 } from './invoice-analysis-provider';
+import {
+  KNOWN_INVOICE_CATEGORY_SLUGS,
+  OpenAIExtractedInvoicePayload,
+  normalizeOpenAIInvoiceAnalysis,
+} from './openai-invoice-normalizer';
 
-interface OpenAIInvoiceAnalysisPayload {
-  merchantName: string | null;
-  totalAmount: number | null;
-  purchaseDate: string | null;
-  invoiceNumber: string | null;
-  orderNumber: string | null;
-  confidence: number;
-  items: Array<{
-    detectedName: string;
-    quantity: number;
-    unitPrice: number | null;
-    totalPrice: number | null;
-    confidence: number;
-    productCode: string | null;
-    category: string | null;
-    discount: number | null;
-    selectedEan: string | null;
-    suggestedEans: string[];
-  }>;
-}
-
-const INVOICE_ANALYSIS_SCHEMA = {
+const INVOICE_EXTRACTION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
   required: [
     'merchantName',
     'totalAmount',
+    'currency',
     'purchaseDate',
     'invoiceNumber',
     'orderNumber',
     'confidence',
-    'items',
+    'lines',
   ],
   properties: {
     merchantName: { type: ['string', 'null'] },
     totalAmount: { type: ['number', 'null'] },
+    currency: {
+      type: ['string', 'null'],
+      description: 'Code devise ISO 4217, par exemple EUR.',
+    },
     purchaseDate: {
       type: ['string', 'null'],
       description: 'Date ISO 8601 YYYY-MM-DD si visible, null sinon.',
@@ -50,42 +37,52 @@ const INVOICE_ANALYSIS_SCHEMA = {
     invoiceNumber: { type: ['string', 'null'] },
     orderNumber: { type: ['string', 'null'] },
     confidence: { type: 'number', minimum: 0, maximum: 1 },
-    items: {
+    lines: {
       type: 'array',
       minItems: 1,
       items: {
         type: 'object',
         additionalProperties: false,
         required: [
+          'rawLabel',
           'detectedName',
+          'lineType',
           'quantity',
+          'unit',
           'unitPrice',
           'totalPrice',
-          'confidence',
-          'productCode',
-          'category',
           'discount',
-          'selectedEan',
-          'suggestedEans',
+          'ean',
+          'categoryHint',
+          'confidence',
         ],
         properties: {
-          detectedName: { type: 'string' },
-          quantity: { type: 'number' },
+          rawLabel: {
+            type: ['string', 'null'],
+            description: 'Libellé exact visible sur la ligne facture.',
+          },
+          detectedName: {
+            type: ['string', 'null'],
+            description: 'Nom produit nettoyé si la ligne est un produit.',
+          },
+          lineType: {
+            type: 'string',
+            enum: ['product', 'fee', 'discount', 'total', 'payment', 'unknown'],
+          },
+          quantity: { type: ['number', 'null'] },
+          unit: { type: ['string', 'null'] },
           unitPrice: { type: ['number', 'null'] },
           totalPrice: { type: ['number', 'null'] },
-          confidence: { type: 'number', minimum: 0, maximum: 1 },
-          productCode: { type: ['string', 'null'] },
-          category: {
-            type: ['string', 'null'],
-            description:
-              'Slug de catégorie probable, par exemple fruits-et-legumes ou epicerie.',
-          },
           discount: { type: ['number', 'null'] },
-          selectedEan: { type: ['string', 'null'] },
-          suggestedEans: {
-            type: 'array',
-            items: { type: 'string' },
+          ean: {
+            type: ['string', 'null'],
+            description: 'Code EAN visible, 8 à 13 chiffres, null sinon.',
           },
+          categoryHint: {
+            type: ['string', 'null'],
+            description: `Indice de catégorie. Préférer un de ces slugs si évident: ${KNOWN_INVOICE_CATEGORY_SLUGS.join(', ')}.`,
+          },
+          confidence: { type: 'number', minimum: 0, maximum: 1 },
         },
       },
     },
@@ -94,10 +91,12 @@ const INVOICE_ANALYSIS_SCHEMA = {
 
 const INVOICE_ANALYSIS_PROMPT = [
   'Analyse cette facture Drive PDF française.',
-  'Retourne uniquement les métadonnées et lignes produits réellement visibles.',
-  'Les prix sont en euros. Les quantités peuvent être décimales.',
-  'Ne crée pas de lignes pour les totaux, sous-totaux, frais de service, livraison ou moyens de paiement.',
-  'Si une information est absente ou incertaine, utilise null et baisse la confiance.',
+  'Extrais les métadonnées et toutes les lignes visibles.',
+  'Classe chaque ligne avec lineType: product, fee, discount, total, payment ou unknown.',
+  'Ne transforme pas les frais, totaux, moyens de paiement ou remises globales en produits.',
+  'Les prix sont en euros sauf mention contraire. Les quantités peuvent être décimales.',
+  'Pour categoryHint, utilise un slug connu seulement si la catégorie est évidente.',
+  'Si une information est absente ou incertaine, utilise null et baisse la confidence.',
 ].join(' ');
 
 @Injectable()
@@ -106,7 +105,10 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async analyzePdf(pdfUrl: string): Promise<AnalyzedInvoice> {
+  async analyzePdf(
+    pdfUrl: string,
+    pdfBuffer?: Buffer,
+  ): Promise<AnalyzedInvoice> {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
     if (!apiKey) {
@@ -115,6 +117,7 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
 
     const model =
       this.configService.get<string>('OPENAI_INVOICE_MODEL') ?? 'gpt-5.5';
+    const fileInput = createPdfFileInput(pdfUrl, pdfBuffer);
 
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
@@ -132,19 +135,16 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
                 type: 'input_text',
                 text: INVOICE_ANALYSIS_PROMPT,
               },
-              {
-                type: 'input_file',
-                file_url: pdfUrl,
-              },
+              fileInput,
             ],
           },
         ],
         text: {
           format: {
             type: 'json_schema',
-            name: 'invoice_analysis',
+            name: 'drive_invoice_extraction',
             strict: true,
-            schema: INVOICE_ANALYSIS_SCHEMA,
+            schema: INVOICE_EXTRACTION_SCHEMA,
           },
         },
       }),
@@ -168,66 +168,18 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
   }
 }
 
-export function normalizeOpenAIInvoiceAnalysis({
-  payload,
-  pdfUrl,
-  model,
-  providerResponse,
-}: {
-  payload: OpenAIInvoiceAnalysisPayload;
-  pdfUrl: string;
-  model: string;
-  providerResponse: unknown;
-}): AnalyzedInvoice {
-  const items = payload.items
-    .map((item) => normalizeInvoiceItem(item))
-    .filter((item): item is AnalyzedInvoiceItem => item !== null);
-
-  if (items.length === 0) {
-    throw new Error('Invoice analysis returned no product item');
+function createPdfFileInput(pdfUrl: string, pdfBuffer?: Buffer) {
+  if (pdfBuffer?.length) {
+    return {
+      type: 'input_file',
+      filename: 'facture-drive.pdf',
+      file_data: `data:application/pdf;base64,${pdfBuffer.toString('base64')}`,
+    };
   }
 
   return {
-    provider: 'openai',
-    confidence: normalizeConfidence(payload.confidence, 0.5),
-    merchantName: cleanString(payload.merchantName),
-    totalAmount: normalizeNullableNumber(payload.totalAmount),
-    purchaseDate: parseNullableDate(payload.purchaseDate),
-    invoiceNumber: cleanString(payload.invoiceNumber),
-    orderNumber: cleanString(payload.orderNumber),
-    rawData: toPrismaJson({
-      provider: 'openai',
-      model,
-      pdfUrl,
-      payload,
-      providerResponse,
-    }),
-    items,
-  };
-}
-
-function normalizeInvoiceItem(
-  item: OpenAIInvoiceAnalysisPayload['items'][number],
-): AnalyzedInvoiceItem | null {
-  const detectedName = cleanString(item.detectedName);
-
-  if (!detectedName) {
-    return null;
-  }
-
-  return {
-    detectedName,
-    quantity: normalizePositiveNumber(item.quantity, 1),
-    unitPrice: normalizeNullableNumber(item.unitPrice),
-    totalPrice: normalizeNullableNumber(item.totalPrice),
-    confidence: normalizeConfidence(item.confidence, 0.5),
-    productCode: cleanString(item.productCode),
-    category: cleanString(item.category),
-    discount: normalizeNullableNumber(item.discount),
-    selectedEan: cleanString(item.selectedEan),
-    suggestedEans: Array.isArray(item.suggestedEans)
-      ? item.suggestedEans.map(cleanString).filter(Boolean)
-      : [],
+    type: 'input_file',
+    file_url: pdfUrl,
   };
 }
 
@@ -247,58 +199,14 @@ function extractResponseOutputText(responseBody: any): string {
   throw new Error('OpenAI invoice analysis returned no text output');
 }
 
-function parseOpenAIPayload(outputText: string): OpenAIInvoiceAnalysisPayload {
-  const parsed = JSON.parse(outputText) as OpenAIInvoiceAnalysisPayload;
+function parseOpenAIPayload(outputText: string): OpenAIExtractedInvoicePayload {
+  const parsed = JSON.parse(outputText) as OpenAIExtractedInvoicePayload;
 
-  if (!parsed || !Array.isArray(parsed.items)) {
+  if (!parsed || !Array.isArray(parsed.lines)) {
     throw new Error('OpenAI invoice analysis returned invalid JSON');
   }
 
   return parsed;
 }
 
-function normalizeConfidence(value: unknown, fallback: number): number {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return fallback;
-  }
-
-  return Math.min(1, Math.max(0, value));
-}
-
-function normalizePositiveNumber(value: unknown, fallback: number): number {
-  if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
-    return fallback;
-  }
-
-  return value;
-}
-
-function normalizeNullableNumber(value: unknown): number | null {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return null;
-  }
-
-  return value;
-}
-
-function cleanString(value: unknown): string | null {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const trimmed = value.trim();
-  return trimmed || null;
-}
-
-function parseNullableDate(value: unknown): Date | null {
-  if (typeof value !== 'string' || !value.trim()) {
-    return null;
-  }
-
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function toPrismaJson(value: unknown): Prisma.InputJsonValue {
-  return JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-}
+export { normalizeOpenAIInvoiceAnalysis } from './openai-invoice-normalizer';

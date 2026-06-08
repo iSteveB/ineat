@@ -32,10 +32,12 @@ describe('InvoiceAnalysisService', () => {
       openAIProvider as any,
     );
 
-    await service.analyzePdf('https://example.com/invoice.pdf');
+    const pdfBuffer = Buffer.from('%PDF-1.4');
+    await service.analyzePdf('https://example.com/invoice.pdf', pdfBuffer);
 
     expect(mockProvider.analyzePdf).toHaveBeenCalledWith(
       'https://example.com/invoice.pdf',
+      pdfBuffer,
     );
     expect(openAIProvider.analyzePdf).not.toHaveBeenCalled();
   });
@@ -55,10 +57,12 @@ describe('InvoiceAnalysisService', () => {
       openAIProvider as any,
     );
 
-    await service.analyzePdf('https://example.com/invoice.pdf');
+    const pdfBuffer = Buffer.from('%PDF-1.4');
+    await service.analyzePdf('https://example.com/invoice.pdf', pdfBuffer);
 
     expect(openAIProvider.analyzePdf).toHaveBeenCalledWith(
       'https://example.com/invoice.pdf',
+      pdfBuffer,
     );
     expect(mockProvider.analyzePdf).not.toHaveBeenCalled();
   });

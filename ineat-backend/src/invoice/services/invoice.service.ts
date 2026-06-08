@@ -76,7 +76,10 @@ export class InvoiceService {
 
     try {
       const startedAt = Date.now();
-      const analysis = await this.invoiceAnalysisService.analyzePdf(pdfUrl);
+      const analysis = await this.invoiceAnalysisService.analyzePdf(
+        pdfUrl,
+        file.buffer,
+      );
       const processingTime = Date.now() - startedAt;
 
       await this.completeInvoiceAnalysis(

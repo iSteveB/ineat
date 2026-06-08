@@ -27,7 +27,10 @@ export class InvoiceAnalysisService {
     };
   }
 
-  async analyzePdf(pdfUrl: string): Promise<AnalyzedInvoice> {
+  async analyzePdf(
+    pdfUrl: string,
+    pdfBuffer?: Buffer,
+  ): Promise<AnalyzedInvoice> {
     const providerName = (
       this.configService.get<string>('INVOICE_ANALYSIS_PROVIDER') ?? 'mock'
     ).toLowerCase();
@@ -37,6 +40,6 @@ export class InvoiceAnalysisService {
       throw new Error(`Unsupported invoice analysis provider: ${providerName}`);
     }
 
-    return provider.analyzePdf(pdfUrl);
+    return provider.analyzePdf(pdfUrl, pdfBuffer);
   }
 }

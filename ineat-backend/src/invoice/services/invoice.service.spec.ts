@@ -232,6 +232,10 @@ describe('InvoiceService', () => {
         }),
       }),
     );
+    expect(invoiceAnalysisService.analyzePdf).toHaveBeenCalledWith(
+      createdInvoice.pdfUrl,
+      file.buffer,
+    );
     expect(invoiceProductResolverService.resolveItems).toHaveBeenCalledWith(
       tx,
       [
