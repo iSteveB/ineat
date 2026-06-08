@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 
-import { INVOICE_MAX_FILE_SIZE_BYTES, invoiceService } from './invoiceService';
+import {
+	INVOICE_IMPORT_TIMEOUT_MS,
+	INVOICE_MAX_FILE_SIZE_BYTES,
+	invoiceService,
+} from './invoiceService';
 import { server } from '@/test/mocks/server';
 
 const API_URL = `${import.meta.env.VITE_API_URL}/api`;
@@ -37,10 +41,12 @@ describe('invoiceService', () => {
 	it('importe une facture PDF en multipart', async () => {
 		let contentType: string | null = null;
 		let uploadedFileName = '';
+		let requestSignal: AbortSignal | null = null;
 
 		server.use(
 			http.post(`${API_URL}/invoices/drive-import`, async ({ request }) => {
 				contentType = request.headers.get('content-type');
+				requestSignal = request.signal;
 				const formData = await request.formData();
 				const file = formData.get('file') as File;
 				uploadedFileName = file.name;
@@ -60,7 +66,38 @@ describe('invoiceService', () => {
 
 		expect(contentType).toContain('multipart/form-data');
 		expect(uploadedFileName).toBe('facture.pdf');
+		expect(requestSignal).toBeInstanceOf(AbortSignal);
 		expect(result.id).toBe(invoice.id);
+	});
+
+	it("utilise un timeout long pour laisser l'analyse OpenAI répondre", async () => {
+		const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+		const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+
+		server.use(
+			http.post(`${API_URL}/invoices/drive-import`, () =>
+				HttpResponse.json({
+					success: true,
+					data: invoice,
+					message: 'Facture importée',
+				})
+			)
+		);
+
+		const file = new File(['%PDF-1.4'], 'facture.pdf', {
+			type: 'application/pdf',
+		});
+
+		await invoiceService.importDriveInvoice(file);
+
+		expect(setTimeoutSpy).toHaveBeenCalledWith(
+			expect.any(Function),
+			INVOICE_IMPORT_TIMEOUT_MS
+		);
+		expect(clearTimeoutSpy).toHaveBeenCalled();
+
+		setTimeoutSpy.mockRestore();
+		clearTimeoutSpy.mockRestore();
 	});
 
 	it('refuse côté client les fichiers non PDF', async () => {

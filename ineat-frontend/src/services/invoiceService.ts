@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 
 export const INVOICE_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+export const INVOICE_IMPORT_TIMEOUT_MS = 120000;
 
 export type InvoiceStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'VALIDATED';
 
@@ -113,6 +114,7 @@ export const invoiceService = {
 			{
 				method: 'POST',
 				body: formData,
+				timeoutMs: INVOICE_IMPORT_TIMEOUT_MS,
 			}
 		);
 

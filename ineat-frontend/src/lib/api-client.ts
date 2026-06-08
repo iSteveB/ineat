@@ -29,6 +29,7 @@ const NETWORK_ERROR_MESSAGE =
 
 interface FetchOptions extends RequestInit {
 	skipAuth?: boolean;
+	timeoutMs?: number;
 }
 
 interface ApiErrorResponse {
@@ -56,6 +57,7 @@ const SENSITIVE_ERROR_PATTERNS = [
 ];
 
 const PUBLIC_ERROR_MESSAGES_BY_CODE: Record<string, string> = {};
+const DEFAULT_TIMEOUT_MS = 30000;
 
 const getResponseHeader = (response: Response, name: string): string | null => {
 	if (!response.headers || typeof response.headers.get !== 'function') {
@@ -146,7 +148,11 @@ export const apiClient = {
 	// Méthode principale pour effectuer des requêtes
 	async fetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { skipAuth = false, ...fetchOptions } = options;
+		const {
+			skipAuth = false,
+			timeoutMs = DEFAULT_TIMEOUT_MS,
+			...fetchOptions
+		} = options;
 
 		const isFormData = fetchOptions.body instanceof FormData;
 
@@ -164,7 +170,7 @@ export const apiClient = {
 
 		// Création du contrôleur d'annulation pour gérer les timeouts
 		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 30000);
+		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 		try {
 			// Exécution de la requête
