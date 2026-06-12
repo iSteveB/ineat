@@ -501,7 +501,6 @@ function DriveInvoiceImportPage() {
 											<TableHead>Produit</TableHead>
 											<TableHead>Qté</TableHead>
 											<TableHead>Prix unitaire TTC</TableHead>
-											<TableHead>Total</TableHead>
 											<TableHead>Association</TableHead>
 											<TableHead>Catégorie</TableHead>
 											<TableHead>Stockage</TableHead>
@@ -566,22 +565,6 @@ function DriveInvoiceImportPage() {
 																updateDraft(
 																	item.id,
 																	'unitPrice',
-																	event.target.value
-																)
-															}
-															disabled={item.validated}
-														/>
-													</TableCell>
-													<TableCell className='w-32'>
-														<Input
-															type='number'
-															min='0'
-															step='0.01'
-															value={draft.totalPrice ?? ''}
-															onChange={(event) =>
-																updateDraft(
-																	item.id,
-																	'totalPrice',
 																	event.target.value
 																)
 															}
