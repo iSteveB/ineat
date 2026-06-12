@@ -83,6 +83,7 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
           productCode: '3564700012345',
           selectedEan: '3564700012345',
           category: 'fruits-et-legumes',
+          storageLocation: 'Fruitier',
           suggestedEans: ['3564700012345'],
         },
       ],
@@ -165,6 +166,77 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
         totalPrice: 3.3,
         discount: 0.4,
         category: 'produits-laitiers',
+        storageLocation: 'Réfrigérateur',
+      }),
+    ]);
+  });
+
+  it('force une quantité entière et déduit le prix unitaire TTC depuis le total', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          {
+            rawLabel: 'Compotes pomme x3',
+            detectedName: 'Compotes pomme',
+            lineType: 'product',
+            quantity: 2.8,
+            unit: 'piece',
+            unitPrice: null,
+            totalPrice: 5.97,
+            confidence: 0.9,
+            ean: null,
+            categoryHint: 'epicerie sucree',
+            discount: null,
+          },
+        ],
+      },
+    });
+
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        detectedName: 'Compotes pomme',
+        quantity: 3,
+        unitPrice: 1.99,
+        totalPrice: 5.97,
+        category: 'epicerie-sucree',
+        storageLocation: 'Placard',
+      }),
+    ]);
+  });
+
+  it('laisse le stockage vide pour un fruit ou légume ambigu', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          {
+            rawLabel: 'Panier primeur de saison',
+            detectedName: 'Panier primeur de saison',
+            lineType: 'product',
+            quantity: 1,
+            unit: 'piece',
+            unitPrice: 8,
+            totalPrice: 8,
+            confidence: 0.82,
+            ean: null,
+            categoryHint: 'fruits-et-legumes',
+            discount: null,
+          },
+        ],
+      },
+    });
+
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        category: 'fruits-et-legumes',
+        storageLocation: null,
       }),
     ]);
   });
@@ -196,6 +268,8 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
 
     expect(result.items[0]).toMatchObject({
       category: null,
+      unitPrice: 3.5,
+      totalPrice: 7,
       confidence: 0.55,
     });
   });

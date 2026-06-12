@@ -14,11 +14,12 @@ export class MockInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
     const items: AnalyzedInvoiceItem[] = [
       {
         detectedName: 'Pommes Golden',
-        quantity: 1.5,
+        quantity: 2,
         unitPrice: 2.49,
-        totalPrice: 3.74,
+        totalPrice: 4.98,
         confidence: 0.94,
         category: 'fruits-et-legumes',
+        storageLocation: 'Fruitier',
         suggestedEans: [],
       },
       {
@@ -29,6 +30,7 @@ export class MockInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
         confidence: 0.91,
         productCode: '3564700012345',
         category: 'produits-laitiers',
+        storageLocation: 'Réfrigérateur',
         selectedEan: '3564700012345',
         suggestedEans: ['3564700012345'],
       },
@@ -38,7 +40,8 @@ export class MockInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
         unitPrice: 1.39,
         totalPrice: 2.78,
         confidence: 0.86,
-        category: 'epicerie',
+        category: 'epicerie-salee',
+        storageLocation: 'Placard',
         discount: 0.2,
         suggestedEans: [],
       },

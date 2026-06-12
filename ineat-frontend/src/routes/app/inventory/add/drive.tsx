@@ -1,6 +1,6 @@
 import { ChangeEvent, useMemo, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
 	ArrowLeft,
@@ -39,13 +39,17 @@ import {
 	type UpdateInvoiceItemInput,
 	type ValidateInvoiceResponse,
 } from '@/services/invoiceService';
+import { inventoryService } from '@/services/inventoryService';
 import { useAuthStore } from '@/stores/authStore';
+import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
 	component: DriveInvoiceImportPage,
 });
 
 type FlowStep = 'upload' | 'review' | 'done';
+const NO_STORAGE_VALUE = '__none__';
+
 type InvoiceItemDraft = Pick<
 	InvoiceItem,
 	| 'detectedName'
@@ -70,6 +74,18 @@ const formatCurrency = (amount?: number | null): string =>
 
 const formatDate = (date?: string | null): string =>
 	date ? new Intl.DateTimeFormat('fr-FR').format(new Date(date)) : '-';
+
+const roundCurrency = (value: number): number => Math.round(value * 100) / 100;
+
+const getLineTotal = (draft: InvoiceItemDraft): number | undefined =>
+	typeof draft.quantity === 'number' && typeof draft.unitPrice === 'number'
+		? roundCurrency(draft.quantity * draft.unitPrice)
+		: draft.totalPrice ?? undefined;
+
+const normalizeStorageSelectValue = (value?: string | null): string =>
+	value && (STORAGE_LOCATION_OPTIONS as readonly string[]).includes(value)
+		? value
+		: NO_STORAGE_VALUE;
 
 const createDraft = (item: InvoiceItem): InvoiceItemDraft => ({
 	detectedName: item.detectedName,
@@ -109,6 +125,12 @@ function DriveInvoiceImportPage() {
 	const [drafts, setDrafts] = useState<Record<string, InvoiceItemDraft>>({});
 	const [result, setResult] = useState<ValidateInvoiceResponse | null>(null);
 	const [localError, setLocalError] = useState<string | null>(null);
+
+	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+		queryKey: ['categories'],
+		queryFn: inventoryService.getCategories,
+		staleTime: 1000 * 60 * 60,
+	});
 
 	const hasDriveAccess = Boolean(user?.capabilities.canImportDrive);
 	const driveImportsRemaining = user?.capabilities.driveImportsRemaining ?? 0;
@@ -219,20 +241,32 @@ function DriveInvoiceImportPage() {
 		field: keyof InvoiceItemDraft,
 		value: string
 	) => {
-		setDrafts((current) => ({
-			...current,
-			[itemId]: {
-				...current[itemId],
-				[field]:
-					field === 'quantity' ||
-					field === 'unitPrice' ||
-					field === 'totalPrice'
+		setDrafts((current) => {
+			const currentDraft = current[itemId];
+			const parsedValue =
+				field === 'quantity'
+					? value === ''
+						? undefined
+						: Math.max(1, Math.round(Number(value)))
+					: field === 'unitPrice' || field === 'totalPrice'
 						? value === ''
 							? undefined
 							: Number(value)
-						: value || null,
-			},
-		}));
+						: value || null;
+			const nextDraft = {
+				...currentDraft,
+				[field]: parsedValue,
+			};
+
+			if (field === 'quantity' || field === 'unitPrice') {
+				nextDraft.totalPrice = getLineTotal(nextDraft);
+			}
+
+			return {
+				...current,
+				[itemId]: nextDraft,
+			};
+		});
 	};
 
 	const updateAssociation = (itemId: string, value: string) => {
@@ -289,12 +323,15 @@ function DriveInvoiceImportPage() {
 				detectedName: draft.detectedName,
 				quantity: draft.quantity,
 				unitPrice: draft.unitPrice ?? undefined,
-				totalPrice: draft.totalPrice ?? undefined,
+				totalPrice: getLineTotal(draft),
 				category: draft.category ?? undefined,
 				productId:
 					draft.productId === null ? null : draft.productId ?? undefined,
 				expiryDate: draft.expiryDate ?? undefined,
-				storageLocation: draft.storageLocation ?? undefined,
+				storageLocation:
+					draft.storageLocation === null
+						? ''
+						: draft.storageLocation ?? undefined,
 				notes: draft.notes ?? undefined,
 				selectedEan:
 					draft.selectedEan === null ? null : draft.selectedEan ?? undefined,
@@ -463,7 +500,8 @@ function DriveInvoiceImportPage() {
 											<TableHead className='w-10'></TableHead>
 											<TableHead>Produit</TableHead>
 											<TableHead>Qté</TableHead>
-											<TableHead>Prix</TableHead>
+											<TableHead>Prix unitaire TTC</TableHead>
+											<TableHead>Total</TableHead>
 											<TableHead>Association</TableHead>
 											<TableHead>Catégorie</TableHead>
 											<TableHead>Stockage</TableHead>
@@ -505,13 +543,29 @@ function DriveInvoiceImportPage() {
 													<TableCell className='w-28'>
 														<Input
 															type='number'
-															min='0.01'
-															step='0.01'
+															min='1'
+															step='1'
 															value={draft.quantity ?? ''}
 															onChange={(event) =>
 																updateDraft(
 																	item.id,
 																	'quantity',
+																	event.target.value
+																)
+															}
+															disabled={item.validated}
+														/>
+													</TableCell>
+													<TableCell className='w-32'>
+														<Input
+															type='number'
+															min='0'
+															step='0.01'
+															value={draft.unitPrice ?? ''}
+															onChange={(event) =>
+																updateDraft(
+																	item.id,
+																	'unitPrice',
 																	event.target.value
 																)
 															}
@@ -582,30 +636,61 @@ function DriveInvoiceImportPage() {
 														)}
 													</TableCell>
 													<TableCell className='min-w-40'>
-														<Input
-															value={draft.category ?? ''}
-															onChange={(event) =>
-																updateDraft(
-																	item.id,
-																	'category',
-																	event.target.value
-																)
+														<Select
+															value={draft.category ?? undefined}
+															onValueChange={(value) =>
+																updateDraft(item.id, 'category', value)
 															}
-															disabled={item.validated}
-														/>
+															disabled={
+																item.validated || categoriesLoading
+															}>
+															<SelectTrigger className='w-full'>
+																<SelectValue placeholder='Catégorie' />
+															</SelectTrigger>
+															<SelectContent>
+																{categories.map((category) => (
+																	<SelectItem
+																		key={category.id}
+																		value={category.slug}>
+																		{category.name}
+																	</SelectItem>
+																))}
+															</SelectContent>
+														</Select>
 													</TableCell>
 													<TableCell className='min-w-40'>
-														<Input
-															value={draft.storageLocation ?? ''}
-															onChange={(event) =>
+														<Select
+															value={normalizeStorageSelectValue(
+																draft.storageLocation
+															)}
+															onValueChange={(value) =>
 																updateDraft(
 																	item.id,
 																	'storageLocation',
-																	event.target.value
+																	value === NO_STORAGE_VALUE
+																		? ''
+																		: value
 																)
 															}
-															disabled={item.validated}
-														/>
+															disabled={item.validated}>
+															<SelectTrigger className='w-full'>
+																<SelectValue placeholder='Stockage' />
+															</SelectTrigger>
+															<SelectContent>
+																<SelectItem value={NO_STORAGE_VALUE}>
+																	Non renseigné
+																</SelectItem>
+																{STORAGE_LOCATION_OPTIONS.map(
+																	(location) => (
+																		<SelectItem
+																			key={location}
+																			value={location}>
+																			{location}
+																		</SelectItem>
+																	)
+																)}
+															</SelectContent>
+														</Select>
 													</TableCell>
 													<TableCell>
 														<Button

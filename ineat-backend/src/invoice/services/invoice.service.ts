@@ -223,6 +223,16 @@ export class InvoiceService {
 
     if (updateDto.totalPrice !== undefined) {
       updateData.totalPrice = updateDto.totalPrice;
+    } else if (
+      updateDto.quantity !== undefined ||
+      updateDto.unitPrice !== undefined
+    ) {
+      const quantity = updateDto.quantity ?? invoiceItem.quantity;
+      const unitPrice = updateDto.unitPrice ?? invoiceItem.unitPrice;
+
+      if (typeof unitPrice === 'number') {
+        updateData.totalPrice = Math.round(quantity * unitPrice * 100) / 100;
+      }
     }
 
     if (updateDto.category !== undefined) {
@@ -463,6 +473,7 @@ export class InvoiceService {
           confidence: item.confidence,
           productCode: item.productCode,
           category: item.category,
+          storageLocation: item.storageLocation,
           discount: item.discount,
           selectedEan: item.selectedEan,
           suggestedEans: item.suggestedEans ?? [],

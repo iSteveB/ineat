@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsISO8601,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
@@ -16,11 +17,11 @@ export class UpdateInvoiceItemDto {
   @IsString({ message: 'Le nom détecté doit être une chaîne de caractères' })
   detectedName?: string;
 
-  @ApiPropertyOptional({ minimum: 0.01 })
+  @ApiPropertyOptional({ minimum: 1 })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'La quantité doit être un nombre' })
-  @Min(0.01, { message: 'La quantité doit être supérieure à 0' })
+  @IsInt({ message: 'La quantité doit être un entier' })
+  @Min(1, { message: 'La quantité doit être supérieure ou égale à 1' })
   quantity?: number;
 
   @ApiPropertyOptional({ minimum: 0 })

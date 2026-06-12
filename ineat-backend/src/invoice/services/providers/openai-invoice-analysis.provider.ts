@@ -94,7 +94,9 @@ const INVOICE_ANALYSIS_PROMPT = [
   'Extrais les métadonnées et toutes les lignes visibles.',
   'Classe chaque ligne avec lineType: product, fee, discount, total, payment ou unknown.',
   'Ne transforme pas les frais, totaux, moyens de paiement ou remises globales en produits.',
-  'Les prix sont en euros sauf mention contraire. Les quantités peuvent être décimales.',
+  'Les prix sont en euros TTC sauf mention contraire.',
+  'Pour chaque produit, quantity est un entier positif correspondant au nombre d’articles.',
+  'Pour chaque produit, unitPrice est le prix unitaire TTC. Si seule une ligne totale est visible, calcule unitPrice = totalPrice / quantity.',
   'Pour categoryHint, utilise un slug connu seulement si la catégorie est évidente.',
   'Si une information est absente ou incertaine, utilise null et baisse la confidence.',
 ].join(' ');

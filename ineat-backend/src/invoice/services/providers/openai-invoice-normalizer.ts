@@ -79,6 +79,29 @@ const CATEGORY_ALIASES: Record<string, string> = {
   autres: 'autres',
 };
 
+const STORAGE_BY_CATEGORY: Record<string, string | null> = {
+  'viandes-et-poissons': 'Réfrigérateur',
+  'produits-laitiers': 'Réfrigérateur',
+  surgeles: 'Congélateur',
+  boissons: 'Placard',
+  'epicerie-salee': 'Placard',
+  'epicerie-sucree': 'Placard',
+  'fruits-et-legumes': null,
+  autres: null,
+};
+
+const REFRIGERATED_PRODUCE_PATTERNS = [
+  /\b(salade|endive|epinard|épinard|champignon|fraise|framboise|myrtille)\b/i,
+  /\b(legume|légume|carotte|courgette|poireau|brocoli|chou|tomate)\b/i,
+];
+
+const FRUITIER_PRODUCE_PATTERNS = [
+  /\b(pomme|pommes|poire|poires|banane|bananes|orange|oranges)\b/i,
+  /\b(citron|citrons|mandarine|mandarines|clementine|clementines)\b/i,
+  /\b(clémentine|clémentines|avocat|avocats|kiwi|kiwis)\b/i,
+  /\b(mangue|mangues|peche|peches|pêche|pêches|nectarine|nectarines)\b/i,
+];
+
 const NON_PRODUCT_LABEL_PATTERNS = [
   /\b(total|sous[-\s]?total|montant)\b/i,
   /\b(tva|taxe|eco[-\s]?participation)\b/i,
@@ -142,21 +165,22 @@ function normalizeInvoiceLine(
     return null;
   }
 
-  const quantity = normalizePositiveNumber(line.quantity, 1);
-  const unitPrice = normalizeNullableNumber(line.unitPrice);
-  const inferredTotalPrice =
-    unitPrice !== null ? roundCurrency(quantity * unitPrice) : null;
-  const totalPrice =
-    normalizeNullableNumber(line.totalPrice) ?? inferredTotalPrice;
+  const quantity = normalizePositiveInteger(line.quantity, 1);
+  const prices = normalizeLinePrices({
+    quantity,
+    unitPrice: line.unitPrice,
+    totalPrice: line.totalPrice,
+  });
+  const { unitPrice, totalPrice } = prices;
   const category = normalizeCategory(line.categoryHint);
-  const hasPriceMismatch =
-    inferredTotalPrice !== null &&
-    totalPrice !== null &&
-    Math.abs(inferredTotalPrice - totalPrice) > 0.03;
+  const storageLocation = suggestStorageLocation({
+    category,
+    name: detectedName,
+  });
   const confidence = adjustLineConfidence(line.confidence, {
     hasCategory: Boolean(category),
     hasTotalPrice: totalPrice !== null,
-    hasPriceMismatch,
+    hasPriceMismatch: prices.hasPriceMismatch,
   });
   const ean = normalizeBarcode(line.ean);
 
@@ -170,6 +194,7 @@ function normalizeInvoiceLine(
     selectedEan: ean,
     suggestedEans: ean ? [ean] : [],
     category,
+    storageLocation,
     discount: normalizeNullableNumber(line.discount),
   };
 }
@@ -213,6 +238,32 @@ function normalizeCategory(value: unknown): string | null {
   return KNOWN_INVOICE_CATEGORY_SLUGS.includes(slug as any) ? slug : null;
 }
 
+function suggestStorageLocation({
+  category,
+  name,
+}: {
+  category: string | null;
+  name: string;
+}): string | null {
+  if (!category) {
+    return null;
+  }
+
+  if (category === 'fruits-et-legumes') {
+    if (REFRIGERATED_PRODUCE_PATTERNS.some((pattern) => pattern.test(name))) {
+      return 'Réfrigérateur';
+    }
+
+    if (FRUITIER_PRODUCE_PATTERNS.some((pattern) => pattern.test(name))) {
+      return 'Fruitier';
+    }
+
+    return null;
+  }
+
+  return STORAGE_BY_CATEGORY[category] ?? null;
+}
+
 function normalizeBarcode(value: unknown): string | null {
   const cleaned = cleanString(value);
   return cleaned && /^\d{8,13}$/.test(cleaned) ? cleaned : null;
@@ -226,12 +277,58 @@ function normalizeConfidence(value: unknown, fallback: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-function normalizePositiveNumber(value: unknown, fallback: number): number {
+function normalizePositiveInteger(value: unknown, fallback: number): number {
   if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
     return fallback;
   }
 
-  return value;
+  return Math.max(1, Math.round(value));
+}
+
+function normalizeLinePrices({
+  quantity,
+  unitPrice,
+  totalPrice,
+}: {
+  quantity: number;
+  unitPrice: unknown;
+  totalPrice: unknown;
+}): {
+  unitPrice: number | null;
+  totalPrice: number | null;
+  hasPriceMismatch: boolean;
+} {
+  const rawUnitPrice = normalizeNullablePositiveNumber(unitPrice);
+  const rawTotalPrice = normalizeNullablePositiveNumber(totalPrice);
+
+  if (rawTotalPrice !== null) {
+    if (rawUnitPrice === null) {
+      return {
+        unitPrice: roundCurrency(rawTotalPrice / quantity),
+        totalPrice: rawTotalPrice,
+        hasPriceMismatch: false,
+      };
+    }
+
+    const inferredTotalPrice = roundCurrency(quantity * rawUnitPrice);
+    const hasPriceMismatch =
+      Math.abs(inferredTotalPrice - rawTotalPrice) > 0.03;
+
+    return {
+      unitPrice: hasPriceMismatch
+        ? roundCurrency(rawTotalPrice / quantity)
+        : rawUnitPrice,
+      totalPrice: rawTotalPrice,
+      hasPriceMismatch,
+    };
+  }
+
+  return {
+    unitPrice: rawUnitPrice,
+    totalPrice:
+      rawUnitPrice !== null ? roundCurrency(quantity * rawUnitPrice) : null,
+    hasPriceMismatch: false,
+  };
 }
 
 function normalizeNullableNumber(value: unknown): number | null {
@@ -240,6 +337,12 @@ function normalizeNullableNumber(value: unknown): number | null {
   }
 
   return value;
+}
+
+function normalizeNullablePositiveNumber(value: unknown): number | null {
+  const numberValue = normalizeNullableNumber(value);
+
+  return numberValue !== null && numberValue >= 0 ? numberValue : null;
 }
 
 function cleanString(value: unknown): string | null {

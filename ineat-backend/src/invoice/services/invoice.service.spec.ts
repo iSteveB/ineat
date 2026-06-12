@@ -196,6 +196,7 @@ describe('InvoiceService', () => {
           totalPrice: 4.5,
           confidence: 0.93,
           category: 'fruits-et-legumes',
+          storageLocation: 'Fruitier',
         },
       ],
     });
@@ -270,6 +271,7 @@ describe('InvoiceService', () => {
           invoiceId: 'invoice-1',
           detectedName: 'Pommes',
           totalPrice: 4.5,
+          storageLocation: 'Fruitier',
           externalProductProvider: 'openfoodfacts',
           externalProductStatus: 'FOUND',
         }),
@@ -415,6 +417,41 @@ describe('InvoiceService', () => {
       detectedName: 'Pommes bio',
       quantity: 3,
       totalPrice: 6.75,
+    });
+  });
+
+  it('recalcule le total depuis la quantité entière et le prix unitaire', async () => {
+    prisma.invoiceItem.update.mockResolvedValueOnce({
+      ...completedInvoice.InvoiceItem[0],
+      quantity: 4,
+      unitPrice: 1.99,
+      totalPrice: 7.96,
+      updatedAt: new Date('2026-06-05T11:00:00.000Z'),
+    });
+
+    const result = await service.updateInvoiceItemForUser(
+      'user-1',
+      'invoice-1',
+      'item-1',
+      {
+        quantity: 4,
+        unitPrice: 1.99,
+      },
+    );
+
+    expect(prisma.invoiceItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          quantity: 4,
+          unitPrice: 1.99,
+          totalPrice: 7.96,
+        }),
+      }),
+    );
+    expect(result).toMatchObject({
+      quantity: 4,
+      unitPrice: 1.99,
+      totalPrice: 7.96,
     });
   });
 

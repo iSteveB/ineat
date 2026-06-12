@@ -27,6 +27,7 @@ export interface AnalyzedInvoiceItem {
   confidence: number;
   productCode?: string | null;
   category?: string | null;
+  storageLocation?: string | null;
   discount?: number | null;
   selectedEan?: string | null;
   suggestedEans?: string[];
