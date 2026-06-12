@@ -89,7 +89,7 @@ const normalizeStorageSelectValue = (value?: string | null): string =>
 
 const createDraft = (item: InvoiceItem): InvoiceItemDraft => ({
 	detectedName: item.detectedName,
-	quantity: item.quantity,
+	quantity: item.quantity ?? 1,
 	unitPrice: item.unitPrice,
 	totalPrice: item.totalPrice,
 	category: item.category,
