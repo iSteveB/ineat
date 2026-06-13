@@ -96,6 +96,7 @@ const INVOICE_ANALYSIS_PROMPT = [
   'Ne transforme pas les frais, totaux, moyens de paiement ou remises globales en produits.',
   'Les prix sont en euros TTC sauf mention contraire.',
   'Pour chaque produit, quantity est un entier positif correspondant au nombre d’unités achetées affiché sur la facture.',
+  'Lis en priorité la colonne Qté, Qte. ou Quantité de la ligne produit; si elle est visible, quantity ne doit jamais être null.',
   'Exemples: 4 oranges => quantity 4; 5 paquets de farine 3 kg => quantity 5, pas 15 ni 3.',
   'Pour chaque produit, unitPrice est le prix unitaire TTC. Si seule une ligne totale est visible, calcule unitPrice = totalPrice / quantity.',
   'Pour categoryHint, utilise un slug connu seulement si la catégorie est évidente.',

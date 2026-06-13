@@ -82,6 +82,19 @@ const getLineTotal = (draft: InvoiceItemDraft): number | undefined =>
 		? roundCurrency(draft.quantity * draft.unitPrice)
 		: draft.totalPrice ?? undefined;
 
+const normalizeDraftQuantity = (value: unknown): number => {
+	const numericValue =
+		typeof value === 'number'
+			? value
+			: typeof value === 'string'
+				? Number(value.replace(',', '.'))
+				: NaN;
+
+	return Number.isFinite(numericValue) && numericValue > 0
+		? Math.max(1, Math.round(numericValue))
+		: 1;
+};
+
 const normalizeStorageSelectValue = (value?: string | null): string =>
 	value && (STORAGE_LOCATION_OPTIONS as readonly string[]).includes(value)
 		? value
@@ -89,7 +102,7 @@ const normalizeStorageSelectValue = (value?: string | null): string =>
 
 const createDraft = (item: InvoiceItem): InvoiceItemDraft => ({
 	detectedName: item.detectedName,
-	quantity: item.quantity ?? 1,
+	quantity: normalizeDraftQuantity(item.quantity),
 	unitPrice: item.unitPrice,
 	totalPrice: item.totalPrice,
 	category: item.category,
@@ -247,7 +260,7 @@ function DriveInvoiceImportPage() {
 				field === 'quantity'
 					? value === ''
 						? undefined
-						: Math.max(1, Math.round(Number(value)))
+						: normalizeDraftQuantity(value)
 					: field === 'unitPrice' || field === 'totalPrice'
 						? value === ''
 							? undefined
