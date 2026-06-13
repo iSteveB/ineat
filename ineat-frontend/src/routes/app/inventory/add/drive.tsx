@@ -5,8 +5,10 @@ import { toast } from 'sonner';
 import {
 	ArrowLeft,
 	Check,
+	ChevronDown,
 	FileText,
 	Loader2,
+	Package,
 	Save,
 	Upload,
 	X,
@@ -24,14 +26,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import {
 	invoiceService,
 	type Invoice,
@@ -128,6 +123,9 @@ const getAssociationValue = (draft: InvoiceItemDraft): string => {
 const getSuggestedEans = (item: InvoiceItem): string[] =>
 	Array.isArray(item.suggestedEans) ? item.suggestedEans : [];
 
+const getItemImageUrl = (item: InvoiceItem): string | null =>
+	item.externalProductData?.imageUrl ?? null;
+
 function DriveInvoiceImportPage() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -138,6 +136,7 @@ function DriveInvoiceImportPage() {
 	const [drafts, setDrafts] = useState<Record<string, InvoiceItemDraft>>({});
 	const [result, setResult] = useState<ValidateInvoiceResponse | null>(null);
 	const [localError, setLocalError] = useState<string | null>(null);
+	const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
 	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
 		queryKey: ['categories'],
@@ -173,6 +172,7 @@ function DriveInvoiceImportPage() {
 						.map((item) => item.id)
 				)
 			);
+			setExpandedItemId(null);
 			setStep('review');
 			toast.success('Facture analysée');
 			void getProfile().catch(() => undefined);
@@ -507,206 +507,323 @@ function DriveInvoiceImportPage() {
 								</Button>
 							</CardHeader>
 							<CardContent>
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead className='w-10'></TableHead>
-											<TableHead>Produit</TableHead>
-											<TableHead>Qté</TableHead>
-											<TableHead>Prix unitaire TTC</TableHead>
-											<TableHead>Association</TableHead>
-											<TableHead>Catégorie</TableHead>
-											<TableHead>Stockage</TableHead>
-											<TableHead className='w-12'></TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{invoice.items.map((item) => {
-											const draft = drafts[item.id] ?? createDraft(item);
-											const isSelected = selectedIds.has(item.id);
-											const suggestedEans = getSuggestedEans(item);
+								<div className='space-y-3'>
+									{invoice.items.map((item) => {
+										const draft = drafts[item.id] ?? createDraft(item);
+										const isSelected = selectedIds.has(item.id);
+										const isExpanded = expandedItemId === item.id;
+										const suggestedEans = getSuggestedEans(item);
+										const imageUrl = getItemImageUrl(item);
 
-											return (
-												<TableRow
-													key={item.id}
-													data-state={isSelected ? 'selected' : undefined}>
-													<TableCell>
+										return (
+											<div
+												key={item.id}
+												className='overflow-hidden rounded-lg border border-neutral-200 bg-white transition-shadow hover:shadow-md'
+												data-state={isSelected ? 'selected' : undefined}>
+												<div className='flex items-stretch'>
+													<label className='flex w-12 shrink-0 cursor-pointer items-center justify-center border-r border-neutral-100'>
 														<input
 															type='checkbox'
 															checked={isSelected}
 															disabled={item.validated}
 															onChange={() => toggleItem(item.id)}
 															className='size-4'
+															aria-label={`Sélectionner ${draft.detectedName}`}
 														/>
-													</TableCell>
-													<TableCell className='min-w-52'>
-														<Input
-															value={draft.detectedName ?? ''}
-															onChange={(event) =>
-																updateDraft(
-																	item.id,
-																	'detectedName',
-																	event.target.value
-																)
-															}
-															disabled={item.validated}
-														/>
-													</TableCell>
-													<TableCell className='w-28'>
-														<Input
-															type='number'
-															min='1'
-															step='1'
-															value={draft.quantity ?? ''}
-															onChange={(event) =>
-																updateDraft(
-																	item.id,
-																	'quantity',
-																	event.target.value
-																)
-															}
-															disabled={item.validated}
-														/>
-													</TableCell>
-													<TableCell className='w-32'>
-														<Input
-															type='number'
-															min='0'
-															step='0.01'
-															value={draft.unitPrice ?? ''}
-															onChange={(event) =>
-																updateDraft(
-																	item.id,
-																	'unitPrice',
-																	event.target.value
-																)
-															}
-															disabled={item.validated}
-														/>
-													</TableCell>
-													<TableCell className='min-w-52'>
-														<Select
-															value={getAssociationValue(draft)}
-															onValueChange={(value) =>
-																updateAssociation(item.id, value)
-															}
-															disabled={item.validated}>
-															<SelectTrigger className='w-full'>
-																<SelectValue />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value='new'>
-																	Nouveau produit
-																</SelectItem>
-																{item.product && (
-																	<SelectItem
-																		value={`product:${item.product.id}`}>
-																		{item.product.name}
-																	</SelectItem>
-																)}
-																{suggestedEans.map((ean) => (
-																	<SelectItem
-																		key={ean}
-																		value={`ean:${ean}`}>
-																		EAN {ean}
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-														{item.product ? (
-															<p className='mt-1 text-xs text-neutral-200'>
-																Produit connu
-																{item.product.barcode
-																	? ` · ${item.product.barcode}`
-																	: ''}
-															</p>
-														) : suggestedEans.length > 0 ? (
-															<p className='mt-1 text-xs text-warning-50'>
-																{suggestedEans.length} EAN proposé
-																{suggestedEans.length > 1 ? 's' : ''}
-															</p>
-														) : (
-															<p className='mt-1 text-xs text-neutral-200'>
-																Création à la validation
-															</p>
-														)}
-													</TableCell>
-													<TableCell className='min-w-40'>
-														<Select
-															value={draft.category ?? undefined}
-															onValueChange={(value) =>
-																updateDraft(item.id, 'category', value)
-															}
-															disabled={
-																item.validated || categoriesLoading
-															}>
-															<SelectTrigger className='w-full'>
-																<SelectValue placeholder='Catégorie' />
-															</SelectTrigger>
-															<SelectContent>
-																{categories.map((category) => (
-																	<SelectItem
-																		key={category.id}
-																		value={category.slug}>
-																		{category.name}
-																	</SelectItem>
-																))}
-															</SelectContent>
-														</Select>
-													</TableCell>
-													<TableCell className='min-w-40'>
-														<Select
-															value={normalizeStorageSelectValue(
-																draft.storageLocation
+													</label>
+													<button
+														type='button'
+														aria-expanded={isExpanded}
+														onClick={() =>
+															setExpandedItemId((current) =>
+																current === item.id ? null : item.id
+															)
+														}
+														className='flex min-w-0 flex-1 items-center gap-3 p-3 text-left transition-colors hover:bg-neutral-100 sm:gap-4'>
+														<div className='flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100'>
+															{imageUrl ? (
+																<img
+																	src={imageUrl}
+																	alt={draft.detectedName}
+																	className='size-full object-cover'
+																/>
+															) : (
+																<Package className='size-6 text-neutral-200' />
 															)}
-															onValueChange={(value) =>
-																updateDraft(
-																	item.id,
-																	'storageLocation',
-																	value === NO_STORAGE_VALUE
-																		? ''
-																		: value
-																)
-															}
-															disabled={item.validated}>
-															<SelectTrigger className='w-full'>
-																<SelectValue placeholder='Stockage' />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectItem value={NO_STORAGE_VALUE}>
-																	Non renseigné
-																</SelectItem>
-																{STORAGE_LOCATION_OPTIONS.map(
-																	(location) => (
-																		<SelectItem
-																			key={location}
-																			value={location}>
-																			{location}
+														</div>
+														<div className='min-w-0 flex-1'>
+															<p className='truncate font-semibold text-neutral-300'>
+																{draft.detectedName || 'Produit sans nom'}
+															</p>
+															<p className='mt-1 text-xs text-neutral-200'>
+																{item.validated
+																	? 'Déjà validé'
+																	: isSelected
+																		? 'Sélectionné'
+																		: 'Ignoré à la validation'}
+															</p>
+														</div>
+														<div className='grid shrink-0 grid-cols-2 gap-2 text-right sm:min-w-44'>
+															<div>
+																<p className='text-xs uppercase text-neutral-200'>
+																	Qté
+																</p>
+																<p className='font-semibold text-neutral-300'>
+																	{draft.quantity ?? '-'}
+																</p>
+															</div>
+															<div>
+																<p className='text-xs uppercase text-neutral-200'>
+																	Prix
+																</p>
+																<p className='font-semibold text-neutral-300'>
+																	{formatCurrency(getLineTotal(draft))}
+																</p>
+															</div>
+														</div>
+														<ChevronDown
+															className={`size-5 shrink-0 text-neutral-200 transition-transform ${
+																isExpanded ? 'rotate-180' : ''
+															}`}
+														/>
+													</button>
+												</div>
+
+												{isExpanded && (
+													<div className='border-t border-neutral-100 p-4'>
+														<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+															<div className='space-y-1.5 md:col-span-2 lg:col-span-1'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Produit
+																</label>
+																<Input
+																	value={draft.detectedName ?? ''}
+																	onChange={(event) =>
+																		updateDraft(
+																			item.id,
+																			'detectedName',
+																			event.target.value
+																		)
+																	}
+																	disabled={item.validated}
+																/>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Quantité
+																</label>
+																<Input
+																	type='number'
+																	min='1'
+																	step='1'
+																	value={draft.quantity ?? ''}
+																	onChange={(event) =>
+																		updateDraft(
+																			item.id,
+																			'quantity',
+																			event.target.value
+																		)
+																	}
+																	disabled={item.validated}
+																/>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Prix unitaire TTC
+																</label>
+																<Input
+																	type='number'
+																	min='0'
+																	step='0.01'
+																	value={draft.unitPrice ?? ''}
+																	onChange={(event) =>
+																		updateDraft(
+																			item.id,
+																			'unitPrice',
+																			event.target.value
+																		)
+																	}
+																	disabled={item.validated}
+																/>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Total ligne
+																</label>
+																<div className='flex h-10 items-center rounded-md border border-neutral-200 bg-neutral-100 px-3 text-sm font-medium text-neutral-300'>
+																	{formatCurrency(getLineTotal(draft))}
+																</div>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Association
+																</label>
+																<Select
+																	value={getAssociationValue(draft)}
+																	onValueChange={(value) =>
+																		updateAssociation(item.id, value)
+																	}
+																	disabled={item.validated}>
+																	<SelectTrigger className='w-full'>
+																		<SelectValue />
+																	</SelectTrigger>
+																	<SelectContent>
+																		<SelectItem value='new'>
+																			Nouveau produit
 																		</SelectItem>
-																	)
+																		{item.product && (
+																			<SelectItem
+																				value={`product:${item.product.id}`}>
+																				{item.product.name}
+																			</SelectItem>
+																		)}
+																		{suggestedEans.map((ean) => (
+																			<SelectItem
+																				key={ean}
+																				value={`ean:${ean}`}>
+																				EAN {ean}
+																			</SelectItem>
+																		))}
+																	</SelectContent>
+																</Select>
+																{item.product ? (
+																	<p className='text-xs text-neutral-200'>
+																		Produit connu
+																		{item.product.barcode
+																			? ` · ${item.product.barcode}`
+																			: ''}
+																	</p>
+																) : suggestedEans.length > 0 ? (
+																	<p className='text-xs text-warning-50'>
+																		{suggestedEans.length} EAN proposé
+																		{suggestedEans.length > 1 ? 's' : ''}
+																	</p>
+																) : (
+																	<p className='text-xs text-neutral-200'>
+																		Création à la validation
+																	</p>
 																)}
-															</SelectContent>
-														</Select>
-													</TableCell>
-													<TableCell>
-														<Button
-															type='button'
-															variant='ghost'
-															size='sm'
-															className='size-9 p-0'
-															disabled={
-																item.validated ||
-																updateItemMutation.isPending
-															}
-															onClick={() => saveDraft(item)}>
-															<Save className='size-4' />
-														</Button>
-													</TableCell>
-												</TableRow>
-											);
-										})}
-									</TableBody>
-								</Table>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Catégorie
+																</label>
+																<Select
+																	value={draft.category ?? undefined}
+																	onValueChange={(value) =>
+																		updateDraft(item.id, 'category', value)
+																	}
+																	disabled={
+																		item.validated || categoriesLoading
+																	}>
+																	<SelectTrigger className='w-full'>
+																		<SelectValue placeholder='Catégorie' />
+																	</SelectTrigger>
+																	<SelectContent>
+																		{categories.map((category) => (
+																			<SelectItem
+																				key={category.id}
+																				value={category.slug}>
+																				{category.name}
+																			</SelectItem>
+																		))}
+																	</SelectContent>
+																</Select>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Stockage
+																</label>
+																<Select
+																	value={normalizeStorageSelectValue(
+																		draft.storageLocation
+																	)}
+																	onValueChange={(value) =>
+																		updateDraft(
+																			item.id,
+																			'storageLocation',
+																			value === NO_STORAGE_VALUE
+																				? ''
+																				: value
+																		)
+																	}
+																	disabled={item.validated}>
+																	<SelectTrigger className='w-full'>
+																		<SelectValue placeholder='Stockage' />
+																	</SelectTrigger>
+																	<SelectContent>
+																		<SelectItem value={NO_STORAGE_VALUE}>
+																			Non renseigné
+																		</SelectItem>
+																		{STORAGE_LOCATION_OPTIONS.map((location) => (
+																			<SelectItem
+																				key={location}
+																				value={location}>
+																				{location}
+																			</SelectItem>
+																		))}
+																	</SelectContent>
+																</Select>
+															</div>
+															<div className='space-y-1.5'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Date d'expiration
+																</label>
+																<Input
+																	type='date'
+																	value={draft.expiryDate?.slice(0, 10) ?? ''}
+																	onChange={(event) =>
+																		updateDraft(
+																			item.id,
+																			'expiryDate',
+																			event.target.value
+																		)
+																	}
+																	disabled={item.validated}
+																/>
+															</div>
+															<div className='space-y-1.5 md:col-span-2'>
+																<label className='text-xs font-medium uppercase text-neutral-200'>
+																	Notes
+																</label>
+																<Textarea
+																	value={draft.notes ?? ''}
+																	onChange={(event) =>
+																		updateDraft(
+																			item.id,
+																			'notes',
+																			event.target.value
+																		)
+																	}
+																	disabled={item.validated}
+																	placeholder='Optionnel'
+																/>
+															</div>
+														</div>
+														<div className='mt-4 flex justify-end'>
+															<Button
+																type='button'
+																variant='outline'
+																size='sm'
+																disabled={
+																	item.validated ||
+																	updateItemMutation.isPending
+																}
+																onClick={() => saveDraft(item)}>
+																{updateItemMutation.isPending ? (
+																	<Loader2 className='mr-2 size-4 animate-spin' />
+																) : (
+																	<Save className='mr-2 size-4' />
+																)}
+																Enregistrer la ligne
+															</Button>
+														</div>
+													</div>
+												)}
+											</div>
+										);
+									})}
+								</div>
 							</CardContent>
 						</Card>
 					</div>
@@ -751,6 +868,7 @@ function DriveInvoiceImportPage() {
 										setResult(null);
 										setDrafts({});
 										setSelectedIds(new Set());
+										setExpandedItemId(null);
 									}}>
 									<X className='mr-2 size-4' />
 									Nouvel import
