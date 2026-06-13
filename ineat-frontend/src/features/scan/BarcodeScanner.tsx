@@ -272,12 +272,12 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	]);
 
 	return (
-		<div className={`relative min-h-screen bg-neutral-300 ${className}`}>
+		<div className={`relative min-h-dvh bg-black ${className}`}>
 			{/* Caméra de scan */}
 			{(state === 'initializing' ||
 				state === 'scanning' ||
 				state === 'searching') && (
-				<section className='relative min-h-screen overflow-hidden bg-neutral-300'>
+				<section className='relative min-h-dvh overflow-hidden bg-black'>
 					<video
 						ref={videoRef}
 						className='absolute inset-0 size-full object-cover'
@@ -285,9 +285,9 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 						muted
 					/>
 
-					<div className='absolute inset-0 bg-neutral-300/45' />
-					<div className='absolute inset-x-0 top-0 h-44 bg-linear-to-b from-neutral-300 via-neutral-300/70 to-transparent' />
-					<div className='absolute inset-x-0 bottom-0 h-72 bg-linear-to-t from-neutral-300 via-neutral-300/85 to-transparent' />
+					<div className='absolute inset-0 bg-black/10' />
+					<div className='absolute inset-x-0 top-0 h-40 bg-linear-to-b from-black/70 via-black/35 to-transparent' />
+					<div className='absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-black/75 via-black/35 to-transparent' />
 
 					<header className='relative z-10 flex items-center justify-between px-4 pt-5 sm:px-6'>
 						<div className='rounded-lg border border-neutral-50/15 bg-neutral-50/12 px-4 py-3 text-neutral-50 shadow-lg backdrop-blur-md'>
@@ -312,25 +312,23 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 						)}
 					</header>
 
-					<div className='relative z-10 flex min-h-screen flex-col justify-center px-5 pb-40 pt-28 sm:px-8'>
+					<div className='relative z-10 flex min-h-dvh flex-col justify-center px-5 pb-40 pt-28 sm:px-8'>
 						<div className='mx-auto w-full max-w-[360px] sm:max-w-[430px]'>
-							<div className='rounded-lg border border-neutral-50/20 bg-neutral-50/10 p-3 shadow-2xl backdrop-blur-sm'>
-								<div className='relative h-40 rounded-md border border-neutral-50/35 bg-neutral-300/18 sm:h-48'>
-									<div className='absolute -left-1 -top-1 size-10 rounded-tl-md border-l-4 border-t-4 border-primary-100' />
-									<div className='absolute -right-1 -top-1 size-10 rounded-tr-md border-r-4 border-t-4 border-primary-100' />
-									<div className='absolute -bottom-1 -left-1 size-10 rounded-bl-md border-b-4 border-l-4 border-primary-100' />
-									<div className='absolute -bottom-1 -right-1 size-10 rounded-br-md border-b-4 border-r-4 border-primary-100' />
+							<div className='relative h-40 rounded-md sm:h-48'>
+								<div className='absolute -left-1 -top-1 size-10 rounded-tl-md border-l-4 border-t-4 border-white' />
+								<div className='absolute -right-1 -top-1 size-10 rounded-tr-md border-r-4 border-t-4 border-white' />
+								<div className='absolute -bottom-1 -left-1 size-10 rounded-bl-md border-b-4 border-l-4 border-white' />
+								<div className='absolute -bottom-1 -right-1 size-10 rounded-br-md border-b-4 border-r-4 border-white' />
 
-									<div className='absolute left-8 right-8 top-1/2 h-px bg-neutral-50/35' />
-									<div className='absolute left-1/2 top-8 bottom-8 w-px bg-neutral-50/25' />
+								<div className='absolute left-7 right-7 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-error-50 shadow-[0_0_16px_rgba(239,68,68,0.9)]' />
+								<div className='absolute left-1/2 top-8 bottom-8 w-px bg-neutral-50/25' />
 
-									{state === 'scanning' && (
-										<div
-											className='absolute left-4 right-4 h-1 rounded-full bg-linear-to-r from-transparent via-primary-100 to-transparent shadow-[0_0_24px_rgba(244,187,95,0.9)]'
-											style={{ animation: 'scan 2s linear infinite' }}
-										/>
-									)}
-								</div>
+								{state === 'scanning' && (
+									<div
+										className='absolute left-7 right-7 h-0.5 rounded-full bg-linear-to-r from-transparent via-red-500 to-transparent opacity-70'
+										style={{ animation: 'scan 2s linear infinite' }}
+									/>
+								)}
 							</div>
 
 							<div className='mx-auto mt-5 max-w-sm rounded-lg border border-neutral-50/15 bg-neutral-50/14 px-4 py-3 text-center text-neutral-50 shadow-lg backdrop-blur-md'>
@@ -360,7 +358,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 					</div>
 
 					<div className='fixed inset-x-0 bottom-0 z-20 px-4 pb-5 sm:px-6'>
-						<div className='mx-auto grid max-w-md grid-cols-1 gap-3 rounded-lg border border-neutral-50/15 bg-neutral-300/80 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-2'>
+						<div className='mx-auto grid max-w-md grid-cols-1 gap-3 rounded-lg border border-neutral-50/15 bg-black/55 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-2'>
 							<Button
 								onClick={switchToManualInput}
 								variant='secondary'
