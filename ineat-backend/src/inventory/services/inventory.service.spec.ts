@@ -75,6 +75,7 @@ describe('InventoryService', () => {
     quantity: 2,
     purchaseDate: new Date('2026-05-01'),
     expiryDate: new Date('2026-05-10'),
+    expiryDateSource: 'MANUAL',
     purchasePrice: 4.5,
     storageLocation: 'frigo',
     notes: 'bio',
@@ -135,6 +136,10 @@ describe('InventoryService', () => {
           userId: 'user-1',
           productId: 'product-1',
           quantity: 2,
+          expiryDate: expect.objectContaining({
+            getTime: expect.any(Function),
+          }),
+          expiryDateSource: 'MANUAL',
         }),
       }),
     );
@@ -147,6 +152,26 @@ describe('InventoryService', () => {
           expenseCreated: false,
           message: 'Aucun budget disponible',
         },
+      }),
+    );
+  });
+
+  it('estimates an expiry date when a manual product has no expiry date', async () => {
+    await service.addManualProduct('user-1', {
+      name: 'Pommes',
+      category: 'fruits',
+      quantity: 2,
+      unitType: 'KG',
+      purchaseDate: '2026-05-01',
+      storageLocation: 'frigo',
+    } as any);
+
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          expiryDate: new Date('2026-05-08'),
+          expiryDateSource: 'ESTIMATED',
+        }),
       }),
     );
   });

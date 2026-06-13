@@ -59,7 +59,7 @@ const getCategoryLabel = (slug: string): string => {
 
 const getStorageLocationLabel = (location: string): string => {
 	const storageLocation = INVENTORY_STORAGE_LOCATIONS.find(
-		(loc) => loc.value === location
+		(loc) => loc.value === location,
 	);
 	return storageLocation?.label || location;
 };
@@ -99,13 +99,9 @@ export function InventoryListPage() {
 	// Filtrage par recherche textuelle (côté client)
 	const filteredInventory = items.filter(
 		(item) =>
-			item.product.name
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase()) ||
+			item.product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			(item.product.brand &&
-				item.product.brand
-					.toLowerCase()
-					.includes(searchQuery.toLowerCase()))
+				item.product.brand.toLowerCase().includes(searchQuery.toLowerCase())),
 	);
 
 	// Gestion des filtres
@@ -121,7 +117,7 @@ export function InventoryListPage() {
 	const handleRemoveItem = async (itemId: string) => {
 		if (
 			window.confirm(
-				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?'
+				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?',
 			)
 		) {
 			try {
@@ -137,13 +133,9 @@ export function InventoryListPage() {
 		totalItems: items.length,
 		expiringInWeek: items.filter(
 			(item) =>
-				item.expiryStatus === 'CRITICAL' ||
-				item.expiryStatus === 'WARNING'
+				item.expiryStatus === 'CRITICAL' || item.expiryStatus === 'WARNING',
 		).length,
-		totalValue: items.reduce(
-			(sum, item) => sum + (item.purchasePrice || 0),
-			0
-		),
+		totalValue: items.reduce((sum, item) => sum + (item.purchasePrice || 0), 0),
 	};
 
 	// ===== GESTION DES ERREURS =====
@@ -152,21 +144,21 @@ export function InventoryListPage() {
 			<div className='min-h-screen bg-primary-50 p-4'>
 				<div className='max-w-2xl mx-auto'>
 					<div className='bg-error-50 text-neutral-50 p-6 rounded-xl'>
-						<h2 className='text-xl font-semibold mb-2'>
-							Erreur de chargement
-						</h2>
+						<h2 className='text-xl font-semibold mb-2'>Erreur de chargement</h2>
 						<p className='mb-4'>
 							Impossible de charger votre inventaire: {error}
 						</p>
 						<div className='flex gap-2'>
 							<button
 								onClick={() => fetchInventoryItems()}
-								className='bg-neutral-50 text-error-50 px-4 py-2 rounded-lg font-medium'>
+								className='bg-neutral-50 text-error-50 px-4 py-2 rounded-lg font-medium'
+							>
 								Réessayer
 							</button>
 							<button
 								onClick={clearError}
-								className='bg-neutral-50/20 text-neutral-50 px-4 py-2 rounded-lg font-medium'>
+								className='bg-neutral-50/20 text-neutral-50 px-4 py-2 rounded-lg font-medium'
+							>
 								Fermer
 							</button>
 						</div>
@@ -187,7 +179,8 @@ export function InventoryListPage() {
 						</h1>
 						<Link
 							to='/app/inventory/add'
-							className='bg-success-50 text-neutral-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
+							className='bg-success-50 text-neutral-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'
+						>
 							<Plus className='size-4' />
 							Ajouter
 						</Link>
@@ -198,9 +191,7 @@ export function InventoryListPage() {
 						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<Package2 className='size-4 text-success-50' />
-								<span className='text-sm text-neutral-600'>
-									Total
-								</span>
+								<span className='text-sm text-neutral-600'>Total</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
 								{stats.totalItems}
@@ -210,9 +201,7 @@ export function InventoryListPage() {
 						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<AlertTriangle className='size-4 text-warning-50' />
-								<span className='text-sm text-neutral-600'>
-									À consommer
-								</span>
+								<span className='text-sm text-neutral-600'>À consommer</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
 								{stats.expiringInWeek}
@@ -222,9 +211,7 @@ export function InventoryListPage() {
 						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<CheckCircle className='size-4 text-success-50' />
-								<span className='text-sm text-neutral-600'>
-									Valeur
-								</span>
+								<span className='text-sm text-neutral-600'>Valeur</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
 								{formatPrice(stats.totalValue)}
@@ -247,7 +234,8 @@ export function InventoryListPage() {
 					{/* ===== BOUTON FILTRES ===== */}
 					<button
 						onClick={() => setShowFilters(!showFilters)}
-						className='flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors'>
+						className='flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors'
+					>
 						<Filter className='size-4' />
 						Filtres
 						{(currentFilters.categoryId ||
@@ -273,18 +261,14 @@ export function InventoryListPage() {
 									value={currentFilters.categoryId || ''}
 									onChange={(e) =>
 										handleFilterChange({
-											categoryId:
-												e.target.value || undefined,
+											categoryId: e.target.value || undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
-									<option value=''>
-										Toutes les catégories
-									</option>
+									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+								>
+									<option value=''>Toutes les catégories</option>
 									{INVENTORY_CATEGORIES.map((cat) => (
-										<option
-											key={cat.value}
-											value={cat.value}>
+										<option key={cat.value} value={cat.value}>
 											{cat.label}
 										</option>
 									))}
@@ -300,16 +284,14 @@ export function InventoryListPage() {
 									value={currentFilters.storageLocation || ''}
 									onChange={(e) =>
 										handleFilterChange({
-											storageLocation:
-												e.target.value || undefined,
+											storageLocation: e.target.value || undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
+									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+								>
 									<option value=''>Tous les lieux</option>
 									{INVENTORY_STORAGE_LOCATIONS.map((loc) => (
-										<option
-											key={loc.value}
-											value={loc.value}>
+										<option key={loc.value} value={loc.value}>
 											{loc.label}
 										</option>
 									))}
@@ -322,10 +304,7 @@ export function InventoryListPage() {
 									Expire dans
 								</label>
 								<select
-									value={
-										currentFilters.expiringWithinDays?.toString() ||
-										''
-									}
+									value={currentFilters.expiringWithinDays?.toString() || ''}
 									onChange={(e) =>
 										handleFilterChange({
 											expiringWithinDays: e.target.value
@@ -333,7 +312,8 @@ export function InventoryListPage() {
 												: undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
+									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+								>
 									<option value=''>Toutes les dates</option>
 									<option value='1'>1 jour</option>
 									<option value='3'>3 jours</option>
@@ -346,7 +326,8 @@ export function InventoryListPage() {
 						<div className='flex justify-end mt-4'>
 							<button
 								onClick={clearAllFilters}
-								className='text-neutral-600 hover:text-neutral-900 transition-colors'>
+								className='text-neutral-600 hover:text-neutral-900 transition-colors'
+							>
 								Effacer tous les filtres
 							</button>
 						</div>
@@ -376,7 +357,8 @@ export function InventoryListPage() {
 						{items.length === 0 && (
 							<Link
 								to='/app/inventory/add'
-								className='bg-success-50 text-neutral-50 px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
+								className='bg-success-50 text-neutral-50 px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'
+							>
 								<Plus className='size-4' />
 								Ajouter mon premier produit
 							</Link>
@@ -423,7 +405,8 @@ function InventoryItemCard({
 
 	return (
 		<div
-			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm`}>
+			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm`}
+		>
 			<div className='flex items-start justify-between'>
 				<div className='flex-1'>
 					<div className='flex items-start gap-3'>
@@ -451,23 +434,10 @@ function InventoryItemCard({
 							</h3>
 
 							<div className='text-sm text-neutral-600 space-y-1'>
-								<p>
-									{formatQuantity(
-										item.quantity,
-										item.product.unitType
-									)}
-								</p>
-								<p>
-									{getCategoryLabel(
-										item.product.category.slug
-									)}
-								</p>
+								<p>{formatQuantity(item.quantity, item.product.unitType)}</p>
+								<p>{getCategoryLabel(item.product.category.slug)}</p>
 								{item.storageLocation && (
-									<p>
-										{getStorageLocationLabel(
-											item.storageLocation
-										)}
-									</p>
+									<p>{getStorageLocationLabel(item.storageLocation)}</p>
 								)}
 							</div>
 
@@ -491,12 +461,20 @@ function InventoryItemCard({
 					<div className='mt-3 flex items-center justify-between'>
 						<div className='text-sm'>
 							{item.expiryDate && (
-								<span
-									className={`font-medium ${getExpiryStatusTextColor(
-										expiryStatus
-									)}`}>
-									{formatRelativeDate(item.expiryDate)}
-								</span>
+								<div className='flex items-center gap-2'>
+									<span
+										className={`font-medium ${getExpiryStatusTextColor(
+											expiryStatus,
+										)}`}
+									>
+										{formatRelativeDate(item.expiryDate)}
+									</span>
+									{item.expiryDateSource === 'ESTIMATED' && (
+										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+											estimée
+										</span>
+									)}
+								</div>
 							)}
 						</div>
 
@@ -513,13 +491,15 @@ function InventoryItemCard({
 					<Link
 						to='/app/inventory/$productId'
 						params={{ productId: item.id }}
-						className='text-neutral-600 hover:text-neutral-900 transition-colors p-2'>
+						className='text-neutral-600 hover:text-neutral-900 transition-colors p-2'
+					>
 						Détails
 					</Link>
 					<button
 						onClick={onRemove}
 						disabled={isRemoving}
-						className='text-error-50 hover:text-error-100 transition-colors p-2 disabled:opacity-50'>
+						className='text-error-50 hover:text-error-100 transition-colors p-2 disabled:opacity-50'
+					>
 						{isRemoving ? 'Suppression...' : 'Supprimer'}
 					</button>
 				</div>

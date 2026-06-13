@@ -166,8 +166,7 @@ export class AddManualProductDto {
   @IsOptional()
   @IsString({ message: 'Le code-barres doit être une chaîne de caractères' })
   @Matches(/^\d{8,13}$/, {
-    message:
-      'Le code-barres doit contenir entre 8 et 13 chiffres',
+    message: 'Le code-barres doit contenir entre 8 et 13 chiffres',
   })
   @Transform(({ value }) => value?.trim() || null)
   barcode?: string;
@@ -385,6 +384,15 @@ export class ProductCreatedResponseDto {
   @IsOptional()
   @IsISO8601()
   expiryDate?: string;
+
+  @ApiPropertyOptional({
+    description: 'Origine de la date de péremption',
+    example: 'ESTIMATED',
+    enum: ['MANUAL', 'ESTIMATED'],
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateSource?: 'MANUAL' | 'ESTIMATED';
 
   @ApiPropertyOptional({
     description: "Prix d'achat",

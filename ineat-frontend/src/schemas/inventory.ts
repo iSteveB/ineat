@@ -27,6 +27,7 @@ export const InventoryItemSchema = z
 		product: ProductSchema,
 		quantity: QuantitySchema,
 		expiryDate: z.string().datetime().optional(),
+		expiryDateSource: z.enum(['MANUAL', 'ESTIMATED']).optional(),
 		purchaseDate: z.string().datetime(),
 		purchasePrice: PriceSchema.optional(),
 		storageLocation: z
@@ -66,7 +67,7 @@ export const AddInventoryItemSchema = z
 			.string()
 			.regex(
 				/^[0-9]{8,13}$/,
-				'Le code-barres doit contenir entre 8 et 13 chiffres'
+				'Le code-barres doit contenir entre 8 et 13 chiffres',
 			)
 			.optional(),
 		category: z.string().min(1, 'La catégorie est obligatoire'), // Slug de la catégorie
@@ -77,20 +78,28 @@ export const AddInventoryItemSchema = z
 		novascore: z.enum(['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4']).optional(),
 
 		// Informations nutritionnelles (objet JSON)
-		nutrients: z.object({
-			energy: z.number().min(0).optional(), // kcal pour 100g
-			proteins: z.number().min(0).optional(), // g pour 100g
-			carbohydrates: z.number().min(0).optional(), // g pour 100g
-			fats: z.number().min(0).optional(), // g pour 100g
-			sugars: z.number().min(0).optional(), // g pour 100g
-			fiber: z.number().min(0).optional(), // g pour 100g
-			salt: z.number().min(0).optional(), // g pour 100g
-			saturatedFats: z.number().min(0).optional(), // g pour 100g
-		}).optional(),
+		nutrients: z
+			.object({
+				energy: z.number().min(0).optional(), // kcal pour 100g
+				proteins: z.number().min(0).optional(), // g pour 100g
+				carbohydrates: z.number().min(0).optional(), // g pour 100g
+				fats: z.number().min(0).optional(), // g pour 100g
+				sugars: z.number().min(0).optional(), // g pour 100g
+				fiber: z.number().min(0).optional(), // g pour 100g
+				salt: z.number().min(0).optional(), // g pour 100g
+				saturatedFats: z.number().min(0).optional(), // g pour 100g
+			})
+			.optional(),
 
 		// Contenu et média
-		imageUrl: z.string().url('URL d\'image invalide').optional(),
-		ingredients: z.string().max(2000, 'La liste des ingrédients ne peut pas dépasser 2000 caractères').optional(),
+		imageUrl: z.string().url("URL d'image invalide").optional(),
+		ingredients: z
+			.string()
+			.max(
+				2000,
+				'La liste des ingrédients ne peut pas dépasser 2000 caractères',
+			)
+			.optional(),
 
 		// Informations d'inventaire (existantes)
 		quantity: QuantitySchema,
@@ -120,10 +129,9 @@ export const AddInventoryItemSchema = z
 			return true;
 		},
 		{
-			message:
-				"La date de péremption doit être postérieure à la date d'achat",
+			message: "La date de péremption doit être postérieure à la date d'achat",
 			path: ['expiryDate'],
-		}
+		},
 	);
 
 export type AddInventoryItemData = z.infer<typeof AddInventoryItemSchema>;
@@ -157,10 +165,9 @@ export const AddExistingProductToInventorySchema = z
 			return true;
 		},
 		{
-			message:
-				"La date de péremption doit être postérieure à la date d'achat",
+			message: "La date de péremption doit être postérieure à la date d'achat",
 			path: ['expiryDate'],
-		}
+		},
 	);
 
 export type AddExistingProductToInventoryData = z.infer<
@@ -255,7 +262,7 @@ export const InventoryStatsSchema = z.object({
 			count: z.number().int().min(0),
 			percentage: z.number().min(0).max(100),
 			totalValue: z.number().min(0),
-		})
+		}),
 	),
 
 	// Répartition par lieu de stockage
@@ -264,7 +271,7 @@ export const InventoryStatsSchema = z.object({
 		z.object({
 			count: z.number().int().min(0),
 			percentage: z.number().min(0).max(100),
-		})
+		}),
 	),
 
 	// Évolution récente
@@ -279,12 +286,12 @@ export type InventoryStats = z.infer<typeof InventoryStatsSchema>;
 // ===== SCHÉMAS DE RÉPONSES API CLASSIQUES =====
 
 export const InventoryItemResponseSchema = ApiSuccessResponseSchema(
-	InventoryItemWithStatusSchema
+	InventoryItemWithStatusSchema,
 );
 export type InventoryItemResponse = z.infer<typeof InventoryItemResponseSchema>;
 
 export const InventoryListResponseSchema = ApiSuccessResponseSchema(
-	PaginatedResponseSchema(InventoryItemWithStatusSchema)
+	PaginatedResponseSchema(InventoryItemWithStatusSchema),
 );
 export type InventoryListResponse = z.infer<typeof InventoryListResponseSchema>;
 
@@ -318,7 +325,7 @@ export type InventoryItemWithBudget = z.infer<
  * Réponse API complète pour l'ajout de produit avec budget
  */
 export const InventoryItemWithBudgetResponseSchema = ApiSuccessResponseSchema(
-	InventoryItemWithBudgetSchema
+	InventoryItemWithBudgetSchema,
 );
 
 export type InventoryItemWithBudgetResponse = z.infer<
@@ -341,7 +348,7 @@ export type AddProductResponse =
  * Vérifie si une réponse contient des informations budgétaires
  */
 export const hasBudgetImpact = (
-	response: AddProductResponse
+	response: AddProductResponse,
 ): response is InventoryItemWithBudgetResponse => {
 	return 'budget' in response.data;
 };
@@ -353,7 +360,7 @@ export const hasBudgetImpact = (
  */
 export const extractNotificationData = (
 	response: InventoryItemWithBudgetResponse,
-	fallbackProductName: string = 'Produit'
+	fallbackProductName: string = 'Produit',
 ) => {
 	const { item, budget } = response.data;
 	const productName = item.product.name || fallbackProductName;
@@ -378,7 +385,7 @@ export const extractNotificationData = (
  * Ajoute le statut d'expiration à un élément d'inventaire
  */
 export const addExpiryStatusToItem = (
-	item: InventoryItem
+	item: InventoryItem,
 ): InventoryItemWithStatus => {
 	const expiryStatus = calculateExpiryStatus(item.expiryDate);
 	let daysUntilExpiry: number | undefined;
@@ -402,7 +409,7 @@ export const addExpiryStatusToItem = (
  */
 export const filterInventoryItems = (
 	items: InventoryItemWithStatus[],
-	filters: InventoryFilters
+	filters: InventoryFilters,
 ): InventoryItemWithStatus[] => {
 	return items.filter((item) => {
 		// Filtre par recherche
@@ -415,10 +422,7 @@ export const filterInventoryItems = (
 		}
 
 		// Filtre par catégorie
-		if (
-			filters.categoryId &&
-			item.product.category.id !== filters.categoryId
-		) {
+		if (filters.categoryId && item.product.category.id !== filters.categoryId) {
 			return false;
 		}
 
@@ -451,12 +455,12 @@ export const filterInventoryItems = (
  * Calcule les statistiques d'inventaire
  */
 export const calculateInventoryStats = (
-	items: InventoryItemWithStatus[]
+	items: InventoryItemWithStatus[],
 ): InventoryStats => {
 	const totalItems = items.length;
 	const totalValue = items.reduce(
 		(sum, item) => sum + (item.purchasePrice || 0),
-		0
+		0,
 	);
 	const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -466,7 +470,7 @@ export const calculateInventoryStats = (
 			acc[item.expiryStatus.toLowerCase() as keyof typeof acc]++;
 			return acc;
 		},
-		{ good: 0, warning: 0, critical: 0, expired: 0, unknown: 0 }
+		{ good: 0, warning: 0, critical: 0, expired: 0, unknown: 0 },
 	);
 
 	return {

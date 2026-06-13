@@ -18,8 +18,6 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
-
-
 	// Obtenir les couleurs selon le statut d'expiration
 	const getExpiryColors = (status: string) => {
 		switch (status) {
@@ -67,7 +65,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 		<Link
 			to='/app/inventory/$productId'
 			params={{ productId: item.id }}
-			className='block group'>
+			className='block group'
+		>
 			<div className='relative overflow-hidden bg-neutral-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:border-gray-300'>
 				{/* Effet de brillance en arrière-plan */}
 				<div className='absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
@@ -92,10 +91,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
 							{/* Badge de quantité */}
 							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-neutral-50 border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
-								{formatQuantity(
-									item.quantity,
-									item.product.unitType
-								)}
+								{formatQuantity(item.quantity, item.product.unitType)}
 							</div>
 						</div>
 
@@ -141,16 +137,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
 							{/* ===== DATE D'EXPIRATION ===== */}
 							{item.expiryDate && (
-								<div
-									className={`
+								<div className='flex flex-wrap items-center gap-2'>
+									<div
+										className={`
                     inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-semibold text-sm
                     ${expiryColors.bg} ${expiryColors.text} shadow-lg
                     hover:shadow-xl transition-all duration-300
-                  `}>
-									{expiryColors.icon}
-									<span>
-										{formatRelativeDate(item.expiryDate)}
-									</span>
+                  `}
+									>
+										{expiryColors.icon}
+										<span>{formatRelativeDate(item.expiryDate)}</span>
+									</div>
+									{item.expiryDateSource === 'ESTIMATED' && (
+										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+											estimée
+										</span>
+									)}
 								</div>
 							)}
 
@@ -161,9 +163,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 										<MapPin className='size-3 text-blue-600' />
 									</div>
 									<span className='text-sm font-medium text-gray-600'>
-										{item.storageLocation
-											.charAt(0)
-											.toUpperCase() +
+										{item.storageLocation.charAt(0).toUpperCase() +
 											item.storageLocation.slice(1)}
 									</span>
 								</div>

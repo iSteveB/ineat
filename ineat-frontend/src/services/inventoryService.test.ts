@@ -24,6 +24,7 @@ const inventoryItem = {
 	},
 	quantity: 2,
 	expiryDate: '2026-05-28T00:00:00.000Z',
+	expiryDateSource: 'ESTIMATED',
 	purchaseDate: '2026-05-20T00:00:00.000Z',
 	purchasePrice: 3.5,
 	createdAt: '2026-05-20T10:00:00.000Z',
@@ -39,7 +40,7 @@ describe('inventoryService', () => {
 			http.get(`${API_URL}/inventory`, ({ request }) => {
 				requestedUrls.push(request.url);
 				return HttpResponse.json([inventoryItem]);
-			})
+			}),
 		);
 
 		const result = await inventoryService.getInventory({
@@ -52,9 +53,7 @@ describe('inventoryService', () => {
 		expect(result).toHaveLength(1);
 		expect(result[0].product.name).toBe('Yaourt nature');
 		expect(requestedSearchParams?.get('category')).toBe('cat-frais');
-		expect(requestedSearchParams?.get('storageLocation')).toBe(
-			'fridge'
-		);
+		expect(requestedSearchParams?.get('storageLocation')).toBe('fridge');
 		expect(requestedSearchParams?.get('expiringWithinDays')).toBe('7');
 	});
 
@@ -76,7 +75,7 @@ describe('inventoryService', () => {
 						},
 					},
 				});
-			})
+			}),
 		);
 
 		const result = await inventoryService.addManualProduct({
@@ -116,8 +115,8 @@ describe('inventoryService', () => {
 							},
 						},
 					});
-				}
-			)
+				},
+			),
 		);
 
 		const result = await inventoryService.addExistingProductToInventory({
@@ -147,8 +146,8 @@ describe('inventoryService', () => {
 					expiringSoon: 2,
 					expired: 1,
 					totalValue: 128.5,
-				})
-			)
+				}),
+			),
 		);
 
 		await expect(inventoryService.getRecentProducts(3)).resolves.toEqual([
@@ -168,7 +167,7 @@ describe('inventoryService', () => {
 				unitType: 'UNIT',
 				quantity: 1,
 				purchaseDate: '2026-05-20',
-			})
+			}),
 		).rejects.toThrow('Le nom du produit est requis');
 
 		await expect(
@@ -176,7 +175,7 @@ describe('inventoryService', () => {
 				productId: '',
 				quantity: 1,
 				purchaseDate: '2026-05-20',
-			})
+			}),
 		).rejects.toThrow("L'ID du produit est requis");
 	});
 });

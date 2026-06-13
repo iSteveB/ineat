@@ -188,9 +188,7 @@ const ProductDetailPage: FC = () => {
 			case 'ML':
 				return `${quantity} mL`;
 			case 'UNIT':
-				return quantity === 1
-					? `${quantity} unité`
-					: `${quantity} unités`;
+				return quantity === 1 ? `${quantity} unité` : `${quantity} unités`;
 			default:
 				return `${quantity} ${unitType.toLowerCase()}`;
 		}
@@ -208,7 +206,7 @@ const ProductDetailPage: FC = () => {
 
 	// Gérer la mise à jour du produit
 	const handleUpdateProduct = async (
-		updates: UpdateInventoryItemData
+		updates: UpdateInventoryItemData,
 	): Promise<void> => {
 		if (!inventoryItem) return;
 
@@ -222,8 +220,8 @@ const ProductDetailPage: FC = () => {
 			toast.error(
 				getUserFacingErrorMessage(
 					error,
-					'Impossible de mettre à jour le produit. Veuillez réessayer.'
-				)
+					'Impossible de mettre à jour le produit. Veuillez réessayer.',
+				),
 			);
 		} finally {
 			setIsUpdating(false);
@@ -236,7 +234,7 @@ const ProductDetailPage: FC = () => {
 
 		if (
 			confirm(
-				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?'
+				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?',
 			)
 		) {
 			try {
@@ -247,8 +245,8 @@ const ProductDetailPage: FC = () => {
 				toast.error(
 					getUserFacingErrorMessage(
 						error,
-						'Impossible de supprimer le produit. Veuillez réessayer.'
-					)
+						'Impossible de supprimer le produit. Veuillez réessayer.',
+					),
 				);
 			}
 		}
@@ -272,13 +270,13 @@ const ProductDetailPage: FC = () => {
 							Produit non trouvé
 						</h2>
 						<p className='text-gray-600 max-w-md'>
-							Ce produit n'existe pas ou a été supprimé de votre
-							inventaire.
+							Ce produit n'existe pas ou a été supprimé de votre inventaire.
 						</p>
 					</div>
 					<Button
 						onClick={() => navigate({ to: '/app/inventory' })}
-						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'>
+						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+					>
 						<ArrowLeft className='size-4' />
 						Retour à l'inventaire
 					</Button>
@@ -323,16 +321,15 @@ const ProductDetailPage: FC = () => {
 							variant='ghost'
 							size='sm'
 							onClick={() => navigate({ to: '/app/inventory' })}
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'>
+							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
+						>
 							<ArrowLeft className='size-5' />
 						</Button>
 						<div>
 							<h1 className='text-2xl font-bold text-gray-900'>
 								Détail du produit
 							</h1>
-							<p className='text-sm text-gray-600'>
-								Informations complètes
-							</p>
+							<p className='text-sm text-gray-600'>Informations complètes</p>
 						</div>
 					</div>
 
@@ -340,7 +337,8 @@ const ProductDetailPage: FC = () => {
 						<Button
 							variant='ghost'
 							size='sm'
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'>
+							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
+						>
 							<Heart className='size-4' />
 						</Button>
 					</div>
@@ -361,9 +359,7 @@ const ProductDetailPage: FC = () => {
 										{inventoryItem.product.imageUrl ? (
 											<img
 												src={
-													inventoryItem.product
-														.imageUrl ||
-													'/placeholder.svg'
+													inventoryItem.product.imageUrl || '/placeholder.svg'
 												}
 												alt={inventoryItem.product.name}
 												className='size-full object-cover'
@@ -405,7 +401,7 @@ const ProductDetailPage: FC = () => {
 									<span className='font-semibold text-blue-800'>
 										{formatUnit(
 											inventoryItem.quantity,
-											inventoryItem.product.unitType
+											inventoryItem.product.unitType,
 										)}
 									</span>
 								</div>
@@ -414,12 +410,8 @@ const ProductDetailPage: FC = () => {
 									<div className='flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-xl'>
 										<MapPin className='size-4 text-green-600' />
 										<span className='font-semibold text-green-800'>
-											{inventoryItem.storageLocation
-												.charAt(0)
-												.toUpperCase() +
-												inventoryItem.storageLocation.slice(
-													1
-												)}
+											{inventoryItem.storageLocation.charAt(0).toUpperCase() +
+												inventoryItem.storageLocation.slice(1)}
 										</span>
 									</div>
 								)}
@@ -436,17 +428,19 @@ const ProductDetailPage: FC = () => {
 									</div>
 									<div className='flex items-center gap-4'>
 										<span className='text-lg font-bold text-gray-900'>
-											{formatDate(
-												inventoryItem.expiryDate
-											)}
+											{formatDate(inventoryItem.expiryDate)}
 										</span>
+										{inventoryItem.expiryDateSource === 'ESTIMATED' && (
+											<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+												date estimée
+											</span>
+										)}
 										<div
-											className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${expiryColors.badge}`}>
+											className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${expiryColors.badge}`}
+										>
 											{expiryColors.icon}
 											<span className='font-semibold text-sm'>
-												{formatRelativeDate(
-													inventoryItem.expiryDate
-												)}
+												{formatRelativeDate(inventoryItem.expiryDate)}
 											</span>
 										</div>
 									</div>
@@ -467,20 +461,16 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
-											inventoryItem.product.nutriscore
-										)}`}>
-										{inventoryItem.product.nutriscore ||
-											'?'}
+											inventoryItem.product.nutriscore,
+										)}`}
+									>
+										{inventoryItem.product.nutriscore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>
-										Nutri-score
-									</h3>
+									<h3 className='font-bold text-gray-900 mb-1'>Nutri-score</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNutriscoreText(
-											inventoryItem.product.nutriscore
-										)}
+										{getNutriscoreText(inventoryItem.product.nutriscore)}
 									</p>
 								</div>
 							</div>
@@ -496,19 +486,16 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
-											inventoryItem.product.ecoscore
-										)}`}>
+											inventoryItem.product.ecoscore,
+										)}`}
+									>
 										{inventoryItem.product.ecoscore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>
-										Eco-score
-									</h3>
+									<h3 className='font-bold text-gray-900 mb-1'>Eco-score</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getEcoscoreText(
-											inventoryItem.product.ecoscore
-										)}
+										{getEcoscoreText(inventoryItem.product.ecoscore)}
 									</p>
 								</div>
 							</div>
@@ -524,21 +511,16 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getGroupColor(
-											inventoryItem.product.novascore
-										)}`}>
-										{getGroupScore(
-											inventoryItem.product.novascore
-										) || '?'}
+											inventoryItem.product.novascore,
+										)}`}
+									>
+										{getGroupScore(inventoryItem.product.novascore) || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>
-										Groupe NOVA
-									</h3>
+									<h3 className='font-bold text-gray-900 mb-1'>Groupe NOVA</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNovascoreText(
-											inventoryItem.product.novascore
-										)}
+										{getNovascoreText(inventoryItem.product.novascore)}
 									</p>
 								</div>
 							</div>
@@ -556,9 +538,7 @@ const ProductDetailPage: FC = () => {
 
 				{/* ===== LISTE DES INGRÉDIENTS ===== */}
 				{inventoryItem.product.ingredients && (
-					<IngredientsCard
-						ingredients={inventoryItem.product.ingredients}
-					/>
+					<IngredientsCard ingredients={inventoryItem.product.ingredients} />
 				)}
 
 				{/* ===== INFORMATIONS D'ACHAT ===== */}
@@ -574,9 +554,7 @@ const ProductDetailPage: FC = () => {
 								<h3 className='font-bold text-gray-900'>
 									Informations d'achat
 								</h3>
-								<p className='text-sm text-gray-600'>
-									Détails de votre achat
-								</p>
+								<p className='text-sm text-gray-600'>Détails de votre achat</p>
 							</div>
 						</div>
 
@@ -602,8 +580,7 @@ const ProductDetailPage: FC = () => {
 										</span>
 									</div>
 									<span className='font-bold text-green-700 text-lg'>
-										{inventoryItem.purchasePrice.toFixed(2)}{' '}
-										€
+										{inventoryItem.purchasePrice.toFixed(2)} €
 									</span>
 								</div>
 							)}
@@ -639,14 +616,16 @@ const ProductDetailPage: FC = () => {
 					<Button
 						onClick={handleOpenEditModal}
 						variant='outline'
-						className='flex-1 h-12 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-transparent'>
+						className='flex-1 h-12 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-transparent'
+					>
 						<Edit3 className='size-4 mr-2' />
 						Modifier
 					</Button>
 
 					<Button
 						onClick={handleDelete}
-						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'>
+						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+					>
 						<Trash2 className='size-4 mr-2' />
 						Supprimer
 					</Button>

@@ -11,6 +11,8 @@ export interface ProductDatesData {
 interface ProductDatesSectionProps {
 	values: ProductDatesData;
 	onChange: (field: keyof ProductDatesData, value: string) => void;
+	estimatedExpiryDate?: string | null;
+	estimatedExpiryReason?: string | null;
 	disabled?: boolean;
 	readonly?: boolean;
 	showTitle?: boolean;
@@ -21,6 +23,8 @@ interface ProductDatesSectionProps {
 export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 	values,
 	onChange,
+	estimatedExpiryDate,
+	estimatedExpiryReason,
 	disabled = false,
 	readonly = false,
 	showTitle = true,
@@ -29,10 +33,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 }) => {
 	const isFieldDisabled = disabled || readonly;
 
-	const handleFieldChange = (
-		field: keyof ProductDatesData,
-		value: string
-	) => {
+	const handleFieldChange = (field: keyof ProductDatesData, value: string) => {
 		if (!readonly) {
 			onChange(field, value);
 		}
@@ -50,13 +51,10 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
 			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
-			baseClass = baseClass.replace(
-				'border-neutral-200',
-				'border-blue-500/20'
-			);
+			baseClass = baseClass.replace('border-neutral-200', 'border-blue-500/20');
 			baseClass = baseClass.replace(
 				'focus:ring-success-50 focus:border-success-50',
-				'focus:ring-blue-500 focus:border-blue-500'
+				'focus:ring-blue-500 focus:border-blue-500',
 			);
 		}
 
@@ -80,38 +78,29 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 	};
 
 	const datesValidationError = validateDatesLogic();
+	const showEstimatedDate = !values.expiryDate && estimatedExpiryDate;
 
 	return (
 		<div className={className}>
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>
-							Dates
-						</h3>
+						<h3 className='text-md font-medium text-neutral-300'>Dates</h3>
 
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 							{/* Date d'achat */}
 							<div className='space-y-2'>
-								<Label
-									htmlFor='purchaseDate'
-									className='text-neutral-300'>
-									Date d'achat{' '}
-									<span className='text-error-100'>*</span>
+								<Label htmlFor='purchaseDate' className='text-neutral-300'>
+									Date d'achat <span className='text-error-100'>*</span>
 								</Label>
 								<Input
 									id='purchaseDate'
 									type='date'
 									value={values.purchaseDate}
 									onChange={(e) =>
-										handleFieldChange(
-											'purchaseDate',
-											e.target.value
-										)
+										handleFieldChange('purchaseDate', e.target.value)
 									}
-									className={getInputClassName(
-										'purchaseDate'
-									)}
+									className={getInputClassName('purchaseDate')}
 									disabled={isFieldDisabled}
 								/>
 								{errors.purchaseDate && (
@@ -123,9 +112,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 
 							{/* Date de péremption */}
 							<div className='space-y-2'>
-								<Label
-									htmlFor='expiryDate'
-									className='text-neutral-300'>
+								<Label htmlFor='expiryDate' className='text-neutral-300'>
 									Date de péremption
 								</Label>
 								<Input
@@ -133,17 +120,18 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 									type='date'
 									value={values.expiryDate}
 									onChange={(e) =>
-										handleFieldChange(
-											'expiryDate',
-											e.target.value
-										)
+										handleFieldChange('expiryDate', e.target.value)
 									}
 									className={getInputClassName('expiryDate')}
 									disabled={isFieldDisabled}
 								/>
 								{errors.expiryDate && (
-									<p className='text-sm text-error-100'>
-										{errors.expiryDate}
+									<p className='text-sm text-error-100'>{errors.expiryDate}</p>
+								)}
+								{showEstimatedDate && (
+									<p className='text-sm text-neutral-200'>
+										Date estimée : {estimatedExpiryDate}
+										{estimatedExpiryReason ? ` (${estimatedExpiryReason})` : ''}
 									</p>
 								)}
 							</div>

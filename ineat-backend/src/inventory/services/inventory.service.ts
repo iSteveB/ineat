@@ -10,6 +10,10 @@ import { QuickAddProductDto } from '../../DTOs';
 import { BudgetService } from '../../budget/services/budget.service';
 import { ExpenseService } from '../../budget/services/expense.service';
 import { randomUUID } from 'crypto';
+import {
+  estimateExpiryDate,
+  ExpiryEstimationResult,
+} from './expiry-estimation.service';
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
 export interface InventoryStats {
@@ -100,12 +104,22 @@ export class InventoryService {
       // 1. Récupérer ou créer le produit
       const product = await this.findOrCreateProduct(tx, addProductDto);
 
+      const expiryEstimation = estimateExpiryDate({
+        productName: product.name ?? addProductDto.name,
+        categorySlug: product.Category?.slug ?? addProductDto.category,
+        categoryName: product.Category?.name,
+        storageLocation: addProductDto.storageLocation,
+        purchaseDate: addProductDto.purchaseDate,
+        manualExpiryDate: addProductDto.expiryDate,
+      });
+
       // 2. Vérifier si le produit existe déjà dans l'inventaire de l'utilisateur
       await this.checkDuplicateInventoryItem(
         tx,
         userId,
         product.id,
         addProductDto,
+        expiryEstimation.expiryDate,
       );
 
       // 3. Créer l'élément d'inventaire
@@ -114,6 +128,7 @@ export class InventoryService {
         userId,
         product.id,
         addProductDto,
+        expiryEstimation,
       );
 
       // 4. Formater la réponse de base
@@ -157,12 +172,22 @@ export class InventoryService {
       // 1. Vérifier que le produit existe
       const product = await this.findProductById(tx, quickAddDto.productId);
 
+      const expiryEstimation = estimateExpiryDate({
+        productName: product.name,
+        categorySlug: product.Category?.slug,
+        categoryName: product.Category?.name,
+        storageLocation: quickAddDto.storageLocation,
+        purchaseDate: quickAddDto.purchaseDate,
+        manualExpiryDate: quickAddDto.expiryDate,
+      });
+
       // 2. Vérifier s'il y a un doublon dans l'inventaire
       await this.checkDuplicateInventoryItemForQuickAdd(
         tx,
         userId,
         quickAddDto.productId,
         quickAddDto,
+        expiryEstimation.expiryDate,
       );
 
       // 3. Créer l'élément d'inventaire
@@ -170,6 +195,7 @@ export class InventoryService {
         tx,
         userId,
         quickAddDto,
+        expiryEstimation,
       );
 
       // 4. Formater la réponse de base
@@ -387,6 +413,7 @@ export class InventoryService {
       updatePayload.expiryDate = updateData.expiryDate
         ? new Date(updateData.expiryDate)
         : null;
+      updatePayload.expiryDateSource = 'MANUAL';
     }
 
     if (updateData.storageLocation !== undefined) {
@@ -505,7 +532,6 @@ export class InventoryService {
         );
       }
     }
-
   }
 
   private validateInventoryDates(
@@ -583,7 +609,7 @@ export class InventoryService {
     if (addProductDto.barcode) {
       const existingProductByBarcode = await tx.product.findUnique({
         where: { barcode: addProductDto.barcode },
-        include: { Category : true },
+        include: { Category: true },
       });
 
       if (existingProductByBarcode) {
@@ -681,15 +707,14 @@ export class InventoryService {
     userId: string,
     productId: string,
     addProductDto: AddManualProductDto,
+    resolvedExpiryDate: Date | null,
   ): Promise<void> {
     const existingInventoryItem = await tx.inventoryItem.findFirst({
       where: {
         userId,
         productId,
         storageLocation: addProductDto.storageLocation || null,
-        expiryDate: addProductDto.expiryDate
-          ? new Date(addProductDto.expiryDate)
-          : null,
+        expiryDate: resolvedExpiryDate,
       },
     });
 
@@ -708,6 +733,7 @@ export class InventoryService {
     userId: string,
     productId: string,
     addProductDto: AddManualProductDto,
+    expiryEstimation: ExpiryEstimationResult,
   ) {
     return await tx.inventoryItem.create({
       data: {
@@ -716,9 +742,8 @@ export class InventoryService {
         productId,
         quantity: addProductDto.quantity,
         purchaseDate: new Date(addProductDto.purchaseDate),
-        expiryDate: addProductDto.expiryDate
-          ? new Date(addProductDto.expiryDate)
-          : null,
+        expiryDate: expiryEstimation.expiryDate,
+        expiryDateSource: expiryEstimation.source,
         purchasePrice: addProductDto.purchasePrice,
         storageLocation: addProductDto.storageLocation,
         notes: addProductDto.notes,
@@ -751,6 +776,7 @@ export class InventoryService {
       unitType: product.unitType,
       purchaseDate: inventoryItem.purchaseDate.toISOString(),
       expiryDate: inventoryItem.expiryDate?.toISOString(),
+      expiryDateSource: inventoryItem.expiryDateSource,
       purchasePrice: inventoryItem.purchasePrice,
       storageLocation: inventoryItem.storageLocation,
       notes: inventoryItem.notes,
@@ -804,8 +830,7 @@ export class InventoryService {
           productName: expenseData?.productName || 'Produit',
           amount: purchasePrice,
           purchaseDate:
-            expenseData?.purchaseDate ||
-            new Date().toISOString().split('T')[0],
+            expenseData?.purchaseDate || new Date().toISOString().split('T')[0],
           source: expenseData?.source || 'Inventaire',
           notes: expenseData?.notes,
           inventoryItemId: expenseData?.inventoryItemId,
@@ -851,7 +876,10 @@ export class InventoryService {
   private async validateQuickAddData(
     quickAddDto: QuickAddProductDto,
   ): Promise<void> {
-    this.validateInventoryDates(quickAddDto.purchaseDate, quickAddDto.expiryDate);
+    this.validateInventoryDates(
+      quickAddDto.purchaseDate,
+      quickAddDto.expiryDate,
+    );
     this.validatePositiveQuantity(quickAddDto.quantity);
     this.validatePurchasePrice(quickAddDto.purchasePrice);
   }
@@ -880,15 +908,14 @@ export class InventoryService {
     userId: string,
     productId: string,
     quickAddDto: QuickAddProductDto,
+    resolvedExpiryDate: Date | null,
   ): Promise<void> {
     const existingInventoryItem = await tx.inventoryItem.findFirst({
       where: {
         userId,
         productId,
         storageLocation: quickAddDto.storageLocation || null,
-        expiryDate: quickAddDto.expiryDate
-          ? new Date(quickAddDto.expiryDate)
-          : null,
+        expiryDate: resolvedExpiryDate,
       },
     });
 
@@ -906,6 +933,7 @@ export class InventoryService {
     tx: any,
     userId: string,
     quickAddDto: QuickAddProductDto,
+    expiryEstimation: ExpiryEstimationResult,
   ) {
     return await tx.inventoryItem.create({
       data: {
@@ -914,9 +942,8 @@ export class InventoryService {
         productId: quickAddDto.productId,
         quantity: quickAddDto.quantity,
         purchaseDate: new Date(quickAddDto.purchaseDate),
-        expiryDate: quickAddDto.expiryDate
-          ? new Date(quickAddDto.expiryDate)
-          : null,
+        expiryDate: expiryEstimation.expiryDate,
+        expiryDateSource: expiryEstimation.source,
         purchasePrice: quickAddDto.purchasePrice || null,
         storageLocation: quickAddDto.storageLocation || null,
         notes: quickAddDto.notes || null,
