@@ -77,6 +77,9 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 	const [category, setCategory] = useState(''); // État pour la catégorie
 	const [purchaseDate, setPurchaseDate] = useState(formatDate(new Date()));
 	const [expiryDate, setExpiryDate] = useState('');
+	const [expiryDateSource, setExpiryDateSource] = useState<
+		'MANUAL' | 'ESTIMATED'
+	>('ESTIMATED');
 	const [purchasePrice, setPurchasePrice] = useState('');
 	const [storageLocation, setStorageLocation] = useState('placard');
 	const [notes, setNotes] = useState('');
@@ -123,6 +126,15 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			setCategory(bestMatch);
 		}
 	}, [categories, product.category?.name, findBestCategoryMatch]); // ✅ Dépendance ajoutée
+
+	useEffect(() => {
+		if (!expirySuggestion) return;
+		if (expiryDateSource === 'MANUAL') return;
+		if (expiryDate === expirySuggestion.date) return;
+
+		setExpiryDate(expirySuggestion.date);
+		setExpiryDateSource('ESTIMATED');
+	}, [expiryDate, expiryDateSource, expirySuggestion]);
 
 	// Validation du formulaire
 	const validate = (): boolean => {
@@ -171,7 +183,8 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			quantity: parseFloat(quantity),
 			category, // Inclure la catégorie
 			purchaseDate,
-			expiryDate: expiryDate || undefined,
+			expiryDate:
+				expiryDateSource === 'MANUAL' && expiryDate ? expiryDate : undefined,
 			purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
 			storageLocation: storageLocation || undefined,
 			notes: notes || undefined,
@@ -191,6 +204,17 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			setErrors((prev) => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
 				const { [field]: removed, ...rest } = prev;
+				return rest;
+			});
+		}
+	};
+
+	const handleExpiryDateChange = (value: string): void => {
+		setExpiryDate(value);
+		setExpiryDateSource(value ? 'MANUAL' : 'ESTIMATED');
+		if (errors.expiryDate) {
+			setErrors((prev) => {
+				const { expiryDate: _removed, ...rest } = prev;
 				return rest;
 			});
 		}
@@ -383,19 +407,27 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							id='expiryDate'
 							type='date'
 							value={expiryDate}
-							onChange={(e) =>
-								handleFieldChange('expiryDate', e.target.value, setExpiryDate)
-							}
+							onChange={(e) => handleExpiryDateChange(e.target.value)}
 							className={errors.expiryDate ? 'border-error-50' : ''}
 							disabled={isSubmitting}
 						/>
 						{errors.expiryDate && (
 							<p className='text-xs text-error-50'>{errors.expiryDate}</p>
 						)}
+						{expiryDateSource === 'ESTIMATED' && expiryDate && (
+							<p className='text-xs text-neutral-200'>
+								Date estimée : {expiryDate} ({expirySuggestion?.reason})
+							</p>
+						)}
 						{!expiryDate && expirySuggestion && (
 							<p className='text-xs text-neutral-200'>
 								Date estimée : {expirySuggestion.date} (
 								{expirySuggestion.reason})
+							</p>
+						)}
+						{expiryDateSource === 'MANUAL' && expiryDate && (
+							<p className='text-xs text-neutral-200'>
+								Date saisie manuellement
 							</p>
 						)}
 					</div>

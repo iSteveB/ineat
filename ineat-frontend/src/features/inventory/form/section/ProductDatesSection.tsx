@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 export interface ProductDatesData {
 	purchaseDate: string;
 	expiryDate: string;
+	expiryDateSource?: 'MANUAL' | 'ESTIMATED';
 }
 
 interface ProductDatesSectionProps {
@@ -78,7 +79,10 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 	};
 
 	const datesValidationError = validateDatesLogic();
-	const showEstimatedDate = !values.expiryDate && estimatedExpiryDate;
+	const isEstimatedExpiryDate =
+		values.expiryDateSource === 'ESTIMATED' && Boolean(values.expiryDate);
+	const showEstimatedDate =
+		isEstimatedExpiryDate || (!values.expiryDate && estimatedExpiryDate);
 
 	return (
 		<div className={className}>
@@ -130,8 +134,13 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 								)}
 								{showEstimatedDate && (
 									<p className='text-sm text-neutral-200'>
-										Date estimée : {estimatedExpiryDate}
+										Date estimée : {values.expiryDate || estimatedExpiryDate}
 										{estimatedExpiryReason ? ` (${estimatedExpiryReason})` : ''}
+									</p>
+								)}
+								{values.expiryDateSource === 'MANUAL' && values.expiryDate && (
+									<p className='text-sm text-neutral-200'>
+										Date saisie manuellement
 									</p>
 								)}
 							</div>

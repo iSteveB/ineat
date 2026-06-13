@@ -8,6 +8,7 @@ import {
 	type UnitType,
 	type Category,
 } from '@/schemas';
+import { getExpirySuggestion } from '@/utils/expiryEstimation';
 
 // Type de formulaire basé sur le schéma Zod mais avec des chaînes pour l'interface
 export type FormData = {
@@ -22,6 +23,7 @@ export type FormData = {
 	brand: string;
 	barcode: string;
 	expiryDate: string;
+	expiryDateSource: 'MANUAL' | 'ESTIMATED';
 	purchasePrice: string;
 	storageLocation: string;
 	notes: string;
@@ -72,7 +74,7 @@ interface UseProductFormReturn {
 }
 
 export const useProductForm = (
-	options: UseProductFormOptions
+	options: UseProductFormOptions,
 ): UseProductFormReturn => {
 	const {
 		categories,
@@ -96,6 +98,7 @@ export const useProductForm = (
 
 			// Champs optionnels
 			expiryDate: '',
+			expiryDateSource: 'ESTIMATED',
 			purchasePrice: '',
 			storageLocation: '',
 			notes: '',
@@ -119,7 +122,7 @@ export const useProductForm = (
 			ingredients: '',
 			imageUrl: '',
 		}),
-		[defaultProductName, defaultBrand, defaultBarcode]
+		[defaultProductName, defaultBrand, defaultBarcode],
 	);
 
 	const [formData, setFormData] = useState<FormData>(getInitialFormData());
@@ -127,7 +130,7 @@ export const useProductForm = (
 
 	// États dérivés
 	const hasPrefilledData = Boolean(
-		defaultProductName || defaultBrand || defaultBarcode
+		defaultProductName || defaultBrand || defaultBarcode,
 	);
 
 	// Fonction de transformation des données du formulaire vers le schéma Zod
@@ -139,10 +142,7 @@ export const useProductForm = (
 				nutrients.energy = Number(formData.energy);
 			if (formData.proteins && !isNaN(Number(formData.proteins)))
 				nutrients.proteins = Number(formData.proteins);
-			if (
-				formData.carbohydrates &&
-				!isNaN(Number(formData.carbohydrates))
-			)
+			if (formData.carbohydrates && !isNaN(Number(formData.carbohydrates)))
 				nutrients.carbohydrates = Number(formData.carbohydrates);
 			if (formData.fats && !isNaN(Number(formData.fats)))
 				nutrients.fats = Number(formData.fats);
@@ -152,10 +152,7 @@ export const useProductForm = (
 				nutrients.fiber = Number(formData.fiber);
 			if (formData.salt && !isNaN(Number(formData.salt)))
 				nutrients.salt = Number(formData.salt);
-			if (
-				formData.saturatedFats &&
-				!isNaN(Number(formData.saturatedFats))
-			)
+			if (formData.saturatedFats && !isNaN(Number(formData.saturatedFats)))
 				nutrients.saturatedFats = Number(formData.saturatedFats);
 
 			return {
@@ -171,7 +168,10 @@ export const useProductForm = (
 				...(formData.barcode.trim() && {
 					barcode: formData.barcode.trim(),
 				}),
-				...(formData.expiryDate && { expiryDate: formData.expiryDate }),
+				...(formData.expiryDate &&
+					formData.expiryDateSource === 'MANUAL' && {
+						expiryDate: formData.expiryDate,
+					}),
 				...(formData.purchasePrice &&
 					!isNaN(Number(formData.purchasePrice)) && {
 						purchasePrice: Number(formData.purchasePrice),
@@ -184,21 +184,11 @@ export const useProductForm = (
 				// Scores
 				...(formData.nutriscore &&
 					['A', 'B', 'C', 'D', 'E'].includes(formData.nutriscore) && {
-						nutriscore: formData.nutriscore as
-							| 'A'
-							| 'B'
-							| 'C'
-							| 'D'
-							| 'E',
+						nutriscore: formData.nutriscore as 'A' | 'B' | 'C' | 'D' | 'E',
 					}),
 				...(formData.ecoscore &&
 					['A', 'B', 'C', 'D', 'E'].includes(formData.ecoscore) && {
-						ecoscore: formData.ecoscore as
-							| 'A'
-							| 'B'
-							| 'C'
-							| 'D'
-							| 'E',
+						ecoscore: formData.ecoscore as 'A' | 'B' | 'C' | 'D' | 'E',
 					}),
 				...(formData.novascore &&
 					['1', '2', '3', '4'].includes(formData.novascore) && {
@@ -219,7 +209,7 @@ export const useProductForm = (
 				}),
 			};
 		},
-		[]
+		[],
 	);
 
 	// Validation avec Zod
@@ -242,7 +232,7 @@ export const useProductForm = (
 				return false;
 			}
 		},
-		[]
+		[],
 	);
 
 	// Validation du formulaire
@@ -254,7 +244,13 @@ export const useProductForm = (
 	// Gestionnaire de changement des champs
 	const handleInputChange = useCallback(
 		(field: keyof FormData, value: string) => {
-			setFormData((prev) => ({ ...prev, [field]: value }));
+			setFormData((prev) => ({
+				...prev,
+				[field]: value,
+				...(field === 'expiryDate' && {
+					expiryDateSource: value ? 'MANUAL' : 'ESTIMATED',
+				}),
+			}));
 
 			// Nettoyer l'erreur de ce champ
 			if (errors[field]) {
@@ -265,8 +261,40 @@ export const useProductForm = (
 				});
 			}
 		},
-		[errors]
+		[errors],
 	);
+
+	useEffect(() => {
+		const selectedCategory = categories.find(
+			(category) => category.slug === formData.category,
+		);
+		const suggestion = getExpirySuggestion({
+			productName: formData.name,
+			categorySlug: formData.category,
+			categoryName: selectedCategory?.name,
+			storageLocation: formData.storageLocation,
+			purchaseDate: formData.purchaseDate,
+		});
+
+		if (!suggestion) return;
+
+		setFormData((prev) => {
+			if (prev.expiryDateSource === 'MANUAL') return prev;
+			if (prev.expiryDate === suggestion.date) return prev;
+
+			return {
+				...prev,
+				expiryDate: suggestion.date,
+				expiryDateSource: 'ESTIMATED',
+			};
+		});
+	}, [
+		categories,
+		formData.category,
+		formData.name,
+		formData.purchaseDate,
+		formData.storageLocation,
+	]);
 
 	// Soumission du formulaire avec validation Zod
 	const handleSubmit = useCallback(
@@ -283,7 +311,7 @@ export const useProductForm = (
 
 			// Vérification supplémentaire de la catégorie
 			const selectedCategory = categories.find(
-				(cat) => cat.slug === formData.category
+				(cat) => cat.slug === formData.category,
 			);
 			if (!selectedCategory) {
 				toast.error("La catégorie sélectionnée n'est pas valide");
@@ -298,13 +326,7 @@ export const useProductForm = (
 				console.error('Erreur lors de la soumission:', error);
 			}
 		},
-		[
-			formData,
-			transformFormDataToSchema,
-			validateForm,
-			categories,
-			onSubmit,
-		]
+		[formData, transformFormDataToSchema, validateForm, categories, onSubmit],
 	);
 
 	// Réinitialisation du formulaire

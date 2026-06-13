@@ -171,6 +171,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						values={{
 							purchaseDate: formData.purchaseDate,
 							expiryDate: formData.expiryDate,
+							expiryDateSource: formData.expiryDateSource,
 						}}
 						estimatedExpiryDate={expirySuggestion?.date}
 						estimatedExpiryReason={expirySuggestion?.reason}
