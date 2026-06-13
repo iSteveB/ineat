@@ -363,6 +363,73 @@ describe('InventoryService', () => {
     expect(result.quantity).toBe(3);
   });
 
+  it('recalculates an estimated expiry date when product context changes', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue({
+      ...inventoryItem,
+      expiryDateSource: 'ESTIMATED',
+      expiryDate: new Date('2026-05-15'),
+      productId: 'product-1',
+      Product: {
+        ...product,
+        name: 'Lait',
+        Category: {
+          ...category,
+          name: 'Produits laitiers',
+          slug: 'produits-laitiers',
+        },
+      },
+    });
+    prisma.inventoryItem.update.mockImplementation(({ data }) =>
+      Promise.resolve({
+        ...inventoryItem,
+        ...data,
+        Product: product,
+      }),
+    );
+
+    const result = await service.updateInventoryItem('user-1', 'item-1', {
+      packageStatus: 'OPENED',
+    } as any);
+
+    expect(prisma.inventoryItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          packageStatus: 'OPENED',
+          expiryDate: new Date('2026-05-06'),
+          expiryDateSource: 'ESTIMATED',
+        }),
+      }),
+    );
+    expect(result.expiryDate).toEqual(new Date('2026-05-06'));
+  });
+
+  it('keeps a manual expiry date when product context changes', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue({
+      ...inventoryItem,
+      expiryDateSource: 'MANUAL',
+      Product: product,
+    });
+    prisma.inventoryItem.update.mockImplementation(({ data }) =>
+      Promise.resolve({
+        ...inventoryItem,
+        ...data,
+        Product: product,
+      }),
+    );
+
+    await service.updateInventoryItem('user-1', 'item-1', {
+      storageLocation: 'congelateur',
+    });
+
+    expect(prisma.inventoryItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: {
+          storageLocation: 'congelateur',
+        },
+      }),
+    );
+  });
+
   it('rejects update for missing inventory item', async () => {
     prisma.inventoryItem.findFirst.mockResolvedValue(null);
 

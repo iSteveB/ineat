@@ -396,6 +396,7 @@ export class InventoryService {
         AddManualProductDto,
         | 'quantity'
         | 'expiryDate'
+        | 'purchaseDate'
         | 'storageLocation'
         | 'packageStatus'
         | 'preparationStatus'
@@ -410,11 +411,19 @@ export class InventoryService {
         id: inventoryItemId,
         userId,
       },
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
+      },
     });
 
     if (!existingItem) {
       throw new NotFoundException("Élément d'inventaire non trouvé");
     }
+    const existingInventoryItem = existingItem as any;
 
     // Préparer les données de mise à jour
     const updatePayload: any = {};
@@ -428,6 +437,10 @@ export class InventoryService {
         ? new Date(updateData.expiryDate)
         : null;
       updatePayload.expiryDateSource = 'MANUAL';
+    }
+
+    if (updateData.purchaseDate !== undefined) {
+      updatePayload.purchaseDate = new Date(updateData.purchaseDate);
     }
 
     if (updateData.storageLocation !== undefined) {
@@ -448,6 +461,38 @@ export class InventoryService {
 
     if (updateData.purchasePrice !== undefined) {
       updatePayload.purchasePrice = updateData.purchasePrice;
+    }
+
+    const contextChanged =
+      updateData.storageLocation !== undefined ||
+      updateData.packageStatus !== undefined ||
+      updateData.preparationStatus !== undefined ||
+      updateData.purchaseDate !== undefined;
+
+    if (
+      updateData.expiryDate === undefined &&
+      existingInventoryItem.expiryDateSource === 'ESTIMATED' &&
+      contextChanged
+    ) {
+      const expiryEstimation = estimateExpiryDate({
+        productName: existingInventoryItem.Product.name,
+        categorySlug: existingInventoryItem.Product.Category?.slug,
+        categoryName: existingInventoryItem.Product.Category?.name,
+        storageLocation:
+          updatePayload.storageLocation ??
+          existingInventoryItem.storageLocation,
+        packageStatus:
+          updatePayload.packageStatus ?? existingInventoryItem.packageStatus,
+        preparationStatus:
+          updatePayload.preparationStatus ??
+          existingInventoryItem.preparationStatus,
+        purchaseDate:
+          updatePayload.purchaseDate ?? existingInventoryItem.purchaseDate,
+        addedAt: existingInventoryItem.createdAt,
+      });
+
+      updatePayload.expiryDate = expiryEstimation.expiryDate;
+      updatePayload.expiryDateSource = expiryEstimation.source;
     }
 
     return await this.prisma.inventoryItem.update({

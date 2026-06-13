@@ -29,6 +29,10 @@ import {
   ProductCreatedWithBudgetDto,
 } from '../services/inventory.service';
 import { AddManualProductDto, QuickAddProductDto } from '../../DTOs';
+import {
+  PackageStatus,
+  PreparationStatus,
+} from '../dto/add-manual-product.dto';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { Request } from 'express';
 
@@ -801,7 +805,18 @@ export class InventoryController {
       properties: {
         quantity: { type: 'number', minimum: 0.01 },
         expiryDate: { type: 'string', format: 'date', nullable: true },
+        purchaseDate: { type: 'string', format: 'date', nullable: true },
         storageLocation: { type: 'string', nullable: true },
+        packageStatus: {
+          type: 'string',
+          enum: ['UNOPENED', 'OPENED'],
+          nullable: true,
+        },
+        preparationStatus: {
+          type: 'string',
+          enum: ['RAW', 'COOKED'],
+          nullable: true,
+        },
         notes: { type: 'string', nullable: true },
         purchasePrice: { type: 'number', minimum: 0, nullable: true },
       },
@@ -822,7 +837,10 @@ export class InventoryController {
     updateData: {
       quantity?: number;
       expiryDate?: string;
+      purchaseDate?: string;
       storageLocation?: string;
+      packageStatus?: PackageStatus;
+      preparationStatus?: PreparationStatus;
       notes?: string;
       purchasePrice?: number;
     },
