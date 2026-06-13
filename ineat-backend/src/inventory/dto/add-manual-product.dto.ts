@@ -395,6 +395,39 @@ export class ProductCreatedResponseDto {
   expiryDateSource?: 'MANUAL' | 'ESTIMATED';
 
   @ApiPropertyOptional({
+    description: "Raison de l'estimation de la date de péremption",
+    example: 'produits laitiers + refrigerateur',
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateReason?: string;
+
+  @ApiPropertyOptional({
+    description: "Identifiant de la règle d'estimation utilisée",
+    example: 'produits-laitiers',
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateRuleId?: string;
+
+  @ApiPropertyOptional({
+    description: "Niveau de règle d'estimation appliqué",
+    example: 'category',
+    enum: ['manual', 'product', 'category', 'storage'],
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateRuleLevel?: 'manual' | 'product' | 'category' | 'storage';
+
+  @ApiPropertyOptional({
+    description: 'Durée ajoutée pour obtenir la date estimée',
+    example: 14,
+  })
+  @IsOptional()
+  @IsNumber()
+  expiryDateDurationDays?: number;
+
+  @ApiPropertyOptional({
     description: "Prix d'achat",
     example: 3.5,
   })

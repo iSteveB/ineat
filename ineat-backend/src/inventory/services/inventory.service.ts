@@ -132,7 +132,11 @@ export class InventoryService {
       );
 
       // 4. Formater la réponse de base
-      const baseResponse = this.formatResponse(inventoryItem, product);
+      const baseResponse = this.formatResponse(
+        inventoryItem,
+        product,
+        expiryEstimation,
+      );
 
       // 5. Gérer l'impact budgétaire
       const budgetImpact = await this.handleBudgetImpact(
@@ -199,7 +203,11 @@ export class InventoryService {
       );
 
       // 4. Formater la réponse de base
-      const baseResponse = this.formatResponse(inventoryItem, product);
+      const baseResponse = this.formatResponse(
+        inventoryItem,
+        product,
+        expiryEstimation,
+      );
 
       // 5. Gérer l'impact budgétaire
       const budgetImpact = await this.handleBudgetImpact(
@@ -765,6 +773,7 @@ export class InventoryService {
   private formatResponse(
     inventoryItem: any,
     product: any,
+    expiryEstimation?: ExpiryEstimationResult,
   ): ProductCreatedResponseDto {
     return {
       id: inventoryItem.id,
@@ -777,6 +786,10 @@ export class InventoryService {
       purchaseDate: inventoryItem.purchaseDate.toISOString(),
       expiryDate: inventoryItem.expiryDate?.toISOString(),
       expiryDateSource: inventoryItem.expiryDateSource,
+      expiryDateReason: expiryEstimation?.reason,
+      expiryDateRuleId: expiryEstimation?.ruleId,
+      expiryDateRuleLevel: expiryEstimation?.ruleLevel,
+      expiryDateDurationDays: expiryEstimation?.durationDays,
       purchasePrice: inventoryItem.purchasePrice,
       storageLocation: inventoryItem.storageLocation,
       notes: inventoryItem.notes,

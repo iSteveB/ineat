@@ -13,6 +13,7 @@ describe('estimateExpiryDate', () => {
     expect(result).toEqual({
       expiryDate: new Date('2026-05-06'),
       source: 'MANUAL',
+      ruleLevel: 'manual',
     });
   });
 
@@ -27,6 +28,15 @@ describe('estimateExpiryDate', () => {
     expect(result.expiryDate).toEqual(new Date('2028-04-30'));
     expect(result.source).toBe('ESTIMATED');
     expect(result.reason).toBe('épicerie sucrée + placard');
+    expect(result).toEqual(
+      expect.objectContaining({
+        ruleId: 'epicerie-sucree',
+        ruleLevel: 'category',
+        storageGroup: 'pantry',
+        durationDays: 730,
+        referenceDate: new Date('2026-05-01'),
+      }),
+    );
   });
 
   it('prioritizes product rules over broad category rules', () => {
@@ -39,6 +49,9 @@ describe('estimateExpiryDate', () => {
 
     expect(result.expiryDate).toEqual(new Date('2026-05-06'));
     expect(result.reason).toBe('pain + placard');
+    expect(result.ruleId).toBe('pain');
+    expect(result.ruleLevel).toBe('product');
+    expect(result.durationDays).toBe(5);
   });
 
   it('falls back to storage rules when no product or category rule matches', () => {
@@ -51,5 +64,20 @@ describe('estimateExpiryDate', () => {
 
     expect(result.expiryDate).toEqual(new Date('2026-10-28'));
     expect(result.reason).toBe('stockage congelateur');
+    expect(result.ruleId).toBeUndefined();
+    expect(result.ruleLevel).toBe('storage');
+    expect(result.storageGroup).toBe('freezer');
+    expect(result.durationDays).toBe(180);
+  });
+
+  it('uses the addition date when no purchase date is available', () => {
+    const result = estimateExpiryDate({
+      categorySlug: 'plats-prepares',
+      storageLocation: 'refrigerateur',
+      addedAt: '2026-05-02',
+    });
+
+    expect(result.expiryDate).toEqual(new Date('2026-05-05'));
+    expect(result.referenceDate).toEqual(new Date('2026-05-02'));
   });
 });

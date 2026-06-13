@@ -98,7 +98,15 @@ describe('InventoryService', () => {
     tx.product.findFirst.mockResolvedValue(null);
     tx.product.create.mockResolvedValue(product);
     tx.inventoryItem.findFirst.mockResolvedValue(null);
-    tx.inventoryItem.create.mockResolvedValue(inventoryItem);
+    tx.inventoryItem.create.mockImplementation(({ data }) =>
+      Promise.resolve({
+        ...inventoryItem,
+        ...data,
+        Product: product,
+        createdAt: inventoryItem.createdAt,
+        updatedAt: inventoryItem.updatedAt,
+      }),
+    );
     expenseService.createExpenseFromProduct.mockResolvedValue({
       expense: null,
       budgetId: null,
@@ -145,9 +153,11 @@ describe('InventoryService', () => {
     );
     expect(result).toEqual(
       expect.objectContaining({
-        id: 'item-1',
+        id: expect.any(String),
         name: 'Pommes',
         category: 'fruits',
+        expiryDateSource: 'MANUAL',
+        expiryDateRuleLevel: 'manual',
         budgetImpact: {
           expenseCreated: false,
           message: 'Aucun budget disponible',
@@ -157,7 +167,7 @@ describe('InventoryService', () => {
   });
 
   it('estimates an expiry date when a manual product has no expiry date', async () => {
-    await service.addManualProduct('user-1', {
+    const result = await service.addManualProduct('user-1', {
       name: 'Pommes',
       category: 'fruits',
       quantity: 2,
@@ -172,6 +182,15 @@ describe('InventoryService', () => {
           expiryDate: new Date('2026-05-08'),
           expiryDateSource: 'ESTIMATED',
         }),
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        expiryDateSource: 'ESTIMATED',
+        expiryDateReason: 'fruits et légumes + frigo',
+        expiryDateRuleId: 'fruits-et-legumes',
+        expiryDateRuleLevel: 'category',
+        expiryDateDurationDays: 7,
       }),
     );
   });

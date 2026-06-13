@@ -28,6 +28,12 @@ export const InventoryItemSchema = z
 		quantity: QuantitySchema,
 		expiryDate: z.string().datetime().optional(),
 		expiryDateSource: z.enum(['MANUAL', 'ESTIMATED']).optional(),
+		expiryDateReason: z.string().optional(),
+		expiryDateRuleId: z.string().optional(),
+		expiryDateRuleLevel: z
+			.enum(['manual', 'product', 'category', 'storage'])
+			.optional(),
+		expiryDateDurationDays: z.number().optional(),
 		purchaseDate: z.string().datetime(),
 		purchasePrice: PriceSchema.optional(),
 		storageLocation: z

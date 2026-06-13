@@ -14,14 +14,22 @@ export interface ExpiryEstimationInput {
   categorySlug?: string | null;
   categoryName?: string | null;
   storageLocation?: string | null;
-  purchaseDate: string | Date;
+  purchaseDate?: string | Date | null;
+  addedAt?: string | Date | null;
   manualExpiryDate?: string | null;
 }
+
+export type ExpiryRuleLevel = 'manual' | 'product' | 'category' | 'storage';
 
 export interface ExpiryEstimationResult {
   expiryDate: Date | null;
   source: ExpiryDateSource;
   reason?: string;
+  ruleId?: string;
+  ruleLevel: ExpiryRuleLevel;
+  storageGroup?: StorageGroup;
+  durationDays?: number;
+  referenceDate?: Date;
 }
 
 const normalize = (value?: string | null): string =>
@@ -70,20 +78,23 @@ export const estimateExpiryDate = ({
   categoryName,
   storageLocation,
   purchaseDate,
+  addedAt,
   manualExpiryDate,
 }: ExpiryEstimationInput): ExpiryEstimationResult => {
   if (manualExpiryDate) {
     return {
       expiryDate: new Date(manualExpiryDate),
       source: 'MANUAL',
+      ruleLevel: 'manual',
     };
   }
 
-  const referenceDate = new Date(purchaseDate);
+  const referenceDate = new Date(purchaseDate ?? addedAt ?? new Date());
   if (Number.isNaN(referenceDate.getTime())) {
     return {
       expiryDate: null,
       source: 'ESTIMATED',
+      ruleLevel: 'storage',
     };
   }
 
@@ -94,6 +105,11 @@ export const estimateExpiryDate = ({
     `${categorySlug ?? ''} ${categoryName ?? ''}`,
   );
   const matchedRule = productRule ?? categoryRule;
+  const ruleLevel: ExpiryRuleLevel = productRule
+    ? 'product'
+    : categoryRule
+      ? 'category'
+      : 'storage';
   const days =
     matchedRule?.daysByStorage[storageGroup] ??
     matchedRule?.defaultDays ??
@@ -102,6 +118,11 @@ export const estimateExpiryDate = ({
   return {
     expiryDate: addDays(referenceDate, days),
     source: 'ESTIMATED',
+    ruleId: matchedRule?.id,
+    ruleLevel,
+    storageGroup,
+    durationDays: days,
+    referenceDate,
     reason: matchedRule
       ? `${matchedRule.label} + ${storageLocation || 'stockage par défaut'}`
       : `stockage ${storageLocation || 'par défaut'}`,

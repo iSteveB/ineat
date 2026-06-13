@@ -158,7 +158,15 @@ export const CATEGORY_SHELF_LIFE_RULES: ShelfLifeRule[] = [
   {
     id: 'plats-prepares',
     label: 'plats préparés',
-    keywords: ['plat prepare', 'plat préparé', 'traiteur', 'reste', 'cuit'],
+    keywords: [
+      'plats-prepares',
+      'plats préparés',
+      'plat prepare',
+      'plat préparé',
+      'traiteur',
+      'reste',
+      'cuit',
+    ],
     daysByStorage: { fridge: 3, freezer: 60 },
     defaultDays: 3,
   },
