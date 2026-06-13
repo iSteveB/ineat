@@ -80,4 +80,32 @@ describe('estimateExpiryDate', () => {
     expect(result.expiryDate).toEqual(new Date('2026-05-05'));
     expect(result.referenceDate).toEqual(new Date('2026-05-02'));
   });
+
+  it('uses a short cold-storage duration for cooked products', () => {
+    const result = estimateExpiryDate({
+      productName: 'Riz',
+      categorySlug: 'epicerie-salee',
+      storageLocation: 'refrigerateur',
+      preparationStatus: 'COOKED',
+      purchaseDate: '2026-05-01',
+    });
+
+    expect(result.expiryDate).toEqual(new Date('2026-05-04'));
+    expect(result.durationDays).toBe(3);
+    expect(result.reason).toBe('épicerie salée + refrigerateur + cuit');
+  });
+
+  it('caps shelf life for opened packaged products', () => {
+    const result = estimateExpiryDate({
+      productName: 'Lait',
+      categorySlug: 'produits-laitiers',
+      storageLocation: 'refrigerateur',
+      packageStatus: 'OPENED',
+      purchaseDate: '2026-05-01',
+    });
+
+    expect(result.expiryDate).toEqual(new Date('2026-05-06'));
+    expect(result.durationDays).toBe(5);
+    expect(result.reason).toBe('produits laitiers + refrigerateur + ouvert');
+  });
 });

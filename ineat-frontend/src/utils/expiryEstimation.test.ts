@@ -44,4 +44,34 @@ describe('getExpirySuggestion', () => {
 			reason: 'stockage congelateur',
 		});
 	});
+
+	it('adjusts the suggestion when a product is cooked', () => {
+		const suggestion = getExpirySuggestion({
+			productName: 'Riz',
+			categorySlug: 'epicerie-salee',
+			storageLocation: 'refrigerateur',
+			preparationStatus: 'COOKED',
+			purchaseDate: '2026-05-01',
+		});
+
+		expect(suggestion).toEqual({
+			date: '2026-05-04',
+			reason: 'épicerie salée + refrigerateur + cuit',
+		});
+	});
+
+	it('caps the suggestion when a packaged product is opened', () => {
+		const suggestion = getExpirySuggestion({
+			productName: 'Lait',
+			categorySlug: 'produits-laitiers',
+			storageLocation: 'refrigerateur',
+			packageStatus: 'OPENED',
+			purchaseDate: '2026-05-01',
+		});
+
+		expect(suggestion).toEqual({
+			date: '2026-05-06',
+			reason: 'produits laitiers + refrigerateur + ouvert',
+		});
+	});
 });

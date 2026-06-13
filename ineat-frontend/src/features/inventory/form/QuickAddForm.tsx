@@ -25,6 +25,12 @@ import { useCategories } from '@/hooks/useCategories';
 import { ProductSearchResult } from '@/services/inventoryService';
 import ScoreBadge from '@/components/common/ScoreBadge';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import {
+	getProductStateOptions,
+	type PackageStatus,
+	type PreparationStatus,
+} from '@/utils/productStateOptions';
+import { ProductStateSection } from './section/ProductStateSection';
 
 // NOUVEAU: Type spécifique pour le QuickAddForm avec category
 export interface QuickAddFormDataWithCategory {
@@ -34,6 +40,8 @@ export interface QuickAddFormDataWithCategory {
 	purchaseDate: string;
 	purchasePrice?: number;
 	storageLocation?: string;
+	packageStatus?: PackageStatus;
+	preparationStatus?: PreparationStatus;
 	notes?: string;
 }
 
@@ -82,6 +90,10 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 	>('ESTIMATED');
 	const [purchasePrice, setPurchasePrice] = useState('');
 	const [storageLocation, setStorageLocation] = useState('placard');
+	const [packageStatus, setPackageStatus] = useState<PackageStatus | ''>('');
+	const [preparationStatus, setPreparationStatus] = useState<
+		PreparationStatus | ''
+	>('');
 	const [notes, setNotes] = useState('');
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -91,6 +103,8 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		categorySlug: category,
 		categoryName: selectedCategory?.name,
 		storageLocation,
+		packageStatus: packageStatus || undefined,
+		preparationStatus: preparationStatus || undefined,
 		purchaseDate,
 	});
 
@@ -126,6 +140,36 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			setCategory(bestMatch);
 		}
 	}, [categories, product.category?.name, findBestCategoryMatch]); // ✅ Dépendance ajoutée
+
+	useEffect(() => {
+		const options = getProductStateOptions({
+			productName: product.name,
+			categorySlug: category,
+			categoryName: selectedCategory?.name,
+			storageLocation,
+		});
+
+		const nextPackageStatus = options.showPackageStatus
+			? packageStatus || options.defaultPackageStatus || ''
+			: '';
+		const nextPreparationStatus = options.showPreparationStatus
+			? preparationStatus || options.defaultPreparationStatus || ''
+			: '';
+
+		if (nextPackageStatus !== packageStatus) {
+			setPackageStatus(nextPackageStatus);
+		}
+		if (nextPreparationStatus !== preparationStatus) {
+			setPreparationStatus(nextPreparationStatus);
+		}
+	}, [
+		category,
+		packageStatus,
+		preparationStatus,
+		product.name,
+		selectedCategory?.name,
+		storageLocation,
+	]);
 
 	useEffect(() => {
 		if (!expirySuggestion) return;
@@ -187,6 +231,8 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 				expiryDateSource === 'MANUAL' && expiryDate ? expiryDate : undefined,
 			purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
 			storageLocation: storageLocation || undefined,
+			packageStatus: packageStatus || undefined,
+			preparationStatus: preparationStatus || undefined,
 			notes: notes || undefined,
 		};
 
@@ -217,6 +263,17 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 				const { expiryDate: _removed, ...rest } = prev;
 				return rest;
 			});
+		}
+	};
+
+	const handleProductStateChange = (
+		field: 'packageStatus' | 'preparationStatus',
+		value: string,
+	): void => {
+		if (field === 'packageStatus') {
+			setPackageStatus(value as PackageStatus);
+		} else {
+			setPreparationStatus(value as PreparationStatus);
 		}
 	};
 
@@ -466,6 +523,16 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						</p>
 					</div>
 				</div>
+
+				<ProductStateSection
+					values={{ packageStatus, preparationStatus }}
+					productName={product.name}
+					categorySlug={category}
+					categoryName={selectedCategory?.name}
+					storageLocation={storageLocation}
+					onChange={handleProductStateChange}
+					disabled={isSubmitting}
+				/>
 
 				{/* Notes */}
 				<div className='space-y-2'>

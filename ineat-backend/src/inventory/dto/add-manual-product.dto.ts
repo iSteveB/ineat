@@ -45,6 +45,16 @@ export enum Novascore {
   GROUP_4 = 'GROUP_4', // Nova group 4 - Aliments ultra-transformés
 }
 
+export enum PackageStatus {
+  UNOPENED = 'UNOPENED',
+  OPENED = 'OPENED',
+}
+
+export enum PreparationStatus {
+  RAW = 'RAW',
+  COOKED = 'COOKED',
+}
+
 export class NutritionalInfoDto {
   @ApiPropertyOptional({
     description: 'Énergie pour 100g/100ml (en kcal)',
@@ -248,6 +258,28 @@ export class AddManualProductDto {
   storageLocation?: string;
 
   @ApiPropertyOptional({
+    description: "État d'ouverture du produit",
+    example: PackageStatus.UNOPENED,
+    enum: PackageStatus,
+  })
+  @IsOptional()
+  @IsEnum(PackageStatus, {
+    message: "L'état d'ouverture doit être valide (UNOPENED, OPENED)",
+  })
+  packageStatus?: PackageStatus;
+
+  @ApiPropertyOptional({
+    description: 'État de préparation du produit',
+    example: PreparationStatus.RAW,
+    enum: PreparationStatus,
+  })
+  @IsOptional()
+  @IsEnum(PreparationStatus, {
+    message: "L'état de préparation doit être valide (RAW, COOKED)",
+  })
+  preparationStatus?: PreparationStatus;
+
+  @ApiPropertyOptional({
     description: 'Notes additionnelles sur le produit',
     example: 'Produit bio acheté au marché',
   })
@@ -442,6 +474,24 @@ export class ProductCreatedResponseDto {
   @IsOptional()
   @IsString()
   storageLocation?: string;
+
+  @ApiPropertyOptional({
+    description: "État d'ouverture du produit",
+    example: PackageStatus.UNOPENED,
+    enum: PackageStatus,
+  })
+  @IsOptional()
+  @IsEnum(PackageStatus)
+  packageStatus?: PackageStatus;
+
+  @ApiPropertyOptional({
+    description: 'État de préparation du produit',
+    example: PreparationStatus.RAW,
+    enum: PreparationStatus,
+  })
+  @IsOptional()
+  @IsEnum(PreparationStatus)
+  preparationStatus?: PreparationStatus;
 
   @ApiPropertyOptional({
     description: 'Notes sur le produit',

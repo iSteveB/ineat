@@ -8,12 +8,16 @@ import {
 } from '../constants/expiry-rules';
 
 export type ExpiryDateSource = 'MANUAL' | 'ESTIMATED';
+export type PackageStatus = 'UNOPENED' | 'OPENED';
+export type PreparationStatus = 'RAW' | 'COOKED';
 
 export interface ExpiryEstimationInput {
   productName?: string | null;
   categorySlug?: string | null;
   categoryName?: string | null;
   storageLocation?: string | null;
+  packageStatus?: PackageStatus | null;
+  preparationStatus?: PreparationStatus | null;
   purchaseDate?: string | Date | null;
   addedAt?: string | Date | null;
   manualExpiryDate?: string | null;
@@ -72,11 +76,66 @@ const addDays = (date: Date, days: number): Date => {
   );
 };
 
+const COOKED_DURATION_DAYS: Record<StorageGroup, number> = {
+  fridge: 3,
+  freezer: 60,
+  pantry: 1,
+  cellar: 1,
+  ambient: 1,
+  other: 3,
+};
+
+const OPENED_DURATION_CAPS: Record<
+  string,
+  Partial<Record<StorageGroup, number>>
+> = {
+  'produits-laitiers': { fridge: 5, freezer: 30, pantry: 7, ambient: 2 },
+  condiments: { fridge: 30, pantry: 30, ambient: 7 },
+  conserves: { fridge: 5, pantry: 5, cellar: 5, ambient: 2 },
+  boissons: { fridge: 5, pantry: 3, cellar: 3, ambient: 1 },
+  'epicerie-sucree': { pantry: 30, cellar: 30, ambient: 14 },
+  'epicerie-salee': { pantry: 30, cellar: 30, ambient: 14 },
+};
+
+const applyStateAdjustments = ({
+  days,
+  storageGroup,
+  ruleId,
+  packageStatus,
+  preparationStatus,
+}: {
+  days: number;
+  storageGroup: StorageGroup;
+  ruleId?: string;
+  packageStatus?: PackageStatus | null;
+  preparationStatus?: PreparationStatus | null;
+}): { days: number; labels: string[] } => {
+  let adjustedDays = days;
+  const labels: string[] = [];
+
+  if (preparationStatus === 'COOKED') {
+    adjustedDays = COOKED_DURATION_DAYS[storageGroup];
+    labels.push('cuit');
+  }
+
+  if (packageStatus === 'OPENED') {
+    const cap = ruleId
+      ? OPENED_DURATION_CAPS[ruleId]?.[storageGroup]
+      : undefined;
+    adjustedDays = Math.min(adjustedDays, cap ?? 7);
+    labels.push('ouvert');
+  }
+
+  return { days: adjustedDays, labels };
+};
+
 export const estimateExpiryDate = ({
   productName,
   categorySlug,
   categoryName,
   storageLocation,
+  packageStatus,
+  preparationStatus,
   purchaseDate,
   addedAt,
   manualExpiryDate,
@@ -114,17 +173,26 @@ export const estimateExpiryDate = ({
     matchedRule?.daysByStorage[storageGroup] ??
     matchedRule?.defaultDays ??
     STORAGE_FALLBACK_DAYS[storageGroup];
+  const adjusted = applyStateAdjustments({
+    days,
+    storageGroup,
+    ruleId: matchedRule?.id,
+    packageStatus,
+    preparationStatus,
+  });
+  const stateReason =
+    adjusted.labels.length > 0 ? ` + ${adjusted.labels.join(' + ')}` : '';
 
   return {
-    expiryDate: addDays(referenceDate, days),
+    expiryDate: addDays(referenceDate, adjusted.days),
     source: 'ESTIMATED',
     ruleId: matchedRule?.id,
     ruleLevel,
     storageGroup,
-    durationDays: days,
+    durationDays: adjusted.days,
     referenceDate,
     reason: matchedRule
-      ? `${matchedRule.label} + ${storageLocation || 'stockage par défaut'}`
-      : `stockage ${storageLocation || 'par défaut'}`,
+      ? `${matchedRule.label} + ${storageLocation || 'stockage par défaut'}${stateReason}`
+      : `stockage ${storageLocation || 'par défaut'}${stateReason}`,
   };
 };

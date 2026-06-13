@@ -6,17 +6,19 @@ import {
   IsDateString,
   Min,
   IsUUID,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
+import { PackageStatus, PreparationStatus } from './add-manual-product.dto';
 
 export class QuickAddProductDto {
   @ApiProperty({
-    description: 'ID du produit existant à ajouter à l\'inventaire',
+    description: "ID du produit existant à ajouter à l'inventaire",
     example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   })
-  @IsNotEmpty({ message: 'L\'ID du produit est obligatoire' })
-  @IsUUID('4', { message: 'L\'ID du produit doit être un UUID valide' })
+  @IsNotEmpty({ message: "L'ID du produit est obligatoire" })
+  @IsUUID('4', { message: "L'ID du produit doit être un UUID valide" })
   productId: string;
 
   @ApiProperty({
@@ -31,13 +33,13 @@ export class QuickAddProductDto {
   quantity: number;
 
   @ApiProperty({
-    description: 'Date d\'achat du produit',
+    description: "Date d'achat du produit",
     example: '2024-01-15',
     type: 'string',
     format: 'date',
   })
-  @IsNotEmpty({ message: 'La date d\'achat est obligatoire' })
-  @IsDateString({}, { message: 'La date d\'achat doit être une date valide' })
+  @IsNotEmpty({ message: "La date d'achat est obligatoire" })
+  @IsDateString({}, { message: "La date d'achat doit être une date valide" })
   purchaseDate: string;
 
   @ApiPropertyOptional({
@@ -48,19 +50,22 @@ export class QuickAddProductDto {
     nullable: true,
   })
   @IsOptional()
-  @IsDateString({}, { message: 'La date de péremption doit être une date valide' })
+  @IsDateString(
+    {},
+    { message: 'La date de péremption doit être une date valide' },
+  )
   expiryDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Prix d\'achat unitaire du produit',
+    description: "Prix d'achat unitaire du produit",
     example: 3.99,
     minimum: 0,
     nullable: true,
   })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'Le prix d\'achat doit être un nombre' })
-  @Min(0, { message: 'Le prix d\'achat doit être positif ou nul' })
+  @IsNumber({}, { message: "Le prix d'achat doit être un nombre" })
+  @Min(0, { message: "Le prix d'achat doit être positif ou nul" })
   purchasePrice?: number;
 
   @ApiPropertyOptional({
@@ -70,9 +75,35 @@ export class QuickAddProductDto {
     nullable: true,
   })
   @IsOptional()
-  @IsString({ message: 'Le lieu de stockage doit être une chaîne de caractères' })
+  @IsString({
+    message: 'Le lieu de stockage doit être une chaîne de caractères',
+  })
   @Transform(({ value }) => value?.trim())
   storageLocation?: string;
+
+  @ApiPropertyOptional({
+    description: "État d'ouverture du produit",
+    example: PackageStatus.UNOPENED,
+    enum: PackageStatus,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsEnum(PackageStatus, {
+    message: "L'état d'ouverture doit être valide (UNOPENED, OPENED)",
+  })
+  packageStatus?: PackageStatus;
+
+  @ApiPropertyOptional({
+    description: 'État de préparation du produit',
+    example: PreparationStatus.RAW,
+    enum: PreparationStatus,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsEnum(PreparationStatus, {
+    message: "L'état de préparation doit être valide (RAW, COOKED)",
+  })
+  preparationStatus?: PreparationStatus;
 
   @ApiPropertyOptional({
     description: 'Notes ou commentaires sur le produit',

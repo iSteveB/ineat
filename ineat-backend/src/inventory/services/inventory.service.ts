@@ -109,6 +109,8 @@ export class InventoryService {
         categorySlug: product.Category?.slug ?? addProductDto.category,
         categoryName: product.Category?.name,
         storageLocation: addProductDto.storageLocation,
+        packageStatus: addProductDto.packageStatus,
+        preparationStatus: addProductDto.preparationStatus,
         purchaseDate: addProductDto.purchaseDate,
         manualExpiryDate: addProductDto.expiryDate,
       });
@@ -181,6 +183,8 @@ export class InventoryService {
         categorySlug: product.Category?.slug,
         categoryName: product.Category?.name,
         storageLocation: quickAddDto.storageLocation,
+        packageStatus: quickAddDto.packageStatus,
+        preparationStatus: quickAddDto.preparationStatus,
         purchaseDate: quickAddDto.purchaseDate,
         manualExpiryDate: quickAddDto.expiryDate,
       });
@@ -393,6 +397,8 @@ export class InventoryService {
         | 'quantity'
         | 'expiryDate'
         | 'storageLocation'
+        | 'packageStatus'
+        | 'preparationStatus'
         | 'notes'
         | 'purchasePrice'
       >
@@ -426,6 +432,14 @@ export class InventoryService {
 
     if (updateData.storageLocation !== undefined) {
       updatePayload.storageLocation = updateData.storageLocation;
+    }
+
+    if (updateData.packageStatus !== undefined) {
+      updatePayload.packageStatus = updateData.packageStatus;
+    }
+
+    if (updateData.preparationStatus !== undefined) {
+      updatePayload.preparationStatus = updateData.preparationStatus;
     }
 
     if (updateData.notes !== undefined) {
@@ -722,6 +736,8 @@ export class InventoryService {
         userId,
         productId,
         storageLocation: addProductDto.storageLocation || null,
+        packageStatus: addProductDto.packageStatus || null,
+        preparationStatus: addProductDto.preparationStatus || null,
         expiryDate: resolvedExpiryDate,
       },
     });
@@ -752,6 +768,8 @@ export class InventoryService {
         purchaseDate: new Date(addProductDto.purchaseDate),
         expiryDate: expiryEstimation.expiryDate,
         expiryDateSource: expiryEstimation.source,
+        packageStatus: addProductDto.packageStatus || null,
+        preparationStatus: addProductDto.preparationStatus || null,
         purchasePrice: addProductDto.purchasePrice,
         storageLocation: addProductDto.storageLocation,
         notes: addProductDto.notes,
@@ -792,6 +810,8 @@ export class InventoryService {
       expiryDateDurationDays: expiryEstimation?.durationDays,
       purchasePrice: inventoryItem.purchasePrice,
       storageLocation: inventoryItem.storageLocation,
+      packageStatus: inventoryItem.packageStatus,
+      preparationStatus: inventoryItem.preparationStatus,
       notes: inventoryItem.notes,
       nutriscore: product.nutriscore,
       ecoscore: product.ecoscore,
@@ -928,6 +948,8 @@ export class InventoryService {
         userId,
         productId,
         storageLocation: quickAddDto.storageLocation || null,
+        packageStatus: quickAddDto.packageStatus || null,
+        preparationStatus: quickAddDto.preparationStatus || null,
         expiryDate: resolvedExpiryDate,
       },
     });
@@ -957,6 +979,8 @@ export class InventoryService {
         purchaseDate: new Date(quickAddDto.purchaseDate),
         expiryDate: expiryEstimation.expiryDate,
         expiryDateSource: expiryEstimation.source,
+        packageStatus: quickAddDto.packageStatus || null,
+        preparationStatus: quickAddDto.preparationStatus || null,
         purchasePrice: quickAddDto.purchasePrice || null,
         storageLocation: quickAddDto.storageLocation || null,
         notes: quickAddDto.notes || null,

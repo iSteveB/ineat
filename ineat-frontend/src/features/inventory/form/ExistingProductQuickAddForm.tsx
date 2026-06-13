@@ -32,6 +32,12 @@ import {
 import { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import ScoreBadge from '@/components/common/ScoreBadge';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import {
+	getProductStateOptions,
+	type PackageStatus,
+	type PreparationStatus,
+} from '@/utils/productStateOptions';
+import { ProductStateSection } from './section/ProductStateSection';
 
 interface ExistingProductQuickAddFormProps {
 	product: ProductSearchResult;
@@ -74,6 +80,10 @@ export const ExistingProductQuickAddForm: React.FC<
 	>('ESTIMATED');
 	const [purchasePrice, setPurchasePrice] = useState('');
 	const [storageLocation, setStorageLocation] = useState('placard');
+	const [packageStatus, setPackageStatus] = useState<PackageStatus | ''>('');
+	const [preparationStatus, setPreparationStatus] = useState<
+		PreparationStatus | ''
+	>('');
 	const [notes, setNotes] = useState('');
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -82,6 +92,8 @@ export const ExistingProductQuickAddForm: React.FC<
 		categorySlug: product.category?.slug,
 		categoryName: product.category?.name,
 		storageLocation,
+		packageStatus: packageStatus || undefined,
+		preparationStatus: preparationStatus || undefined,
 		purchaseDate,
 	});
 
@@ -140,6 +152,36 @@ export const ExistingProductQuickAddForm: React.FC<
 	}, [enrichedData]);
 
 	useEffect(() => {
+		const options = getProductStateOptions({
+			productName: product.name,
+			categorySlug: product.category?.slug,
+			categoryName: product.category?.name,
+			storageLocation,
+		});
+
+		const nextPackageStatus = options.showPackageStatus
+			? packageStatus || options.defaultPackageStatus || ''
+			: '';
+		const nextPreparationStatus = options.showPreparationStatus
+			? preparationStatus || options.defaultPreparationStatus || ''
+			: '';
+
+		if (nextPackageStatus !== packageStatus) {
+			setPackageStatus(nextPackageStatus);
+		}
+		if (nextPreparationStatus !== preparationStatus) {
+			setPreparationStatus(nextPreparationStatus);
+		}
+	}, [
+		packageStatus,
+		preparationStatus,
+		product.category?.name,
+		product.category?.slug,
+		product.name,
+		storageLocation,
+	]);
+
+	useEffect(() => {
 		if (!expirySuggestion) return;
 		if (expiryDateSource === 'MANUAL') return;
 		if (expiryDate === expirySuggestion.date) return;
@@ -194,6 +236,8 @@ export const ExistingProductQuickAddForm: React.FC<
 				expiryDateSource === 'MANUAL' && expiryDate ? expiryDate : undefined,
 			purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
 			storageLocation: storageLocation || undefined,
+			packageStatus: packageStatus || undefined,
+			preparationStatus: preparationStatus || undefined,
 			notes: notes || undefined,
 		};
 
@@ -224,6 +268,17 @@ export const ExistingProductQuickAddForm: React.FC<
 				const { expiryDate: _removed, ...rest } = prev;
 				return rest;
 			});
+		}
+	};
+
+	const handleProductStateChange = (
+		field: 'packageStatus' | 'preparationStatus',
+		value: string,
+	): void => {
+		if (field === 'packageStatus') {
+			setPackageStatus(value as PackageStatus);
+		} else {
+			setPreparationStatus(value as PreparationStatus);
 		}
 	};
 
@@ -483,6 +538,16 @@ export const ExistingProductQuickAddForm: React.FC<
 						</p>
 					</div>
 				</div>
+
+				<ProductStateSection
+					values={{ packageStatus, preparationStatus }}
+					productName={product.name}
+					categorySlug={product.category?.slug}
+					categoryName={product.category?.name}
+					storageLocation={storageLocation}
+					onChange={handleProductStateChange}
+					disabled={isSubmitting}
+				/>
 
 				{/* Notes avec données enrichies pré-remplies */}
 				<div className='space-y-2'>

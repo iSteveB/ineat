@@ -9,6 +9,11 @@ import {
 	type Category,
 } from '@/schemas';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import {
+	getProductStateOptions,
+	type PackageStatus,
+	type PreparationStatus,
+} from '@/utils/productStateOptions';
 
 // Type de formulaire basé sur le schéma Zod mais avec des chaînes pour l'interface
 export type FormData = {
@@ -24,6 +29,8 @@ export type FormData = {
 	barcode: string;
 	expiryDate: string;
 	expiryDateSource: 'MANUAL' | 'ESTIMATED';
+	packageStatus: PackageStatus | '';
+	preparationStatus: PreparationStatus | '';
 	purchasePrice: string;
 	storageLocation: string;
 	notes: string;
@@ -99,6 +106,8 @@ export const useProductForm = (
 			// Champs optionnels
 			expiryDate: '',
 			expiryDateSource: 'ESTIMATED',
+			packageStatus: '',
+			preparationStatus: '',
 			purchasePrice: '',
 			storageLocation: '',
 			notes: '',
@@ -178,6 +187,12 @@ export const useProductForm = (
 					}),
 				...(formData.storageLocation.trim() && {
 					storageLocation: formData.storageLocation.trim(),
+				}),
+				...(formData.packageStatus && {
+					packageStatus: formData.packageStatus,
+				}),
+				...(formData.preparationStatus && {
+					preparationStatus: formData.preparationStatus,
 				}),
 				...(formData.notes.trim() && { notes: formData.notes.trim() }),
 
@@ -273,6 +288,8 @@ export const useProductForm = (
 			categorySlug: formData.category,
 			categoryName: selectedCategory?.name,
 			storageLocation: formData.storageLocation,
+			packageStatus: formData.packageStatus || undefined,
+			preparationStatus: formData.preparationStatus || undefined,
 			purchaseDate: formData.purchaseDate,
 		});
 
@@ -292,9 +309,45 @@ export const useProductForm = (
 		categories,
 		formData.category,
 		formData.name,
+		formData.packageStatus,
+		formData.preparationStatus,
 		formData.purchaseDate,
 		formData.storageLocation,
 	]);
+
+	useEffect(() => {
+		const selectedCategory = categories.find(
+			(category) => category.slug === formData.category,
+		);
+		const options = getProductStateOptions({
+			productName: formData.name,
+			categorySlug: formData.category,
+			categoryName: selectedCategory?.name,
+			storageLocation: formData.storageLocation,
+		});
+
+		setFormData((prev) => {
+			const packageStatus = options.showPackageStatus
+				? prev.packageStatus || options.defaultPackageStatus || ''
+				: '';
+			const preparationStatus = options.showPreparationStatus
+				? prev.preparationStatus || options.defaultPreparationStatus || ''
+				: '';
+
+			if (
+				prev.packageStatus === packageStatus &&
+				prev.preparationStatus === preparationStatus
+			) {
+				return prev;
+			}
+
+			return {
+				...prev,
+				packageStatus,
+				preparationStatus,
+			};
+		});
+	}, [categories, formData.category, formData.name, formData.storageLocation]);
 
 	// Soumission du formulaire avec validation Zod
 	const handleSubmit = useCallback(

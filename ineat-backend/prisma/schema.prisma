@@ -67,6 +67,8 @@ model InventoryItem {
   quantity         Float
   expiryDate       DateTime?
   expiryDateSource ExpiryDateSource @default(MANUAL)
+  packageStatus     PackageStatus?
+  preparationStatus PreparationStatus?
   purchaseDate     DateTime
   purchasePrice    Float?
   storageLocation  String?
@@ -88,6 +90,16 @@ model InventoryItem {
 enum ExpiryDateSource {
   MANUAL
   ESTIMATED
+}
+
+enum PackageStatus {
+  UNOPENED
+  OPENED
+}
+
+enum PreparationStatus {
+  RAW
+  COOKED
 }
 
 model Notification {

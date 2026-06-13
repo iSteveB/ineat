@@ -20,6 +20,9 @@ import { getBudgetNotificationType } from './budget';
 
 // ===== SCHÉMA ÉLÉMENT D'INVENTAIRE =====
 
+export const PackageStatusSchema = z.enum(['UNOPENED', 'OPENED']);
+export const PreparationStatusSchema = z.enum(['RAW', 'COOKED']);
+
 export const InventoryItemSchema = z
 	.object({
 		id: UuidSchema,
@@ -40,6 +43,8 @@ export const InventoryItemSchema = z
 			.string()
 			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 			.optional(),
+		packageStatus: PackageStatusSchema.optional(),
+		preparationStatus: PreparationStatusSchema.optional(),
 		notes: MediumTextSchema.optional(),
 	})
 	.merge(TimestampsSchema);
@@ -122,6 +127,8 @@ export const AddInventoryItemSchema = z
 			.string()
 			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 			.optional(),
+		packageStatus: PackageStatusSchema.optional(),
+		preparationStatus: PreparationStatusSchema.optional(),
 		notes: MediumTextSchema.optional(),
 	})
 	.refine(
@@ -159,6 +166,8 @@ export const AddExistingProductToInventorySchema = z
 			.string()
 			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 			.optional(),
+		packageStatus: PackageStatusSchema.optional(),
+		preparationStatus: PreparationStatusSchema.optional(),
 		notes: MediumTextSchema.optional(),
 	})
 	.refine(
@@ -197,6 +206,8 @@ export const UpdateInventoryItemSchema = z.object({
 		.string()
 		.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 		.optional(),
+	packageStatus: PackageStatusSchema.optional(),
+	preparationStatus: PreparationStatusSchema.optional(),
 	notes: MediumTextSchema.optional(),
 });
 export type UpdateInventoryItemData = z.infer<typeof UpdateInventoryItemSchema>;
