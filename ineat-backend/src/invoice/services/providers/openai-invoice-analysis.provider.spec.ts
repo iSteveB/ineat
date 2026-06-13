@@ -208,6 +208,43 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
     ]);
   });
 
+  it('déduit la quantité depuis le ratio prix total / prix unitaire si la colonne Qté est manquante', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          {
+            rawLabel: 'CRISTALINE Eau de source plate 6x1,5l',
+            detectedName: 'CRISTALINE Eau de source plate 6x1,5l',
+            lineType: 'product',
+            quantity: null,
+            unit: 'piece',
+            unitPrice: 1.14,
+            totalPrice: 3.42,
+            confidence: 0.86,
+            ean: null,
+            categoryHint: 'boissons',
+            discount: null,
+          },
+        ],
+      },
+    });
+
+    expect(result.items).toEqual([
+      expect.objectContaining({
+        detectedName: 'CRISTALINE Eau de source plate 6x1,5l',
+        quantity: 3,
+        unitPrice: 1.14,
+        totalPrice: 3.42,
+        category: 'boissons',
+        storageLocation: 'Placard',
+      }),
+    ]);
+  });
+
   it('laisse le stockage vide pour un fruit ou légume ambigu', () => {
     const result = normalizeOpenAIInvoiceAnalysis({
       pdfUrl: 'https://example.com/invoice.pdf',

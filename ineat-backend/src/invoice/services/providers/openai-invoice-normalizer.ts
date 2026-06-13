@@ -165,7 +165,11 @@ function normalizeInvoiceLine(
     return null;
   }
 
-  const quantity = normalizePositiveInteger(line.quantity, 1);
+  const quantity = normalizeQuantity({
+    quantity: line.quantity,
+    unitPrice: line.unitPrice,
+    totalPrice: line.totalPrice,
+  });
   const prices = normalizeLinePrices({
     quantity,
     unitPrice: line.unitPrice,
@@ -277,12 +281,54 @@ function normalizeConfidence(value: unknown, fallback: number): number {
   return Math.min(1, Math.max(0, value));
 }
 
-function normalizePositiveInteger(value: unknown, fallback: number): number {
+function normalizeQuantity({
+  quantity,
+  unitPrice,
+  totalPrice,
+}: {
+  quantity: unknown;
+  unitPrice: unknown;
+  totalPrice: unknown;
+}): number {
+  const extractedQuantity = normalizePositiveIntegerOrNull(quantity);
+
+  if (extractedQuantity !== null) {
+    return extractedQuantity;
+  }
+
+  return inferQuantityFromPrices({ unitPrice, totalPrice }) ?? 1;
+}
+
+function normalizePositiveIntegerOrNull(value: unknown): number | null {
   if (typeof value !== 'number' || Number.isNaN(value) || value <= 0) {
-    return fallback;
+    return null;
   }
 
   return Math.max(1, Math.round(value));
+}
+
+function inferQuantityFromPrices({
+  unitPrice,
+  totalPrice,
+}: {
+  unitPrice: unknown;
+  totalPrice: unknown;
+}): number | null {
+  const rawUnitPrice = normalizeNullablePositiveNumber(unitPrice);
+  const rawTotalPrice = normalizeNullablePositiveNumber(totalPrice);
+
+  if (rawUnitPrice === null || rawUnitPrice <= 0 || rawTotalPrice === null) {
+    return null;
+  }
+
+  const ratio = rawTotalPrice / rawUnitPrice;
+  const roundedRatio = Math.round(ratio);
+
+  if (roundedRatio < 1) {
+    return null;
+  }
+
+  return Math.abs(ratio - roundedRatio) <= 0.05 ? roundedRatio : null;
 }
 
 function normalizeLinePrices({
