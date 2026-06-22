@@ -25,3 +25,4 @@ export {
 } from '../inventory/dto/inventory-stats.dto';
 
 export { QuickAddProductDto } from '../inventory/dto/quick-add-product.dto';
+export { RemoveInventoryItemsDto } from '../inventory/dto/remove-inventory-items.dto';

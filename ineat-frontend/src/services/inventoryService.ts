@@ -428,6 +428,20 @@ export const inventoryService = {
 	},
 
 	/**
+	 * Supprime plusieurs éléments d'inventaire
+	 */
+	async removeInventoryItems(inventoryItemIds: string[]): Promise<{
+		success: boolean;
+		deletedCount: number;
+		message: string;
+	}> {
+		return await apiClient.fetch('/inventory/bulk', {
+			method: 'DELETE',
+			body: JSON.stringify({ ids: inventoryItemIds }),
+		});
+	},
+
+	/**
 	 * Recherche des produits dans la base de données
 	 * ENRICHI - Les résultats incluent maintenant les nouveaux champs nutritionnels
 	 * @param query Terme de recherche (minimum 2 caractères)

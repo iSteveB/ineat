@@ -33,6 +33,7 @@ import {
   PackageStatus,
   PreparationStatus,
 } from '../dto/add-manual-product.dto';
+import { RemoveInventoryItemsDto } from '../dto/remove-inventory-items.dto';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { Request } from 'express';
 
@@ -852,6 +853,50 @@ export class InventoryController {
     );
 
     return this.formatInventoryItem(updatedItem);
+  }
+
+  /**
+   * Supprime plusieurs éléments d'inventaire
+   */
+  @Delete('bulk')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Supprimer plusieurs éléments d'inventaire",
+    description:
+      "Supprime définitivement plusieurs produits de l'inventaire de l'utilisateur",
+  })
+  @ApiBody({
+    type: RemoveInventoryItemsDto,
+    description: "Liste des IDs d'éléments d'inventaire à supprimer",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Éléments d'inventaire supprimés avec succès",
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        deletedCount: { type: 'number', example: 3 },
+        message: {
+          type: 'string',
+          example: "3 produits supprimés de l'inventaire",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Liste de produits invalide',
+  })
+  async removeInventoryItems(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    removeItemsDto: RemoveInventoryItemsDto,
+  ) {
+    return await this.inventoryService.removeInventoryItems(
+      req.user.id,
+      removeItemsDto.ids,
+    );
   }
 
   /**

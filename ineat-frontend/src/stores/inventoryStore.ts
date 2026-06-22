@@ -77,6 +77,7 @@ interface InventoryDataState {
 		updates: UpdateInventoryItemData
 	) => Promise<void>;
 	removeInventoryItem: (id: string) => Promise<void>;
+	removeInventoryItems: (ids: string[]) => Promise<void>;
 	clearError: () => void;
 }
 
@@ -112,6 +113,7 @@ type InventoryActions = Pick<
 	| 'addInventoryItem'
 	| 'updateInventoryItem'
 	| 'removeInventoryItem'
+	| 'removeInventoryItems'
 	| 'clearError'
 >;
 
@@ -466,6 +468,40 @@ export const useInventoryStore = create<InventoryState>()(
 				},
 
 				/**
+				 * Supprime plusieurs items d'inventaire
+				 */
+				removeInventoryItems: async (ids) => {
+					const uniqueIds = [...new Set(ids)];
+
+					if (uniqueIds.length === 0) {
+						return;
+					}
+
+					set({ isLoading: true, error: null });
+					try {
+						await inventoryService.removeInventoryItems(uniqueIds);
+
+						set((state) => ({
+							items: state.items.filter(
+								(item) => !uniqueIds.includes(item.id)
+							),
+							isLoading: false,
+						}));
+					} catch (error) {
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							'Impossible de supprimer les produits. Veuillez réessayer.'
+						);
+
+						set({
+							error: errorMessage,
+							isLoading: false,
+						});
+						throw new Error(errorMessage);
+					}
+				},
+
+				/**
 				 * Efface l'erreur actuelle
 				 */
 				clearError: () => set({ error: null }),
@@ -604,6 +640,7 @@ export const useInventoryActions = () => {
 			addInventoryItem: store.addInventoryItem,
 			updateInventoryItem: store.updateInventoryItem,
 			removeInventoryItem: store.removeInventoryItem,
+			removeInventoryItems: store.removeInventoryItems,
 			clearError: store.clearError,
 		});
 		actionsInitialized = true;

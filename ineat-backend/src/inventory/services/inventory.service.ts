@@ -532,6 +532,35 @@ export class InventoryService {
     return { success: true, message: "Produit supprimé de l'inventaire" };
   }
 
+  /**
+   * Supprime plusieurs éléments d'inventaire appartenant à l'utilisateur
+   * @param userId ID de l'utilisateur
+   * @param inventoryItemIds IDs des éléments à supprimer
+   */
+  async removeInventoryItems(userId: string, inventoryItemIds: string[]) {
+    const uniqueIds = [...new Set(inventoryItemIds)];
+
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('Aucun produit sélectionné');
+    }
+
+    const result = await this.prisma.inventoryItem.deleteMany({
+      where: {
+        id: { in: uniqueIds },
+        userId,
+      },
+    });
+
+    return {
+      success: true,
+      deletedCount: result.count,
+      message:
+        result.count > 1
+          ? `${result.count} produits supprimés de l'inventaire`
+          : `${result.count} produit supprimé de l'inventaire`,
+    };
+  }
+
   // --- MÉTHODES PRIVÉES ---
 
   /**

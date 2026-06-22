@@ -32,6 +32,7 @@ describe('InventoryService', () => {
       findFirst: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
     product: {
       findUnique: jest.fn(),
@@ -450,6 +451,24 @@ describe('InventoryService', () => {
     });
     expect(prisma.inventoryItem.delete).toHaveBeenCalledWith({
       where: { id: 'item-1' },
+    });
+  });
+
+  it('deletes multiple inventory items owned by the user', async () => {
+    prisma.inventoryItem.deleteMany.mockResolvedValue({ count: 2 });
+
+    await expect(
+      service.removeInventoryItems('user-1', ['item-1', 'item-2', 'item-1']),
+    ).resolves.toEqual({
+      success: true,
+      deletedCount: 2,
+      message: "2 produits supprimés de l'inventaire",
+    });
+    expect(prisma.inventoryItem.deleteMany).toHaveBeenCalledWith({
+      where: {
+        id: { in: ['item-1', 'item-2'] },
+        userId: 'user-1',
+      },
     });
   });
 

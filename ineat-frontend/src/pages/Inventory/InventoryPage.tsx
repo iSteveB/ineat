@@ -1,6 +1,15 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
-import { Search, Filter, X, Plus, Package, Grid3X3, List } from 'lucide-react';
+import {
+	Search,
+	Filter,
+	X,
+	Plus,
+	Package,
+	Grid3X3,
+	List,
+	Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
@@ -30,11 +39,16 @@ const InventoryPage: React.FC = () => {
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 	const [showFilters, setShowFilters] = useState(false);
 	const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+	const [isSelectionMode, setIsSelectionMode] = useState(false);
+	const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
+		() => new Set()
+	);
 
 	const items = useInventoryItems(); // Items déjà enrichis avec expiryStatus par le store
 	const isLoading = useInventoryLoading();
 	const error = useInventoryError();
-	const { fetchInventoryItems, clearError } = useInventoryActions();
+	const { fetchInventoryItems, removeInventoryItems, clearError } =
+		useInventoryActions();
 	const { user } = useAuthStore();
 	const inventoryLimit = user?.capabilities.inventoryLimit ?? 50;
 	const hasReachedInventoryLimit = items.length >= inventoryLimit;
@@ -63,6 +77,19 @@ const InventoryPage: React.FC = () => {
 			toast.error('Erreur lors du chargement des catégories');
 		}
 	}, [categoriesError]);
+
+	useEffect(() => {
+		setSelectedItemIds((currentSelection) => {
+			const availableItemIds = new Set(items.map((item) => item.id));
+			const nextSelection = new Set(
+				[...currentSelection].filter((id) => availableItemIds.has(id))
+			);
+
+			return nextSelection.size === currentSelection.size
+				? currentSelection
+				: nextSelection;
+		});
+	}, [items]);
 
 	const filteredItems = items.filter((item) => {
 		const matchesSearch =
@@ -109,6 +136,12 @@ const InventoryPage: React.FC = () => {
 		);
 	});
 
+	const selectedCount = selectedItemIds.size;
+	const sortedItemIds = sortedItems.map((item) => item.id);
+	const areAllVisibleItemsSelected =
+		sortedItemIds.length > 0 &&
+		sortedItemIds.every((id) => selectedItemIds.has(id));
+
 	// ===== UTILITAIRES =====
 
 	const clearAllFilters = () => {
@@ -116,6 +149,67 @@ const InventoryPage: React.FC = () => {
 		setActiveStorageCategory('ALL');
 		setSelectedCategoryId('');
 		setShowFilters(false);
+	};
+
+	const clearSelection = () => {
+		setSelectedItemIds(new Set());
+	};
+
+	const openSelectionMode = () => {
+		setIsSelectionMode(true);
+	};
+
+	const closeSelectionMode = () => {
+		clearSelection();
+		setIsSelectionMode(false);
+	};
+
+	const toggleItemSelection = (itemId: string) => {
+		setSelectedItemIds((currentSelection) => {
+			const nextSelection = new Set(currentSelection);
+
+			if (nextSelection.has(itemId)) {
+				nextSelection.delete(itemId);
+			} else {
+				nextSelection.add(itemId);
+			}
+
+			return nextSelection;
+		});
+	};
+
+	const toggleSelectAllVisibleItems = () => {
+		setSelectedItemIds((currentSelection) => {
+			const nextSelection = new Set(currentSelection);
+
+			if (areAllVisibleItemsSelected) {
+				sortedItemIds.forEach((id) => nextSelection.delete(id));
+			} else {
+				sortedItemIds.forEach((id) => nextSelection.add(id));
+			}
+
+			return nextSelection;
+		});
+	};
+
+	const handleRemoveSelectedItems = async () => {
+		if (selectedCount === 0) {
+			return;
+		}
+
+		const productLabel = selectedCount > 1 ? 'produits' : 'produit';
+		if (
+			window.confirm(
+				`Êtes-vous sûr de vouloir supprimer ${selectedCount} ${productLabel} de votre inventaire ?`
+			)
+		) {
+			try {
+				await removeInventoryItems([...selectedItemIds]);
+				closeSelectionMode();
+			} catch {
+				toast.error('Erreur lors de la suppression des produits');
+			}
+		}
 	};
 
 	const hasActiveFilters =
@@ -238,6 +332,30 @@ const InventoryPage: React.FC = () => {
 						)}
 					</button>
 
+					<div className='flex items-center gap-2'>
+						{isSelectionMode && sortedItems.length > 0 ? (
+							<label className='flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-neutral-50 text-sm font-semibold text-gray-600'>
+								<input
+									type='checkbox'
+									checked={areAllVisibleItemsSelected}
+									onChange={toggleSelectAllVisibleItems}
+									disabled={isLoading}
+									className='size-4 rounded border-gray-300 text-success-50 focus:ring-success-50'
+								/>
+								Tout sélectionner
+							</label>
+						) : sortedItems.length > 0 ? (
+							<button
+								type='button'
+								onClick={openSelectionMode}
+								disabled={isLoading}
+								aria-label='Supprimer des produits'
+								className='inline-flex cursor-pointer items-center justify-center p-2.5 rounded-xl border border-red-200 bg-neutral-50 text-red-600 transition-all hover:border-red-500 hover:bg-red-50 disabled:opacity-50'>
+								<Trash2 className='size-4' />
+							</button>
+						) : null}
+					</div>
+
 					<div className='items-center gap-2 hidden md:flex'>
 						<button
 							onClick={() => setViewMode('grid')}
@@ -359,6 +477,36 @@ const InventoryPage: React.FC = () => {
 			{/* ===== LISTE DES PRODUITS ===== */}
 			<div className='flex-1 pb-28 overflow-auto'>
 				<div className='px-4 sm:px-6'>
+					{isSelectionMode && (
+						<div className='mb-4 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-neutral-50 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
+							<p className='text-sm font-semibold text-gray-800'>
+								{selectedCount > 0
+									? `${selectedCount} produit${
+											selectedCount > 1 ? 's' : ''
+									  } sélectionné${selectedCount > 1 ? 's' : ''}`
+									: 'Sélectionnez les produits à supprimer'}
+							</p>
+							<div className='flex items-center gap-2'>
+								<button
+									type='button'
+									onClick={closeSelectionMode}
+									disabled={isLoading}
+									className='inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50'>
+									<X className='size-4' />
+									Annuler
+								</button>
+								<button
+									type='button'
+									onClick={handleRemoveSelectedItems}
+									disabled={isLoading || selectedCount === 0}
+									className='inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-neutral-50 transition-colors hover:bg-red-700 disabled:opacity-50'>
+									<Trash2 className='size-4' />
+									{isLoading ? 'Suppression...' : 'Supprimer'}
+								</button>
+							</div>
+						</div>
+					)}
+
 					{isLoading ? (
 						// ===== ÉTAT DE CHARGEMENT =====
 						<div className='flex flex-col justify-center items-center h-64'>
@@ -390,7 +538,14 @@ const InventoryPage: React.FC = () => {
 									style={{
 										animationDelay: `${index * 50}ms`,
 									}}>
-									<ProductCard item={item} />
+									<ProductCard
+										item={item}
+										isSelectionMode={isSelectionMode}
+										isSelected={selectedItemIds.has(item.id)}
+										onToggleSelection={() =>
+											toggleItemSelection(item.id)
+										}
+									/>
 								</div>
 							))}
 						</div>
