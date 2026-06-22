@@ -308,6 +308,33 @@ const ProductDetailPage: FC = () => {
 	}
 
 	const expiryColors = getExpiryColors(expiryStatus);
+	const purchaseLots =
+		inventoryItem.lots && inventoryItem.lots.length > 0
+			? inventoryItem.lots
+			: [
+					{
+						id: inventoryItem.id,
+						quantity: inventoryItem.quantity,
+						expiryDate: inventoryItem.expiryDate,
+						expiryDateSource: inventoryItem.expiryDateSource,
+						purchaseDate: inventoryItem.purchaseDate,
+						purchasePrice: inventoryItem.purchasePrice,
+						storageLocation: inventoryItem.storageLocation,
+						packageStatus: inventoryItem.packageStatus,
+						preparationStatus: inventoryItem.preparationStatus,
+						notes: inventoryItem.notes,
+						createdAt: inventoryItem.createdAt,
+						updatedAt: inventoryItem.updatedAt,
+					},
+				];
+	const totalPurchasePrice = purchaseLots.reduce(
+		(total, lot) => total + (lot.purchasePrice ?? 0),
+		0,
+	);
+	const hasSeveralLots = purchaseLots.length > 1;
+
+	const formatPurchasePrice = (price?: number): string =>
+		price !== undefined ? `${price.toFixed(2)} €` : 'Prix non renseigné';
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
@@ -559,31 +586,91 @@ const ProductDetailPage: FC = () => {
 						</div>
 
 						<div className='space-y-4'>
-							<div className='flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl'>
-								<div className='flex items-center gap-3'>
-									<Calendar className='size-4 text-blue-600' />
-									<span className='font-medium text-gray-700'>
-										Date d'achat
-									</span>
-								</div>
-								<span className='font-bold text-gray-900'>
-									{formatDate(inventoryItem.purchaseDate)}
-								</span>
-							</div>
-
-							{inventoryItem.purchasePrice && (
-								<div className='flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl'>
-									<div className='flex items-center gap-3'>
-										<div className='size-4 bg-green-500 rounded-full' />
-										<span className='font-medium text-gray-700'>
-											Prix d'achat
-										</span>
+							{hasSeveralLots && (
+								<div className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3'>
+									<div>
+										<p className='text-sm font-semibold text-gray-900'>
+											{purchaseLots.length} lots en stock
+										</p>
+										<p className='text-xs text-gray-500'>
+											Quantité totale :{' '}
+											{formatUnit(
+												inventoryItem.quantity,
+												inventoryItem.product.unitType,
+											)}
+										</p>
 									</div>
-									<span className='font-bold text-green-700 text-lg'>
-										{inventoryItem.purchasePrice.toFixed(2)} €
-									</span>
+									{totalPurchasePrice > 0 && (
+										<span className='text-sm font-bold text-green-700'>
+											Total {totalPurchasePrice.toFixed(2)} €
+										</span>
+									)}
 								</div>
 							)}
+
+							<div className='space-y-3'>
+								{purchaseLots.map((lot, index) => (
+									<div
+										key={lot.id}
+										className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm'
+									>
+										<div className='mb-3 flex items-center justify-between gap-3'>
+											<div>
+												<p className='font-semibold text-gray-900'>
+													{hasSeveralLots ? `Lot ${index + 1}` : 'Lot'}
+												</p>
+												<p className='text-sm text-gray-500'>
+													{formatUnit(
+														lot.quantity,
+														inventoryItem.product.unitType,
+													)}
+												</p>
+											</div>
+											<span className='rounded-full bg-green-50 px-3 py-1 text-sm font-bold text-green-700'>
+												{formatPurchasePrice(lot.purchasePrice)}
+											</span>
+										</div>
+
+										<div className='grid gap-3 sm:grid-cols-2'>
+											<div className='flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2'>
+												<div className='flex items-center gap-2'>
+													<Calendar className='size-4 text-blue-600' />
+													<span className='text-sm font-medium text-gray-700'>
+														Acheté le
+													</span>
+												</div>
+												<span className='text-sm font-bold text-gray-900'>
+													{formatDate(lot.purchaseDate)}
+												</span>
+											</div>
+
+											<div className='flex items-center justify-between rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2'>
+												<div className='flex items-center gap-2'>
+													<Calendar className='size-4 text-orange-600' />
+													<span className='text-sm font-medium text-gray-700'>
+														Péremption
+													</span>
+												</div>
+												<span className='text-sm font-bold text-gray-900'>
+													{lot.expiryDate
+														? formatDate(lot.expiryDate)
+														: 'Non renseignée'}
+												</span>
+											</div>
+										</div>
+
+										{lot.storageLocation && (
+											<div className='mt-3 flex items-center gap-2 text-sm text-gray-600'>
+												<MapPin className='size-4 text-green-600' />
+												<span>
+													{lot.storageLocation.charAt(0).toUpperCase() +
+														lot.storageLocation.slice(1)}
+												</span>
+											</div>
+										)}
+									</div>
+								))}
+							</div>
 						</div>
 					</CardContent>
 				</Card>
