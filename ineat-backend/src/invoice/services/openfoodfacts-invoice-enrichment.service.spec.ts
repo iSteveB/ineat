@@ -50,6 +50,20 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
           quantity: '400 g',
           image_front_url: 'https://images.example/nutella.jpg',
           categories_tags_fr: ['fr:pates-a-tartiner'],
+          nutriscore_grade: 'e',
+          ecoscore_grade: 'd',
+          nova_group: 4,
+          ingredients_text_fr: 'Sucre, huile de palme, noisettes',
+          nutriments: {
+            'energy-kcal_100g': 539,
+            carbohydrates_100g: 57.5,
+            sugars_100g: 56.3,
+            proteins_100g: 6.3,
+            fat_100g: 30.9,
+            'saturated-fat_100g': 10.6,
+            fiber_100g: 0,
+            salt_100g: 0.1,
+          },
           completeness: 0.92,
         },
       }),
@@ -65,8 +79,17 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
       },
     ]);
 
+    const [lookupUrl] = fetchMock.mock.calls[0];
+    expect(lookupUrl).toContain(
+      'https://world.openfoodfacts.test/api/v2/product/3017624010701',
+    );
+    expect(lookupUrl).toContain('nutriscore_grade');
+    expect(lookupUrl).toContain('ecoscore_grade');
+    expect(lookupUrl).toContain('nova_group');
+    expect(lookupUrl).toContain('ingredients_text_fr');
+    expect(lookupUrl).toContain('nutriments');
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://world.openfoodfacts.test/api/v2/product/3017624010701?fields=code%2Cproduct_name%2Cproduct_name_fr%2Cproduct_name_en%2Cbrands%2Cquantity%2Cimage_front_url%2Cimage_front_small_url%2Cselected_images%2Ccategories_tags%2Ccategories_tags_fr%2Ccategories_tags_en%2Ccompleteness&lc=fr',
+      expect.any(String),
       expect.objectContaining({
         method: 'GET',
         headers: expect.objectContaining({
@@ -87,6 +110,20 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
         quantity: '400 g',
         imageUrl: 'https://images.example/nutella.jpg',
         categoriesTags: ['fr:pates-a-tartiner'],
+        nutriscore: 'E',
+        ecoscore: 'D',
+        novascore: 'GROUP_4',
+        ingredients: 'Sucre, huile de palme, noisettes',
+        nutrients: {
+          energy: 539,
+          carbohydrates: 57.5,
+          sugars: 56.3,
+          proteins: 6.3,
+          fats: 30.9,
+          saturatedFats: 10.6,
+          fiber: 0,
+          salt: 0.1,
+        },
         completeness: 0.92,
       },
       externalProductError: null,

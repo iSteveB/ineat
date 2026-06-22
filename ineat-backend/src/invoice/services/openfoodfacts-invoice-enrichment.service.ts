@@ -31,6 +31,13 @@ interface OpenFoodFactsProduct {
   categories_tags?: string[];
   categories_tags_fr?: string[];
   categories_tags_en?: string[];
+  nutriscore_grade?: string;
+  ecoscore_grade?: string;
+  nova_group?: number | string;
+  ingredients_text?: string;
+  ingredients_text_fr?: string;
+  ingredients_text_en?: string;
+  nutriments?: Record<string, unknown>;
   completeness?: number;
 }
 
@@ -58,6 +65,13 @@ const OPENFOODFACTS_FIELDS = [
   'categories_tags',
   'categories_tags_fr',
   'categories_tags_en',
+  'nutriscore_grade',
+  'ecoscore_grade',
+  'nova_group',
+  'ingredients_text',
+  'ingredients_text_fr',
+  'ingredients_text_en',
+  'nutriments',
   'completeness',
 ];
 
@@ -167,10 +181,7 @@ export class OpenFoodFactsInvoiceEnrichmentService {
     barcode: string,
   ): Promise<OpenFoodFactsProductResponse> {
     const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      this.getTimeoutMs(),
-    );
+    const timeoutId = setTimeout(() => controller.abort(), this.getTimeoutMs());
 
     try {
       const response = await fetch(this.buildProductUrl(barcode), {
@@ -224,6 +235,13 @@ export class OpenFoodFactsInvoiceEnrichmentService {
       categories_tags: product.categories_tags,
       categories_tags_fr: product.categories_tags_fr,
       categories_tags_en: product.categories_tags_en,
+      nutriscore_grade: product.nutriscore_grade,
+      ecoscore_grade: product.ecoscore_grade,
+      nova_group: product.nova_group,
+      ingredients_text: product.ingredients_text,
+      ingredients_text_fr: product.ingredients_text_fr,
+      ingredients_text_en: product.ingredients_text_en,
+      nutriments: product.nutriments,
       completeness: product.completeness,
     });
 
@@ -243,6 +261,15 @@ export class OpenFoodFactsInvoiceEnrichmentService {
         product.categories_tags ??
         product.categories_tags_en ??
         [],
+      nutriscore: this.normalizeScore(product.nutriscore_grade),
+      ecoscore: this.normalizeScore(product.ecoscore_grade),
+      novascore: this.normalizeNovaScore(product.nova_group),
+      ingredients:
+        product.ingredients_text_fr ??
+        product.ingredients_text ??
+        product.ingredients_text_en ??
+        null,
+      nutrients: this.mapNutrients(product.nutriments),
       completeness: product.completeness ?? null,
       raw,
     }) as InvoiceExternalProductData;
@@ -258,6 +285,73 @@ export class OpenFoodFactsInvoiceEnrichmentService {
       product.image_front_small_url ??
       null
     );
+  }
+
+  private normalizeScore(value?: string): 'A' | 'B' | 'C' | 'D' | 'E' | null {
+    const score = value?.trim().toUpperCase();
+
+    return score && ['A', 'B', 'C', 'D', 'E'].includes(score)
+      ? (score as 'A' | 'B' | 'C' | 'D' | 'E')
+      : null;
+  }
+
+  private normalizeNovaScore(
+    value?: number | string,
+  ): 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4' | null {
+    const normalizedValue = String(value ?? '').trim();
+
+    return ['1', '2', '3', '4'].includes(normalizedValue)
+      ? (`GROUP_${normalizedValue}` as
+          | 'GROUP_1'
+          | 'GROUP_2'
+          | 'GROUP_3'
+          | 'GROUP_4')
+      : null;
+  }
+
+  private mapNutrients(
+    nutriments?: Record<string, unknown>,
+  ): InvoiceExternalProductData['nutrients'] {
+    if (!nutriments) {
+      return null;
+    }
+
+    const nutrients = this.pruneUndefined({
+      energy: this.getNutrient(nutriments, [
+        'energy-kcal_100g',
+        'energy_kcal_100g',
+      ]),
+      carbohydrates: this.getNutrient(nutriments, ['carbohydrates_100g']),
+      sugars: this.getNutrient(nutriments, ['sugars_100g']),
+      proteins: this.getNutrient(nutriments, ['proteins_100g']),
+      fats: this.getNutrient(nutriments, ['fat_100g']),
+      saturatedFats: this.getNutrient(nutriments, ['saturated-fat_100g']),
+      fiber: this.getNutrient(nutriments, ['fiber_100g']),
+      salt: this.getNutrient(nutriments, ['salt_100g']),
+    }) as NonNullable<InvoiceExternalProductData['nutrients']>;
+
+    return Object.keys(nutrients).length > 0 ? nutrients : null;
+  }
+
+  private getNutrient(
+    nutriments: Record<string, unknown>,
+    keys: string[],
+  ): number | undefined {
+    for (const key of keys) {
+      const value = nutriments[key];
+      const numericValue =
+        typeof value === 'number'
+          ? value
+          : typeof value === 'string'
+            ? Number(value)
+            : NaN;
+
+      if (Number.isFinite(numericValue)) {
+        return numericValue;
+      }
+    }
+
+    return undefined;
   }
 
   private mergeSuggestedEans(

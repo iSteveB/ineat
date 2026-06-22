@@ -15,6 +15,20 @@ export interface InvoiceExternalProductData {
   quantity?: string | null;
   imageUrl?: string | null;
   categoriesTags?: string[];
+  nutriscore?: 'A' | 'B' | 'C' | 'D' | 'E' | null;
+  ecoscore?: 'A' | 'B' | 'C' | 'D' | 'E' | null;
+  novascore?: 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4' | null;
+  ingredients?: string | null;
+  nutrients?: {
+    energy?: number;
+    carbohydrates?: number;
+    sugars?: number;
+    proteins?: number;
+    fats?: number;
+    saturatedFats?: number;
+    fiber?: number;
+    salt?: number;
+  } | null;
   completeness?: number | null;
   raw?: Record<string, unknown>;
 }

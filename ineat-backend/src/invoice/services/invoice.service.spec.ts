@@ -27,6 +27,8 @@ describe('InvoiceService', () => {
     },
     budget: {
       findFirst: jest.fn(),
+      updateMany: jest.fn(),
+      create: jest.fn(),
     },
     expense: {
       findUnique: jest.fn(),
@@ -160,6 +162,12 @@ describe('InvoiceService', () => {
     });
     tx.budget.findFirst.mockResolvedValue({
       id: 'budget-1',
+      amount: 300,
+    });
+    tx.budget.updateMany.mockResolvedValue({ count: 0 });
+    tx.budget.create.mockResolvedValue({
+      id: 'budget-created',
+      amount: 300,
     });
     tx.expense.findUnique.mockResolvedValue(null);
     tx.expense.create.mockResolvedValue({
@@ -553,6 +561,146 @@ describe('InvoiceService', () => {
     });
   });
 
+  it("crée un budget mensuel pour la date de facture avant d'ajouter la dépense", async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      purchaseDate: new Date('2024-09-17T00:00:00.000Z'),
+    });
+    tx.invoiceItem.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
+    tx.budget.findFirst
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: 'budget-current',
+        amount: 450,
+      });
+    tx.budget.create.mockResolvedValue({
+      id: 'budget-september-2024',
+      amount: 450,
+    });
+
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+    const expectedPeriodStart = new Date(2024, 8, 1, 0, 0, 0, 0);
+    const expectedPeriodEnd = new Date(2024, 9, 0, 23, 59, 59, 999);
+
+    expect(tx.budget.updateMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        OR: [
+          {
+            periodStart: {
+              gte: expectedPeriodStart,
+              lte: expectedPeriodEnd,
+            },
+          },
+          {
+            periodEnd: {
+              gte: expectedPeriodStart,
+              lte: expectedPeriodEnd,
+            },
+          },
+          {
+            AND: [
+              { periodStart: { lte: expectedPeriodStart } },
+              { periodEnd: { gte: expectedPeriodEnd } },
+            ],
+          },
+        ],
+      },
+      data: {
+        isActive: false,
+      },
+    });
+    expect(tx.budget.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        amount: 450,
+        periodStart: expectedPeriodStart,
+        periodEnd: expectedPeriodEnd,
+        isActive: true,
+      }),
+    });
+    expect(tx.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        budgetId: 'budget-september-2024',
+        amount: 4.5,
+        invoiceId: 'invoice-1',
+        invoiceItemId: 'item-1',
+      }),
+    });
+    expect(result).toMatchObject({
+      expenseCount: 1,
+      totalBudgetAmount: 4.5,
+    });
+  });
+
+  it('crée le produit avec les données enrichies OpenFoodFacts à la validation', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          detectedName: 'AUCHAN Crème fluide entière 30% MG UHT 3x20cl',
+          selectedEan: '3596710511220',
+          productCode: '3596710511220',
+          externalProductData: {
+            source: 'openfoodfacts',
+            barcode: '3596710511220',
+            name: 'Crème fluide entière 30% MG UHT 3x20cl',
+            brand: 'Auchan',
+            quantity: '3 x 20 cl',
+            imageUrl: 'https://images.example/creme.jpg',
+            nutriscore: 'D',
+            ecoscore: 'C',
+            novascore: 'GROUP_3',
+            ingredients: 'Crème entière UHT',
+            nutrients: {
+              energy: 287,
+              carbohydrates: 3.2,
+              sugars: 3.2,
+              proteins: 2.1,
+              fats: 30,
+              saturatedFats: 19,
+              fiber: 0,
+              salt: 0.08,
+            },
+          },
+        },
+      ],
+    });
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'Crème fluide entière 30% MG UHT 3x20cl',
+          brand: 'Auchan',
+          barcode: '3596710511220',
+          nutriscore: 'D',
+          ecoscore: 'C',
+          novascore: 'GROUP_3',
+          ingredients: 'Crème entière UHT',
+          imageUrl: 'https://images.example/creme.jpg',
+          externalId: '3596710511220',
+          nutrients: {
+            energy: 287,
+            carbohydrates: 3.2,
+            sugars: 3.2,
+            proteins: 2.1,
+            fats: 30,
+            saturatedFats: 19,
+            fiber: 0,
+            salt: 0.08,
+          },
+        }),
+      }),
+    );
+  });
+
   it('réutilise le produit existant si la ligne contient un productId', async () => {
     prisma.invoice.findFirst.mockResolvedValue({
       ...completedInvoice,
@@ -584,7 +732,144 @@ describe('InvoiceService', () => {
     });
   });
 
+  it('met à jour un produit existant avec les données OpenFoodFacts', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          productId: 'product-existing',
+          externalProductData: {
+            source: 'openfoodfacts',
+            barcode: '3017624010701',
+            name: 'Pâte à tartiner aux noisettes',
+            brand: 'Ferrero',
+            imageUrl: 'https://images.example/nutella.jpg',
+            nutriscore: 'E',
+            ecoscore: 'D',
+            ingredients: 'Sucre, huile de palme, noisettes',
+            nutrients: {
+              energy: 539,
+              fats: 30.9,
+            },
+          },
+        },
+      ],
+    });
+    tx.product.findUnique.mockResolvedValue({
+      id: 'product-existing',
+      name: 'Ancien nom',
+      brand: 'Ancienne marque',
+      barcode: null,
+      imageUrl: 'https://images.example/old.jpg',
+      nutriscore: 'A',
+      ecoscore: null,
+      novascore: null,
+      ingredients: 'Ancienne composition',
+      nutrients: { energy: 100 },
+      externalId: null,
+    });
+    tx.product.update.mockResolvedValue({
+      id: 'product-existing',
+      name: 'Pâte à tartiner aux noisettes',
+      brand: 'Ferrero',
+      barcode: '3017624010701',
+    });
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.product.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'product-existing' },
+        data: expect.objectContaining({
+          barcode: '3017624010701',
+          name: 'Pâte à tartiner aux noisettes',
+          brand: 'Ferrero',
+          imageUrl: 'https://images.example/nutella.jpg',
+          nutriscore: 'E',
+          ecoscore: 'D',
+          ingredients: 'Sucre, huile de palme, noisettes',
+          externalId: '3017624010701',
+          nutrients: {
+            energy: 539,
+            fats: 30.9,
+          },
+        }),
+        include: { Category: true },
+      }),
+    );
+    expect(tx.product.create).not.toHaveBeenCalled();
+  });
+
+  it('sauvegarde les données OpenFoodFacts brutes dans un nouveau produit', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          selectedEan: '3596710511220',
+          productCode: '3596710511220',
+          externalProductData: {
+            raw: {
+              code: '3596710511220',
+              product_name_fr: 'Crème fluide entière 30% MG UHT 3x20cl',
+              brands: 'Auchan',
+              image_front_url: 'https://images.example/creme.jpg',
+              nutriscore_grade: 'd',
+              ecoscore_grade: 'c',
+              nova_group: 3,
+              ingredients_text_fr: 'Crème entière UHT',
+              nutriments: {
+                'energy-kcal_100g': '287',
+                fat_100g: '30',
+                'saturated-fat_100g': '19',
+                salt_100g: '0.08',
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'Crème fluide entière 30% MG UHT 3x20cl',
+          brand: 'Auchan',
+          barcode: '3596710511220',
+          nutriscore: 'D',
+          ecoscore: 'C',
+          novascore: 'GROUP_3',
+          ingredients: 'Crème entière UHT',
+          imageUrl: 'https://images.example/creme.jpg',
+          externalId: '3596710511220',
+          nutrients: {
+            energy: 287,
+            fats: 30,
+            saturatedFats: 19,
+            salt: 0.08,
+          },
+        }),
+      }),
+    );
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        productId: 'product-1',
+      }),
+    });
+  });
+
   it('ignore une ligne déjà validée pour rendre le retry idempotent', async () => {
+    tx.expense.findUnique.mockResolvedValue({
+      id: 'expense-existing',
+      amount: 4.5,
+    });
     prisma.invoice.findFirst.mockResolvedValue({
       ...completedInvoice,
       InvoiceItem: [
@@ -607,6 +892,41 @@ describe('InvoiceService', () => {
       skippedItemCount: 1,
       inventoryItemCount: 0,
       expenseCount: 0,
+    });
+  });
+
+  it('répare une ligne déjà validée sans dépense budget', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          validated: true,
+        },
+      ],
+    });
+
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+    expect(tx.invoiceItem.update).not.toHaveBeenCalled();
+    expect(tx.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        budgetId: 'budget-1',
+        amount: 4.5,
+        invoiceId: 'invoice-1',
+        invoiceItemId: 'item-1',
+      }),
+    });
+    expect(result).toMatchObject({
+      validatedItemCount: 0,
+      skippedItemCount: 1,
+      inventoryItemCount: 0,
+      expenseCount: 1,
+      totalBudgetAmount: 4.5,
     });
   });
 

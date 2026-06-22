@@ -5,10 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import {
-  InvoiceStatus,
-  Prisma,
-} from '../../../prisma/generated/prisma/client';
+import { InvoiceStatus, Prisma } from '../../../prisma/generated/prisma/client';
 import { UsageQuotaService } from '../../auth/services/usage-quota.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -87,15 +84,8 @@ export class InvoiceService {
       );
       const processingTime = Date.now() - startedAt;
 
-      await this.completeInvoiceAnalysis(
-        invoice.id,
-        analysis,
-        processingTime,
-      );
-      await this.usageQuotaService.recordSuccessfulUsage(
-        user,
-        'DRIVE_IMPORT',
-      );
+      await this.completeInvoiceAnalysis(invoice.id, analysis, processingTime);
+      await this.usageQuotaService.recordSuccessfulUsage(user, 'DRIVE_IMPORT');
 
       this.logInvoiceEvent({
         event: 'invoice_analysis_completed',
@@ -304,9 +294,7 @@ export class InvoiceService {
     }
 
     if (invoice.status === InvoiceStatus.PROCESSING) {
-      throw new BadRequestException(
-        "La facture est encore en cours d'analyse",
-      );
+      throw new BadRequestException("La facture est encore en cours d'analyse");
     }
 
     if (invoice.status === InvoiceStatus.FAILED) {
@@ -335,6 +323,25 @@ export class InvoiceService {
 
       for (const item of invoice.InvoiceItem) {
         if (item.validated) {
+          const existingExpense = await tx.expense.findUnique({
+            where: { invoiceItemId: item.id },
+          });
+
+          if (!existingExpense) {
+            const repairedExpense = await this.createExpenseForInvoiceItem(
+              tx,
+              userId,
+              invoiceId,
+              item,
+              purchaseDate,
+            );
+
+            if (repairedExpense) {
+              summary.expenseCount += 1;
+              summary.totalBudgetAmount += repairedExpense.amount;
+            }
+          }
+
           summary.skippedItemCount += 1;
           continue;
         }
@@ -500,7 +507,7 @@ export class InvoiceService {
         throw new NotFoundException('Produit associé introuvable');
       }
 
-      return product;
+      return this.enrichExistingProductFromInvoiceItem(tx, product, item);
     }
 
     const barcode = this.getValidBarcode(item.selectedEan ?? item.productCode);
@@ -512,7 +519,11 @@ export class InvoiceService {
       });
 
       if (productByBarcode) {
-        return productByBarcode;
+        return this.enrichExistingProductFromInvoiceItem(
+          tx,
+          productByBarcode,
+          item,
+        );
       }
     }
 
@@ -546,28 +557,265 @@ export class InvoiceService {
     });
 
     if (existingProduct) {
-      if (barcode && !existingProduct.barcode) {
-        return tx.product.update({
-          where: { id: existingProduct.id },
-          data: { barcode },
-          include: { Category: true },
-        });
-      }
-
-      return existingProduct;
+      return this.enrichExistingProductFromInvoiceItem(
+        tx,
+        existingProduct,
+        item,
+      );
     }
+
+    const externalProductData = this.getInvoiceExternalProductData(item);
+    const productName =
+      this.getNonEmptyString(externalProductData?.name) ?? item.detectedName;
 
     return tx.product.create({
       data: {
         id: randomUUID(),
-        name: item.detectedName,
+        name: productName,
+        brand: this.getNonEmptyString(externalProductData?.brand),
         barcode,
         categoryId: category.id,
         unitType: 'UNIT',
+        nutriscore: this.normalizeScore(externalProductData?.nutriscore),
+        ecoscore: this.normalizeScore(externalProductData?.ecoscore),
+        novascore: this.normalizeNovaScore(externalProductData?.novascore),
+        ingredients: this.getNonEmptyString(externalProductData?.ingredients),
+        imageUrl: this.getNonEmptyString(externalProductData?.imageUrl),
+        externalId:
+          this.getNonEmptyString(externalProductData?.barcode) ?? barcode,
+        nutrients: externalProductData?.nutrients
+          ? (externalProductData.nutrients as Prisma.InputJsonValue)
+          : undefined,
         updatedAt: new Date(),
       },
       include: { Category: true },
     });
+  }
+
+  private async enrichExistingProductFromInvoiceItem(
+    tx: any,
+    product: any,
+    item: any,
+  ) {
+    const externalProductData = this.getInvoiceExternalProductData(item);
+    const barcode = this.getValidBarcode(
+      externalProductData?.barcode ?? item.selectedEan ?? item.productCode,
+    );
+    const updateData: Record<string, unknown> = {};
+
+    this.setIfPresent(updateData, 'barcode', barcode);
+    this.setIfPresent(
+      updateData,
+      'name',
+      this.getNonEmptyString(externalProductData?.name),
+    );
+    this.setIfPresent(
+      updateData,
+      'brand',
+      this.getNonEmptyString(externalProductData?.brand),
+    );
+    this.setIfPresent(
+      updateData,
+      'nutriscore',
+      this.normalizeScore(externalProductData?.nutriscore),
+    );
+    this.setIfPresent(
+      updateData,
+      'ecoscore',
+      this.normalizeScore(externalProductData?.ecoscore),
+    );
+    this.setIfPresent(
+      updateData,
+      'novascore',
+      this.normalizeNovaScore(externalProductData?.novascore),
+    );
+    this.setIfPresent(
+      updateData,
+      'ingredients',
+      this.getNonEmptyString(externalProductData?.ingredients),
+    );
+    this.setIfPresent(
+      updateData,
+      'imageUrl',
+      this.getNonEmptyString(externalProductData?.imageUrl),
+    );
+    this.setIfPresent(
+      updateData,
+      'externalId',
+      this.getNonEmptyString(externalProductData?.barcode) ?? barcode,
+    );
+
+    if (externalProductData?.nutrients) {
+      updateData.nutrients =
+        externalProductData.nutrients as Prisma.InputJsonValue;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return product;
+    }
+
+    return tx.product.update({
+      where: { id: product.id },
+      data: {
+        ...updateData,
+        updatedAt: new Date(),
+      },
+      include: { Category: true },
+    });
+  }
+
+  private setIfPresent(
+    updateData: Record<string, unknown>,
+    key: string,
+    value: unknown,
+  ): void {
+    if (value !== null && value !== undefined && value !== '') {
+      updateData[key] = value;
+    }
+  }
+
+  private getInvoiceExternalProductData(item: any): Record<string, any> | null {
+    const externalProductData = item.externalProductData;
+
+    if (!externalProductData || typeof externalProductData !== 'object') {
+      return null;
+    }
+
+    const data = externalProductData as Record<string, any>;
+    const raw =
+      data.raw && typeof data.raw === 'object'
+        ? (data.raw as Record<string, any>)
+        : {};
+    const barcode =
+      this.getNonEmptyString(data.barcode) ?? this.getNonEmptyString(raw.code);
+    const name =
+      this.getNonEmptyString(data.name) ??
+      this.getNonEmptyString(raw.product_name_fr) ??
+      this.getNonEmptyString(raw.product_name) ??
+      this.getNonEmptyString(raw.product_name_en);
+    const brand =
+      this.getNonEmptyString(data.brand) ?? this.getNonEmptyString(raw.brands);
+    const imageUrl =
+      this.getNonEmptyString(data.imageUrl) ??
+      this.getNonEmptyString(raw.image_front_url) ??
+      this.getNonEmptyString(raw.image_front_small_url);
+    const ingredients =
+      this.getNonEmptyString(data.ingredients) ??
+      this.getNonEmptyString(raw.ingredients_text_fr) ??
+      this.getNonEmptyString(raw.ingredients_text) ??
+      this.getNonEmptyString(raw.ingredients_text_en);
+    const nutrients =
+      data.nutrients && typeof data.nutrients === 'object'
+        ? data.nutrients
+        : this.mapOpenFoodFactsNutrients(raw.nutriments);
+
+    const normalizedData = {
+      barcode,
+      name,
+      brand,
+      imageUrl,
+      nutriscore: this.normalizeScore(
+        data.nutriscore ?? raw.nutriscore_grade,
+      ),
+      ecoscore: this.normalizeScore(data.ecoscore ?? raw.ecoscore_grade),
+      novascore: this.normalizeNovaScore(data.novascore ?? raw.nova_group),
+      ingredients,
+      nutrients,
+    };
+
+    return Object.values(normalizedData).some(
+      (value) => value !== null && value !== undefined && value !== '',
+    )
+      ? normalizedData
+      : null;
+  }
+
+  private getNonEmptyString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
+  private normalizeScore(
+    value: unknown,
+  ): 'A' | 'B' | 'C' | 'D' | 'E' | undefined {
+    const score = typeof value === 'string' ? value.trim().toUpperCase() : '';
+
+    return ['A', 'B', 'C', 'D', 'E'].includes(score)
+      ? (score as 'A' | 'B' | 'C' | 'D' | 'E')
+      : undefined;
+  }
+
+  private normalizeNovaScore(
+    value: unknown,
+  ): 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4' | undefined {
+    const score =
+      typeof value === 'number'
+        ? `GROUP_${value}`
+        : typeof value === 'string'
+          ? value.trim().toUpperCase()
+          : '';
+    const normalizedScore = ['1', '2', '3', '4'].includes(score)
+      ? `GROUP_${score}`
+      : score;
+
+    return ['GROUP_1', 'GROUP_2', 'GROUP_3', 'GROUP_4'].includes(
+      normalizedScore,
+    )
+      ? (normalizedScore as 'GROUP_1' | 'GROUP_2' | 'GROUP_3' | 'GROUP_4')
+      : undefined;
+  }
+
+  private mapOpenFoodFactsNutrients(
+    nutriments: unknown,
+  ): Record<string, number> | undefined {
+    if (!nutriments || typeof nutriments !== 'object') {
+      return undefined;
+    }
+
+    const source = nutriments as Record<string, unknown>;
+    const nutrients = this.pruneUndefined({
+      energy: this.getNumericField(source, [
+        'energy-kcal_100g',
+        'energy_kcal_100g',
+      ]),
+      carbohydrates: this.getNumericField(source, ['carbohydrates_100g']),
+      sugars: this.getNumericField(source, ['sugars_100g']),
+      proteins: this.getNumericField(source, ['proteins_100g']),
+      fats: this.getNumericField(source, ['fat_100g']),
+      saturatedFats: this.getNumericField(source, ['saturated-fat_100g']),
+      fiber: this.getNumericField(source, ['fiber_100g']),
+      salt: this.getNumericField(source, ['salt_100g']),
+    });
+
+    return Object.keys(nutrients).length > 0
+      ? (nutrients as Record<string, number>)
+      : undefined;
+  }
+
+  private getNumericField(
+    source: Record<string, unknown>,
+    keys: string[],
+  ): number | undefined {
+    for (const key of keys) {
+      const value = source[key];
+      const numericValue =
+        typeof value === 'number'
+          ? value
+          : typeof value === 'string'
+            ? Number(value)
+            : NaN;
+
+      if (Number.isFinite(numericValue)) {
+        return numericValue;
+      }
+    }
+
+    return undefined;
+  }
+
+  private pruneUndefined(value: Record<string, unknown>): Record<string, unknown> {
+    return Object.fromEntries(
+      Object.entries(value).filter(([, entryValue]) => entryValue !== undefined),
+    );
   }
 
   private async createExpenseForInvoiceItem(
@@ -581,14 +829,11 @@ export class InvoiceService {
       return null;
     }
 
-    const budget = await tx.budget.findFirst({
-      where: {
-        userId,
-        isActive: true,
-        periodStart: { lte: purchaseDate },
-        periodEnd: { gte: purchaseDate },
-      },
-    });
+    const budget = await this.findOrCreateBudgetForInvoiceExpense(
+      tx,
+      userId,
+      purchaseDate,
+    );
 
     if (!budget) {
       return null;
@@ -606,6 +851,96 @@ export class InvoiceService {
         notes: item.detectedName,
         invoiceId,
         invoiceItemId: item.id,
+        updatedAt: new Date(),
+      },
+    });
+  }
+
+  private async findOrCreateBudgetForInvoiceExpense(
+    tx: any,
+    userId: string,
+    purchaseDate: Date,
+  ) {
+    const existingBudget = await tx.budget.findFirst({
+      where: {
+        userId,
+        isActive: true,
+        periodStart: { lte: purchaseDate },
+        periodEnd: { gte: purchaseDate },
+      },
+      orderBy: {
+        periodStart: 'desc',
+      },
+    });
+
+    if (existingBudget) {
+      return existingBudget;
+    }
+
+    const lastActiveBudget = await tx.budget.findFirst({
+      where: {
+        userId,
+        isActive: true,
+      },
+      orderBy: {
+        periodStart: 'desc',
+      },
+    });
+
+    if (!lastActiveBudget) {
+      return null;
+    }
+
+    const periodStart = new Date(
+      purchaseDate.getFullYear(),
+      purchaseDate.getMonth(),
+      1,
+      0,
+      0,
+      0,
+      0,
+    );
+    const periodEnd = new Date(
+      purchaseDate.getFullYear(),
+      purchaseDate.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    await tx.budget.updateMany({
+      where: {
+        userId,
+        OR: [
+          {
+            periodStart: { gte: periodStart, lte: periodEnd },
+          },
+          {
+            periodEnd: { gte: periodStart, lte: periodEnd },
+          },
+          {
+            AND: [
+              { periodStart: { lte: periodStart } },
+              { periodEnd: { gte: periodEnd } },
+            ],
+          },
+        ],
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
+    return tx.budget.create({
+      data: {
+        id: randomUUID(),
+        userId,
+        amount: lastActiveBudget.amount,
+        periodStart,
+        periodEnd,
+        isActive: true,
         updatedAt: new Date(),
       },
     });

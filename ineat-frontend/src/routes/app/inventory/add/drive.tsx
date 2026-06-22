@@ -36,6 +36,7 @@ import {
 } from '@/services/invoiceService';
 import { inventoryService } from '@/services/inventoryService';
 import { useAuthStore } from '@/stores/authStore';
+import { useInventoryActions } from '@/stores/inventoryStore';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
@@ -130,6 +131,7 @@ function DriveInvoiceImportPage() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { user, getProfile } = useAuthStore();
+	const { fetchInventoryItems } = useInventoryActions();
 	const [step, setStep] = useState<FlowStep>('upload');
 	const [invoice, setInvoice] = useState<Invoice | null>(null);
 	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -137,6 +139,9 @@ function DriveInvoiceImportPage() {
 	const [result, setResult] = useState<ValidateInvoiceResponse | null>(null);
 	const [localError, setLocalError] = useState<string | null>(null);
 	const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+	const [pendingInvoiceFile, setPendingInvoiceFile] = useState<File | null>(
+		null
+	);
 
 	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
 		queryKey: ['categories'],
@@ -226,12 +231,15 @@ function DriveInvoiceImportPage() {
 				selectedItems.map((item) => item.id)
 			);
 		},
-		onSuccess: (validationResult) => {
+		onSuccess: async (validationResult) => {
 			setResult(validationResult);
 			setStep('done');
-			queryClient.invalidateQueries({ queryKey: ['inventory'] });
-			queryClient.invalidateQueries({ queryKey: ['budget', 'current'] });
-			queryClient.invalidateQueries({ queryKey: ['budget', 'stats'] });
+			await Promise.all([
+				fetchInventoryItems(),
+				queryClient.invalidateQueries({ queryKey: ['inventory'] }),
+				queryClient.invalidateQueries({ queryKey: ['budget', 'current'] }),
+				queryClient.invalidateQueries({ queryKey: ['budget', 'stats'] }),
+			]);
 			toast.success('Produits ajoutés');
 		},
 		onError: (error: Error) => toast.error(error.message),
@@ -245,8 +253,22 @@ function DriveInvoiceImportPage() {
 			return;
 		}
 
-		importMutation.mutate(file);
+		setPendingInvoiceFile(file);
 		event.target.value = '';
+	};
+
+	const handleConfirmFileAnalysis = () => {
+		if (!pendingInvoiceFile) {
+			return;
+		}
+
+		importMutation.mutate(pendingInvoiceFile);
+		setPendingInvoiceFile(null);
+	};
+
+	const handleCancelFileAnalysis = () => {
+		setPendingInvoiceFile(null);
+		setLocalError(null);
 	};
 
 	const updateDraft = (
@@ -422,30 +444,61 @@ function DriveInvoiceImportPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className='space-y-4'>
-							<label className='flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-200 bg-white p-6 text-center transition-colors hover:bg-neutral-100'>
-								{importMutation.isPending ? (
-									<Loader2 className='size-8 animate-spin text-primary-50' />
-								) : (
-									<Upload className='size-8 text-primary-50' />
-								)}
-								<div>
-									<p className='text-base font-medium text-neutral-300'>
-										{importMutation.isPending
-											? 'Analyse en cours...'
-											: 'Charger un PDF'}
-									</p>
-									<p className='mt-1 text-sm text-neutral-200'>
-										PDF, 5 Mo max
-									</p>
+							{pendingInvoiceFile ? (
+								<div className='flex min-h-56 flex-col items-center justify-center gap-4 rounded-lg border border-neutral-200 bg-white p-6 text-center'>
+									<FileText className='size-8 text-primary-50' />
+									<div className='max-w-full'>
+										<p className='text-base font-medium text-neutral-300'>
+											Analyser ce fichier ?
+										</p>
+										<p className='mt-1 max-w-full truncate text-sm text-neutral-200'>
+											{pendingInvoiceFile.name}
+										</p>
+									</div>
+									<div className='flex flex-col gap-2 sm:flex-row'>
+										<Button
+											type='button'
+											onClick={handleConfirmFileAnalysis}
+											disabled={importMutation.isPending}>
+											<Check className='mr-2 size-4' />
+											Valider
+										</Button>
+										<Button
+											type='button'
+											variant='outline'
+											onClick={handleCancelFileAnalysis}
+											disabled={importMutation.isPending}>
+											<X className='mr-2 size-4' />
+											Annuler
+										</Button>
+									</div>
 								</div>
-								<input
-									type='file'
-									accept='application/pdf,.pdf'
-									onChange={handleFileChange}
-									disabled={importMutation.isPending}
-									className='sr-only'
-								/>
-							</label>
+							) : (
+								<label className='flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-200 bg-white p-6 text-center transition-colors hover:bg-neutral-100'>
+									{importMutation.isPending ? (
+										<Loader2 className='size-8 animate-spin text-primary-50' />
+									) : (
+										<Upload className='size-8 text-primary-50' />
+									)}
+									<div>
+										<p className='text-base font-medium text-neutral-300'>
+											{importMutation.isPending
+												? 'Analyse en cours...'
+												: 'Charger un PDF'}
+										</p>
+										<p className='mt-1 text-sm text-neutral-200'>
+											PDF, 5 Mo max
+										</p>
+									</div>
+									<input
+										type='file'
+										accept='application/pdf,.pdf'
+										onChange={handleFileChange}
+										disabled={importMutation.isPending}
+										className='sr-only'
+									/>
+								</label>
+							)}
 
 							{localError && (
 								<Alert variant='error'>
