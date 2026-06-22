@@ -9,6 +9,30 @@
 * 🟢 You can import this file directly.
 */
 
+export const ExpiryDateSource = {
+  MANUAL: 'MANUAL',
+  ESTIMATED: 'ESTIMATED'
+} as const
+
+export type ExpiryDateSource = (typeof ExpiryDateSource)[keyof typeof ExpiryDateSource]
+
+
+export const PackageStatus = {
+  UNOPENED: 'UNOPENED',
+  OPENED: 'OPENED'
+} as const
+
+export type PackageStatus = (typeof PackageStatus)[keyof typeof PackageStatus]
+
+
+export const PreparationStatus = {
+  RAW: 'RAW',
+  COOKED: 'COOKED'
+} as const
+
+export type PreparationStatus = (typeof PreparationStatus)[keyof typeof PreparationStatus]
+
+
 export const DocumentType = {
   RECEIPT_IMAGE: 'RECEIPT_IMAGE',
   INVOICE_PDF: 'INVOICE_PDF',
@@ -95,6 +119,32 @@ export const RecipeDifficulty = {
 } as const
 
 export type RecipeDifficulty = (typeof RecipeDifficulty)[keyof typeof RecipeDifficulty]
+
+
+export const RecipeIngredientSource = {
+  INVENTORY: 'INVENTORY',
+  BASIC: 'BASIC',
+  MISSING: 'MISSING'
+} as const
+
+export type RecipeIngredientSource = (typeof RecipeIngredientSource)[keyof typeof RecipeIngredientSource]
+
+
+export const RecipeSource = {
+  AI: 'AI',
+  MANUAL: 'MANUAL'
+} as const
+
+export type RecipeSource = (typeof RecipeSource)[keyof typeof RecipeSource]
+
+
+export const RecipeType = {
+  STARTER: 'STARTER',
+  MAIN: 'MAIN',
+  DESSERT: 'DESSERT'
+} as const
+
+export type RecipeType = (typeof RecipeType)[keyof typeof RecipeType]
 
 
 export const SubscriptionPlan = {

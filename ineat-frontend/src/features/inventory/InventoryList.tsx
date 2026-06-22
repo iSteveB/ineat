@@ -7,6 +7,8 @@ import {
 	Package2,
 	AlertTriangle,
 	CheckCircle,
+	Trash2,
+	X,
 } from 'lucide-react';
 
 // ===== IMPORTS SCHÉMAS ZOD =====
@@ -69,6 +71,10 @@ export function InventoryListPage() {
 	// ===== ÉTAT LOCAL =====
 	const [searchQuery, setSearchQuery] = useState('');
 	const [showFilters, setShowFilters] = useState(false);
+	const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [isSelectionMode, setIsSelectionMode] = useState(false);
 
 	// ===== STORE INVENTORY =====
 	const items = useInventoryItems();
@@ -80,6 +86,7 @@ export function InventoryListPage() {
 		setInventoryFilters,
 		clearInventoryFilters,
 		removeInventoryItem,
+		removeInventoryItems,
 		clearError,
 	} = useInventoryActions();
 
@@ -94,6 +101,19 @@ export function InventoryListPage() {
 		}
 	}, [error]);
 
+	useEffect(() => {
+		setSelectedItemIds((currentSelection) => {
+			const availableItemIds = new Set(items.map((item) => item.id));
+			const nextSelection = new Set(
+				[...currentSelection].filter((id) => availableItemIds.has(id)),
+			);
+
+			return nextSelection.size === currentSelection.size
+				? currentSelection
+				: nextSelection;
+		});
+	}, [items]);
+
 	// ===== LOGIQUE DE FILTRAGE =====
 
 	// Filtrage par recherche textuelle (côté client)
@@ -103,6 +123,12 @@ export function InventoryListPage() {
 			(item.product.brand &&
 				item.product.brand.toLowerCase().includes(searchQuery.toLowerCase())),
 	);
+
+	const selectedCount = selectedItemIds.size;
+	const filteredItemIds = filteredInventory.map((item) => item.id);
+	const areAllFilteredItemsSelected =
+		filteredItemIds.length > 0 &&
+		filteredItemIds.every((id) => selectedItemIds.has(id));
 
 	// Gestion des filtres
 	const handleFilterChange = (newFilters: Partial<InventoryFilters>) => {
@@ -124,6 +150,67 @@ export function InventoryListPage() {
 				await removeInventoryItem(itemId);
 			} catch (error) {
 				console.error('Erreur lors de la suppression:', error);
+			}
+		}
+	};
+
+	const toggleItemSelection = (itemId: string) => {
+		setSelectedItemIds((currentSelection) => {
+			const nextSelection = new Set(currentSelection);
+
+			if (nextSelection.has(itemId)) {
+				nextSelection.delete(itemId);
+			} else {
+				nextSelection.add(itemId);
+			}
+
+			return nextSelection;
+		});
+	};
+
+	const toggleSelectAllFilteredItems = () => {
+		setSelectedItemIds((currentSelection) => {
+			const nextSelection = new Set(currentSelection);
+
+			if (areAllFilteredItemsSelected) {
+				filteredItemIds.forEach((id) => nextSelection.delete(id));
+			} else {
+				filteredItemIds.forEach((id) => nextSelection.add(id));
+			}
+
+			return nextSelection;
+		});
+	};
+
+	const clearSelection = () => {
+		setSelectedItemIds(new Set());
+	};
+
+	const openSelectionMode = () => {
+		setIsSelectionMode(true);
+	};
+
+	const closeSelectionMode = () => {
+		clearSelection();
+		setIsSelectionMode(false);
+	};
+
+	const handleRemoveSelectedItems = async () => {
+		if (selectedCount === 0) {
+			return;
+		}
+
+		const productLabel = selectedCount > 1 ? 'produits' : 'produit';
+		if (
+			window.confirm(
+				`Êtes-vous sûr de vouloir supprimer ${selectedCount} ${productLabel} de votre inventaire ?`,
+			)
+		) {
+			try {
+				await removeInventoryItems([...selectedItemIds]);
+				closeSelectionMode();
+			} catch (error) {
+				console.error('Erreur lors de la suppression groupée:', error);
 			}
 		}
 	};
@@ -232,20 +319,45 @@ export function InventoryListPage() {
 					</div>
 
 					{/* ===== BOUTON FILTRES ===== */}
-					<button
-						onClick={() => setShowFilters(!showFilters)}
-						className='flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors'
-					>
-						<Filter className='size-4' />
-						Filtres
-						{(currentFilters.categoryId ||
-							currentFilters.storageLocation ||
-							currentFilters.expiringWithinDays) && (
-							<span className='bg-accent text-neutral-50 text-xs px-2 py-1 rounded-full'>
-								Actifs
-							</span>
-						)}
-					</button>
+					<div className='flex items-center justify-between gap-3'>
+						<button
+							onClick={() => setShowFilters(!showFilters)}
+							className='flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors'
+						>
+							<Filter className='size-4' />
+							Filtres
+							{(currentFilters.categoryId ||
+								currentFilters.storageLocation ||
+								currentFilters.expiringWithinDays) && (
+								<span className='bg-accent text-neutral-50 text-xs px-2 py-1 rounded-full'>
+									Actifs
+								</span>
+							)}
+						</button>
+
+						{isSelectionMode && filteredInventory.length > 0 ? (
+							<label className='flex items-center gap-2 text-sm text-neutral-600'>
+								<input
+									type='checkbox'
+									checked={areAllFilteredItemsSelected}
+									onChange={toggleSelectAllFilteredItems}
+									disabled={isLoading}
+									className='size-4 rounded border-neutral-300 text-success-50 focus:ring-success-50'
+								/>
+								Tout sélectionner
+							</label>
+						) : filteredInventory.length > 0 ? (
+							<button
+								type='button'
+								onClick={openSelectionMode}
+								disabled={isLoading}
+								className='inline-flex items-center gap-2 rounded-lg border border-error-50 px-3 py-2 text-sm font-medium text-error-50 transition-colors hover:bg-error-50 hover:text-neutral-50 disabled:opacity-50'
+							>
+								<Trash2 className='size-4' />
+								Supprimer
+							</button>
+						) : null}
+					</div>
 				</div>
 
 				{/* ===== PANNEAU DE FILTRES ===== */}
@@ -337,6 +449,38 @@ export function InventoryListPage() {
 
 			{/* ===== LISTE DES PRODUITS ===== */}
 			<div className='p-4'>
+				{isSelectionMode && (
+					<div className='mb-4 flex flex-col gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
+						<p className='text-sm font-medium text-neutral-800'>
+							{selectedCount > 0
+								? `${selectedCount} produit${
+										selectedCount > 1 ? 's' : ''
+								  } sélectionné${selectedCount > 1 ? 's' : ''}`
+								: 'Sélectionnez les produits à supprimer'}
+						</p>
+						<div className='flex items-center gap-2'>
+							<button
+								type='button'
+								onClick={closeSelectionMode}
+								disabled={isLoading}
+								className='inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50'
+							>
+								<X className='size-4' />
+								Annuler
+							</button>
+							<button
+								type='button'
+								onClick={handleRemoveSelectedItems}
+								disabled={isLoading || selectedCount === 0}
+								className='inline-flex items-center gap-2 rounded-lg bg-error-50 px-3 py-2 text-sm font-medium text-neutral-50 transition-colors hover:bg-error-100 disabled:opacity-50'
+							>
+								<Trash2 className='size-4' />
+								{isLoading ? 'Suppression...' : 'Supprimer'}
+							</button>
+						</div>
+					</div>
+				)}
+
 				{isLoading ? (
 					<div className='flex justify-center items-center py-12'>
 						<div className='animate-spin rounded-full h-8 w-8 border-b-2 border-success-50'></div>
@@ -372,6 +516,9 @@ export function InventoryListPage() {
 								item={item}
 								onRemove={() => handleRemoveItem(item.id)}
 								isRemoving={isLoading}
+								isSelected={selectedItemIds.has(item.id)}
+								isSelectionMode={isSelectionMode}
+								onToggleSelection={() => toggleItemSelection(item.id)}
 							/>
 						))}
 					</div>
@@ -386,12 +533,18 @@ interface InventoryItemCardProps {
 	item: InventoryItemWithStatus;
 	onRemove: () => void;
 	isRemoving: boolean;
+	isSelected: boolean;
+	isSelectionMode: boolean;
+	onToggleSelection: () => void;
 }
 
 function InventoryItemCard({
 	item,
 	onRemove,
 	isRemoving,
+	isSelected,
+	isSelectionMode,
+	onToggleSelection,
 }: InventoryItemCardProps) {
 	const expiryStatus = item.expiryStatus;
 
@@ -405,11 +558,25 @@ function InventoryItemCard({
 
 	return (
 		<div
-			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm`}
+			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm ${
+				isSelected ? 'ring-2 ring-success-50' : ''
+			}`}
 		>
 			<div className='flex items-start justify-between'>
 				<div className='flex-1'>
 					<div className='flex items-start gap-3'>
+						{isSelectionMode && (
+							<input
+								type='checkbox'
+								checked={isSelected}
+								onClick={(event) => event.stopPropagation()}
+								onChange={onToggleSelection}
+								disabled={isRemoving}
+								aria-label={`Sélectionner ${item.product.name}`}
+								className='mt-4 size-4 rounded border-neutral-300 text-success-50 focus:ring-success-50 disabled:opacity-50'
+							/>
+						)}
+
 						{/* ===== IMAGE DU PRODUIT ===== */}
 						<div className='size-12 bg-neutral-100 rounded-lg flex items-center justify-center overflow-hidden'>
 							{item.product.imageUrl ? (
@@ -440,6 +607,34 @@ function InventoryItemCard({
 									<p>{getStorageLocationLabel(item.storageLocation)}</p>
 								)}
 							</div>
+
+							{item.lots && item.lots.length > 1 && (
+								<div className='mt-3 rounded-lg border border-neutral-200 bg-neutral-100/60 p-3'>
+									<p className='mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500'>
+										{item.lots.length} lots
+									</p>
+									<div className='space-y-1.5'>
+										{item.lots.map((lot) => (
+											<div
+												key={lot.id}
+												className='flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-700'
+											>
+												<span>
+													{formatQuantity(
+														lot.quantity,
+														item.product.unitType,
+													)}
+												</span>
+												<span className='text-neutral-500'>
+													{lot.expiryDate
+														? formatRelativeDate(lot.expiryDate)
+														: 'Sans date de péremption'}
+												</span>
+											</div>
+										))}
+									</div>
+								</div>
+							)}
 
 							{/* ===== SCORES NUTRITIONNELS ===== */}
 							<div className='flex gap-2 mt-2'>

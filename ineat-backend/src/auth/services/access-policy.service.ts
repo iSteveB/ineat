@@ -96,7 +96,7 @@ export class AccessPolicyService {
       return 0;
     }
 
-    return isTrial ? 10 : 100;
+    return 5;
   }
 
   private getDriveImportLimit(

@@ -278,6 +278,7 @@ model ReceiptItem {
 
 model Recipe {
   id               String             @id
+  userId           String?
   name             String
   description      String?
   instructions     String
@@ -286,23 +287,37 @@ model Recipe {
   servings         Int
   difficulty       RecipeDifficulty
   imageUrl         String?
+  type             RecipeType         @default(MAIN)
+  source           RecipeSource       @default(MANUAL)
+  basicIngredients Json               @default("[]")
+  missingIngredients Json             @default("[]")
+  steps            Json               @default("[]")
+  doneAt           DateTime?
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
   RecipeIngredient RecipeIngredient[]
+  User             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([userId, type])
 }
 
 model RecipeIngredient {
-  id        String  @id
+  id        String   @id
   recipeId  String
-  productId String
-  quantity  Float
+  productId String?
+  name      String
+  quantity  Float?
   unit      String
   notes     String?
-  Product   Product @relation(fields: [productId], references: [id])
-  Recipe    Recipe  @relation(fields: [recipeId], references: [id])
+  source    RecipeIngredientSource @default(INVENTORY)
+  Product   Product? @relation(fields: [productId], references: [id])
+  Recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([recipeId])
+  @@index([source])
 }
 
 model User {
@@ -330,6 +345,7 @@ model User {
   InventoryItem          InventoryItem[]
   Invoice                Invoice[]
   Notification           Notification[]
+  Recipe                 Recipe[]
   Receipt                Receipt[]
   UsageQuota             UsageQuota[]
   sessions               Session[]
@@ -463,6 +479,23 @@ enum RecipeDifficulty {
   EASY
   MEDIUM
   HARD
+}
+
+enum RecipeIngredientSource {
+  INVENTORY
+  BASIC
+  MISSING
+}
+
+enum RecipeSource {
+  AI
+  MANUAL
+}
+
+enum RecipeType {
+  STARTER
+  MAIN
+  DESSERT
 }
 
 enum SubscriptionPlan {

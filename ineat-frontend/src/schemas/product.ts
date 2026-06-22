@@ -18,6 +18,9 @@ import {
 	SearchFilterSchema,
 } from './common';
 
+const nullableOptional = <T extends z.ZodTypeAny>(schema: T) =>
+	schema.nullable().optional().transform((value) => value ?? undefined);
+
 // ===== SCHÉMAS DE CATÉGORIES =====
 
 export const CategorySchema = z.object({
@@ -90,23 +93,24 @@ export const ProductSchema = z
 	.object({
 		id: UuidSchema,
 		name: ShortTextSchema,
-		brand: ShortTextSchema.optional(),
-		barcode: z
-			.string()
-			.regex(
-				/^[0-9]{8,13}$/,
-				'Le code-barres doit contenir entre 8 et 13 chiffres'
-			)
-			.optional(),
+		brand: nullableOptional(ShortTextSchema),
+		barcode: nullableOptional(
+			z
+				.string()
+				.regex(
+					/^[0-9]{8,13}$/,
+					'Le code-barres doit contenir entre 8 et 13 chiffres'
+				)
+		),
 		category: CategorySchema,
 		unitType: UnitTypeSchema,
-		nutriscore: NutriScoreSchema.optional(),
-		ecoscore: EcoscoreSchema.optional(),
-		novascore: NovascoreSchema.optional(),
-		imageUrl: z.string().url("URL d'image invalide").optional(),
-		externalId: z.string().optional(), // ID OpenFoodFacts
-		ingredients: z.string().optional(),
-		nutrients: NutritionalInfoSchema.optional(),
+		nutriscore: nullableOptional(NutriScoreSchema),
+		ecoscore: nullableOptional(EcoscoreSchema),
+		novascore: nullableOptional(NovascoreSchema),
+		imageUrl: nullableOptional(z.string().url("URL d'image invalide")),
+		externalId: nullableOptional(z.string()), // ID OpenFoodFacts
+		ingredients: nullableOptional(z.string()),
+		nutrients: nullableOptional(NutritionalInfoSchema),
 	})
 	.merge(TimestampsSchema);
 

@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 
 describe('InventoryService', () => {
@@ -19,6 +15,7 @@ describe('InventoryService', () => {
     inventoryItem: {
       findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
   };
 
@@ -106,6 +103,14 @@ describe('InventoryService', () => {
         Product: product,
         createdAt: inventoryItem.createdAt,
         updatedAt: inventoryItem.updatedAt,
+      }),
+    );
+    tx.inventoryItem.update.mockImplementation(({ data }) =>
+      Promise.resolve({
+        ...inventoryItem,
+        ...data,
+        Product: product,
+        updatedAt: data.updatedAt,
       }),
     );
     expenseService.createExpenseFromProduct.mockResolvedValue({
@@ -344,6 +349,110 @@ describe('InventoryService', () => {
     );
   });
 
+  it('groups inventory lots by product and keeps lot-level expiry dates', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        ...inventoryItem,
+        id: 'lot-1',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-10'),
+        purchaseDate: new Date('2026-06-01'),
+      },
+      {
+        ...inventoryItem,
+        id: 'lot-2',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-20'),
+        purchaseDate: new Date('2026-06-02'),
+      },
+    ]);
+
+    const result = await service.getUserInventory('user-1');
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        id: 'lot-1',
+        productId: 'product-1',
+        quantity: 4,
+        lots: [
+          expect.objectContaining({
+            id: 'lot-1',
+            quantity: 2,
+            expiryDate: new Date('2026-07-10'),
+          }),
+          expect.objectContaining({
+            id: 'lot-2',
+            quantity: 2,
+            expiryDate: new Date('2026-07-20'),
+          }),
+        ],
+      }),
+    );
+  });
+
+  it('paginates grouped products rather than raw lots', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        ...inventoryItem,
+        id: 'lot-1',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        Product: product,
+      },
+      {
+        ...inventoryItem,
+        id: 'lot-2',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        Product: product,
+      },
+      {
+        ...inventoryItem,
+        id: 'lot-3',
+        productId: 'product-2',
+        userId: 'user-1',
+        quantity: 1,
+        Product: {
+          ...product,
+          id: 'product-2',
+          name: 'Lait',
+        },
+      },
+    ]);
+
+    const result = await service.getUserInventory(
+      'user-1',
+      undefined,
+      { page: 1, limit: 1 },
+    );
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        items: [
+          expect.objectContaining({
+            productId: 'product-1',
+            quantity: 4,
+          }),
+        ],
+        pagination: expect.objectContaining({
+          currentPage: 1,
+          pageSize: 1,
+          totalItems: 2,
+          totalPages: 2,
+          hasNextPage: true,
+          hasPreviousPage: false,
+        }),
+      }),
+    );
+  });
+
   it('updates an inventory item owned by the user', async () => {
     prisma.inventoryItem.findFirst.mockResolvedValue({ id: 'item-1' });
     prisma.inventoryItem.update.mockResolvedValue({
@@ -472,17 +581,34 @@ describe('InventoryService', () => {
     });
   });
 
-  it('rejects duplicate manual inventory items', async () => {
-    tx.inventoryItem.findFirst.mockResolvedValue({ id: 'duplicate' });
+  it('increments an existing lot for duplicate manual inventory items', async () => {
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      ...inventoryItem,
+      id: 'duplicate',
+      quantity: 2,
+      purchasePrice: 4,
+    });
 
-    await expect(
-      service.addManualProduct('user-1', {
-        name: 'Pommes',
-        category: 'fruits',
-        quantity: 1,
-        unitType: 'KG',
-        purchaseDate: '2026-05-01',
-      } as any),
-    ).rejects.toBeInstanceOf(ConflictException);
+    const result = await service.addManualProduct('user-1', {
+      name: 'Pommes',
+      category: 'fruits',
+      quantity: 1,
+      unitType: 'KG',
+      purchaseDate: '2026-05-01',
+      expiryDate: '2026-05-10',
+      purchasePrice: 2,
+    } as any);
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'duplicate' },
+        data: expect.objectContaining({
+          quantity: 3,
+          purchasePrice: 6,
+        }),
+      }),
+    );
+    expect(result.quantity).toBe(3);
   });
 });

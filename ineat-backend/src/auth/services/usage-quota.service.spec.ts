@@ -48,7 +48,7 @@ describe('UsageQuotaService', () => {
     expect(prisma.usageQuota.findUnique).not.toHaveBeenCalled();
   });
 
-  it('devrait utiliser la période Trial et le quota IA Trial', async () => {
+  it('devrait utiliser la période quotidienne et le quota IA', async () => {
     prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 4 });
 
     const state = await service.getUsageState(
@@ -65,11 +65,11 @@ describe('UsageQuotaService', () => {
     );
 
     expect(state).toMatchObject({
-      limit: 10,
+      limit: 5,
       usedCount: 4,
-      remaining: 6,
-      periodStart: new Date('2026-05-14T12:00:00.000Z'),
-      periodEnd: new Date('2026-05-17T12:00:00.000Z'),
+      remaining: 1,
+      periodStart: new Date('2026-05-15T00:00:00.000Z'),
+      periodEnd: new Date('2026-05-16T00:00:00.000Z'),
     });
   });
 
@@ -91,8 +91,8 @@ describe('UsageQuotaService', () => {
     expect(state.remaining).toBe(3);
   });
 
-  it('devrait utiliser la période mensuelle et le quota Premium', async () => {
-    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 25 });
+  it('devrait utiliser la période quotidienne et le quota IA Premium', async () => {
+    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 2 });
 
     const state = await service.getUsageState(
       {
@@ -106,16 +106,16 @@ describe('UsageQuotaService', () => {
     );
 
     expect(state).toMatchObject({
-      limit: 100,
-      usedCount: 25,
-      remaining: 75,
-      periodStart: new Date('2026-05-01T00:00:00.000Z'),
-      periodEnd: new Date('2026-06-01T00:00:00.000Z'),
+      limit: 5,
+      usedCount: 2,
+      remaining: 3,
+      periodStart: new Date('2026-05-15T00:00:00.000Z'),
+      periodEnd: new Date('2026-05-16T00:00:00.000Z'),
     });
   });
 
   it('devrait refuser une consommation quand le quota est atteint', async () => {
-    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 100 });
+    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 5 });
 
     await expect(
       service.assertCanConsume(

@@ -23,13 +23,16 @@ import { getBudgetNotificationType } from './budget';
 export const PackageStatusSchema = z.enum(['UNOPENED', 'OPENED']);
 export const PreparationStatusSchema = z.enum(['RAW', 'COOKED']);
 
+const nullableOptional = <T extends z.ZodTypeAny>(schema: T) =>
+	schema.nullable().optional().transform((value) => value ?? undefined);
+
 export const InventoryItemSchema = z
 	.object({
 		id: UuidSchema,
 		userId: UuidSchema,
 		product: ProductSchema,
 		quantity: QuantitySchema,
-		expiryDate: z.string().datetime().optional(),
+		expiryDate: nullableOptional(z.string().datetime()),
 		expiryDateSource: z.enum(['MANUAL', 'ESTIMATED']).optional(),
 		expiryDateReason: z.string().optional(),
 		expiryDateRuleId: z.string().optional(),
@@ -38,21 +41,40 @@ export const InventoryItemSchema = z
 			.optional(),
 		expiryDateDurationDays: z.number().optional(),
 		purchaseDate: z.string().datetime(),
-		purchasePrice: PriceSchema.optional(),
-		storageLocation: z
-			.string()
-			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
-			.optional(),
-		packageStatus: PackageStatusSchema.optional(),
-		preparationStatus: PreparationStatusSchema.optional(),
-		notes: MediumTextSchema.optional(),
+		purchasePrice: nullableOptional(PriceSchema),
+		storageLocation: nullableOptional(
+			z
+				.string()
+				.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères'),
+		),
+		packageStatus: nullableOptional(PackageStatusSchema),
+		preparationStatus: nullableOptional(PreparationStatusSchema),
+		notes: nullableOptional(MediumTextSchema),
 	})
 	.merge(TimestampsSchema);
 
-export type InventoryItem = z.infer<typeof InventoryItemSchema>;
+export const InventoryLotSchema = InventoryItemSchema.omit({
+	userId: true,
+	product: true,
+}).extend({
+	expiryDate: nullableOptional(z.string().datetime()),
+	purchasePrice: nullableOptional(PriceSchema),
+	storageLocation: nullableOptional(z.string()),
+	packageStatus: nullableOptional(PackageStatusSchema),
+	preparationStatus: nullableOptional(PreparationStatusSchema),
+	notes: nullableOptional(MediumTextSchema),
+});
+
+export type InventoryLot = z.infer<typeof InventoryLotSchema>;
+
+export const GroupedInventoryItemSchema = InventoryItemSchema.extend({
+	lots: z.array(InventoryLotSchema).optional(),
+});
+
+export type InventoryItem = z.infer<typeof GroupedInventoryItemSchema>;
 
 // Version avec statut d'expiration calculé
-export const InventoryItemWithStatusSchema = InventoryItemSchema.extend({
+export const InventoryItemWithStatusSchema = GroupedInventoryItemSchema.extend({
 	expiryStatus: ExpiryStatusSchema,
 	daysUntilExpiry: z.number().optional(),
 });

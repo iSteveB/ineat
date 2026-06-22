@@ -1767,6 +1767,9 @@ export const InventoryItemScalarFieldEnum = {
   productId: 'productId',
   quantity: 'quantity',
   expiryDate: 'expiryDate',
+  expiryDateSource: 'expiryDateSource',
+  packageStatus: 'packageStatus',
+  preparationStatus: 'preparationStatus',
   purchaseDate: 'purchaseDate',
   purchasePrice: 'purchasePrice',
   storageLocation: 'storageLocation',
@@ -1919,6 +1922,7 @@ export type ReceiptItemScalarFieldEnum = (typeof ReceiptItemScalarFieldEnum)[key
 
 export const RecipeScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   name: 'name',
   description: 'description',
   instructions: 'instructions',
@@ -1927,6 +1931,12 @@ export const RecipeScalarFieldEnum = {
   servings: 'servings',
   difficulty: 'difficulty',
   imageUrl: 'imageUrl',
+  type: 'type',
+  source: 'source',
+  basicIngredients: 'basicIngredients',
+  missingIngredients: 'missingIngredients',
+  steps: 'steps',
+  doneAt: 'doneAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1938,9 +1948,11 @@ export const RecipeIngredientScalarFieldEnum = {
   id: 'id',
   recipeId: 'recipeId',
   productId: 'productId',
+  name: 'name',
   quantity: 'quantity',
   unit: 'unit',
-  notes: 'notes'
+  notes: 'notes',
+  source: 'source'
 } as const
 
 export type RecipeIngredientScalarFieldEnum = (typeof RecipeIngredientScalarFieldEnum)[keyof typeof RecipeIngredientScalarFieldEnum]
@@ -2135,6 +2147,48 @@ export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'ExpiryDateSource'
+ */
+export type EnumExpiryDateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExpiryDateSource'>
+    
+
+
+/**
+ * Reference to a field of type 'ExpiryDateSource[]'
+ */
+export type ListEnumExpiryDateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExpiryDateSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PackageStatus'
+ */
+export type EnumPackageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PackageStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PackageStatus[]'
+ */
+export type ListEnumPackageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PackageStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PreparationStatus'
+ */
+export type EnumPreparationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PreparationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PreparationStatus[]'
+ */
+export type ListEnumPreparationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PreparationStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'NotificationType'
  */
 export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType'>
@@ -2285,6 +2339,48 @@ export type EnumRecipeDifficultyFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'RecipeDifficulty[]'
  */
 export type ListEnumRecipeDifficultyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeDifficulty[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipeType'
+ */
+export type EnumRecipeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeType'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipeType[]'
+ */
+export type ListEnumRecipeTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipeSource'
+ */
+export type EnumRecipeSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeSource'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipeSource[]'
+ */
+export type ListEnumRecipeSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipeIngredientSource'
+ */
+export type EnumRecipeIngredientSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeIngredientSource'>
+    
+
+
+/**
+ * Reference to a field of type 'RecipeIngredientSource[]'
+ */
+export type ListEnumRecipeIngredientSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RecipeIngredientSource[]'>
     
 
 

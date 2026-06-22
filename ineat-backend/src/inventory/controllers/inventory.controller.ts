@@ -93,6 +93,20 @@ export class InventoryController {
       notes: item.notes,
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
+      lots: item.lots?.map((lot: any) => ({
+        id: lot.id,
+        quantity: lot.quantity,
+        expiryDate: lot.expiryDate?.toISOString() ?? null,
+        expiryDateSource: lot.expiryDateSource,
+        purchaseDate: lot.purchaseDate.toISOString(),
+        purchasePrice: lot.purchasePrice,
+        storageLocation: lot.storageLocation,
+        packageStatus: lot.packageStatus,
+        preparationStatus: lot.preparationStatus,
+        notes: lot.notes,
+        createdAt: lot.createdAt.toISOString(),
+        updatedAt: lot.updatedAt.toISOString(),
+      })),
       product: this.formatProduct(item.Product),
     };
   }
