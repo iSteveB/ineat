@@ -611,4 +611,83 @@ describe('InventoryService', () => {
     );
     expect(result.quantity).toBe(3);
   });
+
+  it('creates a new lot for an existing product when expiry date differs', async () => {
+    tx.product.findFirst.mockResolvedValue(product);
+    tx.inventoryItem.findFirst.mockResolvedValue(null);
+
+    const result = await service.addManualProduct('user-1', {
+      name: 'Pommes',
+      category: 'fruits',
+      quantity: 2,
+      unitType: 'KG',
+      purchaseDate: '2026-05-01',
+      expiryDate: '2026-05-20',
+    } as any);
+
+    expect(tx.product.create).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.update).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          userId: 'user-1',
+          productId: 'product-1',
+          quantity: 2,
+          expiryDate: new Date('2026-05-20'),
+        }),
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        id: expect.any(String),
+        name: 'Pommes',
+        quantity: 2,
+        expiryDate: '2026-05-20T00:00:00.000Z',
+      }),
+    );
+  });
+
+  it('increments an estimated lot when no manual expiry date is provided', async () => {
+    const estimatedLot = {
+      ...inventoryItem,
+      id: 'estimated-lot',
+      quantity: 2,
+      expiryDate: new Date('2026-05-08'),
+      expiryDateSource: 'ESTIMATED',
+    };
+    tx.inventoryItem.findFirst.mockResolvedValue(estimatedLot);
+    tx.inventoryItem.update.mockImplementationOnce(({ data }) =>
+      Promise.resolve({
+        ...estimatedLot,
+        ...data,
+        Product: product,
+      }),
+    );
+
+    const result = await service.addManualProduct('user-1', {
+      name: 'Pommes',
+      category: 'fruits',
+      quantity: 2,
+      unitType: 'KG',
+      purchaseDate: '2026-05-01',
+    } as any);
+
+    expect(tx.inventoryItem.create).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'estimated-lot' },
+        data: expect.objectContaining({
+          quantity: 4,
+          purchaseDate: new Date('2026-05-01'),
+        }),
+      }),
+    );
+    expect(result).toEqual(
+      expect.objectContaining({
+        quantity: 4,
+        expiryDateSource: 'ESTIMATED',
+        expiryDate: '2026-05-08T00:00:00.000Z',
+      }),
+    );
+  });
 });
