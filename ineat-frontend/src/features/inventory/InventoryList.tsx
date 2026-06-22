@@ -538,7 +538,7 @@ interface InventoryItemCardProps {
 	onToggleSelection: () => void;
 }
 
-function InventoryItemCard({
+export function InventoryItemCard({
 	item,
 	onRemove,
 	isRemoving,
