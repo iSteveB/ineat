@@ -14,8 +14,10 @@ describe('InventoryService', () => {
     },
     inventoryItem: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     },
   };
 
@@ -96,6 +98,7 @@ describe('InventoryService', () => {
     tx.product.findFirst.mockResolvedValue(null);
     tx.product.create.mockResolvedValue(product);
     tx.inventoryItem.findFirst.mockResolvedValue(null);
+    tx.inventoryItem.findMany.mockResolvedValue([]);
     tx.inventoryItem.create.mockImplementation(({ data }) =>
       Promise.resolve({
         ...inventoryItem,
@@ -113,6 +116,7 @@ describe('InventoryService', () => {
         updatedAt: data.updatedAt,
       }),
     );
+    tx.inventoryItem.delete.mockResolvedValue({ id: 'deleted-lot' });
     expenseService.createExpenseFromProduct.mockResolvedValue({
       expense: null,
       budgetId: null,
@@ -579,6 +583,168 @@ describe('InventoryService', () => {
         userId: 'user-1',
       },
     });
+  });
+
+  it('consumes from the earliest expiring lot first', async () => {
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'lot-late',
+      productId: 'product-1',
+      userId: 'user-1',
+    });
+    tx.inventoryItem.findMany.mockResolvedValue([
+      {
+        id: 'lot-late',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-20'),
+        createdAt: new Date('2026-06-02'),
+      },
+      {
+        id: 'lot-early',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-10'),
+        createdAt: new Date('2026-06-01'),
+      },
+    ]);
+
+    const result = await service.consumeInventoryItem('user-1', 'lot-late', 1);
+
+    expect(tx.inventoryItem.update).toHaveBeenCalledWith({
+      where: { id: 'lot-early' },
+      data: expect.objectContaining({
+        quantity: 1,
+      }),
+    });
+    expect(tx.inventoryItem.delete).not.toHaveBeenCalled();
+    expect(result).toEqual(
+      expect.objectContaining({
+        productId: 'product-1',
+        quantityConsumed: 1,
+        remainingQuantity: 3,
+        consumedLots: [
+          {
+            id: 'lot-early',
+            quantityConsumed: 1,
+            remainingQuantity: 1,
+            deleted: false,
+          },
+        ],
+      }),
+    );
+  });
+
+  it('consumes across several lots and deletes empty lots', async () => {
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'lot-early',
+      productId: 'product-1',
+      userId: 'user-1',
+    });
+    tx.inventoryItem.findMany.mockResolvedValue([
+      {
+        id: 'lot-early',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-10'),
+        createdAt: new Date('2026-06-01'),
+      },
+      {
+        id: 'lot-late',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 3,
+        expiryDate: new Date('2026-07-20'),
+        createdAt: new Date('2026-06-02'),
+      },
+    ]);
+
+    const result = await service.consumeInventoryItem('user-1', 'lot-early', 4);
+
+    expect(tx.inventoryItem.delete).toHaveBeenCalledWith({
+      where: { id: 'lot-early' },
+    });
+    expect(tx.inventoryItem.update).toHaveBeenCalledWith({
+      where: { id: 'lot-late' },
+      data: expect.objectContaining({
+        quantity: 1,
+      }),
+    });
+    expect(result.consumedLots).toEqual([
+      {
+        id: 'lot-early',
+        quantityConsumed: 2,
+        remainingQuantity: 0,
+        deleted: true,
+      },
+      {
+        id: 'lot-late',
+        quantityConsumed: 2,
+        remainingQuantity: 1,
+        deleted: false,
+      },
+    ]);
+  });
+
+  it('consumes lots without expiry date last', async () => {
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'lot-without-expiry',
+      productId: 'product-1',
+      userId: 'user-1',
+    });
+    tx.inventoryItem.findMany.mockResolvedValue([
+      {
+        id: 'lot-without-expiry',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: null,
+        createdAt: new Date('2026-06-01'),
+      },
+      {
+        id: 'lot-with-expiry',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-10'),
+        createdAt: new Date('2026-06-02'),
+      },
+    ]);
+
+    await service.consumeInventoryItem('user-1', 'lot-without-expiry', 1);
+
+    expect(tx.inventoryItem.update).toHaveBeenCalledWith({
+      where: { id: 'lot-with-expiry' },
+      data: expect.objectContaining({
+        quantity: 1,
+      }),
+    });
+  });
+
+  it('rejects consumption when requested quantity exceeds available stock', async () => {
+    tx.inventoryItem.findFirst.mockResolvedValue({
+      id: 'lot-1',
+      productId: 'product-1',
+      userId: 'user-1',
+    });
+    tx.inventoryItem.findMany.mockResolvedValue([
+      {
+        id: 'lot-1',
+        productId: 'product-1',
+        userId: 'user-1',
+        quantity: 2,
+        expiryDate: new Date('2026-07-10'),
+        createdAt: new Date('2026-06-01'),
+      },
+    ]);
+
+    await expect(
+      service.consumeInventoryItem('user-1', 'lot-1', 3),
+    ).rejects.toThrow('Quantité insuffisante');
+    expect(tx.inventoryItem.update).not.toHaveBeenCalled();
+    expect(tx.inventoryItem.delete).not.toHaveBeenCalled();
   });
 
   it('increments an existing lot for duplicate manual inventory items', async () => {

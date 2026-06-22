@@ -7,6 +7,7 @@ import {
 	Category,
 	Product,
 	UpdateInventoryItemData,
+	ConsumeInventoryItemData,
 	AddProductResponse,
 	hasBudgetImpact,
 } from '@/schemas';
@@ -418,6 +419,27 @@ export const inventoryService = {
 			`/inventory/${inventoryItemId}`,
 			updates,
 		);
+	},
+
+	/**
+	 * Consomme une quantité d'un produit en laissant le backend appliquer FEFO.
+	 */
+	async consumeInventoryItem(
+		inventoryItemId: string,
+		data: ConsumeInventoryItemData,
+	): Promise<{
+		success: boolean;
+		productId: string;
+		quantityConsumed: number;
+		remainingQuantity: number;
+		consumedLots: Array<{
+			id: string;
+			quantityConsumed: number;
+			remainingQuantity: number;
+			deleted: boolean;
+		}>;
+	}> {
+		return await apiClient.post(`/inventory/${inventoryItemId}/consume`, data);
 	},
 
 	/**

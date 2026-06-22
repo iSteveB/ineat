@@ -526,6 +526,107 @@ export class InventoryService {
     return { success: true, message: "Produit supprimé de l'inventaire" };
   }
 
+  async consumeInventoryItem(
+    userId: string,
+    inventoryItemId: string,
+    quantityConsumed: number,
+  ) {
+    this.validatePositiveQuantity(quantityConsumed);
+
+    return await this.prisma.$transaction(async (tx: any) => {
+      const selectedItem = await tx.inventoryItem.findFirst({
+        where: {
+          id: inventoryItemId,
+          userId,
+        },
+      });
+
+      if (!selectedItem) {
+        throw new NotFoundException("Élément d'inventaire non trouvé");
+      }
+
+      const lots = await tx.inventoryItem.findMany({
+        where: {
+          userId,
+          productId: selectedItem.productId,
+        },
+        orderBy: [{ createdAt: 'asc' }],
+      });
+      const sortedLots = [...lots].sort((first, second) => {
+        const expiryComparison = this.compareNullableDates(
+          first.expiryDate,
+          second.expiryDate,
+        );
+
+        if (expiryComparison !== 0) {
+          return expiryComparison;
+        }
+
+        return (
+          new Date(first.createdAt).getTime() -
+          new Date(second.createdAt).getTime()
+        );
+      });
+      const availableQuantity = sortedLots.reduce(
+        (total, lot) => total + lot.quantity,
+        0,
+      );
+
+      if (quantityConsumed > availableQuantity) {
+        throw new BadRequestException(
+          `Quantité insuffisante dans l'inventaire (${availableQuantity} disponible)`,
+        );
+      }
+
+      let remainingToConsume = quantityConsumed;
+      const consumedLots: Array<{
+        id: string;
+        quantityConsumed: number;
+        remainingQuantity: number;
+        deleted: boolean;
+      }> = [];
+
+      for (const lot of sortedLots) {
+        if (remainingToConsume <= 0) {
+          break;
+        }
+
+        const consumedFromLot = Math.min(lot.quantity, remainingToConsume);
+        const remainingQuantity = lot.quantity - consumedFromLot;
+
+        if (remainingQuantity <= 0) {
+          await tx.inventoryItem.delete({
+            where: { id: lot.id },
+          });
+        } else {
+          await tx.inventoryItem.update({
+            where: { id: lot.id },
+            data: {
+              quantity: remainingQuantity,
+              updatedAt: new Date(),
+            },
+          });
+        }
+
+        consumedLots.push({
+          id: lot.id,
+          quantityConsumed: consumedFromLot,
+          remainingQuantity,
+          deleted: remainingQuantity <= 0,
+        });
+        remainingToConsume -= consumedFromLot;
+      }
+
+      return {
+        success: true,
+        productId: selectedItem.productId,
+        quantityConsumed,
+        remainingQuantity: availableQuantity - quantityConsumed,
+        consumedLots,
+      };
+    });
+  }
+
   /**
    * Supprime plusieurs éléments d'inventaire appartenant à l'utilisateur
    * @param userId ID de l'utilisateur

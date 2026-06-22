@@ -34,6 +34,7 @@ import {
   PreparationStatus,
 } from '../dto/add-manual-product.dto';
 import { RemoveInventoryItemsDto } from '../dto/remove-inventory-items.dto';
+import { ConsumeInventoryItemDto } from '../dto/consume-inventory-item.dto';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { Request } from 'express';
 
@@ -910,6 +911,52 @@ export class InventoryController {
     return await this.inventoryService.removeInventoryItems(
       req.user.id,
       removeItemsDto.ids,
+    );
+  }
+
+  /**
+   * Consomme une quantité d'un produit en appliquant la règle FEFO
+   */
+  @Post(':id/consume')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Consommer une quantité de produit',
+    description:
+      "Décrémente les lots d'un produit en priorité par date de péremption la plus proche (FEFO). Les lots sans date sont consommés en dernier.",
+  })
+  @ApiParam({
+    name: 'id',
+    description:
+      "ID d'un lot du produit à consommer. Tous les lots du même produit seront pris en compte.",
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiBody({
+    type: ConsumeInventoryItemDto,
+    description: 'Quantité à consommer',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Quantité consommée avec succès',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Quantité invalide ou insuffisante',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Élément d'inventaire non trouvé",
+  })
+  async consumeInventoryItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) inventoryItemId: string,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    consumeDto: ConsumeInventoryItemDto,
+  ) {
+    return await this.inventoryService.consumeInventoryItem(
+      req.user.id,
+      inventoryItemId,
+      consumeDto.quantityConsumed,
     );
   }
 
