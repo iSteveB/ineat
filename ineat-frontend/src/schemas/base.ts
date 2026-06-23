@@ -149,6 +149,8 @@ export const calculateExpiryStatus = (
 
 	const expiry =
 		typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate;
+	if (Number.isNaN(expiry.getTime())) return 'UNKNOWN';
+
 	const today = new Date();
 	const diffInMs = expiry.getTime() - today.getTime();
 	const daysRemaining = Math.floor(diffInMs / (1000 * 60 * 60 * 24));

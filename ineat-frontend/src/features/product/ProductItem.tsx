@@ -165,7 +165,7 @@ const ProductItem: FC<ProductItemProps> = ({
 										>
 											{expiryColors.icon}
 											<span className='truncate'>
-												{formatRelativeDate(item.expiryDate || 'Inconnue')}
+												{formatRelativeDate(item.expiryDate)}
 											</span>
 										</div>
 										{item.expiryDateSource === 'ESTIMATED' && (
@@ -306,7 +306,7 @@ const ProductItem: FC<ProductItemProps> = ({
 								`}
 							>
 								{expiryColors.icon}
-								<span>{formatRelativeDate(item.expiryDate || 'Inconnue')}</span>
+								<span>{formatRelativeDate(item.expiryDate)}</span>
 							</div>
 
 							{/* Flèche d'action */}

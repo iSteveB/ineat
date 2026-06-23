@@ -29,7 +29,7 @@ export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({
 	const productsWithStatus: InventoryItemWithStatus[] = validProducts.map(
 		(product) => ({
 			...product,
-			expiryStatus: calculateExpiryStatus(product.expiryDate || '?'),
+			expiryStatus: calculateExpiryStatus(product.expiryDate),
 		})
 	);
 	

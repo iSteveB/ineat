@@ -139,7 +139,7 @@ const ProductDetailPage: FC = () => {
 			GROUP_3: '3',
 			GROUP_4: '4',
 		};
-		return descriptions[group || ''] || 'Information non disponible';
+		return descriptions[group || ''] || '?';
 	};
 
 	// Obtenir le texte descriptif du Nutriscore
@@ -541,7 +541,7 @@ const ProductDetailPage: FC = () => {
 											inventoryItem.product.novascore,
 										)}`}
 									>
-										{getGroupScore(inventoryItem.product.novascore) || '?'}
+										{getGroupScore(inventoryItem.product.novascore)}
 									</div>
 								</div>
 								<div className='flex-1'>
