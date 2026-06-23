@@ -148,7 +148,7 @@ Fonctionnalites incluses :
 
 Quotas :
 
-- Generation IA : 10 generations sur les 3 jours de trial.
+- Generation IA recette : 5 generations par jour.
 - Import Drive : 3 imports sur les 3 jours de trial.
 
 ### Trial expire
@@ -370,8 +370,8 @@ La mise en oeuvre RBAC doit etre validee avec les cas suivants :
 - Un `TRIAL` expire applique les droits effectifs de `FREE`.
 - Quotas IA :
   - `FREE`: 0 generation ;
-  - `TRIAL` actif: 10 generations sur 3 jours ;
-  - `PREMIUM`: 100 generations par mois.
+  - `TRIAL` actif: 5 generations par jour ;
+  - `PREMIUM`: 5 generations par jour.
 - Quotas Drive :
   - `FREE`: 0 import ;
   - `TRIAL` actif: 3 imports sur 3 jours ;

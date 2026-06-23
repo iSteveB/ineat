@@ -286,7 +286,22 @@ export class RecipeService {
     }
 
     const requestedTypes = new Set(request.types);
+    const generatedTypes = new Set(recipes.map((recipe) => recipe.type));
     const inventoryIds = new Set(inventory.map((item) => item.productId));
+
+    if (generatedTypes.size !== request.types.length) {
+      throw new BadRequestException(
+        'La génération doit retourner une recette différente par catégorie demandée',
+      );
+    }
+
+    for (const type of requestedTypes) {
+      if (!generatedTypes.has(type)) {
+        throw new BadRequestException(
+          'La génération ne contient pas toutes les catégories demandées',
+        );
+      }
+    }
 
     for (const recipe of recipes) {
       if (!requestedTypes.has(recipe.type)) {
