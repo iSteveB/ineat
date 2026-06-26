@@ -29,6 +29,7 @@ const NETWORK_ERROR_MESSAGE =
 
 interface FetchOptions extends RequestInit {
 	skipAuth?: boolean;
+	timeoutMs?: number;
 }
 
 interface ApiErrorResponse {
@@ -56,6 +57,7 @@ const SENSITIVE_ERROR_PATTERNS = [
 ];
 
 const PUBLIC_ERROR_MESSAGES_BY_CODE: Record<string, string> = {};
+const DEFAULT_TIMEOUT_MS = 30000;
 
 const getResponseHeader = (response: Response, name: string): string | null => {
 	if (!response.headers || typeof response.headers.get !== 'function') {
@@ -145,12 +147,16 @@ const getPublicErrorMessage = (
 export const apiClient = {
 	// Méthode principale pour effectuer des requêtes
 	async fetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { skipAuth = false, ...fetchOptions } = options;
+		const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+		delete fetchOptions.skipAuth;
+
+		const isFormData = fetchOptions.body instanceof FormData;
 
 		// Préparation des en-têtes
 		const headers = new Headers(fetchOptions.headers);
-		headers.set('Content-Type', 'application/json');
+		if (!isFormData) {
+			headers.set('Content-Type', 'application/json');
+		}
 		headers.set('Accept', 'application/json');
 
 		// Construction de l'URL complète
@@ -160,7 +166,7 @@ export const apiClient = {
 
 		// Création du contrôleur d'annulation pour gérer les timeouts
 		const controller = new AbortController();
-		const timeoutId = setTimeout(() => controller.abort(), 30000);
+		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
 		try {
 			// Exécution de la requête

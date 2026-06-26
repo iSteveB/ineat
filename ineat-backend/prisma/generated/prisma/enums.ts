@@ -53,6 +53,16 @@ export const Ecoscore = {
 export type Ecoscore = (typeof Ecoscore)[keyof typeof Ecoscore]
 
 
+export const InvoiceStatus = {
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  VALIDATED: 'VALIDATED'
+} as const
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
+
+
 export const NotificationType = {
   EXPIRY: 'EXPIRY',
   BUDGET: 'BUDGET',

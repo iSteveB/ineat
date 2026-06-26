@@ -57,6 +57,8 @@ export const ModelName = {
   InventoryItem: 'InventoryItem',
   Notification: 'Notification',
   Product: 'Product',
+  Invoice: 'Invoice',
+  InvoiceItem: 'InvoiceItem',
   Receipt: 'Receipt',
   ReceiptItem: 'ReceiptItem',
   Recipe: 'Recipe',
@@ -117,6 +119,8 @@ export const ExpenseScalarFieldEnum = {
   date: 'date',
   source: 'source',
   receiptId: 'receiptId',
+  invoiceId: 'invoiceId',
+  invoiceItemId: 'invoiceItemId',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -181,6 +185,57 @@ export const ProductScalarFieldEnum = {
 } as const
 
 export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  pdfUrl: 'pdfUrl',
+  status: 'status',
+  rawAnalysisData: 'rawAnalysisData',
+  merchantName: 'merchantName',
+  totalAmount: 'totalAmount',
+  purchaseDate: 'purchaseDate',
+  invoiceNumber: 'invoiceNumber',
+  orderNumber: 'orderNumber',
+  analysisProvider: 'analysisProvider',
+  analysisConfidence: 'analysisConfidence',
+  processingTime: 'processingTime',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoiceItemScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  productId: 'productId',
+  detectedName: 'detectedName',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  totalPrice: 'totalPrice',
+  confidence: 'confidence',
+  validated: 'validated',
+  productCode: 'productCode',
+  category: 'category',
+  discount: 'discount',
+  selectedEan: 'selectedEan',
+  suggestedEans: 'suggestedEans',
+  externalProductProvider: 'externalProductProvider',
+  externalProductStatus: 'externalProductStatus',
+  externalProductData: 'externalProductData',
+  externalProductError: 'externalProductError',
+  expiryDate: 'expiryDate',
+  storageLocation: 'storageLocation',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvoiceItemScalarFieldEnum = (typeof InvoiceItemScalarFieldEnum)[keyof typeof InvoiceItemScalarFieldEnum]
 
 
 export const ReceiptScalarFieldEnum = {

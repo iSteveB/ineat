@@ -14,6 +14,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { NotificationModule } from './notification/notification.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { AdminModule } from './admin/admin.module';
+import { InvoiceModule } from './invoice/invoice.module';
 import { RecipeModule } from './recipe/recipe.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -37,6 +38,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
     AvatarModule,
     NotificationModule,
     AdminModule,
+    InvoiceModule,
     RecipeModule,
   ],
   controllers: [AppController],

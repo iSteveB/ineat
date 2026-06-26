@@ -268,6 +268,28 @@ describe('apiClient', () => {
 			clearTimeoutSpy.mockRestore();
 		});
 
+		it('devrait permettre de personnaliser le timeout', async () => {
+			const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
+			const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+
+			(global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+				ok: true,
+				status: 200,
+				json: vi.fn().mockResolvedValue({ data: 'test' }),
+			});
+
+			await apiClient.fetch('/test-endpoint', { timeoutMs: 120000 });
+
+			expect(setTimeoutSpy).toHaveBeenCalledWith(
+				expect.any(Function),
+				120000
+			);
+			expect(clearTimeoutSpy).toHaveBeenCalled();
+
+			setTimeoutSpy.mockRestore();
+			clearTimeoutSpy.mockRestore();
+		});
+
 		it("devrait gérer les erreurs d'expiration", async () => {
 			// Simuler une erreur AbortError
 			const abortError = new Error('The operation was aborted');
