@@ -7,9 +7,14 @@ import {
 	Category,
 	Product,
 	UpdateInventoryItemData,
+	ConsumeInventoryItemData,
 	AddProductResponse,
 	hasBudgetImpact,
 } from '@/schemas';
+import type {
+	PackageStatus,
+	PreparationStatus,
+} from '@/utils/productStateOptions';
 
 // Types spécifiques au service
 export interface ProductSearchResult {
@@ -55,6 +60,8 @@ export interface QuickAddFormData {
 	purchaseDate: string;
 	purchasePrice?: number;
 	storageLocation?: string;
+	packageStatus?: PackageStatus;
+	preparationStatus?: PreparationStatus;
 	notes?: string;
 }
 
@@ -66,6 +73,8 @@ export interface QuickAddFormDataWithCategory {
 	purchaseDate: string;
 	purchasePrice?: number;
 	storageLocation?: string;
+	packageStatus?: PackageStatus;
+	preparationStatus?: PreparationStatus;
 	notes?: string;
 
 	// Création rapide avec données enrichies
@@ -155,7 +164,7 @@ interface PaginatedInventoryResponse {
  */
 export const extractNotificationDataDefensive = (
 	response: UnknownApiResponse,
-	fallbackProductName: string = 'Produit'
+	fallbackProductName: string = 'Produit',
 ) => {
 	const responseData = response.data || response;
 	const { item, budget } = responseData;
@@ -189,7 +198,7 @@ export const extractNotificationDataDefensive = (
 
 	// Helper typé pour le type de notification
 	const getNotificationType = (
-		budgetData: UnknownBudgetData
+		budgetData: UnknownBudgetData,
 	): 'success' | 'info' | 'warning' => {
 		if (budgetData.expenseCreated) {
 			if (
@@ -239,7 +248,7 @@ export const inventoryService = {
 		if (filters?.expiringWithinDays !== undefined) {
 			searchParams.append(
 				'expiringWithinDays',
-				filters.expiringWithinDays.toString()
+				filters.expiringWithinDays.toString(),
 			);
 		}
 
@@ -275,7 +284,7 @@ export const inventoryService = {
 	 * Retourne les informations budgétaires enrichies
 	 */
 	async addManualProduct(
-		productData: AddInventoryItemData
+		productData: AddInventoryItemData,
 	): Promise<ProductAddedWithBudgetResult> {
 		// Validation basique des données reçues
 		if (!productData) {
@@ -300,7 +309,7 @@ export const inventoryService = {
 			Object.entries(productData.nutrients).forEach(([key, value]) => {
 				if (typeof value === 'number' && value < 0) {
 					throw new Error(
-						`La valeur nutritionnelle ${key} ne peut pas être négative`
+						`La valeur nutritionnelle ${key} ne peut pas être négative`,
 					);
 				}
 			});
@@ -312,14 +321,14 @@ export const inventoryService = {
 
 		const response = await apiClient.post<AddProductResponse>(
 			'/inventory/products',
-			productData
+			productData,
 		);
 
 		// Vérifier si la réponse contient des informations budgétaires
 		if (hasBudgetImpact(response)) {
 			const notificationData = extractNotificationDataDefensive(
 				response,
-				productData.name
+				productData.name,
 			);
 
 			return {
@@ -351,7 +360,7 @@ export const inventoryService = {
 	 * Retourne les informations budgétaires enrichies
 	 */
 	async addExistingProductToInventory(
-		data: QuickAddFormData
+		data: QuickAddFormData,
 	): Promise<ProductAddedWithBudgetResult> {
 		// Validation des données
 		if (!data.productId) {
@@ -364,14 +373,14 @@ export const inventoryService = {
 
 		const response = await apiClient.post<AddProductResponse>(
 			'/inventory/products/quick-add',
-			data
+			data,
 		);
 
 		// Vérifier si la réponse contient des informations budgétaires
 		if (hasBudgetImpact(response)) {
 			const notificationData = extractNotificationDataDefensive(
 				response,
-				'Produit'
+				'Produit',
 			);
 
 			return {
@@ -404,12 +413,33 @@ export const inventoryService = {
 	 */
 	async updateInventoryItem(
 		inventoryItemId: string,
-		updates: UpdateInventoryItemData
+		updates: UpdateInventoryItemData,
 	): Promise<InventoryItem> {
 		return await apiClient.put<InventoryItem>(
 			`/inventory/${inventoryItemId}`,
-			updates
+			updates,
 		);
+	},
+
+	/**
+	 * Consomme une quantité d'un produit en laissant le backend appliquer FEFO.
+	 */
+	async consumeInventoryItem(
+		inventoryItemId: string,
+		data: ConsumeInventoryItemData,
+	): Promise<{
+		success: boolean;
+		productId: string;
+		quantityConsumed: number;
+		remainingQuantity: number;
+		consumedLots: Array<{
+			id: string;
+			quantityConsumed: number;
+			remainingQuantity: number;
+			deleted: boolean;
+		}>;
+	}> {
+		return await apiClient.post(`/inventory/${inventoryItemId}/consume`, data);
 	},
 
 	/**
@@ -417,6 +447,20 @@ export const inventoryService = {
 	 */
 	async removeInventoryItem(inventoryItemId: string): Promise<void> {
 		return await apiClient.delete<void>(`/inventory/${inventoryItemId}`);
+	},
+
+	/**
+	 * Supprime plusieurs éléments d'inventaire
+	 */
+	async removeInventoryItems(inventoryItemIds: string[]): Promise<{
+		success: boolean;
+		deletedCount: number;
+		message: string;
+	}> {
+		return await apiClient.fetch('/inventory/bulk', {
+			method: 'DELETE',
+			body: JSON.stringify({ ids: inventoryItemIds }),
+		});
 	},
 
 	/**
@@ -430,7 +474,7 @@ export const inventoryService = {
 	async searchProducts(
 		query: string,
 		limit: number = 10,
-		includeNutritionalData: boolean = true
+		includeNutritionalData: boolean = true,
 	): Promise<ProductSearchResult[]> {
 		const searchParams = new URLSearchParams();
 		searchParams.append('q', query);
@@ -456,7 +500,7 @@ export const inventoryService = {
 	async searchProductsByScore(
 		scoreType: 'nutriscore' | 'ecoscore' | 'novascore',
 		scoreValue: string,
-		limit: number = 20
+		limit: number = 20,
 	): Promise<ProductSearchResult[]> {
 		const searchParams = new URLSearchParams();
 		searchParams.append('scoreType', scoreType);
@@ -551,7 +595,7 @@ function isValidUrl(urlString: string): boolean {
  */
 export function formatScoreForDisplay(
 	score: string | undefined,
-	scoreType: 'nutriscore' | 'ecoscore' | 'novascore'
+	scoreType: 'nutriscore' | 'ecoscore' | 'novascore',
 ): string | null {
 	if (!score) return null;
 
@@ -591,9 +635,7 @@ export function calculateOverallNutritionalQuality(product: {
 	if (product.nutriscore) {
 		const nutriscoreValues = { A: 100, B: 80, C: 60, D: 40, E: 20 };
 		score +=
-			(nutriscoreValues[
-				product.nutriscore as keyof typeof nutriscoreValues
-			] -
+			(nutriscoreValues[product.nutriscore as keyof typeof nutriscoreValues] -
 				50) *
 			0.3;
 	}
@@ -602,8 +644,7 @@ export function calculateOverallNutritionalQuality(product: {
 	if (product.ecoscore) {
 		const ecoscoreValues = { A: 100, B: 80, C: 60, D: 40, E: 20 };
 		score +=
-			(ecoscoreValues[product.ecoscore as keyof typeof ecoscoreValues] -
-				50) *
+			(ecoscoreValues[product.ecoscore as keyof typeof ecoscoreValues] - 50) *
 			0.2;
 	}
 
@@ -616,8 +657,7 @@ export function calculateOverallNutritionalQuality(product: {
 			GROUP_4: 25,
 		};
 		score +=
-			(novaValues[product.novascore as keyof typeof novaValues] - 50) *
-			0.2;
+			(novaValues[product.novascore as keyof typeof novaValues] - 50) * 0.2;
 	}
 
 	return Math.max(0, Math.min(100, Math.round(score)));

@@ -15,11 +15,17 @@ import ScoreBadge from '../../components/common/ScoreBadge';
 
 interface ProductCardProps {
 	item: InventoryItemWithStatus;
+	isSelectionMode?: boolean;
+	isSelected?: boolean;
+	onToggleSelection?: () => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
-
-
+const ProductCard: React.FC<ProductCardProps> = ({
+	item,
+	isSelectionMode = false,
+	isSelected = false,
+	onToggleSelection,
+}) => {
 	// Obtenir les couleurs selon le statut d'expiration
 	const getExpiryColors = (status: string) => {
 		switch (status) {
@@ -63,12 +69,32 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
 	const expiryColors = getExpiryColors(item.expiryStatus);
 
-	return (
-		<Link
-			to='/app/inventory/$productId'
-			params={{ productId: item.id }}
-			className='block group'>
-			<div className='relative overflow-hidden bg-neutral-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:border-gray-300'>
+	const cardContent = (
+		<div className='relative'>
+			{isSelectionMode && (
+				<div className='absolute left-3 top-3 z-10'>
+					<input
+						type='checkbox'
+						checked={isSelected}
+						onClick={(event) => event.stopPropagation()}
+						onChange={onToggleSelection}
+						aria-label={`Sélectionner ${item.product.name}`}
+						className='size-5 rounded border-gray-300 text-success-50 shadow-sm focus:ring-success-50'
+					/>
+				</div>
+			)}
+
+			<div
+				className={`relative overflow-hidden bg-neutral-50 border rounded-2xl shadow-sm transition-all duration-300 ${
+					isSelected
+						? 'border-success-50 ring-2 ring-success-50'
+						: 'border-gray-200 group-hover:border-gray-300'
+				} ${
+					isSelectionMode
+						? 'hover:shadow-lg'
+						: 'hover:shadow-xl group-hover:scale-[1.02]'
+				}`}
+			>
 				{/* Effet de brillance en arrière-plan */}
 				<div className='absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
 
@@ -92,10 +118,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
 							{/* Badge de quantité */}
 							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-neutral-50 border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
-								{formatQuantity(
-									item.quantity,
-									item.product.unitType
-								)}
+								{formatQuantity(item.quantity, item.product.unitType)}
 							</div>
 						</div>
 
@@ -141,16 +164,22 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 
 							{/* ===== DATE D'EXPIRATION ===== */}
 							{item.expiryDate && (
-								<div
-									className={`
+								<div className='flex flex-wrap items-center gap-2'>
+									<div
+										className={`
                     inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-semibold text-sm
                     ${expiryColors.bg} ${expiryColors.text} shadow-lg
                     hover:shadow-xl transition-all duration-300
-                  `}>
-									{expiryColors.icon}
-									<span>
-										{formatRelativeDate(item.expiryDate)}
-									</span>
+                  `}
+									>
+										{expiryColors.icon}
+										<span>{formatRelativeDate(item.expiryDate)}</span>
+									</div>
+									{item.expiryDateSource === 'ESTIMATED' && (
+										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+											estimée
+										</span>
+									)}
 								</div>
 							)}
 
@@ -161,9 +190,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 										<MapPin className='size-3 text-blue-600' />
 									</div>
 									<span className='text-sm font-medium text-gray-600'>
-										{item.storageLocation
-											.charAt(0)
-											.toUpperCase() +
+										{item.storageLocation.charAt(0).toUpperCase() +
 											item.storageLocation.slice(1)}
 									</span>
 								</div>
@@ -183,14 +210,45 @@ const ProductCard: React.FC<ProductCardProps> = ({ item }) => {
 						</div>
 
 						{/* Flèche d'action */}
-						<div className='flex-shrink-0 self-center'>
-							<div className='p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300'>
-								<ArrowRight className='size-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300' />
-							</div>
-						</div>
+							{!isSelectionMode && (
+								<div className='flex-shrink-0 self-center'>
+									<div className='p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300'>
+										<ArrowRight className='size-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300' />
+									</div>
+								</div>
+							)}
 					</div>
 				</div>
 			</div>
+		</div>
+	);
+
+	if (isSelectionMode) {
+		return (
+			<div
+				role='button'
+				tabIndex={0}
+				onClick={onToggleSelection}
+				onKeyDown={(event) => {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						onToggleSelection?.();
+					}
+				}}
+				className='block w-full text-left group cursor-pointer'
+			>
+				{cardContent}
+			</div>
+		);
+	}
+
+	return (
+		<Link
+			to='/app/inventory/$productId'
+			params={{ productId: item.id }}
+			className='block group'
+		>
+			{cardContent}
 		</Link>
 	);
 };

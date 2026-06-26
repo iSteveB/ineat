@@ -27,7 +27,7 @@ export const ExpiringProductsWidget: FC<ExpiringProductsWidgetProps> = ({
 	const productsWithStatus: InventoryItemWithStatus[] = validProducts.map(
 		(product) => ({
 			...product,
-			expiryStatus: calculateExpiryStatus(product.expiryDate || '?'),
+			expiryStatus: calculateExpiryStatus(product.expiryDate),
 		})
 	);
 

@@ -13,6 +13,8 @@ import { NutritionalInfoSection } from './section/NutritionalInfoSection';
 import { ProductContentSection } from './section/ProductContentSection';
 import { ProductDatesSection } from './section/ProductDatesSection';
 import { ProductExtraSection } from './section/ProductExtraSection';
+import { ProductStateSection } from './section/ProductStateSection';
+import { getExpirySuggestion } from '@/utils/expiryEstimation';
 
 interface AddManualProductFormProps {
 	categories: Category[];
@@ -48,6 +50,19 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		defaultBarcode,
 	});
 
+	const selectedCategory = categories.find(
+		(category) => category.slug === formData.category,
+	);
+	const expirySuggestion = getExpirySuggestion({
+		productName: formData.name,
+		categorySlug: formData.category,
+		categoryName: selectedCategory?.name,
+		storageLocation: formData.storageLocation,
+		packageStatus: formData.packageStatus || undefined,
+		preparationStatus: formData.preparationStatus || undefined,
+		purchaseDate: formData.purchaseDate,
+	});
+
 	return (
 		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
 			<CardHeader>
@@ -64,15 +79,9 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 					<Alert className='border-success-500/20 bg-success-50/10'>
 						<AlertDescription className='flex flex-col text-neutral-300'>
 							<strong>Données récupérées du scan :</strong>
-							{defaultProductName && (
-								<span>Nom: {defaultProductName}</span>
-							)}
-							{defaultBrand && (
-								<span>Marque: {defaultBrand}</span>
-							)}
-							{defaultBarcode && (
-								<span>Code-barre: {defaultBarcode}</span>
-							)}
+							{defaultProductName && <span>Nom: {defaultProductName}</span>}
+							{defaultBrand && <span>Marque: {defaultBrand}</span>}
+							{defaultBarcode && <span>Code-barre: {defaultBarcode}</span>}
 						</AlertDescription>
 					</Alert>
 				)}
@@ -165,7 +174,10 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						values={{
 							purchaseDate: formData.purchaseDate,
 							expiryDate: formData.expiryDate,
+							expiryDateSource: formData.expiryDateSource,
 						}}
+						estimatedExpiryDate={expirySuggestion?.date}
+						estimatedExpiryReason={expirySuggestion?.reason}
 						onChange={handleInputChange}
 						disabled={isSubmitting}
 						errors={{
@@ -190,6 +202,19 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}}
 					/>
 
+					<ProductStateSection
+						values={{
+							packageStatus: formData.packageStatus,
+							preparationStatus: formData.preparationStatus,
+						}}
+						productName={formData.name}
+						categorySlug={formData.category}
+						categoryName={selectedCategory?.name}
+						storageLocation={formData.storageLocation}
+						onChange={handleInputChange}
+						disabled={isSubmitting}
+					/>
+
 					{/* Boutons d'action */}
 					<div className='flex gap-3 pt-4'>
 						<Button
@@ -197,13 +222,15 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							variant='outline'
 							onClick={onCancel}
 							disabled={isSubmitting}
-							className='flex-1 border-neutral-200 text-neutral-300 hover:bg-neutral-100 hover:text-neutral-300'>
+							className='flex-1 border-neutral-200 text-neutral-300 hover:bg-neutral-100 hover:text-neutral-300'
+						>
 							Annuler
 						</Button>
 						<Button
 							type='submit'
 							disabled={isSubmitting}
-							className='flex-1 bg-success-50 hover:bg-success-50/90 text-neutral-50'>
+							className='flex-1 bg-success-50 hover:bg-success-50/90 text-neutral-50'
+						>
 							{isSubmitting ? (
 								<>
 									<Loader2 className='size-4 mr-2 animate-spin' />

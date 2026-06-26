@@ -19,6 +19,13 @@ import {
 } from '@/components/ui/select';
 import { Loader2, Package, Calendar, MapPin, FileText } from 'lucide-react';
 import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
+import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import {
+	getProductStateOptions,
+	PackageStatus,
+	PreparationStatus,
+} from '@/utils/productStateOptions';
+import { ProductStateSection } from './form/section/ProductStateSection';
 
 interface EditInventoryItemModalProps {
 	item: InventoryItemWithStatus | null;
@@ -62,7 +69,14 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 	const [quantity, setQuantity] = useState<number>(1);
 	const [storageLocation, setStorageLocation] = useState<string>('');
 	const [expiryDate, setExpiryDate] = useState<string>('');
+	const [expiryDateSource, setExpiryDateSource] = useState<
+		'MANUAL' | 'ESTIMATED'
+	>('MANUAL');
 	const [purchaseDate, setPurchaseDate] = useState<string>('');
+	const [packageStatus, setPackageStatus] = useState<PackageStatus | ''>('');
+	const [preparationStatus, setPreparationStatus] = useState<
+		PreparationStatus | ''
+	>('');
 	const [notes, setNotes] = useState<string>('');
 
 	// Initialiser les valeurs du formulaire quand l'item change
@@ -71,7 +85,10 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			setQuantity(item.quantity);
 			setStorageLocation(item.storageLocation || '');
 			setExpiryDate(formatDate(item.expiryDate));
+			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
 			setPurchaseDate(formatDate(item.purchaseDate));
+			setPackageStatus(item.packageStatus || '');
+			setPreparationStatus(item.preparationStatus || '');
 			setNotes(item.notes || '');
 		}
 	}, [item]);
@@ -82,10 +99,75 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			setQuantity(item.quantity);
 			setStorageLocation(item.storageLocation || '');
 			setExpiryDate(formatDate(item.expiryDate));
+			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
 			setPurchaseDate(formatDate(item.purchaseDate));
+			setPackageStatus(item.packageStatus || '');
+			setPreparationStatus(item.preparationStatus || '');
 			setNotes(item.notes || '');
 		}
 	}, [isOpen, item]);
+
+	const expirySuggestion = item
+		? getExpirySuggestion({
+				productName: item.product.name,
+				categorySlug: item.product.category?.slug,
+				categoryName: item.product.category?.name,
+				storageLocation,
+				packageStatus: packageStatus || undefined,
+				preparationStatus: preparationStatus || undefined,
+				purchaseDate,
+			})
+		: null;
+
+	useEffect(() => {
+		if (!expirySuggestion) return;
+		if (expiryDateSource === 'MANUAL') return;
+		if (expiryDate === expirySuggestion.date) return;
+
+		setExpiryDate(expirySuggestion.date);
+		setExpiryDateSource('ESTIMATED');
+	}, [expiryDate, expiryDateSource, expirySuggestion]);
+
+	useEffect(() => {
+		if (!item) return;
+
+		const options = getProductStateOptions({
+			productName: item.product.name,
+			categorySlug: item.product.category?.slug,
+			categoryName: item.product.category?.name,
+			storageLocation,
+		});
+
+		const nextPackageStatus = options.showPackageStatus
+			? packageStatus || options.defaultPackageStatus || ''
+			: '';
+		const nextPreparationStatus = options.showPreparationStatus
+			? preparationStatus || options.defaultPreparationStatus || ''
+			: '';
+
+		if (nextPackageStatus !== packageStatus) {
+			setPackageStatus(nextPackageStatus);
+		}
+		if (nextPreparationStatus !== preparationStatus) {
+			setPreparationStatus(nextPreparationStatus);
+		}
+	}, [item, packageStatus, preparationStatus, storageLocation]);
+
+	const handleExpiryDateChange = (value: string): void => {
+		setExpiryDate(value);
+		setExpiryDateSource(value ? 'MANUAL' : 'ESTIMATED');
+	};
+
+	const handleProductStateChange = (
+		field: 'packageStatus' | 'preparationStatus',
+		value: string,
+	): void => {
+		if (field === 'packageStatus') {
+			setPackageStatus(value as PackageStatus);
+		} else {
+			setPreparationStatus(value as PreparationStatus);
+		}
+	};
 
 	// Gérer la soumission du formulaire
 	const handleSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -97,8 +179,12 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 		const updates: UpdateInventoryItemData = {
 			quantity,
 			storageLocation: storageLocation || undefined,
-			expiryDate: expiryDate || undefined,
 			purchaseDate: purchaseDate || undefined,
+			...(expiryDateSource === 'MANUAL' && {
+				expiryDate: expiryDate || undefined,
+			}),
+			packageStatus: packageStatus || undefined,
+			preparationStatus: preparationStatus || undefined,
 			notes: notes || undefined,
 		};
 
@@ -109,24 +195,24 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="max-w-md">
+			<DialogContent className='max-w-md'>
 				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						<Package className="size-5 text-success-50" />
+					<DialogTitle className='flex items-center gap-2'>
+						<Package className='size-5 text-success-50' />
 						Modifier le produit
 					</DialogTitle>
 				</DialogHeader>
 
-				<form onSubmit={handleSubmit} className="space-y-4">
+				<form onSubmit={handleSubmit} className='space-y-4'>
 					{/* Nom du produit (lecture seule) */}
 					<div>
-						<Label className="text-sm font-medium text-neutral-700">
+						<Label className='text-sm font-medium text-neutral-700'>
 							Produit
 						</Label>
-						<p className="mt-1 text-sm text-neutral-900 font-medium">
+						<p className='mt-1 text-sm text-neutral-900 font-medium'>
 							{item.product.name}
 							{item.product.brand && (
-								<span className="text-neutral-600 ml-2">
+								<span className='text-neutral-600 ml-2'>
 									({item.product.brand})
 								</span>
 							)}
@@ -135,38 +221,41 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 
 					{/* Quantité */}
 					<div>
-						<Label htmlFor="quantity" className="flex items-center gap-2">
-							<Package className="size-4" />
+						<Label htmlFor='quantity' className='flex items-center gap-2'>
+							<Package className='size-4' />
 							Quantité
 						</Label>
 						<Input
-							id="quantity"
-							type="number"
-							min="0"
-							step="1"
+							id='quantity'
+							type='number'
+							min='0'
+							step='1'
 							value={quantity}
 							onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-							placeholder="Quantité"
+							placeholder='Quantité'
 							required
-							className="mt-1"
+							className='mt-1'
 						/>
-						<p className="text-xs text-neutral-600 mt-1">
-							Unité : {item.product.unitType === 'UNIT' ? 'Unité(s)' : item.product.unitType}
+						<p className='text-xs text-neutral-600 mt-1'>
+							Unité :{' '}
+							{item.product.unitType === 'UNIT'
+								? 'Unité(s)'
+								: item.product.unitType}
 						</p>
 					</div>
 
 					{/* Lieu de stockage */}
 					<div>
-						<Label htmlFor="storageLocation" className="flex items-center gap-2">
-							<MapPin className="size-4" />
+						<Label
+							htmlFor='storageLocation'
+							className='flex items-center gap-2'
+						>
+							<MapPin className='size-4' />
 							Lieu de stockage
 						</Label>
-						<Select
-							value={storageLocation}
-							onValueChange={setStorageLocation}
-						>
-							<SelectTrigger id="storageLocation" className="mt-1">
-								<SelectValue placeholder="Sélectionner un lieu" />
+						<Select value={storageLocation} onValueChange={setStorageLocation}>
+							<SelectTrigger id='storageLocation' className='mt-1'>
+								<SelectValue placeholder='Sélectionner un lieu' />
 							</SelectTrigger>
 							<SelectContent className='bg-neutral-100'>
 								{STORAGE_LOCATIONS.map((location) => (
@@ -180,68 +269,92 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 
 					{/* Date de péremption */}
 					<div>
-						<Label htmlFor="expiryDate" className="flex items-center gap-2">
-							<Calendar className="size-4" />
+						<Label htmlFor='expiryDate' className='flex items-center gap-2'>
+							<Calendar className='size-4' />
 							Date de péremption
 						</Label>
 						<Input
-							id="expiryDate"
-							type="date"
+							id='expiryDate'
+							type='date'
 							value={expiryDate}
-							onChange={(e) => setExpiryDate(e.target.value)}
-							className="mt-1"
+							onChange={(e) => handleExpiryDateChange(e.target.value)}
+							className='mt-1'
 						/>
+						{expiryDateSource === 'ESTIMATED' && expiryDate && (
+							<p className='text-xs text-neutral-600 mt-1'>
+								Date estimée recalculée : {expiryDate}
+								{expirySuggestion?.reason
+									? ` (${expirySuggestion.reason})`
+									: ''}
+							</p>
+						)}
+						{expiryDateSource === 'MANUAL' && expiryDate && (
+							<p className='text-xs text-neutral-600 mt-1'>
+								Date manuelle conservée. Les changements de contexte ne
+								l’écraseront pas.
+							</p>
+						)}
 					</div>
 
 					{/* Date d'achat */}
 					<div>
-						<Label htmlFor="purchaseDate" className="flex items-center gap-2">
-							<Calendar className="size-4" />
+						<Label htmlFor='purchaseDate' className='flex items-center gap-2'>
+							<Calendar className='size-4' />
 							Date d'achat
 						</Label>
 						<Input
-							id="purchaseDate"
-							type="date"
+							id='purchaseDate'
+							type='date'
 							value={purchaseDate}
 							onChange={(e) => setPurchaseDate(e.target.value)}
-							className="mt-1"
+							className='mt-1'
 						/>
 					</div>
 
+					<ProductStateSection
+						values={{ packageStatus, preparationStatus }}
+						productName={item.product.name}
+						categorySlug={item.product.category?.slug}
+						categoryName={item.product.category?.name}
+						storageLocation={storageLocation}
+						onChange={handleProductStateChange}
+						disabled={isSubmitting}
+					/>
+
 					{/* Notes */}
 					<div>
-						<Label htmlFor="notes" className="flex items-center gap-2">
-							<FileText className="size-4" />
+						<Label htmlFor='notes' className='flex items-center gap-2'>
+							<FileText className='size-4' />
 							Notes
 						</Label>
 						<Textarea
-							id="notes"
+							id='notes'
 							value={notes}
 							onChange={(e) => setNotes(e.target.value)}
-							placeholder="Ajoutez des notes (optionnel)"
+							placeholder='Ajoutez des notes (optionnel)'
 							rows={3}
-							className="mt-1 resize-none"
+							className='mt-1 resize-none'
 						/>
 					</div>
 
 					{/* Boutons d'action */}
-					<DialogFooter className="gap-2">
+					<DialogFooter className='gap-2'>
 						<Button
-							type="button"
-							variant="outline"
+							type='button'
+							variant='outline'
 							onClick={onClose}
 							disabled={isSubmitting}
 						>
 							Annuler
 						</Button>
 						<Button
-							type="submit"
+							type='submit'
 							disabled={isSubmitting}
-							className="bg-success-50 hover:bg-success-50/80"
+							className='bg-success-50 hover:bg-success-50/80'
 						>
 							{isSubmitting ? (
 								<>
-									<Loader2 className="size-4 mr-2 animate-spin" />
+									<Loader2 className='size-4 mr-2 animate-spin' />
 									Modification...
 								</>
 							) : (

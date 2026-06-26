@@ -108,7 +108,8 @@ const ProductItem: FC<ProductItemProps> = ({
 		<Link
 			to='/app/inventory/$productId'
 			params={{ productId: item.id }}
-			className='block group'>
+			className='block group'
+		>
 			<div className='relative overflow-hidden bg-neutral-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:border-gray-300'>
 				{/* Effet de brillance en arrière-plan */}
 				<div className='absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
@@ -123,10 +124,7 @@ const ProductItem: FC<ProductItemProps> = ({
 								<div className='size-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300'>
 									{item.product.imageUrl ? (
 										<img
-											src={
-												item.product.imageUrl ||
-												'/placeholder.svg'
-											}
+											src={item.product.imageUrl || '/placeholder.svg'}
 											alt={item.product.name}
 											className='size-full object-cover group-hover:scale-110 transition-transform duration-300'
 										/>
@@ -158,17 +156,23 @@ const ProductItem: FC<ProductItemProps> = ({
 
 								{/* Date d'expiration et lieu de stockage - côte à côte sur mobile */}
 								<div className='flex items-center justify-between gap-2'>
-									<div
-										className={`
+									<div className='flex items-center gap-1.5 min-w-0'>
+										<div
+											className={`
 											flex items-center gap-1.5 px-2 py-1 rounded-lg font-semibold text-xs
 											${expiryColors.bg} ${expiryColors.text} shadow-md
-										`}>
-										{expiryColors.icon}
-										<span className='truncate'>
-											{formatRelativeDate(
-												item.expiryDate || 'Inconnue'
-											)}
-										</span>
+										`}
+										>
+											{expiryColors.icon}
+											<span className='truncate'>
+												{formatRelativeDate(item.expiryDate)}
+											</span>
+										</div>
+										{item.expiryDateSource === 'ESTIMATED' && (
+											<span className='text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+												estimée
+											</span>
+										)}
 									</div>
 
 									{/* Lieu de stockage - compact */}
@@ -187,32 +191,24 @@ const ProductItem: FC<ProductItemProps> = ({
 								{/* Scores nutritionnels - plus petits sur mobile */}
 								{(showNutriscore || showEcoscore) && (
 									<div className='flex gap-1.5'>
-										{showNutriscore &&
-											item.product.nutriscore && (
-												<div className='transform hover:scale-110 transition-transform duration-200'>
-													<ScoreBadge
-														type='nutri'
-														score={
-															item.product
-																.nutriscore
-														}
-														size='sm'
-													/>
-												</div>
-											)}
-										{showEcoscore &&
-											item.product.ecoscore && (
-												<div className='transform hover:scale-110 transition-transform duration-200'>
-													<ScoreBadge
-														type='eco'
-														score={
-															item.product
-																.ecoscore
-														}
-														size='sm'
-													/>
-												</div>
-											)}
+										{showNutriscore && item.product.nutriscore && (
+											<div className='transform hover:scale-110 transition-transform duration-200'>
+												<ScoreBadge
+													type='nutri'
+													score={item.product.nutriscore}
+													size='sm'
+												/>
+											</div>
+										)}
+										{showEcoscore && item.product.ecoscore && (
+											<div className='transform hover:scale-110 transition-transform duration-200'>
+												<ScoreBadge
+													type='eco'
+													score={item.product.ecoscore}
+													size='sm'
+												/>
+											</div>
+										)}
 									</div>
 								)}
 							</div>
@@ -233,10 +229,7 @@ const ProductItem: FC<ProductItemProps> = ({
 							<div className='size-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300'>
 								{item.product.imageUrl ? (
 									<img
-										src={
-											item.product.imageUrl ||
-											'/placeholder.svg'
-										}
+										src={item.product.imageUrl || '/placeholder.svg'}
 										alt={item.product.name}
 										className='size-full object-cover group-hover:scale-110 transition-transform duration-300'
 									/>
@@ -281,18 +274,15 @@ const ProductItem: FC<ProductItemProps> = ({
 							{/* Scores nutritionnels modernisés */}
 							{(showNutriscore || showEcoscore) && (
 								<div className='flex gap-2'>
-									{showNutriscore &&
-										item.product.nutriscore && (
-											<div className='transform hover:scale-110 transition-transform duration-200'>
-												<ScoreBadge
-													type='nutri'
-													score={
-														item.product.nutriscore
-													}
-													size='md'
-												/>
-											</div>
-										)}
+									{showNutriscore && item.product.nutriscore && (
+										<div className='transform hover:scale-110 transition-transform duration-200'>
+											<ScoreBadge
+												type='nutri'
+												score={item.product.nutriscore}
+												size='md'
+											/>
+										</div>
+									)}
 									{showEcoscore && item.product.ecoscore && (
 										<div className='transform hover:scale-110 transition-transform duration-200'>
 											<ScoreBadge
@@ -313,13 +303,10 @@ const ProductItem: FC<ProductItemProps> = ({
 									flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm
 									${expiryColors.bg} ${expiryColors.text} shadow-lg
 									hover:shadow-xl transition-all duration-300
-								`}>
+								`}
+							>
 								{expiryColors.icon}
-								<span>
-									{formatRelativeDate(
-										item.expiryDate || 'Inconnue'
-									)}
-								</span>
+								<span>{formatRelativeDate(item.expiryDate)}</span>
 							</div>
 
 							{/* Flèche d'action */}
@@ -340,10 +327,10 @@ const ProductItem: FC<ProductItemProps> = ({
 									item.expiryStatus === 'EXPIRED'
 										? '100%'
 										: item.expiryStatus === 'CRITICAL'
-										? '80%'
-										: item.expiryStatus === 'WARNING'
-										? '60%'
-										: '20%',
+											? '80%'
+											: item.expiryStatus === 'WARNING'
+												? '60%'
+												: '20%',
 							}}
 						/>
 					</div>

@@ -24,58 +24,72 @@ export const formatDate = (date: Date | string): string => {
 /**
  * Formate la date en format relatif (J-0, J-1, J-X, mois, années, Expiré)
  */
-export const formatRelativeDate = (date: Date | string): string => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+export const formatRelativeDate = (
+	date: Date | string | null | undefined
+): string => {
+	if (!date) return 'Pas de date';
 
-  const targetDate = typeof date === 'string' ? new Date(date) : new Date(date);
-  targetDate.setHours(0, 0, 0, 0);
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
 
-  const diffTime = targetDate.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+	const targetDate = typeof date === 'string' ? new Date(date) : new Date(date);
+	if (Number.isNaN(targetDate.getTime())) return 'Pas de date';
 
-  // Gestion des dates passées (expirées)
-  if (diffDays < 0) {
-    const absDays = Math.abs(diffDays);
-    
-    if (absDays >= 365) {
-      const years = Math.floor(absDays / 365);
-      return years === 1 ? 'Expiré il y a 1 an' : `Expiré il y a ${years} ans`;
-    } else if (absDays >= 31) {
-      const months = Math.floor(absDays / 31);
-      return months === 1 ? 'Expiré il y a 1 mois' : `Expiré il y a ${months} mois`;
-    } else if (absDays === 1) {
-      return 'Expiré hier';
-    } else {
-      return `Expiré il y a ${absDays} jours`;
-    }
-  }
-  
-  // Gestion des dates futures
-  if (diffDays === 0) {
-    return "Expire aujourd'hui";
-  } else if (diffDays === 1) {
-    return 'Expire demain';
-  } else if (diffDays >= 365) {
-    const years = Math.floor(diffDays / 365);
-    return years === 1 ? 'Expire dans 1 an' : `Expire dans ${years} ans`;
-  } else if (diffDays >= 31) {
-    const months = Math.floor(diffDays / 31);
-    return months === 1 ? 'Expire dans 1 mois' : `Expire dans ${months} mois`;
-  } else {
-    return `Expire dans ${diffDays} jours`;
-  }
+	targetDate.setHours(0, 0, 0, 0);
+
+	const diffTime = targetDate.getTime() - today.getTime();
+	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+	// Gestion des dates passées (expirées)
+	if (diffDays < 0) {
+		const absDays = Math.abs(diffDays);
+
+		if (absDays >= 365) {
+			const years = Math.floor(absDays / 365);
+			return years === 1 ? 'Expiré il y a 1 an' : `Expiré il y a ${years} ans`;
+		} else if (absDays >= 31) {
+			const months = Math.floor(absDays / 31);
+			return months === 1
+				? 'Expiré il y a 1 mois'
+				: `Expiré il y a ${months} mois`;
+		} else if (absDays === 1) {
+			return 'Expiré hier';
+		} else {
+			return `Expiré il y a ${absDays} jours`;
+		}
+	}
+
+	// Gestion des dates futures
+	if (diffDays === 0) {
+		return "Expire aujourd'hui";
+	} else if (diffDays === 1) {
+		return 'Expire demain';
+	} else if (diffDays >= 365) {
+		const years = Math.floor(diffDays / 365);
+		return years === 1 ? 'Expire dans 1 an' : `Expire dans ${years} ans`;
+	} else if (diffDays >= 31) {
+		const months = Math.floor(diffDays / 31);
+		return months === 1 ? 'Expire dans 1 mois' : `Expire dans ${months} mois`;
+	} else {
+		return `Expire dans ${diffDays} jours`;
+	}
 };
 
 /**
  * Formate une date en format court pour l'affichage (J-X)
  */
-export const formatShortRelativeDate = (date: Date | string): string => {
+export const formatShortRelativeDate = (
+	date: Date | string | null | undefined
+): string => {
+	if (!date) return 'Pas de date';
+
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
 	const targetDate =
 		typeof date === 'string' ? new Date(date) : new Date(date);
+	if (Number.isNaN(targetDate.getTime())) return 'Pas de date';
+
 	targetDate.setHours(0, 0, 0, 0);
 
 	const diffTime = targetDate.getTime() - today.getTime();

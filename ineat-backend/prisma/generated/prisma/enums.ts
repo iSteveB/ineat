@@ -9,6 +9,30 @@
 * 🟢 You can import this file directly.
 */
 
+export const ExpiryDateSource = {
+  MANUAL: 'MANUAL',
+  ESTIMATED: 'ESTIMATED'
+} as const
+
+export type ExpiryDateSource = (typeof ExpiryDateSource)[keyof typeof ExpiryDateSource]
+
+
+export const PackageStatus = {
+  UNOPENED: 'UNOPENED',
+  OPENED: 'OPENED'
+} as const
+
+export type PackageStatus = (typeof PackageStatus)[keyof typeof PackageStatus]
+
+
+export const PreparationStatus = {
+  RAW: 'RAW',
+  COOKED: 'COOKED'
+} as const
+
+export type PreparationStatus = (typeof PreparationStatus)[keyof typeof PreparationStatus]
+
+
 export const DocumentType = {
   RECEIPT_IMAGE: 'RECEIPT_IMAGE',
   INVOICE_PDF: 'INVOICE_PDF',

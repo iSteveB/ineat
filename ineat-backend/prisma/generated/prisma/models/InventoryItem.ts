@@ -42,6 +42,9 @@ export type InventoryItemMinAggregateOutputType = {
   productId: string | null
   quantity: number | null
   expiryDate: Date | null
+  expiryDateSource: $Enums.ExpiryDateSource | null
+  packageStatus: $Enums.PackageStatus | null
+  preparationStatus: $Enums.PreparationStatus | null
   purchaseDate: Date | null
   purchasePrice: number | null
   storageLocation: string | null
@@ -56,6 +59,9 @@ export type InventoryItemMaxAggregateOutputType = {
   productId: string | null
   quantity: number | null
   expiryDate: Date | null
+  expiryDateSource: $Enums.ExpiryDateSource | null
+  packageStatus: $Enums.PackageStatus | null
+  preparationStatus: $Enums.PreparationStatus | null
   purchaseDate: Date | null
   purchasePrice: number | null
   storageLocation: string | null
@@ -70,6 +76,9 @@ export type InventoryItemCountAggregateOutputType = {
   productId: number
   quantity: number
   expiryDate: number
+  expiryDateSource: number
+  packageStatus: number
+  preparationStatus: number
   purchaseDate: number
   purchasePrice: number
   storageLocation: number
@@ -96,6 +105,9 @@ export type InventoryItemMinAggregateInputType = {
   productId?: true
   quantity?: true
   expiryDate?: true
+  expiryDateSource?: true
+  packageStatus?: true
+  preparationStatus?: true
   purchaseDate?: true
   purchasePrice?: true
   storageLocation?: true
@@ -110,6 +122,9 @@ export type InventoryItemMaxAggregateInputType = {
   productId?: true
   quantity?: true
   expiryDate?: true
+  expiryDateSource?: true
+  packageStatus?: true
+  preparationStatus?: true
   purchaseDate?: true
   purchasePrice?: true
   storageLocation?: true
@@ -124,6 +139,9 @@ export type InventoryItemCountAggregateInputType = {
   productId?: true
   quantity?: true
   expiryDate?: true
+  expiryDateSource?: true
+  packageStatus?: true
+  preparationStatus?: true
   purchaseDate?: true
   purchasePrice?: true
   storageLocation?: true
@@ -225,6 +243,9 @@ export type InventoryItemGroupByOutputType = {
   productId: string
   quantity: number
   expiryDate: Date | null
+  expiryDateSource: $Enums.ExpiryDateSource
+  packageStatus: $Enums.PackageStatus | null
+  preparationStatus: $Enums.PreparationStatus | null
   purchaseDate: Date
   purchasePrice: number | null
   storageLocation: string | null
@@ -262,6 +283,9 @@ export type InventoryItemWhereInput = {
   productId?: Prisma.StringFilter<"InventoryItem"> | string
   quantity?: Prisma.FloatFilter<"InventoryItem"> | number
   expiryDate?: Prisma.DateTimeNullableFilter<"InventoryItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFilter<"InventoryItem"> | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.EnumPackageStatusNullableFilter<"InventoryItem"> | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.EnumPreparationStatusNullableFilter<"InventoryItem"> | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFilter<"InventoryItem"> | Date | string
   purchasePrice?: Prisma.FloatNullableFilter<"InventoryItem"> | number | null
   storageLocation?: Prisma.StringNullableFilter<"InventoryItem"> | string | null
@@ -278,6 +302,9 @@ export type InventoryItemOrderByWithRelationInput = {
   productId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  packageStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  preparationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
   purchasePrice?: Prisma.SortOrderInput | Prisma.SortOrder
   storageLocation?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -297,6 +324,9 @@ export type InventoryItemWhereUniqueInput = Prisma.AtLeast<{
   productId?: Prisma.StringFilter<"InventoryItem"> | string
   quantity?: Prisma.FloatFilter<"InventoryItem"> | number
   expiryDate?: Prisma.DateTimeNullableFilter<"InventoryItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFilter<"InventoryItem"> | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.EnumPackageStatusNullableFilter<"InventoryItem"> | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.EnumPreparationStatusNullableFilter<"InventoryItem"> | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFilter<"InventoryItem"> | Date | string
   purchasePrice?: Prisma.FloatNullableFilter<"InventoryItem"> | number | null
   storageLocation?: Prisma.StringNullableFilter<"InventoryItem"> | string | null
@@ -313,6 +343,9 @@ export type InventoryItemOrderByWithAggregationInput = {
   productId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  packageStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  preparationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
   purchasePrice?: Prisma.SortOrderInput | Prisma.SortOrder
   storageLocation?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -335,6 +368,9 @@ export type InventoryItemScalarWhereWithAggregatesInput = {
   productId?: Prisma.StringWithAggregatesFilter<"InventoryItem"> | string
   quantity?: Prisma.FloatWithAggregatesFilter<"InventoryItem"> | number
   expiryDate?: Prisma.DateTimeNullableWithAggregatesFilter<"InventoryItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceWithAggregatesFilter<"InventoryItem"> | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.EnumPackageStatusNullableWithAggregatesFilter<"InventoryItem"> | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.EnumPreparationStatusNullableWithAggregatesFilter<"InventoryItem"> | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeWithAggregatesFilter<"InventoryItem"> | Date | string
   purchasePrice?: Prisma.FloatNullableWithAggregatesFilter<"InventoryItem"> | number | null
   storageLocation?: Prisma.StringNullableWithAggregatesFilter<"InventoryItem"> | string | null
@@ -347,6 +383,9 @@ export type InventoryItemCreateInput = {
   id: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -363,6 +402,9 @@ export type InventoryItemUncheckedCreateInput = {
   productId: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -375,6 +417,9 @@ export type InventoryItemUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -391,6 +436,9 @@ export type InventoryItemUncheckedUpdateInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -405,6 +453,9 @@ export type InventoryItemCreateManyInput = {
   productId: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -417,6 +468,9 @@ export type InventoryItemUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -431,6 +485,9 @@ export type InventoryItemUncheckedUpdateManyInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -445,6 +502,9 @@ export type InventoryItemCountOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  packageStatus?: Prisma.SortOrder
+  preparationStatus?: Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
   purchasePrice?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
@@ -464,6 +524,9 @@ export type InventoryItemMaxOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  packageStatus?: Prisma.SortOrder
+  preparationStatus?: Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
   purchasePrice?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
@@ -478,6 +541,9 @@ export type InventoryItemMinOrderByAggregateInput = {
   productId?: Prisma.SortOrder
   quantity?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  packageStatus?: Prisma.SortOrder
+  preparationStatus?: Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
   purchasePrice?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
@@ -503,6 +569,18 @@ export type InventoryItemOrderByRelationAggregateInput = {
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
+}
+
+export type EnumExpiryDateSourceFieldUpdateOperationsInput = {
+  set?: $Enums.ExpiryDateSource
+}
+
+export type NullableEnumPackageStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PackageStatus | null
+}
+
+export type NullableEnumPreparationStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PreparationStatus | null
 }
 
 export type NullableFloatFieldUpdateOperationsInput = {
@@ -601,6 +679,9 @@ export type InventoryItemCreateWithoutProductInput = {
   id: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -615,6 +696,9 @@ export type InventoryItemUncheckedCreateWithoutProductInput = {
   userId: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -658,6 +742,9 @@ export type InventoryItemScalarWhereInput = {
   productId?: Prisma.StringFilter<"InventoryItem"> | string
   quantity?: Prisma.FloatFilter<"InventoryItem"> | number
   expiryDate?: Prisma.DateTimeNullableFilter<"InventoryItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFilter<"InventoryItem"> | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.EnumPackageStatusNullableFilter<"InventoryItem"> | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.EnumPreparationStatusNullableFilter<"InventoryItem"> | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFilter<"InventoryItem"> | Date | string
   purchasePrice?: Prisma.FloatNullableFilter<"InventoryItem"> | number | null
   storageLocation?: Prisma.StringNullableFilter<"InventoryItem"> | string | null
@@ -670,6 +757,9 @@ export type InventoryItemCreateWithoutUserInput = {
   id: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -684,6 +774,9 @@ export type InventoryItemUncheckedCreateWithoutUserInput = {
   productId: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -723,6 +816,9 @@ export type InventoryItemCreateManyProductInput = {
   userId: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -735,6 +831,9 @@ export type InventoryItemUpdateWithoutProductInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -749,6 +848,9 @@ export type InventoryItemUncheckedUpdateWithoutProductInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -762,6 +864,9 @@ export type InventoryItemUncheckedUpdateManyWithoutProductInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -775,6 +880,9 @@ export type InventoryItemCreateManyUserInput = {
   productId: string
   quantity: number
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource
+  packageStatus?: $Enums.PackageStatus | null
+  preparationStatus?: $Enums.PreparationStatus | null
   purchaseDate: Date | string
   purchasePrice?: number | null
   storageLocation?: string | null
@@ -787,6 +895,9 @@ export type InventoryItemUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -801,6 +912,9 @@ export type InventoryItemUncheckedUpdateWithoutUserInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -814,6 +928,9 @@ export type InventoryItemUncheckedUpdateManyWithoutUserInput = {
   productId?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.FloatFieldUpdateOperationsInput | number
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource
+  packageStatus?: Prisma.NullableEnumPackageStatusFieldUpdateOperationsInput | $Enums.PackageStatus | null
+  preparationStatus?: Prisma.NullableEnumPreparationStatusFieldUpdateOperationsInput | $Enums.PreparationStatus | null
   purchaseDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchasePrice?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -830,6 +947,9 @@ export type InventoryItemSelect<ExtArgs extends runtime.Types.Extensions.Interna
   productId?: boolean
   quantity?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  packageStatus?: boolean
+  preparationStatus?: boolean
   purchaseDate?: boolean
   purchasePrice?: boolean
   storageLocation?: boolean
@@ -846,6 +966,9 @@ export type InventoryItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   productId?: boolean
   quantity?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  packageStatus?: boolean
+  preparationStatus?: boolean
   purchaseDate?: boolean
   purchasePrice?: boolean
   storageLocation?: boolean
@@ -862,6 +985,9 @@ export type InventoryItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   productId?: boolean
   quantity?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  packageStatus?: boolean
+  preparationStatus?: boolean
   purchaseDate?: boolean
   purchasePrice?: boolean
   storageLocation?: boolean
@@ -878,6 +1004,9 @@ export type InventoryItemSelectScalar = {
   productId?: boolean
   quantity?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  packageStatus?: boolean
+  preparationStatus?: boolean
   purchaseDate?: boolean
   purchasePrice?: boolean
   storageLocation?: boolean
@@ -886,7 +1015,7 @@ export type InventoryItemSelectScalar = {
   notes?: boolean
 }
 
-export type InventoryItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "productId" | "quantity" | "expiryDate" | "purchaseDate" | "purchasePrice" | "storageLocation" | "createdAt" | "updatedAt" | "notes", ExtArgs["result"]["inventoryItem"]>
+export type InventoryItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "productId" | "quantity" | "expiryDate" | "expiryDateSource" | "packageStatus" | "preparationStatus" | "purchaseDate" | "purchasePrice" | "storageLocation" | "createdAt" | "updatedAt" | "notes", ExtArgs["result"]["inventoryItem"]>
 export type InventoryItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -912,6 +1041,9 @@ export type $InventoryItemPayload<ExtArgs extends runtime.Types.Extensions.Inter
     productId: string
     quantity: number
     expiryDate: Date | null
+    expiryDateSource: $Enums.ExpiryDateSource
+    packageStatus: $Enums.PackageStatus | null
+    preparationStatus: $Enums.PreparationStatus | null
     purchaseDate: Date
     purchasePrice: number | null
     storageLocation: string | null
@@ -1348,6 +1480,9 @@ export interface InventoryItemFieldRefs {
   readonly productId: Prisma.FieldRef<"InventoryItem", 'String'>
   readonly quantity: Prisma.FieldRef<"InventoryItem", 'Float'>
   readonly expiryDate: Prisma.FieldRef<"InventoryItem", 'DateTime'>
+  readonly expiryDateSource: Prisma.FieldRef<"InventoryItem", 'ExpiryDateSource'>
+  readonly packageStatus: Prisma.FieldRef<"InventoryItem", 'PackageStatus'>
+  readonly preparationStatus: Prisma.FieldRef<"InventoryItem", 'PreparationStatus'>
   readonly purchaseDate: Prisma.FieldRef<"InventoryItem", 'DateTime'>
   readonly purchasePrice: Prisma.FieldRef<"InventoryItem", 'Float'>
   readonly storageLocation: Prisma.FieldRef<"InventoryItem", 'String'>

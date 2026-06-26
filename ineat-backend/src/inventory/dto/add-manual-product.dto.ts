@@ -45,6 +45,16 @@ export enum Novascore {
   GROUP_4 = 'GROUP_4', // Nova group 4 - Aliments ultra-transformés
 }
 
+export enum PackageStatus {
+  UNOPENED = 'UNOPENED',
+  OPENED = 'OPENED',
+}
+
+export enum PreparationStatus {
+  RAW = 'RAW',
+  COOKED = 'COOKED',
+}
+
 export class NutritionalInfoDto {
   @ApiPropertyOptional({
     description: 'Énergie pour 100g/100ml (en kcal)',
@@ -166,8 +176,7 @@ export class AddManualProductDto {
   @IsOptional()
   @IsString({ message: 'Le code-barres doit être une chaîne de caractères' })
   @Matches(/^\d{8,13}$/, {
-    message:
-      'Le code-barres doit contenir entre 8 et 13 chiffres',
+    message: 'Le code-barres doit contenir entre 8 et 13 chiffres',
   })
   @Transform(({ value }) => value?.trim() || null)
   barcode?: string;
@@ -247,6 +256,28 @@ export class AddManualProductDto {
   })
   @Transform(({ value }) => value?.trim() || null)
   storageLocation?: string;
+
+  @ApiPropertyOptional({
+    description: "État d'ouverture du produit",
+    example: PackageStatus.UNOPENED,
+    enum: PackageStatus,
+  })
+  @IsOptional()
+  @IsEnum(PackageStatus, {
+    message: "L'état d'ouverture doit être valide (UNOPENED, OPENED)",
+  })
+  packageStatus?: PackageStatus;
+
+  @ApiPropertyOptional({
+    description: 'État de préparation du produit',
+    example: PreparationStatus.RAW,
+    enum: PreparationStatus,
+  })
+  @IsOptional()
+  @IsEnum(PreparationStatus, {
+    message: "L'état de préparation doit être valide (RAW, COOKED)",
+  })
+  preparationStatus?: PreparationStatus;
 
   @ApiPropertyOptional({
     description: 'Notes additionnelles sur le produit',
@@ -387,6 +418,48 @@ export class ProductCreatedResponseDto {
   expiryDate?: string;
 
   @ApiPropertyOptional({
+    description: 'Origine de la date de péremption',
+    example: 'ESTIMATED',
+    enum: ['MANUAL', 'ESTIMATED'],
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateSource?: 'MANUAL' | 'ESTIMATED';
+
+  @ApiPropertyOptional({
+    description: "Raison de l'estimation de la date de péremption",
+    example: 'produits laitiers + refrigerateur',
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateReason?: string;
+
+  @ApiPropertyOptional({
+    description: "Identifiant de la règle d'estimation utilisée",
+    example: 'produits-laitiers',
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateRuleId?: string;
+
+  @ApiPropertyOptional({
+    description: "Niveau de règle d'estimation appliqué",
+    example: 'category',
+    enum: ['manual', 'product', 'category', 'storage'],
+  })
+  @IsOptional()
+  @IsString()
+  expiryDateRuleLevel?: 'manual' | 'product' | 'category' | 'storage';
+
+  @ApiPropertyOptional({
+    description: 'Durée ajoutée pour obtenir la date estimée',
+    example: 14,
+  })
+  @IsOptional()
+  @IsNumber()
+  expiryDateDurationDays?: number;
+
+  @ApiPropertyOptional({
     description: "Prix d'achat",
     example: 3.5,
   })
@@ -401,6 +474,24 @@ export class ProductCreatedResponseDto {
   @IsOptional()
   @IsString()
   storageLocation?: string;
+
+  @ApiPropertyOptional({
+    description: "État d'ouverture du produit",
+    example: PackageStatus.UNOPENED,
+    enum: PackageStatus,
+  })
+  @IsOptional()
+  @IsEnum(PackageStatus)
+  packageStatus?: PackageStatus;
+
+  @ApiPropertyOptional({
+    description: 'État de préparation du produit',
+    example: PreparationStatus.RAW,
+    enum: PreparationStatus,
+  })
+  @IsOptional()
+  @IsEnum(PreparationStatus)
+  preparationStatus?: PreparationStatus;
 
   @ApiPropertyOptional({
     description: 'Notes sur le produit',

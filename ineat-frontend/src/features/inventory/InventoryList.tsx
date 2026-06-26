@@ -7,6 +7,8 @@ import {
 	Package2,
 	AlertTriangle,
 	CheckCircle,
+	Trash2,
+	X,
 } from 'lucide-react';
 
 // ===== IMPORTS SCHÉMAS ZOD =====
@@ -59,7 +61,7 @@ const getCategoryLabel = (slug: string): string => {
 
 const getStorageLocationLabel = (location: string): string => {
 	const storageLocation = INVENTORY_STORAGE_LOCATIONS.find(
-		(loc) => loc.value === location
+		(loc) => loc.value === location,
 	);
 	return storageLocation?.label || location;
 };
@@ -69,6 +71,10 @@ export function InventoryListPage() {
 	// ===== ÉTAT LOCAL =====
 	const [searchQuery, setSearchQuery] = useState('');
 	const [showFilters, setShowFilters] = useState(false);
+	const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [isSelectionMode, setIsSelectionMode] = useState(false);
 
 	// ===== STORE INVENTORY =====
 	const items = useInventoryItems();
@@ -80,6 +86,7 @@ export function InventoryListPage() {
 		setInventoryFilters,
 		clearInventoryFilters,
 		removeInventoryItem,
+		removeInventoryItems,
 		clearError,
 	} = useInventoryActions();
 
@@ -94,19 +101,34 @@ export function InventoryListPage() {
 		}
 	}, [error]);
 
+	useEffect(() => {
+		setSelectedItemIds((currentSelection) => {
+			const availableItemIds = new Set(items.map((item) => item.id));
+			const nextSelection = new Set(
+				[...currentSelection].filter((id) => availableItemIds.has(id)),
+			);
+
+			return nextSelection.size === currentSelection.size
+				? currentSelection
+				: nextSelection;
+		});
+	}, [items]);
+
 	// ===== LOGIQUE DE FILTRAGE =====
 
 	// Filtrage par recherche textuelle (côté client)
 	const filteredInventory = items.filter(
 		(item) =>
-			item.product.name
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase()) ||
+			item.product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
 			(item.product.brand &&
-				item.product.brand
-					.toLowerCase()
-					.includes(searchQuery.toLowerCase()))
+				item.product.brand.toLowerCase().includes(searchQuery.toLowerCase())),
 	);
+
+	const selectedCount = selectedItemIds.size;
+	const filteredItemIds = filteredInventory.map((item) => item.id);
+	const areAllFilteredItemsSelected =
+		filteredItemIds.length > 0 &&
+		filteredItemIds.every((id) => selectedItemIds.has(id));
 
 	// Gestion des filtres
 	const handleFilterChange = (newFilters: Partial<InventoryFilters>) => {
@@ -121,7 +143,7 @@ export function InventoryListPage() {
 	const handleRemoveItem = async (itemId: string) => {
 		if (
 			window.confirm(
-				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?'
+				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?',
 			)
 		) {
 			try {
@@ -132,18 +154,75 @@ export function InventoryListPage() {
 		}
 	};
 
+	const toggleItemSelection = (itemId: string) => {
+		setSelectedItemIds((currentSelection) => {
+			const nextSelection = new Set(currentSelection);
+
+			if (nextSelection.has(itemId)) {
+				nextSelection.delete(itemId);
+			} else {
+				nextSelection.add(itemId);
+			}
+
+			return nextSelection;
+		});
+	};
+
+	const toggleSelectAllFilteredItems = () => {
+		setSelectedItemIds((currentSelection) => {
+			const nextSelection = new Set(currentSelection);
+
+			if (areAllFilteredItemsSelected) {
+				filteredItemIds.forEach((id) => nextSelection.delete(id));
+			} else {
+				filteredItemIds.forEach((id) => nextSelection.add(id));
+			}
+
+			return nextSelection;
+		});
+	};
+
+	const clearSelection = () => {
+		setSelectedItemIds(new Set());
+	};
+
+	const openSelectionMode = () => {
+		setIsSelectionMode(true);
+	};
+
+	const closeSelectionMode = () => {
+		clearSelection();
+		setIsSelectionMode(false);
+	};
+
+	const handleRemoveSelectedItems = async () => {
+		if (selectedCount === 0) {
+			return;
+		}
+
+		const productLabel = selectedCount > 1 ? 'produits' : 'produit';
+		if (
+			window.confirm(
+				`Êtes-vous sûr de vouloir supprimer ${selectedCount} ${productLabel} de votre inventaire ?`,
+			)
+		) {
+			try {
+				await removeInventoryItems([...selectedItemIds]);
+				closeSelectionMode();
+			} catch (error) {
+				console.error('Erreur lors de la suppression groupée:', error);
+			}
+		}
+	};
+
 	// ===== CALCULS DE STATISTIQUES =====
 	const stats = {
 		totalItems: items.length,
 		expiringInWeek: items.filter(
 			(item) =>
-				item.expiryStatus === 'CRITICAL' ||
-				item.expiryStatus === 'WARNING'
+				item.expiryStatus === 'CRITICAL' || item.expiryStatus === 'WARNING',
 		).length,
-		totalValue: items.reduce(
-			(sum, item) => sum + (item.purchasePrice || 0),
-			0
-		),
+		totalValue: items.reduce((sum, item) => sum + (item.purchasePrice || 0), 0),
 	};
 
 	// ===== GESTION DES ERREURS =====
@@ -152,21 +231,21 @@ export function InventoryListPage() {
 			<div className='min-h-screen bg-primary-50 p-4'>
 				<div className='max-w-2xl mx-auto'>
 					<div className='bg-error-50 text-neutral-50 p-6 rounded-xl'>
-						<h2 className='text-xl font-semibold mb-2'>
-							Erreur de chargement
-						</h2>
+						<h2 className='text-xl font-semibold mb-2'>Erreur de chargement</h2>
 						<p className='mb-4'>
 							Impossible de charger votre inventaire: {error}
 						</p>
 						<div className='flex gap-2'>
 							<button
 								onClick={() => fetchInventoryItems()}
-								className='bg-neutral-50 text-error-50 px-4 py-2 rounded-lg font-medium'>
+								className='bg-neutral-50 text-error-50 px-4 py-2 rounded-lg font-medium'
+							>
 								Réessayer
 							</button>
 							<button
 								onClick={clearError}
-								className='bg-neutral-50/20 text-neutral-50 px-4 py-2 rounded-lg font-medium'>
+								className='bg-neutral-50/20 text-neutral-50 px-4 py-2 rounded-lg font-medium'
+							>
 								Fermer
 							</button>
 						</div>
@@ -187,7 +266,8 @@ export function InventoryListPage() {
 						</h1>
 						<Link
 							to='/app/inventory/add'
-							className='bg-success-50 text-neutral-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
+							className='bg-success-50 text-neutral-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'
+						>
 							<Plus className='size-4' />
 							Ajouter
 						</Link>
@@ -198,9 +278,7 @@ export function InventoryListPage() {
 						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<Package2 className='size-4 text-success-50' />
-								<span className='text-sm text-neutral-600'>
-									Total
-								</span>
+								<span className='text-sm text-neutral-600'>Total</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
 								{stats.totalItems}
@@ -210,9 +288,7 @@ export function InventoryListPage() {
 						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<AlertTriangle className='size-4 text-warning-50' />
-								<span className='text-sm text-neutral-600'>
-									À consommer
-								</span>
+								<span className='text-sm text-neutral-600'>À consommer</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
 								{stats.expiringInWeek}
@@ -222,9 +298,7 @@ export function InventoryListPage() {
 						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
 								<CheckCircle className='size-4 text-success-50' />
-								<span className='text-sm text-neutral-600'>
-									Valeur
-								</span>
+								<span className='text-sm text-neutral-600'>Valeur</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
 								{formatPrice(stats.totalValue)}
@@ -245,19 +319,45 @@ export function InventoryListPage() {
 					</div>
 
 					{/* ===== BOUTON FILTRES ===== */}
-					<button
-						onClick={() => setShowFilters(!showFilters)}
-						className='flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors'>
-						<Filter className='size-4' />
-						Filtres
-						{(currentFilters.categoryId ||
-							currentFilters.storageLocation ||
-							currentFilters.expiringWithinDays) && (
-							<span className='bg-accent text-neutral-50 text-xs px-2 py-1 rounded-full'>
-								Actifs
-							</span>
-						)}
-					</button>
+					<div className='flex items-center justify-between gap-3'>
+						<button
+							onClick={() => setShowFilters(!showFilters)}
+							className='flex items-center gap-2 text-neutral-600 hover:text-neutral-900 transition-colors'
+						>
+							<Filter className='size-4' />
+							Filtres
+							{(currentFilters.categoryId ||
+								currentFilters.storageLocation ||
+								currentFilters.expiringWithinDays) && (
+								<span className='bg-accent text-neutral-50 text-xs px-2 py-1 rounded-full'>
+									Actifs
+								</span>
+							)}
+						</button>
+
+						{isSelectionMode && filteredInventory.length > 0 ? (
+							<label className='flex items-center gap-2 text-sm text-neutral-600'>
+								<input
+									type='checkbox'
+									checked={areAllFilteredItemsSelected}
+									onChange={toggleSelectAllFilteredItems}
+									disabled={isLoading}
+									className='size-4 rounded border-neutral-300 text-success-50 focus:ring-success-50'
+								/>
+								Tout sélectionner
+							</label>
+						) : filteredInventory.length > 0 ? (
+							<button
+								type='button'
+								onClick={openSelectionMode}
+								disabled={isLoading}
+								className='inline-flex items-center gap-2 rounded-lg border border-error-50 px-3 py-2 text-sm font-medium text-error-50 transition-colors hover:bg-error-50 hover:text-neutral-50 disabled:opacity-50'
+							>
+								<Trash2 className='size-4' />
+								Supprimer
+							</button>
+						) : null}
+					</div>
 				</div>
 
 				{/* ===== PANNEAU DE FILTRES ===== */}
@@ -273,18 +373,14 @@ export function InventoryListPage() {
 									value={currentFilters.categoryId || ''}
 									onChange={(e) =>
 										handleFilterChange({
-											categoryId:
-												e.target.value || undefined,
+											categoryId: e.target.value || undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
-									<option value=''>
-										Toutes les catégories
-									</option>
+									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+								>
+									<option value=''>Toutes les catégories</option>
 									{INVENTORY_CATEGORIES.map((cat) => (
-										<option
-											key={cat.value}
-											value={cat.value}>
+										<option key={cat.value} value={cat.value}>
 											{cat.label}
 										</option>
 									))}
@@ -300,16 +396,14 @@ export function InventoryListPage() {
 									value={currentFilters.storageLocation || ''}
 									onChange={(e) =>
 										handleFilterChange({
-											storageLocation:
-												e.target.value || undefined,
+											storageLocation: e.target.value || undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
+									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+								>
 									<option value=''>Tous les lieux</option>
 									{INVENTORY_STORAGE_LOCATIONS.map((loc) => (
-										<option
-											key={loc.value}
-											value={loc.value}>
+										<option key={loc.value} value={loc.value}>
 											{loc.label}
 										</option>
 									))}
@@ -322,10 +416,7 @@ export function InventoryListPage() {
 									Expire dans
 								</label>
 								<select
-									value={
-										currentFilters.expiringWithinDays?.toString() ||
-										''
-									}
+									value={currentFilters.expiringWithinDays?.toString() || ''}
 									onChange={(e) =>
 										handleFilterChange({
 											expiringWithinDays: e.target.value
@@ -333,7 +424,8 @@ export function InventoryListPage() {
 												: undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'>
+									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+								>
 									<option value=''>Toutes les dates</option>
 									<option value='1'>1 jour</option>
 									<option value='3'>3 jours</option>
@@ -346,7 +438,8 @@ export function InventoryListPage() {
 						<div className='flex justify-end mt-4'>
 							<button
 								onClick={clearAllFilters}
-								className='text-neutral-600 hover:text-neutral-900 transition-colors'>
+								className='text-neutral-600 hover:text-neutral-900 transition-colors'
+							>
 								Effacer tous les filtres
 							</button>
 						</div>
@@ -356,6 +449,38 @@ export function InventoryListPage() {
 
 			{/* ===== LISTE DES PRODUITS ===== */}
 			<div className='p-4'>
+				{isSelectionMode && (
+					<div className='mb-4 flex flex-col gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
+						<p className='text-sm font-medium text-neutral-800'>
+							{selectedCount > 0
+								? `${selectedCount} produit${
+										selectedCount > 1 ? 's' : ''
+								  } sélectionné${selectedCount > 1 ? 's' : ''}`
+								: 'Sélectionnez les produits à supprimer'}
+						</p>
+						<div className='flex items-center gap-2'>
+							<button
+								type='button'
+								onClick={closeSelectionMode}
+								disabled={isLoading}
+								className='inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50'
+							>
+								<X className='size-4' />
+								Annuler
+							</button>
+							<button
+								type='button'
+								onClick={handleRemoveSelectedItems}
+								disabled={isLoading || selectedCount === 0}
+								className='inline-flex items-center gap-2 rounded-lg bg-error-50 px-3 py-2 text-sm font-medium text-neutral-50 transition-colors hover:bg-error-100 disabled:opacity-50'
+							>
+								<Trash2 className='size-4' />
+								{isLoading ? 'Suppression...' : 'Supprimer'}
+							</button>
+						</div>
+					</div>
+				)}
+
 				{isLoading ? (
 					<div className='flex justify-center items-center py-12'>
 						<div className='animate-spin rounded-full h-8 w-8 border-b-2 border-success-50'></div>
@@ -376,7 +501,8 @@ export function InventoryListPage() {
 						{items.length === 0 && (
 							<Link
 								to='/app/inventory/add'
-								className='bg-success-50 text-neutral-50 px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'>
+								className='bg-success-50 text-neutral-50 px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'
+							>
 								<Plus className='size-4' />
 								Ajouter mon premier produit
 							</Link>
@@ -390,6 +516,9 @@ export function InventoryListPage() {
 								item={item}
 								onRemove={() => handleRemoveItem(item.id)}
 								isRemoving={isLoading}
+								isSelected={selectedItemIds.has(item.id)}
+								isSelectionMode={isSelectionMode}
+								onToggleSelection={() => toggleItemSelection(item.id)}
 							/>
 						))}
 					</div>
@@ -404,12 +533,18 @@ interface InventoryItemCardProps {
 	item: InventoryItemWithStatus;
 	onRemove: () => void;
 	isRemoving: boolean;
+	isSelected: boolean;
+	isSelectionMode: boolean;
+	onToggleSelection: () => void;
 }
 
-function InventoryItemCard({
+export function InventoryItemCard({
 	item,
 	onRemove,
 	isRemoving,
+	isSelected,
+	isSelectionMode,
+	onToggleSelection,
 }: InventoryItemCardProps) {
 	const expiryStatus = item.expiryStatus;
 
@@ -423,10 +558,25 @@ function InventoryItemCard({
 
 	return (
 		<div
-			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm`}>
+			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm ${
+				isSelected ? 'ring-2 ring-success-50' : ''
+			}`}
+		>
 			<div className='flex items-start justify-between'>
 				<div className='flex-1'>
 					<div className='flex items-start gap-3'>
+						{isSelectionMode && (
+							<input
+								type='checkbox'
+								checked={isSelected}
+								onClick={(event) => event.stopPropagation()}
+								onChange={onToggleSelection}
+								disabled={isRemoving}
+								aria-label={`Sélectionner ${item.product.name}`}
+								className='mt-4 size-4 rounded border-neutral-300 text-success-50 focus:ring-success-50 disabled:opacity-50'
+							/>
+						)}
+
 						{/* ===== IMAGE DU PRODUIT ===== */}
 						<div className='size-12 bg-neutral-100 rounded-lg flex items-center justify-center overflow-hidden'>
 							{item.product.imageUrl ? (
@@ -451,25 +601,40 @@ function InventoryItemCard({
 							</h3>
 
 							<div className='text-sm text-neutral-600 space-y-1'>
-								<p>
-									{formatQuantity(
-										item.quantity,
-										item.product.unitType
-									)}
-								</p>
-								<p>
-									{getCategoryLabel(
-										item.product.category.slug
-									)}
-								</p>
+								<p>{formatQuantity(item.quantity, item.product.unitType)}</p>
+								<p>{getCategoryLabel(item.product.category.slug)}</p>
 								{item.storageLocation && (
-									<p>
-										{getStorageLocationLabel(
-											item.storageLocation
-										)}
-									</p>
+									<p>{getStorageLocationLabel(item.storageLocation)}</p>
 								)}
 							</div>
+
+							{item.lots && item.lots.length > 1 && (
+								<div className='mt-3 rounded-lg border border-neutral-200 bg-neutral-100/60 p-3'>
+									<p className='mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500'>
+										{item.lots.length} lots
+									</p>
+									<div className='space-y-1.5'>
+										{item.lots.map((lot) => (
+											<div
+												key={lot.id}
+												className='flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-700'
+											>
+												<span>
+													{formatQuantity(
+														lot.quantity,
+														item.product.unitType,
+													)}
+												</span>
+												<span className='text-neutral-500'>
+													{lot.expiryDate
+														? formatRelativeDate(lot.expiryDate)
+														: 'Sans date de péremption'}
+												</span>
+											</div>
+										))}
+									</div>
+								</div>
+							)}
 
 							{/* ===== SCORES NUTRITIONNELS ===== */}
 							<div className='flex gap-2 mt-2'>
@@ -491,12 +656,20 @@ function InventoryItemCard({
 					<div className='mt-3 flex items-center justify-between'>
 						<div className='text-sm'>
 							{item.expiryDate && (
-								<span
-									className={`font-medium ${getExpiryStatusTextColor(
-										expiryStatus
-									)}`}>
-									{formatRelativeDate(item.expiryDate)}
-								</span>
+								<div className='flex items-center gap-2'>
+									<span
+										className={`font-medium ${getExpiryStatusTextColor(
+											expiryStatus,
+										)}`}
+									>
+										{formatRelativeDate(item.expiryDate)}
+									</span>
+									{item.expiryDateSource === 'ESTIMATED' && (
+										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+											estimée
+										</span>
+									)}
+								</div>
 							)}
 						</div>
 
@@ -513,13 +686,15 @@ function InventoryItemCard({
 					<Link
 						to='/app/inventory/$productId'
 						params={{ productId: item.id }}
-						className='text-neutral-600 hover:text-neutral-900 transition-colors p-2'>
+						className='text-neutral-600 hover:text-neutral-900 transition-colors p-2'
+					>
 						Détails
 					</Link>
 					<button
 						onClick={onRemove}
 						disabled={isRemoving}
-						className='text-error-50 hover:text-error-100 transition-colors p-2 disabled:opacity-50'>
+						className='text-error-50 hover:text-error-100 transition-colors p-2 disabled:opacity-50'
+					>
 						{isRemoving ? 'Suppression...' : 'Supprimer'}
 					</button>
 				</div>

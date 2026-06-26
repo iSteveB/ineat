@@ -6,7 +6,7 @@ import { ExpiryStatus } from '@/schemas';
  * @returns Le statut d'expiration
  */
 export const calculateExpiryStatus = (
-	expiryDate: string | undefined
+	expiryDate: string | null | undefined
 ): ExpiryStatus => {
 	if (!expiryDate) return 'UNKNOWN';
 
@@ -14,6 +14,8 @@ export const calculateExpiryStatus = (
 	today.setHours(0, 0, 0, 0);
 
 	const expiry = new Date(expiryDate);
+	if (Number.isNaN(expiry.getTime())) return 'UNKNOWN';
+
 	expiry.setHours(0, 0, 0, 0);
 
 	const diffTime = expiry.getTime() - today.getTime();
@@ -30,13 +32,15 @@ export const calculateExpiryStatus = (
  * @param date - Date à formater
  * @returns Chaîne formatée (ex: "J-3", "Expiré")
  */
-export const formatRelativeDate = (date: string | null): string => {
+export const formatRelativeDate = (date: string | null | undefined): string => {
 	if (!date) return 'Pas de date';
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
 	const targetDate = new Date(date);
+	if (Number.isNaN(targetDate.getTime())) return 'Pas de date';
+
 	targetDate.setHours(0, 0, 0, 0);
 
 	const diffTime = targetDate.getTime() - today.getTime();

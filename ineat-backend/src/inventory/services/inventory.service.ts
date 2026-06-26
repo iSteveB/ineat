@@ -10,6 +10,10 @@ import { QuickAddProductDto } from '../../DTOs';
 import { BudgetService } from '../../budget/services/budget.service';
 import { ExpenseService } from '../../budget/services/expense.service';
 import { randomUUID } from 'crypto';
+import {
+  estimateExpiryDate,
+  ExpiryEstimationResult,
+} from './expiry-estimation.service';
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
 export interface InventoryStats {
@@ -74,6 +78,17 @@ export interface PaginatedInventoryResult {
   };
 }
 
+type InventoryItemInput = Pick<
+  AddManualProductDto,
+  | 'quantity'
+  | 'purchaseDate'
+  | 'purchasePrice'
+  | 'storageLocation'
+  | 'packageStatus'
+  | 'preparationStatus'
+  | 'notes'
+>;
+
 @Injectable()
 export class InventoryService {
   constructor(
@@ -100,24 +115,32 @@ export class InventoryService {
       // 1. Récupérer ou créer le produit
       const product = await this.findOrCreateProduct(tx, addProductDto);
 
-      // 2. Vérifier si le produit existe déjà dans l'inventaire de l'utilisateur
-      await this.checkDuplicateInventoryItem(
-        tx,
-        userId,
-        product.id,
-        addProductDto,
-      );
+      const expiryEstimation = estimateExpiryDate({
+        productName: product.name ?? addProductDto.name,
+        categorySlug: product.Category?.slug ?? addProductDto.category,
+        categoryName: product.Category?.name,
+        storageLocation: addProductDto.storageLocation,
+        packageStatus: addProductDto.packageStatus,
+        preparationStatus: addProductDto.preparationStatus,
+        purchaseDate: addProductDto.purchaseDate,
+        manualExpiryDate: addProductDto.expiryDate,
+      });
 
-      // 3. Créer l'élément d'inventaire
-      const inventoryItem = await this.createInventoryItem(
+      // 2. Créer un nouveau lot ou incrémenter un lot compatible
+      const inventoryItem = await this.upsertInventoryLot(
         tx,
         userId,
         product.id,
         addProductDto,
+        expiryEstimation,
       );
 
       // 4. Formater la réponse de base
-      const baseResponse = this.formatResponse(inventoryItem, product);
+      const baseResponse = this.formatResponse(
+        inventoryItem,
+        product,
+        expiryEstimation,
+      );
 
       // 5. Gérer l'impact budgétaire
       const budgetImpact = await this.handleBudgetImpact(
@@ -157,23 +180,32 @@ export class InventoryService {
       // 1. Vérifier que le produit existe
       const product = await this.findProductById(tx, quickAddDto.productId);
 
-      // 2. Vérifier s'il y a un doublon dans l'inventaire
-      await this.checkDuplicateInventoryItemForQuickAdd(
+      const expiryEstimation = estimateExpiryDate({
+        productName: product.name,
+        categorySlug: product.Category?.slug,
+        categoryName: product.Category?.name,
+        storageLocation: quickAddDto.storageLocation,
+        packageStatus: quickAddDto.packageStatus,
+        preparationStatus: quickAddDto.preparationStatus,
+        purchaseDate: quickAddDto.purchaseDate,
+        manualExpiryDate: quickAddDto.expiryDate,
+      });
+
+      // 2. Créer un nouveau lot ou incrémenter un lot compatible
+      const inventoryItem = await this.upsertInventoryLot(
         tx,
         userId,
         quickAddDto.productId,
         quickAddDto,
-      );
-
-      // 3. Créer l'élément d'inventaire
-      const inventoryItem = await this.createInventoryItemFromQuickAdd(
-        tx,
-        userId,
-        quickAddDto,
+        expiryEstimation,
       );
 
       // 4. Formater la réponse de base
-      const baseResponse = this.formatResponse(inventoryItem, product);
+      const baseResponse = this.formatResponse(
+        inventoryItem,
+        product,
+        expiryEstimation,
+      );
 
       // 5. Gérer l'impact budgétaire
       const budgetImpact = await this.handleBudgetImpact(
@@ -302,21 +334,21 @@ export class InventoryService {
         { expiryDate: 'asc' as const }, // Produits qui périment en premier
         { createdAt: 'desc' as const }, // Plus récents en premier pour ceux sans date
       ],
-      ...(limit ? { skip: (page - 1) * limit, take: limit } : {}),
     };
 
     if (!limit) {
-      return await this.prisma.inventoryItem.findMany(query);
+      const items = await this.prisma.inventoryItem.findMany(query);
+      return this.groupInventoryItemsByProduct(items);
     }
 
-    const [items, totalItems] = await Promise.all([
-      this.prisma.inventoryItem.findMany(query),
-      this.prisma.inventoryItem.count({ where }),
-    ]);
+    const items = await this.prisma.inventoryItem.findMany(query);
+    const groupedItems = this.groupInventoryItemsByProduct(items);
+    const totalItems = groupedItems.length;
     const totalPages = Math.ceil(totalItems / limit);
+    const paginatedItems = groupedItems.slice((page - 1) * limit, page * limit);
 
     return {
-      items,
+      items: paginatedItems,
       pagination: {
         currentPage: page,
         pageSize: limit,
@@ -358,7 +390,10 @@ export class InventoryService {
         AddManualProductDto,
         | 'quantity'
         | 'expiryDate'
+        | 'purchaseDate'
         | 'storageLocation'
+        | 'packageStatus'
+        | 'preparationStatus'
         | 'notes'
         | 'purchasePrice'
       >
@@ -370,11 +405,19 @@ export class InventoryService {
         id: inventoryItemId,
         userId,
       },
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
+      },
     });
 
     if (!existingItem) {
       throw new NotFoundException("Élément d'inventaire non trouvé");
     }
+    const existingInventoryItem = existingItem as any;
 
     // Préparer les données de mise à jour
     const updatePayload: any = {};
@@ -387,10 +430,23 @@ export class InventoryService {
       updatePayload.expiryDate = updateData.expiryDate
         ? new Date(updateData.expiryDate)
         : null;
+      updatePayload.expiryDateSource = 'MANUAL';
+    }
+
+    if (updateData.purchaseDate !== undefined) {
+      updatePayload.purchaseDate = new Date(updateData.purchaseDate);
     }
 
     if (updateData.storageLocation !== undefined) {
       updatePayload.storageLocation = updateData.storageLocation;
+    }
+
+    if (updateData.packageStatus !== undefined) {
+      updatePayload.packageStatus = updateData.packageStatus;
+    }
+
+    if (updateData.preparationStatus !== undefined) {
+      updatePayload.preparationStatus = updateData.preparationStatus;
     }
 
     if (updateData.notes !== undefined) {
@@ -399,6 +455,38 @@ export class InventoryService {
 
     if (updateData.purchasePrice !== undefined) {
       updatePayload.purchasePrice = updateData.purchasePrice;
+    }
+
+    const contextChanged =
+      updateData.storageLocation !== undefined ||
+      updateData.packageStatus !== undefined ||
+      updateData.preparationStatus !== undefined ||
+      updateData.purchaseDate !== undefined;
+
+    if (
+      updateData.expiryDate === undefined &&
+      existingInventoryItem.expiryDateSource === 'ESTIMATED' &&
+      contextChanged
+    ) {
+      const expiryEstimation = estimateExpiryDate({
+        productName: existingInventoryItem.Product.name,
+        categorySlug: existingInventoryItem.Product.Category?.slug,
+        categoryName: existingInventoryItem.Product.Category?.name,
+        storageLocation:
+          updatePayload.storageLocation ??
+          existingInventoryItem.storageLocation,
+        packageStatus:
+          updatePayload.packageStatus ?? existingInventoryItem.packageStatus,
+        preparationStatus:
+          updatePayload.preparationStatus ??
+          existingInventoryItem.preparationStatus,
+        purchaseDate:
+          updatePayload.purchaseDate ?? existingInventoryItem.purchaseDate,
+        addedAt: existingInventoryItem.createdAt,
+      });
+
+      updatePayload.expiryDate = expiryEstimation.expiryDate;
+      updatePayload.expiryDateSource = expiryEstimation.source;
     }
 
     return await this.prisma.inventoryItem.update({
@@ -436,6 +524,136 @@ export class InventoryService {
     });
 
     return { success: true, message: "Produit supprimé de l'inventaire" };
+  }
+
+  async consumeInventoryItem(
+    userId: string,
+    inventoryItemId: string,
+    quantityConsumed: number,
+  ) {
+    this.validatePositiveQuantity(quantityConsumed);
+
+    return await this.prisma.$transaction(async (tx: any) => {
+      const selectedItem = await tx.inventoryItem.findFirst({
+        where: {
+          id: inventoryItemId,
+          userId,
+        },
+      });
+
+      if (!selectedItem) {
+        throw new NotFoundException("Élément d'inventaire non trouvé");
+      }
+
+      const lots = await tx.inventoryItem.findMany({
+        where: {
+          userId,
+          productId: selectedItem.productId,
+        },
+        orderBy: [{ createdAt: 'asc' }],
+      });
+      const sortedLots = [...lots].sort((first, second) => {
+        const expiryComparison = this.compareNullableDates(
+          first.expiryDate,
+          second.expiryDate,
+        );
+
+        if (expiryComparison !== 0) {
+          return expiryComparison;
+        }
+
+        return (
+          new Date(first.createdAt).getTime() -
+          new Date(second.createdAt).getTime()
+        );
+      });
+      const availableQuantity = sortedLots.reduce(
+        (total, lot) => total + lot.quantity,
+        0,
+      );
+
+      if (quantityConsumed > availableQuantity) {
+        throw new BadRequestException(
+          `Quantité insuffisante dans l'inventaire (${availableQuantity} disponible)`,
+        );
+      }
+
+      let remainingToConsume = quantityConsumed;
+      const consumedLots: Array<{
+        id: string;
+        quantityConsumed: number;
+        remainingQuantity: number;
+        deleted: boolean;
+      }> = [];
+
+      for (const lot of sortedLots) {
+        if (remainingToConsume <= 0) {
+          break;
+        }
+
+        const consumedFromLot = Math.min(lot.quantity, remainingToConsume);
+        const remainingQuantity = lot.quantity - consumedFromLot;
+
+        if (remainingQuantity <= 0) {
+          await tx.inventoryItem.delete({
+            where: { id: lot.id },
+          });
+        } else {
+          await tx.inventoryItem.update({
+            where: { id: lot.id },
+            data: {
+              quantity: remainingQuantity,
+              updatedAt: new Date(),
+            },
+          });
+        }
+
+        consumedLots.push({
+          id: lot.id,
+          quantityConsumed: consumedFromLot,
+          remainingQuantity,
+          deleted: remainingQuantity <= 0,
+        });
+        remainingToConsume -= consumedFromLot;
+      }
+
+      return {
+        success: true,
+        productId: selectedItem.productId,
+        quantityConsumed,
+        remainingQuantity: availableQuantity - quantityConsumed,
+        consumedLots,
+      };
+    });
+  }
+
+  /**
+   * Supprime plusieurs éléments d'inventaire appartenant à l'utilisateur
+   * @param userId ID de l'utilisateur
+   * @param inventoryItemIds IDs des éléments à supprimer
+   */
+  async removeInventoryItems(userId: string, inventoryItemIds: string[]) {
+    const uniqueIds = [...new Set(inventoryItemIds)];
+
+    if (uniqueIds.length === 0) {
+      throw new BadRequestException('Aucun produit sélectionné');
+    }
+
+    const result = await this.prisma.inventoryItem.deleteMany({
+      where: {
+        id: { in: uniqueIds },
+        userId,
+      },
+    });
+
+    return {
+      success: true,
+      deletedCount: result.count,
+      message:
+        result.count > 1
+          ? `${result.count} produits supprimés de l'inventaire`
+          : `${result.count} produit supprimé de l'inventaire`,
+    };
   }
 
   // --- MÉTHODES PRIVÉES ---
@@ -505,7 +723,6 @@ export class InventoryService {
         );
       }
     }
-
   }
 
   private validateInventoryDates(
@@ -583,7 +800,7 @@ export class InventoryService {
     if (addProductDto.barcode) {
       const existingProductByBarcode = await tx.product.findUnique({
         where: { barcode: addProductDto.barcode },
-        include: { Category : true },
+        include: { Category: true },
       });
 
       if (existingProductByBarcode) {
@@ -673,55 +890,70 @@ export class InventoryService {
     }
   }
 
-  /**
-   * Vérifie s'il y a un doublon dans l'inventaire
-   */
-  private async checkDuplicateInventoryItem(
-    tx: any, // Type générique pour la transaction Prisma
+  private async upsertInventoryLot(
+    tx: any,
     userId: string,
     productId: string,
-    addProductDto: AddManualProductDto,
-  ): Promise<void> {
-    const existingInventoryItem = await tx.inventoryItem.findFirst({
+    itemData: InventoryItemInput,
+    expiryEstimation: ExpiryEstimationResult,
+  ) {
+    const matchingLot = await tx.inventoryItem.findFirst({
       where: {
         userId,
         productId,
-        storageLocation: addProductDto.storageLocation || null,
-        expiryDate: addProductDto.expiryDate
-          ? new Date(addProductDto.expiryDate)
-          : null,
+        storageLocation: itemData.storageLocation || null,
+        packageStatus: itemData.packageStatus || null,
+        preparationStatus: itemData.preparationStatus || null,
+        expiryDate: expiryEstimation.expiryDate,
+      },
+      include: {
+        Product: {
+          include: {
+            Category: true,
+          },
+        },
       },
     });
 
-    if (existingInventoryItem) {
-      throw new ConflictException(
-        'Ce produit existe déjà dans votre inventaire avec les mêmes caractéristiques. Vous pouvez modifier la quantité existante.',
-      );
-    }
-  }
+    if (matchingLot) {
+      const nextPurchasePrice =
+        matchingLot.purchasePrice !== null && matchingLot.purchasePrice !== undefined
+          ? matchingLot.purchasePrice + (itemData.purchasePrice ?? 0)
+          : itemData.purchasePrice ?? null;
 
-  /**
-   * Crée l'élément d'inventaire
-   */
-  private async createInventoryItem(
-    tx: any, // Type générique pour la transaction Prisma
-    userId: string,
-    productId: string,
-    addProductDto: AddManualProductDto,
-  ) {
+      return await tx.inventoryItem.update({
+        where: { id: matchingLot.id },
+        data: {
+          quantity: matchingLot.quantity + itemData.quantity,
+          purchaseDate: new Date(itemData.purchaseDate),
+          purchasePrice: nextPurchasePrice,
+          notes: itemData.notes ?? matchingLot.notes,
+          updatedAt: new Date(),
+        },
+        include: {
+          Product: {
+            include: {
+              Category: true,
+            },
+          },
+        },
+      });
+    }
+
     return await tx.inventoryItem.create({
       data: {
         id: randomUUID(),
         userId,
         productId,
-        quantity: addProductDto.quantity,
-        purchaseDate: new Date(addProductDto.purchaseDate),
-        expiryDate: addProductDto.expiryDate
-          ? new Date(addProductDto.expiryDate)
-          : null,
-        purchasePrice: addProductDto.purchasePrice,
-        storageLocation: addProductDto.storageLocation,
-        notes: addProductDto.notes,
+        quantity: itemData.quantity,
+        purchaseDate: new Date(itemData.purchaseDate),
+        expiryDate: expiryEstimation.expiryDate,
+        expiryDateSource: expiryEstimation.source,
+        packageStatus: itemData.packageStatus || null,
+        preparationStatus: itemData.preparationStatus || null,
+        purchasePrice: itemData.purchasePrice ?? null,
+        storageLocation: itemData.storageLocation || null,
+        notes: itemData.notes || null,
         updatedAt: new Date(),
       },
       include: {
@@ -734,12 +966,85 @@ export class InventoryService {
     });
   }
 
+  private groupInventoryItemsByProduct(items: any[]): any[] {
+    const groupedItems = new Map<string, any>();
+
+    for (const item of items) {
+      const existingItem = groupedItems.get(item.productId);
+      const lot = this.formatInventoryLot(item);
+
+      if (!existingItem) {
+        groupedItems.set(item.productId, {
+          ...item,
+          quantity: item.quantity,
+          purchasePrice: item.purchasePrice ?? 0,
+          lots: [lot],
+        });
+        continue;
+      }
+
+      existingItem.quantity += item.quantity;
+      existingItem.purchasePrice =
+        (existingItem.purchasePrice ?? 0) + (item.purchasePrice ?? 0);
+      existingItem.lots.push(lot);
+
+      if (this.shouldUseLotAsPrimaryItem(item, existingItem)) {
+        groupedItems.set(item.productId, {
+          ...item,
+          quantity: existingItem.quantity,
+          purchasePrice: existingItem.purchasePrice,
+          lots: existingItem.lots,
+        });
+      }
+    }
+
+    return [...groupedItems.values()].map((item) => ({
+      ...item,
+      lots: item.lots.sort((first: any, second: any) =>
+        this.compareNullableDates(first.expiryDate, second.expiryDate),
+      ),
+    }));
+  }
+
+  private formatInventoryLot(item: any) {
+    return {
+      id: item.id,
+      quantity: item.quantity,
+      expiryDate: item.expiryDate,
+      expiryDateSource: item.expiryDateSource,
+      purchaseDate: item.purchaseDate,
+      purchasePrice: item.purchasePrice,
+      storageLocation: item.storageLocation,
+      packageStatus: item.packageStatus,
+      preparationStatus: item.preparationStatus,
+      notes: item.notes,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    };
+  }
+
+  private shouldUseLotAsPrimaryItem(candidate: any, current: any): boolean {
+    return this.compareNullableDates(candidate.expiryDate, current.expiryDate) < 0;
+  }
+
+  private compareNullableDates(
+    firstDate?: Date | string | null,
+    secondDate?: Date | string | null,
+  ): number {
+    if (!firstDate && !secondDate) return 0;
+    if (!firstDate) return 1;
+    if (!secondDate) return -1;
+
+    return new Date(firstDate).getTime() - new Date(secondDate).getTime();
+  }
+
   /**
    * ✅ ENRICHI : Formate la réponse pour le client avec tous les nouveaux champs
    */
   private formatResponse(
     inventoryItem: any,
     product: any,
+    expiryEstimation?: ExpiryEstimationResult,
   ): ProductCreatedResponseDto {
     return {
       id: inventoryItem.id,
@@ -751,8 +1056,15 @@ export class InventoryService {
       unitType: product.unitType,
       purchaseDate: inventoryItem.purchaseDate.toISOString(),
       expiryDate: inventoryItem.expiryDate?.toISOString(),
+      expiryDateSource: inventoryItem.expiryDateSource,
+      expiryDateReason: expiryEstimation?.reason,
+      expiryDateRuleId: expiryEstimation?.ruleId,
+      expiryDateRuleLevel: expiryEstimation?.ruleLevel,
+      expiryDateDurationDays: expiryEstimation?.durationDays,
       purchasePrice: inventoryItem.purchasePrice,
       storageLocation: inventoryItem.storageLocation,
+      packageStatus: inventoryItem.packageStatus,
+      preparationStatus: inventoryItem.preparationStatus,
       notes: inventoryItem.notes,
       nutriscore: product.nutriscore,
       ecoscore: product.ecoscore,
@@ -804,8 +1116,7 @@ export class InventoryService {
           productName: expenseData?.productName || 'Produit',
           amount: purchasePrice,
           purchaseDate:
-            expenseData?.purchaseDate ||
-            new Date().toISOString().split('T')[0],
+            expenseData?.purchaseDate || new Date().toISOString().split('T')[0],
           source: expenseData?.source || 'Inventaire',
           notes: expenseData?.notes,
           inventoryItemId: expenseData?.inventoryItemId,
@@ -851,7 +1162,10 @@ export class InventoryService {
   private async validateQuickAddData(
     quickAddDto: QuickAddProductDto,
   ): Promise<void> {
-    this.validateInventoryDates(quickAddDto.purchaseDate, quickAddDto.expiryDate);
+    this.validateInventoryDates(
+      quickAddDto.purchaseDate,
+      quickAddDto.expiryDate,
+    );
     this.validatePositiveQuantity(quickAddDto.quantity);
     this.validatePurchasePrice(quickAddDto.purchasePrice);
   }
@@ -870,66 +1184,6 @@ export class InventoryService {
     }
 
     return product;
-  }
-
-  /**
-   * Vérifie les doublons pour l'ajout rapide
-   */
-  private async checkDuplicateInventoryItemForQuickAdd(
-    tx: any,
-    userId: string,
-    productId: string,
-    quickAddDto: QuickAddProductDto,
-  ): Promise<void> {
-    const existingInventoryItem = await tx.inventoryItem.findFirst({
-      where: {
-        userId,
-        productId,
-        storageLocation: quickAddDto.storageLocation || null,
-        expiryDate: quickAddDto.expiryDate
-          ? new Date(quickAddDto.expiryDate)
-          : null,
-      },
-    });
-
-    if (existingInventoryItem) {
-      throw new ConflictException(
-        'Ce produit existe déjà dans votre inventaire avec les mêmes caractéristiques (lieu de stockage et date de péremption). Vous pouvez modifier la quantité existante.',
-      );
-    }
-  }
-
-  /**
-   * Crée l'élément d'inventaire à partir des données d'ajout rapide
-   */
-  private async createInventoryItemFromQuickAdd(
-    tx: any,
-    userId: string,
-    quickAddDto: QuickAddProductDto,
-  ) {
-    return await tx.inventoryItem.create({
-      data: {
-        id: randomUUID(),
-        userId,
-        productId: quickAddDto.productId,
-        quantity: quickAddDto.quantity,
-        purchaseDate: new Date(quickAddDto.purchaseDate),
-        expiryDate: quickAddDto.expiryDate
-          ? new Date(quickAddDto.expiryDate)
-          : null,
-        purchasePrice: quickAddDto.purchasePrice || null,
-        storageLocation: quickAddDto.storageLocation || null,
-        notes: quickAddDto.notes || null,
-        updatedAt: new Date(),
-      },
-      include: {
-        Product: {
-          include: {
-            Category: true,
-          },
-        },
-      },
-    });
   }
 
   // ===== AUTRES MÉTHODES EXISTANTES (non modifiées) =====

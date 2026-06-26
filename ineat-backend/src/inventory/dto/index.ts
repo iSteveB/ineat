@@ -8,3 +8,5 @@ export {
   Ecoscore,
   Novascore,
 } from './add-manual-product.dto';
+export { RemoveInventoryItemsDto } from './remove-inventory-items.dto';
+export { ConsumeInventoryItemDto } from './consume-inventory-item.dto';

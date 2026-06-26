@@ -29,6 +29,12 @@ import {
   ProductCreatedWithBudgetDto,
 } from '../services/inventory.service';
 import { AddManualProductDto, QuickAddProductDto } from '../../DTOs';
+import {
+  PackageStatus,
+  PreparationStatus,
+} from '../dto/add-manual-product.dto';
+import { RemoveInventoryItemsDto } from '../dto/remove-inventory-items.dto';
+import { ConsumeInventoryItemDto } from '../dto/consume-inventory-item.dto';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { Request } from 'express';
 
@@ -79,12 +85,29 @@ export class InventoryController {
       userId: item.userId,
       quantity: item.quantity,
       expiryDate: item.expiryDate?.toISOString() ?? null,
+      expiryDateSource: item.expiryDateSource,
       purchaseDate: item.purchaseDate.toISOString(),
       purchasePrice: item.purchasePrice,
       storageLocation: item.storageLocation,
+      packageStatus: item.packageStatus,
+      preparationStatus: item.preparationStatus,
       notes: item.notes,
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
+      lots: item.lots?.map((lot: any) => ({
+        id: lot.id,
+        quantity: lot.quantity,
+        expiryDate: lot.expiryDate?.toISOString() ?? null,
+        expiryDateSource: lot.expiryDateSource,
+        purchaseDate: lot.purchaseDate.toISOString(),
+        purchasePrice: lot.purchasePrice,
+        storageLocation: lot.storageLocation,
+        packageStatus: lot.packageStatus,
+        preparationStatus: lot.preparationStatus,
+        notes: lot.notes,
+        createdAt: lot.createdAt.toISOString(),
+        updatedAt: lot.updatedAt.toISOString(),
+      })),
       product: this.formatProduct(item.Product),
     };
   }
@@ -216,8 +239,15 @@ export class InventoryController {
           unitType: result.unitType,
           purchaseDate: result.purchaseDate,
           expiryDate: result.expiryDate,
+          expiryDateSource: result.expiryDateSource,
+          expiryDateReason: result.expiryDateReason,
+          expiryDateRuleId: result.expiryDateRuleId,
+          expiryDateRuleLevel: result.expiryDateRuleLevel,
+          expiryDateDurationDays: result.expiryDateDurationDays,
           purchasePrice: result.purchasePrice,
           storageLocation: result.storageLocation,
+          packageStatus: result.packageStatus,
+          preparationStatus: result.preparationStatus,
           notes: result.notes,
           nutriscore: result.nutriscore,
           ecoscore: result.ecoscore,
@@ -353,8 +383,15 @@ export class InventoryController {
           unitType: result.unitType,
           purchaseDate: result.purchaseDate,
           expiryDate: result.expiryDate,
+          expiryDateSource: result.expiryDateSource,
+          expiryDateReason: result.expiryDateReason,
+          expiryDateRuleId: result.expiryDateRuleId,
+          expiryDateRuleLevel: result.expiryDateRuleLevel,
+          expiryDateDurationDays: result.expiryDateDurationDays,
           purchasePrice: result.purchasePrice,
           storageLocation: result.storageLocation,
+          packageStatus: result.packageStatus,
+          preparationStatus: result.preparationStatus,
           notes: result.notes,
           nutriscore: result.nutriscore,
           ecoscore: result.ecoscore,
@@ -784,7 +821,18 @@ export class InventoryController {
       properties: {
         quantity: { type: 'number', minimum: 0.01 },
         expiryDate: { type: 'string', format: 'date', nullable: true },
+        purchaseDate: { type: 'string', format: 'date', nullable: true },
         storageLocation: { type: 'string', nullable: true },
+        packageStatus: {
+          type: 'string',
+          enum: ['UNOPENED', 'OPENED'],
+          nullable: true,
+        },
+        preparationStatus: {
+          type: 'string',
+          enum: ['RAW', 'COOKED'],
+          nullable: true,
+        },
         notes: { type: 'string', nullable: true },
         purchasePrice: { type: 'number', minimum: 0, nullable: true },
       },
@@ -805,7 +853,10 @@ export class InventoryController {
     updateData: {
       quantity?: number;
       expiryDate?: string;
+      purchaseDate?: string;
       storageLocation?: string;
+      packageStatus?: PackageStatus;
+      preparationStatus?: PreparationStatus;
       notes?: string;
       purchasePrice?: number;
     },
@@ -817,6 +868,96 @@ export class InventoryController {
     );
 
     return this.formatInventoryItem(updatedItem);
+  }
+
+  /**
+   * Supprime plusieurs éléments d'inventaire
+   */
+  @Delete('bulk')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Supprimer plusieurs éléments d'inventaire",
+    description:
+      "Supprime définitivement plusieurs produits de l'inventaire de l'utilisateur",
+  })
+  @ApiBody({
+    type: RemoveInventoryItemsDto,
+    description: "Liste des IDs d'éléments d'inventaire à supprimer",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Éléments d'inventaire supprimés avec succès",
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        deletedCount: { type: 'number', example: 3 },
+        message: {
+          type: 'string',
+          example: "3 produits supprimés de l'inventaire",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Liste de produits invalide',
+  })
+  async removeInventoryItems(
+    @Req() req: AuthenticatedRequest,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    removeItemsDto: RemoveInventoryItemsDto,
+  ) {
+    return await this.inventoryService.removeInventoryItems(
+      req.user.id,
+      removeItemsDto.ids,
+    );
+  }
+
+  /**
+   * Consomme une quantité d'un produit en appliquant la règle FEFO
+   */
+  @Post(':id/consume')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Consommer une quantité de produit',
+    description:
+      "Décrémente les lots d'un produit en priorité par date de péremption la plus proche (FEFO). Les lots sans date sont consommés en dernier.",
+  })
+  @ApiParam({
+    name: 'id',
+    description:
+      "ID d'un lot du produit à consommer. Tous les lots du même produit seront pris en compte.",
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiBody({
+    type: ConsumeInventoryItemDto,
+    description: 'Quantité à consommer',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Quantité consommée avec succès',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Quantité invalide ou insuffisante',
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Élément d'inventaire non trouvé",
+  })
+  async consumeInventoryItem(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) inventoryItemId: string,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    consumeDto: ConsumeInventoryItemDto,
+  ) {
+    return await this.inventoryService.consumeInventoryItem(
+      req.user.id,
+      inventoryItemId,
+      consumeDto.quantityConsumed,
+    );
   }
 
   /**

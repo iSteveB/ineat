@@ -10,6 +10,7 @@ import {
 	InventoryItem,
 	InventoryItemWithStatus,
 	UpdateInventoryItemData,
+	ConsumeInventoryItemData,
 	validateSchema,
 	AddInventoryItemSchema,
 	InventoryFiltersSchema,
@@ -76,7 +77,12 @@ interface InventoryDataState {
 		id: string,
 		updates: UpdateInventoryItemData
 	) => Promise<void>;
+	consumeInventoryItem: (
+		id: string,
+		data: ConsumeInventoryItemData
+	) => Promise<void>;
 	removeInventoryItem: (id: string) => Promise<void>;
+	removeInventoryItems: (ids: string[]) => Promise<void>;
 	clearError: () => void;
 }
 
@@ -111,7 +117,9 @@ type InventoryActions = Pick<
 	| 'fetchInventoryItems'
 	| 'addInventoryItem'
 	| 'updateInventoryItem'
+	| 'consumeInventoryItem'
 	| 'removeInventoryItem'
+	| 'removeInventoryItems'
 	| 'clearError'
 >;
 
@@ -436,6 +444,32 @@ export const useInventoryStore = create<InventoryState>()(
 				},
 
 				/**
+				 * Consomme une quantité d'un produit avec décrément FEFO côté backend
+				 */
+				consumeInventoryItem: async (id, data) => {
+					if (!id || typeof id !== 'string') {
+						throw new Error("ID d'item invalide");
+					}
+
+					set({ isLoading: true, error: null });
+					try {
+						await inventoryService.consumeInventoryItem(id, data);
+						await get().fetchInventoryItems();
+					} catch (error) {
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							'Impossible de consommer le produit. Veuillez réessayer.'
+						);
+
+						set({
+							error: errorMessage,
+							isLoading: false,
+						});
+						throw new Error(errorMessage);
+					}
+				},
+
+				/**
 				 * Supprime un item d'inventaire
 				 */
 				removeInventoryItem: async (id) => {
@@ -455,6 +489,40 @@ export const useInventoryStore = create<InventoryState>()(
 						const errorMessage = getUserFacingErrorMessage(
 							error,
 							'Impossible de supprimer le produit. Veuillez réessayer.'
+						);
+
+						set({
+							error: errorMessage,
+							isLoading: false,
+						});
+						throw new Error(errorMessage);
+					}
+				},
+
+				/**
+				 * Supprime plusieurs items d'inventaire
+				 */
+				removeInventoryItems: async (ids) => {
+					const uniqueIds = [...new Set(ids)];
+
+					if (uniqueIds.length === 0) {
+						return;
+					}
+
+					set({ isLoading: true, error: null });
+					try {
+						await inventoryService.removeInventoryItems(uniqueIds);
+
+						set((state) => ({
+							items: state.items.filter(
+								(item) => !uniqueIds.includes(item.id)
+							),
+							isLoading: false,
+						}));
+					} catch (error) {
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							'Impossible de supprimer les produits. Veuillez réessayer.'
 						);
 
 						set({
@@ -603,7 +671,9 @@ export const useInventoryActions = () => {
 			fetchInventoryItems: store.fetchInventoryItems,
 			addInventoryItem: store.addInventoryItem,
 			updateInventoryItem: store.updateInventoryItem,
+			consumeInventoryItem: store.consumeInventoryItem,
 			removeInventoryItem: store.removeInventoryItem,
+			removeInventoryItems: store.removeInventoryItems,
 			clearError: store.clearError,
 		});
 		actionsInitialized = true;

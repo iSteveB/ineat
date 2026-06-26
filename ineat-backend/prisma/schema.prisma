@@ -56,19 +56,22 @@ model Expense {
 }
 
 model InventoryItem {
-  id              String    @id
-  userId          String
-  productId       String
-  quantity        Float
-  expiryDate      DateTime?
-  purchaseDate    DateTime
-  purchasePrice   Float?
-  storageLocation String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime
-  notes           String?
-  Product         Product   @relation(fields: [productId], references: [id])
-  User            User      @relation(fields: [userId], references: [id])
+  id                String           @id
+  userId            String
+  productId         String
+  quantity          Float
+  expiryDate        DateTime?
+  expiryDateSource  ExpiryDateSource @default(MANUAL)
+  packageStatus     PackageStatus?
+  preparationStatus PreparationStatus?
+  purchaseDate      DateTime
+  purchasePrice     Float?
+  storageLocation   String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime
+  notes             String?
+  Product           Product          @relation(fields: [productId], references: [id])
+  User              User             @relation(fields: [userId], references: [id])
 
   @@index([expiryDate])
   @@index([productId])
@@ -77,6 +80,21 @@ model InventoryItem {
   @@index([userId, expiryDate])
   @@index([userId, storageLocation])
   @@index([userId, productId, storageLocation, expiryDate])
+}
+
+enum ExpiryDateSource {
+  MANUAL
+  ESTIMATED
+}
+
+enum PackageStatus {
+  UNOPENED
+  OPENED
+}
+
+enum PreparationStatus {
+  RAW
+  COOKED
 }
 
 model Notification {

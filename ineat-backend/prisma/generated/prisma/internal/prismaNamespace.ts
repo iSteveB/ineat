@@ -1615,6 +1615,9 @@ export const InventoryItemScalarFieldEnum = {
   productId: 'productId',
   quantity: 'quantity',
   expiryDate: 'expiryDate',
+  expiryDateSource: 'expiryDateSource',
+  packageStatus: 'packageStatus',
+  preparationStatus: 'preparationStatus',
   purchaseDate: 'purchaseDate',
   purchasePrice: 'purchasePrice',
   storageLocation: 'storageLocation',
@@ -1937,6 +1940,48 @@ export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaM
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'ExpiryDateSource'
+ */
+export type EnumExpiryDateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExpiryDateSource'>
+    
+
+
+/**
+ * Reference to a field of type 'ExpiryDateSource[]'
+ */
+export type ListEnumExpiryDateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExpiryDateSource[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PackageStatus'
+ */
+export type EnumPackageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PackageStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PackageStatus[]'
+ */
+export type ListEnumPackageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PackageStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PreparationStatus'
+ */
+export type EnumPreparationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PreparationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PreparationStatus[]'
+ */
+export type ListEnumPreparationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PreparationStatus[]'>
     
 
 

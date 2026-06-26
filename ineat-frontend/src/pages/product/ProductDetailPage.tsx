@@ -139,7 +139,7 @@ const ProductDetailPage: FC = () => {
 			GROUP_3: '3',
 			GROUP_4: '4',
 		};
-		return descriptions[group || ''] || 'Information non disponible';
+		return descriptions[group || ''] || '?';
 	};
 
 	// Obtenir le texte descriptif du Nutriscore
@@ -188,9 +188,7 @@ const ProductDetailPage: FC = () => {
 			case 'ML':
 				return `${quantity} mL`;
 			case 'UNIT':
-				return quantity === 1
-					? `${quantity} unité`
-					: `${quantity} unités`;
+				return quantity === 1 ? `${quantity} unité` : `${quantity} unités`;
 			default:
 				return `${quantity} ${unitType.toLowerCase()}`;
 		}
@@ -208,7 +206,7 @@ const ProductDetailPage: FC = () => {
 
 	// Gérer la mise à jour du produit
 	const handleUpdateProduct = async (
-		updates: UpdateInventoryItemData
+		updates: UpdateInventoryItemData,
 	): Promise<void> => {
 		if (!inventoryItem) return;
 
@@ -222,8 +220,8 @@ const ProductDetailPage: FC = () => {
 			toast.error(
 				getUserFacingErrorMessage(
 					error,
-					'Impossible de mettre à jour le produit. Veuillez réessayer.'
-				)
+					'Impossible de mettre à jour le produit. Veuillez réessayer.',
+				),
 			);
 		} finally {
 			setIsUpdating(false);
@@ -236,7 +234,7 @@ const ProductDetailPage: FC = () => {
 
 		if (
 			confirm(
-				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?'
+				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?',
 			)
 		) {
 			try {
@@ -247,8 +245,8 @@ const ProductDetailPage: FC = () => {
 				toast.error(
 					getUserFacingErrorMessage(
 						error,
-						'Impossible de supprimer le produit. Veuillez réessayer.'
-					)
+						'Impossible de supprimer le produit. Veuillez réessayer.',
+					),
 				);
 			}
 		}
@@ -272,13 +270,13 @@ const ProductDetailPage: FC = () => {
 							Produit non trouvé
 						</h2>
 						<p className='text-gray-600 max-w-md'>
-							Ce produit n'existe pas ou a été supprimé de votre
-							inventaire.
+							Ce produit n'existe pas ou a été supprimé de votre inventaire.
 						</p>
 					</div>
 					<Button
 						onClick={() => navigate({ to: '/app/inventory' })}
-						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'>
+						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+					>
 						<ArrowLeft className='size-4' />
 						Retour à l'inventaire
 					</Button>
@@ -310,6 +308,33 @@ const ProductDetailPage: FC = () => {
 	}
 
 	const expiryColors = getExpiryColors(expiryStatus);
+	const purchaseLots =
+		inventoryItem.lots && inventoryItem.lots.length > 0
+			? inventoryItem.lots
+			: [
+					{
+						id: inventoryItem.id,
+						quantity: inventoryItem.quantity,
+						expiryDate: inventoryItem.expiryDate,
+						expiryDateSource: inventoryItem.expiryDateSource,
+						purchaseDate: inventoryItem.purchaseDate,
+						purchasePrice: inventoryItem.purchasePrice,
+						storageLocation: inventoryItem.storageLocation,
+						packageStatus: inventoryItem.packageStatus,
+						preparationStatus: inventoryItem.preparationStatus,
+						notes: inventoryItem.notes,
+						createdAt: inventoryItem.createdAt,
+						updatedAt: inventoryItem.updatedAt,
+					},
+				];
+	const totalPurchasePrice = purchaseLots.reduce(
+		(total, lot) => total + (lot.purchasePrice ?? 0),
+		0,
+	);
+	const hasSeveralLots = purchaseLots.length > 1;
+
+	const formatPurchasePrice = (price?: number): string =>
+		price !== undefined ? `${price.toFixed(2)} €` : 'Prix non renseigné';
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
@@ -323,16 +348,15 @@ const ProductDetailPage: FC = () => {
 							variant='ghost'
 							size='sm'
 							onClick={() => navigate({ to: '/app/inventory' })}
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'>
+							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
+						>
 							<ArrowLeft className='size-5' />
 						</Button>
 						<div>
 							<h1 className='text-2xl font-bold text-gray-900'>
 								Détail du produit
 							</h1>
-							<p className='text-sm text-gray-600'>
-								Informations complètes
-							</p>
+							<p className='text-sm text-gray-600'>Informations complètes</p>
 						</div>
 					</div>
 
@@ -340,7 +364,8 @@ const ProductDetailPage: FC = () => {
 						<Button
 							variant='ghost'
 							size='sm'
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'>
+							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
+						>
 							<Heart className='size-4' />
 						</Button>
 					</div>
@@ -361,9 +386,7 @@ const ProductDetailPage: FC = () => {
 										{inventoryItem.product.imageUrl ? (
 											<img
 												src={
-													inventoryItem.product
-														.imageUrl ||
-													'/placeholder.svg'
+													inventoryItem.product.imageUrl || '/placeholder.svg'
 												}
 												alt={inventoryItem.product.name}
 												className='size-full object-cover'
@@ -405,7 +428,7 @@ const ProductDetailPage: FC = () => {
 									<span className='font-semibold text-blue-800'>
 										{formatUnit(
 											inventoryItem.quantity,
-											inventoryItem.product.unitType
+											inventoryItem.product.unitType,
 										)}
 									</span>
 								</div>
@@ -414,12 +437,8 @@ const ProductDetailPage: FC = () => {
 									<div className='flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-xl'>
 										<MapPin className='size-4 text-green-600' />
 										<span className='font-semibold text-green-800'>
-											{inventoryItem.storageLocation
-												.charAt(0)
-												.toUpperCase() +
-												inventoryItem.storageLocation.slice(
-													1
-												)}
+											{inventoryItem.storageLocation.charAt(0).toUpperCase() +
+												inventoryItem.storageLocation.slice(1)}
 										</span>
 									</div>
 								)}
@@ -436,17 +455,19 @@ const ProductDetailPage: FC = () => {
 									</div>
 									<div className='flex items-center gap-4'>
 										<span className='text-lg font-bold text-gray-900'>
-											{formatDate(
-												inventoryItem.expiryDate
-											)}
+											{formatDate(inventoryItem.expiryDate)}
 										</span>
+										{inventoryItem.expiryDateSource === 'ESTIMATED' && (
+											<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+												date estimée
+											</span>
+										)}
 										<div
-											className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${expiryColors.badge}`}>
+											className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${expiryColors.badge}`}
+										>
 											{expiryColors.icon}
 											<span className='font-semibold text-sm'>
-												{formatRelativeDate(
-													inventoryItem.expiryDate
-												)}
+												{formatRelativeDate(inventoryItem.expiryDate)}
 											</span>
 										</div>
 									</div>
@@ -467,20 +488,16 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
-											inventoryItem.product.nutriscore
-										)}`}>
-										{inventoryItem.product.nutriscore ||
-											'?'}
+											inventoryItem.product.nutriscore,
+										)}`}
+									>
+										{inventoryItem.product.nutriscore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>
-										Nutri-score
-									</h3>
+									<h3 className='font-bold text-gray-900 mb-1'>Nutri-score</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNutriscoreText(
-											inventoryItem.product.nutriscore
-										)}
+										{getNutriscoreText(inventoryItem.product.nutriscore)}
 									</p>
 								</div>
 							</div>
@@ -496,19 +513,16 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
-											inventoryItem.product.ecoscore
-										)}`}>
+											inventoryItem.product.ecoscore,
+										)}`}
+									>
 										{inventoryItem.product.ecoscore || '?'}
 									</div>
 								</div>
 								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>
-										Eco-score
-									</h3>
+									<h3 className='font-bold text-gray-900 mb-1'>Eco-score</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getEcoscoreText(
-											inventoryItem.product.ecoscore
-										)}
+										{getEcoscoreText(inventoryItem.product.ecoscore)}
 									</p>
 								</div>
 							</div>
@@ -524,21 +538,16 @@ const ProductDetailPage: FC = () => {
 								<div className='relative'>
 									<div
 										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getGroupColor(
-											inventoryItem.product.novascore
-										)}`}>
-										{getGroupScore(
-											inventoryItem.product.novascore
-										) || '?'}
+											inventoryItem.product.novascore,
+										)}`}
+									>
+										{getGroupScore(inventoryItem.product.novascore)}
 									</div>
 								</div>
 								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>
-										Groupe NOVA
-									</h3>
+									<h3 className='font-bold text-gray-900 mb-1'>Groupe NOVA</h3>
 									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNovascoreText(
-											inventoryItem.product.novascore
-										)}
+										{getNovascoreText(inventoryItem.product.novascore)}
 									</p>
 								</div>
 							</div>
@@ -556,9 +565,7 @@ const ProductDetailPage: FC = () => {
 
 				{/* ===== LISTE DES INGRÉDIENTS ===== */}
 				{inventoryItem.product.ingredients && (
-					<IngredientsCard
-						ingredients={inventoryItem.product.ingredients}
-					/>
+					<IngredientsCard ingredients={inventoryItem.product.ingredients} />
 				)}
 
 				{/* ===== INFORMATIONS D'ACHAT ===== */}
@@ -574,39 +581,96 @@ const ProductDetailPage: FC = () => {
 								<h3 className='font-bold text-gray-900'>
 									Informations d'achat
 								</h3>
-								<p className='text-sm text-gray-600'>
-									Détails de votre achat
-								</p>
+								<p className='text-sm text-gray-600'>Détails de votre achat</p>
 							</div>
 						</div>
 
 						<div className='space-y-4'>
-							<div className='flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl'>
-								<div className='flex items-center gap-3'>
-									<Calendar className='size-4 text-blue-600' />
-									<span className='font-medium text-gray-700'>
-										Date d'achat
-									</span>
-								</div>
-								<span className='font-bold text-gray-900'>
-									{formatDate(inventoryItem.purchaseDate)}
-								</span>
-							</div>
-
-							{inventoryItem.purchasePrice && (
-								<div className='flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-xl'>
-									<div className='flex items-center gap-3'>
-										<div className='size-4 bg-green-500 rounded-full' />
-										<span className='font-medium text-gray-700'>
-											Prix d'achat
-										</span>
+							{hasSeveralLots && (
+								<div className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3'>
+									<div>
+										<p className='text-sm font-semibold text-gray-900'>
+											{purchaseLots.length} lots en stock
+										</p>
+										<p className='text-xs text-gray-500'>
+											Quantité totale :{' '}
+											{formatUnit(
+												inventoryItem.quantity,
+												inventoryItem.product.unitType,
+											)}
+										</p>
 									</div>
-									<span className='font-bold text-green-700 text-lg'>
-										{inventoryItem.purchasePrice.toFixed(2)}{' '}
-										€
-									</span>
+									{totalPurchasePrice > 0 && (
+										<span className='text-sm font-bold text-green-700'>
+											Total {totalPurchasePrice.toFixed(2)} €
+										</span>
+									)}
 								</div>
 							)}
+
+							<div className='space-y-3'>
+								{purchaseLots.map((lot, index) => (
+									<div
+										key={lot.id}
+										className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm'
+									>
+										<div className='mb-3 flex items-center justify-between gap-3'>
+											<div>
+												<p className='font-semibold text-gray-900'>
+													{hasSeveralLots ? `Lot ${index + 1}` : 'Lot'}
+												</p>
+												<p className='text-sm text-gray-500'>
+													{formatUnit(
+														lot.quantity,
+														inventoryItem.product.unitType,
+													)}
+												</p>
+											</div>
+											<span className='rounded-full bg-green-50 px-3 py-1 text-sm font-bold text-green-700'>
+												{formatPurchasePrice(lot.purchasePrice)}
+											</span>
+										</div>
+
+										<div className='grid gap-3 sm:grid-cols-2'>
+											<div className='flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2'>
+												<div className='flex items-center gap-2'>
+													<Calendar className='size-4 text-blue-600' />
+													<span className='text-sm font-medium text-gray-700'>
+														Acheté le
+													</span>
+												</div>
+												<span className='text-sm font-bold text-gray-900'>
+													{formatDate(lot.purchaseDate)}
+												</span>
+											</div>
+
+											<div className='flex items-center justify-between rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2'>
+												<div className='flex items-center gap-2'>
+													<Calendar className='size-4 text-orange-600' />
+													<span className='text-sm font-medium text-gray-700'>
+														Péremption
+													</span>
+												</div>
+												<span className='text-sm font-bold text-gray-900'>
+													{lot.expiryDate
+														? formatDate(lot.expiryDate)
+														: 'Non renseignée'}
+												</span>
+											</div>
+										</div>
+
+										{lot.storageLocation && (
+											<div className='mt-3 flex items-center gap-2 text-sm text-gray-600'>
+												<MapPin className='size-4 text-green-600' />
+												<span>
+													{lot.storageLocation.charAt(0).toUpperCase() +
+														lot.storageLocation.slice(1)}
+												</span>
+											</div>
+										)}
+									</div>
+								))}
+							</div>
 						</div>
 					</CardContent>
 				</Card>
@@ -639,14 +703,16 @@ const ProductDetailPage: FC = () => {
 					<Button
 						onClick={handleOpenEditModal}
 						variant='outline'
-						className='flex-1 h-12 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-transparent'>
+						className='flex-1 h-12 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-transparent'
+					>
 						<Edit3 className='size-4 mr-2' />
 						Modifier
 					</Button>
 
 					<Button
 						onClick={handleDelete}
-						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'>
+						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+					>
 						<Trash2 className='size-4 mr-2' />
 						Supprimer
 					</Button>
