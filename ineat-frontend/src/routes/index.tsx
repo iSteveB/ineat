@@ -1,22 +1,18 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
-import { useAuthStore } from '../stores/authStore';
-
-// Définie le type du routerContext
-interface RouterContext {
-	authStore: ReturnType<typeof useAuthStore.getState>;
-}
+import LandingPage from '@/pages/landing/LandingPage';
+import { isAuthenticated } from '@/utils/auth';
 
 export const Route = createFileRoute('/')({
-	beforeLoad: ({ context }) => {
-		const authStore = (context as RouterContext).authStore;
+	beforeLoad: async () => {
+		const userIsAuthenticated = await isAuthenticated();
 
-		// Si l'utilisateur est authentifié, continuer
-		if (authStore.isAuthenticated && authStore.user) {
-			return;
+		if (userIsAuthenticated) {
+			throw redirect({ to: '/app' });
 		}
-		// Sinon, rediriger vers la page de connexion
-		throw redirect({ to: '/login' });
+
+		return null;
 	},
+	component: LandingPage,
 
 	errorComponent: ({ error }) => {
 		return (

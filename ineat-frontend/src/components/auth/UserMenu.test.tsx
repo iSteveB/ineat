@@ -256,7 +256,7 @@ describe('UserMenu', () => {
 		// Vérifier que la navigation est appelée avec la bonne destination
 		await waitFor(() => {
 			expect(navigateMock).toHaveBeenCalledWith({
-				to: '/login',
+				to: '/',
 				replace: true,
 			});
 		});

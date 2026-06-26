@@ -32,12 +32,12 @@ const ScannerPage: FC = () => {
 	};
 
 	return (
-		<div className='inset-0 bg-neutral-50 z-50'>
+		<div className='fixed inset-0 z-[100] bg-black'>
 			<ProductScanFlow
 				onComplete={handleScanComplete}
 				onCancel={handleScanCancel}
 				defaultStep='scan'
-				className='size-full'
+				className='size-full bg-black'
 			/>
 		</div>
 	);
