@@ -87,6 +87,32 @@ export const RecipeDifficulty = {
 export type RecipeDifficulty = (typeof RecipeDifficulty)[keyof typeof RecipeDifficulty]
 
 
+export const RecipeIngredientSource = {
+  INVENTORY: 'INVENTORY',
+  BASIC: 'BASIC',
+  MISSING: 'MISSING'
+} as const
+
+export type RecipeIngredientSource = (typeof RecipeIngredientSource)[keyof typeof RecipeIngredientSource]
+
+
+export const RecipeSource = {
+  AI: 'AI',
+  MANUAL: 'MANUAL'
+} as const
+
+export type RecipeSource = (typeof RecipeSource)[keyof typeof RecipeSource]
+
+
+export const RecipeType = {
+  STARTER: 'STARTER',
+  MAIN: 'MAIN',
+  DESSERT: 'DESSERT'
+} as const
+
+export type RecipeType = (typeof RecipeType)[keyof typeof RecipeType]
+
+
 export const SubscriptionPlan = {
   FREE: 'FREE',
   TRIAL: 'TRIAL',

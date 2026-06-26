@@ -656,10 +656,12 @@ export type ProductCreateNestedOneWithoutRecipeIngredientInput = {
   connect?: Prisma.ProductWhereUniqueInput
 }
 
-export type ProductUpdateOneRequiredWithoutRecipeIngredientNestedInput = {
+export type ProductUpdateOneWithoutRecipeIngredientNestedInput = {
   create?: Prisma.XOR<Prisma.ProductCreateWithoutRecipeIngredientInput, Prisma.ProductUncheckedCreateWithoutRecipeIngredientInput>
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutRecipeIngredientInput
   upsert?: Prisma.ProductUpsertWithoutRecipeIngredientInput
+  disconnect?: Prisma.ProductWhereInput | boolean
+  delete?: Prisma.ProductWhereInput | boolean
   connect?: Prisma.ProductWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutRecipeIngredientInput, Prisma.ProductUpdateWithoutRecipeIngredientInput>, Prisma.ProductUncheckedUpdateWithoutRecipeIngredientInput>
 }

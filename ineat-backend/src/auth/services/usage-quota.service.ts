@@ -129,9 +129,29 @@ export class UsageQuotaService {
       };
     }
 
+    if (usageType === 'AI_RECIPE_GENERATION') {
+      return {
+        limit: 5,
+        periodStart: new Date(
+          Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate(),
+          ),
+        ),
+        periodEnd: new Date(
+          Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate() + 1,
+          ),
+        ),
+      };
+    }
+
     if (isTrial) {
       return {
-        limit: usageType === 'AI_RECIPE_GENERATION' ? 10 : 3,
+        limit: 3,
         periodStart: this.toDate(user.trialStartedAt) ?? now,
         periodEnd: this.toDate(user.trialEndsAt)!,
       };
@@ -140,7 +160,7 @@ export class UsageQuotaService {
     const period = this.getMonthlyPeriod(user, now);
 
     return {
-      limit: usageType === 'AI_RECIPE_GENERATION' ? 100 : 25,
+      limit: 25,
       periodStart: period.periodStart,
       periodEnd: period.periodEnd,
     };

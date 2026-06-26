@@ -233,6 +233,7 @@ export type ReceiptItemScalarFieldEnum = (typeof ReceiptItemScalarFieldEnum)[key
 
 export const RecipeScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   name: 'name',
   description: 'description',
   instructions: 'instructions',
@@ -241,6 +242,12 @@ export const RecipeScalarFieldEnum = {
   servings: 'servings',
   difficulty: 'difficulty',
   imageUrl: 'imageUrl',
+  type: 'type',
+  source: 'source',
+  basicIngredients: 'basicIngredients',
+  missingIngredients: 'missingIngredients',
+  steps: 'steps',
+  doneAt: 'doneAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -252,9 +259,11 @@ export const RecipeIngredientScalarFieldEnum = {
   id: 'id',
   recipeId: 'recipeId',
   productId: 'productId',
+  name: 'name',
   quantity: 'quantity',
   unit: 'unit',
-  notes: 'notes'
+  notes: 'notes',
+  source: 'source'
 } as const
 
 export type RecipeIngredientScalarFieldEnum = (typeof RecipeIngredientScalarFieldEnum)[keyof typeof RecipeIngredientScalarFieldEnum]
