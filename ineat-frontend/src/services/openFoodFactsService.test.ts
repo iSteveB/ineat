@@ -245,15 +245,19 @@ describe('OpenFoodFactsService', () => {
 
 			// Mock d'une réponse très lente (sera interrompue par AbortController)
 			mockFetch.mockImplementationOnce(
-				() =>
-					new Promise((resolve) => {
-						setTimeout(
+				(_url, options?: RequestInit) =>
+					new Promise((resolve, reject) => {
+						const timeoutId = setTimeout(
 							() =>
 								resolve(
 									createMockResponse(mockNutellaResponse)
 								),
 							100
 						); // 100ms delay
+						options?.signal?.addEventListener('abort', () => {
+							clearTimeout(timeoutId);
+							reject(new DOMException('Aborted', 'AbortError'));
+						});
 					})
 			);
 
