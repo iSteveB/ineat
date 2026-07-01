@@ -465,7 +465,8 @@ export class InventoryService {
 
     if (
       updateData.expiryDate === undefined &&
-      existingInventoryItem.expiryDateSource === 'ESTIMATED' &&
+      (existingInventoryItem.expiryDateSource === 'ESTIMATED' ||
+        !existingInventoryItem.expiryDate) &&
       contextChanged
     ) {
       const expiryEstimation = estimateExpiryDate({

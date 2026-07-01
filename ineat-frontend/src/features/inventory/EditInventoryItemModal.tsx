@@ -45,6 +45,28 @@ const STORAGE_LOCATIONS = [
 	{ value: 'autre', label: 'Autre' },
 ];
 
+const normalize = (value?: string | null): string =>
+	(value ?? '')
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '')
+		.replace(/_/g, '-')
+		.trim();
+
+const resolveStorageLocationValue = (storageLocation?: string | null): string => {
+	const normalized = normalize(storageLocation);
+
+	return (
+		STORAGE_LOCATIONS.find(
+			(location) =>
+				normalize(location.value) === normalized ||
+				normalize(location.label) === normalized,
+		)?.value ??
+		storageLocation ??
+		''
+	);
+};
+
 // Fonction pour formater une date au format yyyy-MM-dd
 const formatDate = (dateString: string | undefined): string => {
 	if (!dateString) return '';
@@ -83,9 +105,11 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 	useEffect(() => {
 		if (item) {
 			setQuantity(item.quantity);
-			setStorageLocation(item.storageLocation || '');
+			setStorageLocation(resolveStorageLocationValue(item.storageLocation));
 			setExpiryDate(formatDate(item.expiryDate));
-			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
+			setExpiryDateSource(
+				item.expiryDate ? item.expiryDateSource || 'MANUAL' : 'ESTIMATED',
+			);
 			setPurchaseDate(formatDate(item.purchaseDate));
 			setPackageStatus(item.packageStatus || '');
 			setPreparationStatus(item.preparationStatus || '');
@@ -97,9 +121,11 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 	useEffect(() => {
 		if (!isOpen && item) {
 			setQuantity(item.quantity);
-			setStorageLocation(item.storageLocation || '');
+			setStorageLocation(resolveStorageLocationValue(item.storageLocation));
 			setExpiryDate(formatDate(item.expiryDate));
-			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
+			setExpiryDateSource(
+				item.expiryDate ? item.expiryDateSource || 'MANUAL' : 'ESTIMATED',
+			);
 			setPurchaseDate(formatDate(item.purchaseDate));
 			setPackageStatus(item.packageStatus || '');
 			setPreparationStatus(item.preparationStatus || '');
@@ -280,14 +306,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							onChange={(e) => handleExpiryDateChange(e.target.value)}
 							className='mt-1'
 						/>
-						{expiryDateSource === 'ESTIMATED' && expiryDate && (
-							<p className='text-xs text-neutral-600 mt-1'>
-								Date estimée recalculée : {expiryDate}
-								{expirySuggestion?.reason
-									? ` (${expirySuggestion.reason})`
-									: ''}
-							</p>
-						)}
 						{expiryDateSource === 'MANUAL' && expiryDate && (
 							<p className='text-xs text-neutral-600 mt-1'>
 								Date manuelle conservée. Les changements de contexte ne
