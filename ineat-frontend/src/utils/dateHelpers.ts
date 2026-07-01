@@ -28,9 +28,9 @@ export const calculateExpiryStatus = (
 };
 
 /**
- * Formate une date en format relatif (J-X)
+ * Formate une date en format relatif compact.
  * @param date - Date à formater
- * @returns Chaîne formatée (ex: "J-3", "Expiré")
+ * @returns Chaîne formatée (ex: "J-3", "Dans 2 mois", "Expiré")
  */
 export const formatRelativeDate = (date: string | null | undefined): string => {
 	if (!date) return 'Pas de date';
@@ -52,6 +52,12 @@ export const formatRelativeDate = (date: string | null | undefined): string => {
 		return 'J-0';
 	} else if (diffDays === 1) {
 		return 'J-1';
+	} else if (diffDays > 365) {
+		const years = Math.max(1, Math.round(diffDays / 365.25));
+		return years === 1 ? 'Dans 1 an' : `Dans ${years} ans`;
+	} else if (diffDays > 30) {
+		const months = Math.max(1, Math.round(diffDays / 30.44));
+		return months === 1 ? 'Dans 1 mois' : `Dans ${months} mois`;
 	} else {
 		return `J-${diffDays}`;
 	}
