@@ -82,7 +82,9 @@ const Dashboard: FC = () => {
 
 	// Gestion des erreurs
 	const error = inventoryError || statsError || recentError || expiringError;
-	const totalInventoryItems = inventoryStats?.totalItems ?? scoreInventory.length;
+	const totalInventoryItems =
+		inventoryStats?.totalQuantity ??
+		scoreInventory.reduce((total, item) => total + (item.quantity ?? 0), 0);
 
 	const priorityAction: DashboardAction =
 		expiringProducts.length > 0
@@ -229,7 +231,7 @@ const Dashboard: FC = () => {
 
 			<div className='flex flex-col gap-6'>
 				<InventoryWidget
-					totalProducts={inventoryStats?.totalItems}
+					totalProducts={inventoryStats?.totalQuantity}
 					soonExpiringCount={
 						(inventoryStats?.expiryBreakdown.critical ?? 0) +
 						(inventoryStats?.expiryBreakdown.warning ?? 0)

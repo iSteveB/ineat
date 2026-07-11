@@ -29,6 +29,9 @@ describe('InventoryService', () => {
     inventoryItem: {
       findMany: jest.fn(),
       findFirst: jest.fn(),
+      count: jest.fn(),
+      aggregate: jest.fn(),
+      groupBy: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       deleteMany: jest.fn(),
@@ -117,6 +120,12 @@ describe('InventoryService', () => {
       }),
     );
     tx.inventoryItem.delete.mockResolvedValue({ id: 'deleted-lot' });
+    prisma.inventoryItem.count.mockResolvedValue(0);
+    prisma.inventoryItem.aggregate.mockResolvedValue({
+      _sum: { purchasePrice: 0, quantity: 0 },
+      _avg: { purchasePrice: 0 },
+    });
+    prisma.inventoryItem.groupBy.mockResolvedValue([]);
     expenseService.createExpenseFromProduct.mockResolvedValue({
       expense: null,
       budgetId: null,
@@ -475,6 +484,71 @@ describe('InventoryService', () => {
       }),
     );
     expect(result.quantity).toBe(3);
+  });
+
+  it('counts expiry stats by quantity instead of inventory lots', async () => {
+    prisma.inventoryItem.count
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(1);
+    prisma.inventoryItem.aggregate
+      .mockResolvedValueOnce({
+        _sum: { purchasePrice: 42, quantity: 21 },
+        _avg: { purchasePrice: 21 },
+      });
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        ...inventoryItem,
+        quantity: 20,
+        expiryDate: new Date('2020-01-01'),
+      },
+      {
+        ...inventoryItem,
+        id: 'item-2',
+        quantity: 1,
+        expiryDate: new Date('2099-01-01'),
+      },
+    ]);
+
+    const result = await service.getInventoryStats('user-1');
+
+    expect(result.totalItems).toBe(2);
+    expect(result.totalQuantity).toBe(21);
+    expect(result.expiryBreakdown.expired).toBe(20);
+    expect(result.expiryBreakdown.good).toBe(1);
+  });
+
+  it('uses estimated expiry dates when inventory stats have no manual expiry date', async () => {
+    prisma.inventoryItem.count
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(0);
+    prisma.inventoryItem.aggregate.mockResolvedValueOnce({
+      _sum: { purchasePrice: 4.5, quantity: 20 },
+      _avg: { purchasePrice: 4.5 },
+    });
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        ...inventoryItem,
+        quantity: 20,
+        expiryDate: null,
+        expiryDateSource: 'ESTIMATED',
+        purchaseDate: new Date('2020-01-01'),
+        Product: {
+          ...product,
+          name: 'Lait',
+          Category: {
+            ...category,
+            name: 'Produits laitiers',
+            slug: 'produits-laitiers',
+          },
+        },
+      },
+    ]);
+
+    const result = await service.getInventoryStats('user-1');
+
+    expect(result.totalQuantity).toBe(20);
+    expect(result.expiryBreakdown.expired).toBe(20);
+    expect(result.expiryBreakdown.unknown).toBe(0);
   });
 
   it('recalculates an estimated expiry date when product context changes', async () => {
