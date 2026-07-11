@@ -16,6 +16,7 @@ import {
 	useInventoryError,
 	useInventoryActions,
 } from '@/stores/inventoryStore';
+import { calculateExpiryStatus, type ExpiryStatus } from '@/schemas';
 
 interface InventoryWidgetProps {
 	// Props optionnelles pour la compatibilité, mais on utilisera les données du store
@@ -50,17 +51,31 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 		}
 	}, [fetchInventoryItems, hasProvidedStats]);
 
+	const countQuantityByStatus = (status: ExpiryStatus) =>
+		items.reduce((total, item) => {
+			if (item.lots?.length) {
+				return (
+					total +
+					item.lots
+						.filter((lot) => calculateExpiryStatus(lot.expiryDate) === status)
+						.reduce((lotTotal, lot) => lotTotal + lot.quantity, 0)
+				);
+			}
+
+			return item.expiryStatus === status ? total + item.quantity : total;
+		}, 0);
+
 	// Calculer les statistiques directement depuis les items
-	const totalProducts = providedTotalProducts ?? items.length;
+	const totalProducts =
+		providedTotalProducts ??
+		items.reduce((total, item) => total + item.quantity, 0);
 	
 	// Calculer les comptes par statut d'expiration
 	const expiredCount =
-		providedExpiredCount ??
-		items.filter((item) => item.expiryStatus === 'EXPIRED').length;
+		providedExpiredCount ?? countQuantityByStatus('EXPIRED');
 	const criticalCount =
-		providedCriticalCount ??
-		items.filter((item) => item.expiryStatus === 'CRITICAL').length;
-	const warningCount = items.filter(item => item.expiryStatus === 'WARNING').length;
+		providedCriticalCount ?? countQuantityByStatus('CRITICAL');
+	const warningCount = countQuantityByStatus('WARNING');
 	const soonExpiringCount =
 		providedSoonExpiringCount ?? criticalCount + warningCount;
 

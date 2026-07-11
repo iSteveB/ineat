@@ -506,7 +506,16 @@ export const calculateInventoryStats = (
 	// Répartition par statut d'expiration
 	const expiryBreakdown = items.reduce(
 		(acc, item) => {
-			acc[item.expiryStatus.toLowerCase() as keyof typeof acc]++;
+			if (item.lots?.length) {
+				item.lots.forEach((lot) => {
+					const status = calculateExpiryStatus(lot.expiryDate);
+					acc[status.toLowerCase() as keyof typeof acc] += lot.quantity;
+				});
+
+				return acc;
+			}
+
+			acc[item.expiryStatus.toLowerCase() as keyof typeof acc] += item.quantity;
 			return acc;
 		},
 		{ good: 0, warning: 0, critical: 0, expired: 0, unknown: 0 },

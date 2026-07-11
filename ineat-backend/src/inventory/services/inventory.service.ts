@@ -1194,21 +1194,13 @@ export class InventoryService {
    */
   async getInventoryStats(userId: string): Promise<InventoryStats> {
     const now = new Date();
-    const twoDaysFromNow = new Date(now);
-    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
-    const fiveDaysFromNow = new Date(now);
-    fiveDaysFromNow.setDate(fiveDaysFromNow.getDate() + 5);
     const oneWeekAgo = new Date(now);
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
     const [
       totalItems,
       valueStats,
-      expired,
-      critical,
-      warning,
-      good,
-      unknown,
+      inventoryItems,
       storageStats,
       itemsAddedThisWeek,
     ] = await Promise.all([
@@ -1223,32 +1215,15 @@ export class InventoryService {
           purchasePrice: true,
         },
       }),
-      this.prisma.inventoryItem.count({
-        where: { userId, expiryDate: { lt: now } },
-      }),
-      this.prisma.inventoryItem.count({
-        where: {
-          userId,
-          expiryDate: {
-            gte: now,
-            lte: twoDaysFromNow,
+      this.prisma.inventoryItem.findMany({
+        where: { userId },
+        include: {
+          Product: {
+            include: {
+              Category: true,
+            },
           },
         },
-      }),
-      this.prisma.inventoryItem.count({
-        where: {
-          userId,
-          expiryDate: {
-            gt: twoDaysFromNow,
-            lte: fiveDaysFromNow,
-          },
-        },
-      }),
-      this.prisma.inventoryItem.count({
-        where: { userId, expiryDate: { gt: fiveDaysFromNow } },
-      }),
-      this.prisma.inventoryItem.count({
-        where: { userId, expiryDate: null },
       }),
       this.prisma.inventoryItem.groupBy({
         by: ['storageLocation'],
@@ -1259,6 +1234,33 @@ export class InventoryService {
         where: { userId, createdAt: { gte: oneWeekAgo } },
       }),
     ]);
+
+    const expiryBreakdown = inventoryItems.reduce(
+      (breakdown, item) => {
+        const expiryDate =
+          item.expiryDate ??
+          estimateExpiryDate({
+            productName: item.Product?.name,
+            categorySlug: item.Product?.Category?.slug,
+            categoryName: item.Product?.Category?.name,
+            storageLocation: item.storageLocation,
+            packageStatus: item.packageStatus,
+            preparationStatus: item.preparationStatus,
+            purchaseDate: item.purchaseDate,
+            addedAt: item.createdAt,
+          }).expiryDate;
+        const status = this.calculateExpiryStatus(expiryDate).toLowerCase() as
+          | 'good'
+          | 'warning'
+          | 'critical'
+          | 'expired'
+          | 'unknown';
+
+        breakdown[status] += item.quantity || 0;
+        return breakdown;
+      },
+      { good: 0, warning: 0, critical: 0, expired: 0, unknown: 0 },
+    );
 
     const storageBreakdown = Object.fromEntries(
       storageStats.map((stat) => {
@@ -1282,11 +1284,11 @@ export class InventoryService {
       totalQuantity: valueStats._sum.quantity || 0,
       averageItemValue: valueStats._avg.purchasePrice || 0,
       expiryBreakdown: {
-        good,
-        warning,
-        critical,
-        expired,
-        unknown,
+        good: expiryBreakdown.good,
+        warning: expiryBreakdown.warning,
+        critical: expiryBreakdown.critical,
+        expired: expiryBreakdown.expired,
+        unknown: expiryBreakdown.unknown,
       },
       categoryBreakdown: [],
       storageBreakdown,
