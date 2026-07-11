@@ -10,6 +10,30 @@ import {
   normalizeOpenAIInvoiceAnalysis,
 } from './openai-invoice-normalizer';
 
+interface OpenAIErrorPayload {
+  error?: {
+    message?: string;
+    type?: string;
+    code?: string;
+    param?: string;
+  };
+}
+
+export class OpenAIInvoiceAnalysisError extends Error {
+  constructor(
+    message: string,
+    readonly model: string,
+    readonly status: number,
+    readonly providerCode?: string,
+    readonly providerType?: string,
+    readonly providerParam?: string,
+    readonly requestId?: string | null,
+  ) {
+    super(message);
+    this.name = 'OpenAIInvoiceAnalysisError';
+  }
+}
+
 const INVOICE_EXTRACTION_SCHEMA = {
   type: 'object',
   additionalProperties: false,
@@ -120,7 +144,7 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
     }
 
     const model =
-      this.configService.get<string>('OPENAI_INVOICE_MODEL') ?? 'gpt-5.5';
+      this.configService.get<string>('OPENAI_INVOICE_MODEL') ?? 'gpt-5.6-luna';
     const fileInput = createPdfFileInput(pdfUrl, pdfBuffer);
 
     const response = await fetch('https://api.openai.com/v1/responses', {
@@ -157,7 +181,7 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
     const responseBody = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error('OpenAI invoice analysis failed');
+      throw buildOpenAIInvoiceAnalysisError(response, responseBody, model);
     }
 
     const outputText = extractResponseOutputText(responseBody);
@@ -170,6 +194,36 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
       providerResponse: responseBody,
     });
   }
+}
+
+function buildOpenAIInvoiceAnalysisError(
+  response: Response,
+  responseBody: unknown,
+  model: string,
+): OpenAIInvoiceAnalysisError {
+  const errorPayload = responseBody as OpenAIErrorPayload | null;
+  const providerCode = errorPayload?.error?.code;
+  const providerType = errorPayload?.error?.type;
+  const providerParam = errorPayload?.error?.param;
+  const requestId = response.headers?.get('x-request-id') ?? null;
+  const details = [
+    `status=${response.status}`,
+    `model=${model}`,
+    providerCode ? `code=${providerCode}` : null,
+    providerType ? `type=${providerType}` : null,
+    providerParam ? `param=${providerParam}` : null,
+    requestId ? `requestId=${requestId}` : null,
+  ].filter(Boolean);
+
+  return new OpenAIInvoiceAnalysisError(
+    `OpenAI invoice analysis failed (${details.join(', ')})`,
+    model,
+    response.status,
+    providerCode,
+    providerType,
+    providerParam,
+    requestId,
+  );
 }
 
 function createPdfFileInput(pdfUrl: string, pdfBuffer?: Buffer) {
