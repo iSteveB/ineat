@@ -12,6 +12,16 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,8 +49,6 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	const [completionPreview, setCompletionPreview] =
 		useState<CompletionPreview | null>(null);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-	const [isLoadingCompletionPreview, setIsLoadingCompletionPreview] =
-		useState(false);
 
 	const {
 		data: recipe,
@@ -52,23 +60,21 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 		enabled: canUseRecipes,
 	});
 
-	const loadCompletionPreview = async () => {
-		try {
-			setIsLoadingCompletionPreview(true);
-			const preview = await recipeService.getCompletionPreview(recipeId);
+	const previewMutation = useMutation({
+		mutationFn: recipeService.getCompletionPreview,
+		onSuccess: (preview) => {
 			setCompletionPreview(preview);
-		} catch (error) {
-			setIsConfirmOpen(false);
+			setIsConfirmOpen(true);
+		},
+		onError: (error) => {
 			toast.error('Action impossible', {
 				description: getUserFacingErrorMessage(
 					error,
 					'Impossible de préparer la confirmation.'
 				),
 			});
-		} finally {
-			setIsLoadingCompletionPreview(false);
-		}
-	};
+		},
+	});
 
 	const completeMutation = useMutation({
 		mutationFn: recipeService.completeRecipe,
@@ -194,31 +200,51 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 				</section>
 
 				<aside className='space-y-4'>
-					<button
-						type='button'
-						className='inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-success-50 px-4 py-2 text-sm font-medium text-neutral-50 shadow-xs transition-all hover:bg-success-50/90 disabled:cursor-not-allowed disabled:opacity-50'
-						disabled={Boolean(recipe.doneAt) || isLoadingCompletionPreview}
-						onClick={() => {
-							setIsConfirmOpen(true);
-							if (!completionPreview) {
-								loadCompletionPreview();
-							}
-						}}>
+					<IngredientList recipe={recipe} />
+					<Button
+						className='w-full'
+						disabled={Boolean(recipe.doneAt) || previewMutation.isPending}
+						onClick={() => previewMutation.mutate(recipe.id)}>
 						<CheckCircle2 className='size-4' />
 						{recipe.doneAt ? 'Déjà fait' : 'Marquer comme fait'}
-					</button>
-					<IngredientList recipe={recipe} />
+					</Button>
 				</aside>
 			</div>
 
-			{isConfirmOpen && (
-				<CompletionDialogContent
-					completionPreview={completionPreview}
-					isPending={completeMutation.isPending}
-					onCancel={() => setIsConfirmOpen(false)}
-					onConfirm={() => completeMutation.mutate(recipe.id)}
-				/>
-			)}
+			<AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Marquer la recette comme faite ?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Les produits suivants seront retirés de l’inventaire. Les basiques
+							et ingrédients manquants ne seront pas modifiés.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					{completionPreview?.items.length ? (
+						<ul className='space-y-2 text-sm text-neutral-700'>
+							{completionPreview.items.map((item) => (
+								<li
+									key={item.inventoryItemId}
+									className='rounded-md bg-neutral-100 px-3 py-2'>
+									{item.name}
+								</li>
+							))}
+						</ul>
+					) : (
+						<p className='text-sm text-neutral-600'>
+							Aucun produit de l’inventaire ne sera retiré.
+						</p>
+					)}
+					<AlertDialogFooter>
+						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogAction
+							disabled={completeMutation.isPending}
+							onClick={() => completeMutation.mutate(recipe.id)}>
+							Confirmer
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
@@ -298,63 +324,6 @@ function IngredientGroup({
 					</li>
 				))}
 			</ul>
-		</div>
-	);
-}
-
-function CompletionDialogContent({
-	completionPreview,
-	isPending,
-	onCancel,
-	onConfirm,
-}: {
-	completionPreview: CompletionPreview | null;
-	isPending: boolean;
-	onCancel: () => void;
-	onConfirm: () => void;
-}) {
-	return (
-		<div className='fixed inset-0 z-50 flex items-center justify-center bg-neutral-300/40 p-4 backdrop-blur-sm'>
-			<div
-				role='dialog'
-				aria-modal='true'
-				aria-labelledby='complete-recipe-title'
-				className='w-full max-w-lg rounded-lg border border-neutral-200 bg-neutral-50 p-6 shadow-lg'>
-				<div>
-					<h2
-						id='complete-recipe-title'
-						className='text-xl font-bold text-neutral-900'>
-						Marquer la recette comme faite ?
-					</h2>
-					<p className='mt-2 text-sm text-neutral-600'>
-						Les produits suivants seront retirés de l’inventaire. Les basiques
-						et ingrédients manquants ne seront pas modifiés.
-					</p>
-				</div>
-				{completionPreview?.items.length ? (
-					<ul className='mt-5 space-y-2 text-sm text-neutral-700'>
-						{completionPreview.items.map((item) => (
-							<li
-								key={item.inventoryItemId}
-								className='rounded-md bg-neutral-100 px-3 py-2'>
-								{item.name}
-							</li>
-						))}
-					</ul>
-				) : (
-					<p className='mt-5 text-sm text-neutral-600'>
-						Aucun produit de l’inventaire ne sera retiré.
-					</p>
-				)}
-				<div className='mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end'>
-					<Button type='button' variant='secondary' onClick={onCancel}>
-						Annuler
-					</Button>
-					<Button type='button' disabled={isPending} onClick={onConfirm}>
-						Confirmer
-					</Button>
-				</div>
-			</div>
 		</div>
 	);
 }

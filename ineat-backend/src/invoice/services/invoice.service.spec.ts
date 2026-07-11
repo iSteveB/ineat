@@ -324,6 +324,9 @@ describe('InvoiceService', () => {
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringContaining('invoice_analysis_failed'),
     );
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.stringContaining('provider down'),
+    );
   });
 
   it("masque les erreurs techniques d'upload sans créer de facture", async () => {

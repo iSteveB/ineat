@@ -175,6 +175,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
 										{expiryColors.icon}
 										<span>{formatRelativeDate(item.expiryDate)}</span>
 									</div>
+									{item.expiryDateSource === 'ESTIMATED' && (
+										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+											estimée
+										</span>
+									)}
 								</div>
 							)}
 

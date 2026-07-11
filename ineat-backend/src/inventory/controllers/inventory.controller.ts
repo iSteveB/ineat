@@ -28,10 +28,6 @@ import {
   InventoryService,
   ProductCreatedWithBudgetDto,
 } from '../services/inventory.service';
-import {
-  estimateExpiryDate,
-  ExpiryEstimationResult,
-} from '../services/expiry-estimation.service';
 import { AddManualProductDto, QuickAddProductDto } from '../../DTOs';
 import {
   PackageStatus,
@@ -84,18 +80,12 @@ export class InventoryController {
   }
 
   private formatInventoryItem(item: any) {
-    const expiryEstimation = this.resolveExpiryEstimation(item, item.Product);
-
     return {
       id: item.id,
       userId: item.userId,
       quantity: item.quantity,
-      expiryDate: expiryEstimation.expiryDate?.toISOString() ?? null,
-      expiryDateSource: expiryEstimation.source,
-      expiryDateReason: expiryEstimation.reason,
-      expiryDateRuleId: expiryEstimation.ruleId,
-      expiryDateRuleLevel: expiryEstimation.ruleLevel,
-      expiryDateDurationDays: expiryEstimation.durationDays,
+      expiryDate: item.expiryDate?.toISOString() ?? null,
+      expiryDateSource: item.expiryDateSource,
       purchaseDate: item.purchaseDate.toISOString(),
       purchasePrice: item.purchasePrice,
       storageLocation: item.storageLocation,
@@ -104,61 +94,22 @@ export class InventoryController {
       notes: item.notes,
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
-      lots: item.lots?.map((lot: any) => {
-        const lotExpiryEstimation = this.resolveExpiryEstimation(
-          lot,
-          item.Product,
-        );
-
-        return {
-          id: lot.id,
-          quantity: lot.quantity,
-          expiryDate: lotExpiryEstimation.expiryDate?.toISOString() ?? null,
-          expiryDateSource: lotExpiryEstimation.source,
-          expiryDateReason: lotExpiryEstimation.reason,
-          expiryDateRuleId: lotExpiryEstimation.ruleId,
-          expiryDateRuleLevel: lotExpiryEstimation.ruleLevel,
-          expiryDateDurationDays: lotExpiryEstimation.durationDays,
-          purchaseDate: lot.purchaseDate.toISOString(),
-          purchasePrice: lot.purchasePrice,
-          storageLocation: lot.storageLocation,
-          packageStatus: lot.packageStatus,
-          preparationStatus: lot.preparationStatus,
-          notes: lot.notes,
-          createdAt: lot.createdAt.toISOString(),
-          updatedAt: lot.updatedAt.toISOString(),
-        };
-      }),
+      lots: item.lots?.map((lot: any) => ({
+        id: lot.id,
+        quantity: lot.quantity,
+        expiryDate: lot.expiryDate?.toISOString() ?? null,
+        expiryDateSource: lot.expiryDateSource,
+        purchaseDate: lot.purchaseDate.toISOString(),
+        purchasePrice: lot.purchasePrice,
+        storageLocation: lot.storageLocation,
+        packageStatus: lot.packageStatus,
+        preparationStatus: lot.preparationStatus,
+        notes: lot.notes,
+        createdAt: lot.createdAt.toISOString(),
+        updatedAt: lot.updatedAt.toISOString(),
+      })),
       product: this.formatProduct(item.Product),
     };
-  }
-
-  private resolveExpiryEstimation(
-    item: any,
-    product: any,
-  ): ExpiryEstimationResult {
-    if (item.expiryDate) {
-      return {
-        expiryDate: item.expiryDate,
-        source: item.expiryDateSource,
-        reason: undefined,
-        ruleId: undefined,
-        ruleLevel:
-          item.expiryDateSource === 'MANUAL' ? ('manual' as const) : undefined,
-        durationDays: undefined,
-      };
-    }
-
-    return estimateExpiryDate({
-      productName: product?.name,
-      categorySlug: product?.Category?.slug,
-      categoryName: product?.Category?.name,
-      storageLocation: item.storageLocation,
-      packageStatus: item.packageStatus,
-      preparationStatus: item.preparationStatus,
-      purchaseDate: item.purchaseDate,
-      addedAt: item.createdAt,
-    });
   }
 
   /**

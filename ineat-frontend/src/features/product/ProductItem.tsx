@@ -168,6 +168,11 @@ const ProductItem: FC<ProductItemProps> = ({
 												{formatRelativeDate(item.expiryDate)}
 											</span>
 										</div>
+										{item.expiryDateSource === 'ESTIMATED' && (
+											<span className='text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+												estimée
+											</span>
+										)}
 									</div>
 
 									{/* Lieu de stockage - compact */}

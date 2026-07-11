@@ -349,7 +349,7 @@ describe('OpenAIInvoiceAnalysisProvider', () => {
       }
 
       if (key === 'OPENAI_INVOICE_MODEL') {
-        return 'gpt-5.5';
+        return 'gpt-5.6-luna';
       }
 
       return undefined;
@@ -391,7 +391,7 @@ describe('OpenAIInvoiceAnalysisProvider', () => {
     );
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body).toMatchObject({
-      model: 'gpt-5.5',
+      model: 'gpt-5.6-luna',
       input: [
         {
           content: [
@@ -448,9 +448,16 @@ describe('OpenAIInvoiceAnalysisProvider', () => {
   it("échoue sans exposer le détail d'erreur provider", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
+      status: 400,
+      headers: new Headers({
+        'x-request-id': 'req_invoice_123',
+      }),
       json: jest.fn().mockResolvedValue({
         error: {
           message: 'private provider detail',
+          type: 'invalid_request_error',
+          code: 'model_not_found',
+          param: 'model',
         },
       }),
     } as any);
@@ -459,7 +466,9 @@ describe('OpenAIInvoiceAnalysisProvider', () => {
 
     await expect(
       provider.analyzePdf('https://example.com/invoice.pdf'),
-    ).rejects.toThrow('OpenAI invoice analysis failed');
+    ).rejects.toThrow(
+      'OpenAI invoice analysis failed (status=400, model=gpt-5.6-luna, code=model_not_found, type=invalid_request_error, param=model, requestId=req_invoice_123)',
+    );
   });
 
   it('échoue sur une réponse OpenAI invalide', async () => {

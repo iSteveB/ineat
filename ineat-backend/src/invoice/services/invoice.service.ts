@@ -54,7 +54,7 @@ export class InvoiceService {
         event: 'invoice_import_upload_failed',
         userId: user.id,
         status: InvoiceStatus.FAILED,
-        error: error instanceof Error ? error.name : 'UnknownError',
+        error: this.serializeError(error),
       });
 
       if (error instanceof BadRequestException) {
@@ -113,7 +113,7 @@ export class InvoiceService {
         invoiceId: invoice.id,
         userId: user.id,
         status: InvoiceStatus.FAILED,
-        error: error instanceof Error ? error.name : 'UnknownError',
+        error: this.serializeError(error),
       });
 
       throw new BadRequestException("La facture n'a pas pu être analysée");
@@ -1024,5 +1024,35 @@ export class InvoiceService {
 
   private logInvoiceEvent(event: Record<string, unknown>) {
     this.logger.log(JSON.stringify(event));
+  }
+
+  private serializeError(error: unknown): Record<string, unknown> {
+    if (!(error instanceof Error)) {
+      return {
+        name: 'UnknownError',
+        message: String(error),
+      };
+    }
+
+    const providerError = error as Error & {
+      status?: number;
+      model?: string;
+      providerCode?: string;
+      providerType?: string;
+      providerParam?: string;
+      requestId?: string | null;
+    };
+
+    return {
+      name: error.name,
+      message: error.message,
+      status: providerError.status,
+      model: providerError.model,
+      providerCode: providerError.providerCode,
+      providerType: providerError.providerType,
+      providerParam: providerError.providerParam,
+      requestId: providerError.requestId,
+      stack: error.stack,
+    };
   }
 }

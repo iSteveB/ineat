@@ -457,6 +457,11 @@ const ProductDetailPage: FC = () => {
 										<span className='text-lg font-bold text-gray-900'>
 											{formatDate(inventoryItem.expiryDate)}
 										</span>
+										{inventoryItem.expiryDateSource === 'ESTIMATED' && (
+											<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
+												date estimée
+											</span>
+										)}
 										<div
 											className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${expiryColors.badge}`}
 										>
