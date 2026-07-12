@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserService } from './user.service';
 import { hashPassword, verifyPassword } from '../../lib/password';
 
@@ -9,9 +9,26 @@ jest.mock('../../lib/password', () => ({
 
 describe('UserService.updatePassword', () => {
   const prisma = {
+    $transaction: jest.fn(),
     account: {
       findFirst: jest.fn(),
       update: jest.fn(),
+    },
+    budget: {
+      deleteMany: jest.fn(),
+    },
+    expense: {
+      deleteMany: jest.fn(),
+    },
+    inventoryItem: {
+      deleteMany: jest.fn(),
+    },
+    notification: {
+      deleteMany: jest.fn(),
+    },
+    user: {
+      delete: jest.fn(),
+      findUnique: jest.fn(),
     },
   };
 
@@ -120,5 +137,58 @@ describe('UserService.updatePassword', () => {
 
     expect(hashPassword).not.toHaveBeenCalled();
     expect(prisma.account.update).not.toHaveBeenCalled();
+  });
+
+  it('supprime le compte et les données utilisateur non-cascade dans une transaction', async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 'user-id' });
+    prisma.expense.deleteMany.mockReturnValue('delete-expenses');
+    prisma.budget.deleteMany.mockReturnValue('delete-budgets');
+    prisma.inventoryItem.deleteMany.mockReturnValue('delete-inventory');
+    prisma.notification.deleteMany.mockReturnValue('delete-notifications');
+    prisma.user.delete.mockReturnValue('delete-user');
+    prisma.$transaction.mockResolvedValue([]);
+
+    await expect(service.deleteAccount('user-id')).resolves.toEqual({
+      success: true,
+      message: 'Compte supprimé avec succès',
+    });
+
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { id: 'user-id' },
+      select: { id: true },
+    });
+    expect(prisma.expense.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-id' },
+    });
+    expect(prisma.budget.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-id' },
+    });
+    expect(prisma.inventoryItem.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-id' },
+    });
+    expect(prisma.notification.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-id' },
+    });
+    expect(prisma.user.delete).toHaveBeenCalledWith({
+      where: { id: 'user-id' },
+    });
+    expect(prisma.$transaction).toHaveBeenCalledWith([
+      'delete-expenses',
+      'delete-budgets',
+      'delete-inventory',
+      'delete-notifications',
+      'delete-user',
+    ]);
+  });
+
+  it("rejette la suppression si l'utilisateur n'existe pas", async () => {
+    prisma.user.findUnique.mockResolvedValue(null);
+
+    await expect(service.deleteAccount('missing-user')).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
+
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.user.delete).not.toHaveBeenCalled();
   });
 });

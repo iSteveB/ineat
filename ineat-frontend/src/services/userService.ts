@@ -97,4 +97,11 @@ export const userService = {
 	): Promise<ApiMessageResponse> => {
 		return apiClient.patch<ApiMessageResponse>('/user/password', data);
 	},
+
+	/**
+	 * Supprime définitivement le compte de l'utilisateur connecté
+	 */
+	deleteAccount: async (): Promise<ApiMessageResponse> => {
+		return apiClient.delete<ApiMessageResponse>('/user/me');
+	},
 };

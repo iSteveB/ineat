@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Patch,
   Body,
@@ -264,5 +265,28 @@ export class UserController {
     @Body() updateData: UpdatePasswordDto,
   ) {
     return this.userService.updatePassword(req.user.id, updateData);
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Supprimer le compte utilisateur',
+    description:
+      "Supprime définitivement le compte authentifié et les données utilisateur associées.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Compte supprimé avec succès',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Utilisateur non trouvé',
+  })
+  async deleteCurrentUser(@Request() req: RequestWithUser) {
+    return this.userService.deleteAccount(req.user.id);
   }
 }

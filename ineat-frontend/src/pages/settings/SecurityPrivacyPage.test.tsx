@@ -5,17 +5,22 @@ import { toast } from 'sonner';
 import { userService } from '@/services/userService';
 import SecurityPrivacyPage from './SecurityPrivacyPage';
 
+const clearUserMock = vi.hoisted(() => vi.fn());
+const navigateMock = vi.hoisted(() => vi.fn());
+
 vi.mock('@tanstack/react-router', () => ({
 	Link: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	useNavigate: () => navigateMock,
 }));
 
 vi.mock('@/stores/authStore', () => ({
-	useAuthStore: vi.fn((selector) => selector({ logout: vi.fn() })),
+	useAuthStore: vi.fn((selector) => selector({ clearUser: clearUserMock })),
 }));
 
 vi.mock('@/services/userService', () => ({
 	userService: {
 		updatePassword: vi.fn(),
+		deleteAccount: vi.fn(),
 	},
 }));
 
@@ -120,5 +125,62 @@ describe('SecurityPrivacyPage password update', () => {
 			})
 		).toBeDisabled();
 		expect(userService.updatePassword).not.toHaveBeenCalled();
+	});
+
+	it('supprime le compte, affiche un succès et vide la session locale', async () => {
+		(userService.deleteAccount as ReturnType<typeof vi.fn>).mockResolvedValue({
+			success: true,
+			message: 'Compte supprimé avec succès',
+		});
+
+		render(<SecurityPrivacyPage />);
+
+		await user.click(
+			screen.getByRole('button', {
+				name: /Supprimer définitivement mon compte/i,
+			})
+		);
+		await user.click(
+			screen.getByRole('button', {
+				name: 'Supprimer définitivement',
+			})
+		);
+
+		await waitFor(() => {
+			expect(userService.deleteAccount).toHaveBeenCalledTimes(1);
+		});
+		expect(toast.success).toHaveBeenCalledWith('Compte supprimé avec succès');
+		expect(clearUserMock).toHaveBeenCalledTimes(1);
+		expect(navigateMock).toHaveBeenCalledWith({
+			to: '/login',
+			replace: true,
+		});
+	});
+
+	it("affiche l'erreur et conserve la session locale si la suppression échoue", async () => {
+		(userService.deleteAccount as ReturnType<typeof vi.fn>).mockRejectedValue(
+			new Error('Impossible de supprimer le compte')
+		);
+
+		render(<SecurityPrivacyPage />);
+
+		await user.click(
+			screen.getByRole('button', {
+				name: /Supprimer définitivement mon compte/i,
+			})
+		);
+		await user.click(
+			screen.getByRole('button', {
+				name: 'Supprimer définitivement',
+			})
+		);
+
+		await waitFor(() => {
+			expect(toast.error).toHaveBeenCalledWith(
+				'Impossible de supprimer le compte'
+			);
+		});
+		expect(clearUserMock).not.toHaveBeenCalled();
+		expect(navigateMock).not.toHaveBeenCalled();
 	});
 });

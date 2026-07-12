@@ -241,4 +241,28 @@ export class UserService {
       message: 'Mot de passe mis à jour avec succès',
     };
   }
+
+  async deleteAccount(userId: string) {
+    const existingUser = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!existingUser) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.expense.deleteMany({ where: { userId } }),
+      this.prisma.budget.deleteMany({ where: { userId } }),
+      this.prisma.inventoryItem.deleteMany({ where: { userId } }),
+      this.prisma.notification.deleteMany({ where: { userId } }),
+      this.prisma.user.delete({ where: { id: userId } }),
+    ]);
+
+    return {
+      success: true,
+      message: 'Compte supprimé avec succès',
+    };
+  }
 }

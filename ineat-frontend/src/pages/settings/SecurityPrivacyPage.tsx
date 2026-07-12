@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Info, Lock, Shield, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,8 @@ import { userService } from '@/services/userService';
 import { toast } from 'sonner';
 
 const SecurityPrivacyPage = () => {
-	const logout = useAuthStore((state) => state.logout);
+	const clearUser = useAuthStore((state) => state.clearUser);
+	const navigate = useNavigate();
 
 	// États pour les différents toggles
 	const [securitySettings, setSecuritySettings] = useState({
@@ -59,6 +60,7 @@ const SecurityPrivacyPage = () => {
 
 	// État pour la suppression de compte
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
+	const [isDeletingAccount, setIsDeletingAccount] = useState<boolean>(false);
 
 	const handlePasswordSubmit = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
@@ -99,10 +101,32 @@ const SecurityPrivacyPage = () => {
 		setPasswordInfo((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleDeleteAccount = (): void => {
-		// TODO : Implémentation réelle à ajouter
-		setDeleteConfirmOpen(false);
-		logout();
+	const handleDeleteAccount = async (
+		event: React.MouseEvent<HTMLButtonElement>,
+	): Promise<void> => {
+		event.preventDefault();
+
+		if (isDeletingAccount) {
+			return;
+		}
+
+		setIsDeletingAccount(true);
+
+		try {
+			const response = await userService.deleteAccount();
+			toast.success(response.message || 'Compte supprimé avec succès');
+			setDeleteConfirmOpen(false);
+			clearUser();
+			navigate({ to: '/login', replace: true });
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Impossible de supprimer le compte';
+			toast.error(message);
+		} finally {
+			setIsDeletingAccount(false);
+		}
 	};
 
 	// Vérifier si les mots de passe correspondent
@@ -415,12 +439,22 @@ const SecurityPrivacyPage = () => {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogCancel disabled={isDeletingAccount}>
+							Annuler
+						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDeleteAccount}
+							disabled={isDeletingAccount}
 							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'
 						>
-							Supprimer définitivement
+							{isDeletingAccount ? (
+								<>
+									<Loader2 className='size-4 mr-2 animate-spin' />
+									Suppression...
+								</>
+							) : (
+								'Supprimer définitivement'
+							)}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
