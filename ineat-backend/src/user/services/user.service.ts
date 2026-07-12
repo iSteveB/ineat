@@ -12,6 +12,8 @@ import {
 import { toSafeUserResponseWithUsage } from '../../auth/auth-user-response';
 import { AccessPolicyService } from '../../auth/services/access-policy.service';
 import { UsageQuotaService } from '../../auth/services/usage-quota.service';
+import { hashPassword, verifyPassword } from '../../lib/password';
+import { UpdatePasswordDto } from '../dto/update-password.dto';
 
 interface UpdatePersonalInfoDto {
   firstName?: string;
@@ -188,6 +190,55 @@ export class UserService {
         allergens: preferences.allergens || [],
         diets: preferences.diets || [],
       },
+    };
+  }
+
+  async updatePassword(userId: string, updateData: UpdatePasswordDto) {
+    const credentialAccount = await this.prisma.account.findFirst({
+      where: {
+        userId,
+        providerId: 'credential',
+      },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
+
+    if (!credentialAccount?.password) {
+      throw new BadRequestException({
+        code: 'PASSWORD_CREDENTIAL_NOT_FOUND',
+        message:
+          "Ce compte n'a pas de mot de passe local. Utilisez votre fournisseur de connexion.",
+      });
+    }
+
+    const isCurrentPasswordValid = await verifyPassword({
+      hash: credentialAccount.password,
+      password: updateData.currentPassword,
+    });
+
+    if (!isCurrentPasswordValid) {
+      throw new BadRequestException({
+        code: 'INVALID_CURRENT_PASSWORD',
+        message: 'Le mot de passe actuel est incorrect',
+      });
+    }
+
+    const newPasswordHash = await hashPassword(updateData.newPassword);
+
+    await this.prisma.account.update({
+      where: {
+        id: credentialAccount.id,
+      },
+      data: {
+        password: newPasswordHash,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Mot de passe mis à jour avec succès',
     };
   }
 }

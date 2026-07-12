@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ForgotPasswordForm from './ForgotPasswordForm';
 import { useNavigate } from '@tanstack/react-router';
-import { apiClient } from '@/lib/api-client';
+import { authClient } from '@/lib/auth-client';
 import userEvent from '@testing-library/user-event';
 
 // Mocks pour les dépendances
@@ -10,9 +10,9 @@ vi.mock('@tanstack/react-router', () => ({
 	useNavigate: vi.fn(),
 }));
 
-vi.mock('@/lib/api-client', () => ({
-	apiClient: {
-		post: vi.fn(),
+vi.mock('@/lib/auth-client', () => ({
+	authClient: {
+		requestPasswordReset: vi.fn(),
 	},
 }));
 
@@ -22,6 +22,12 @@ describe('ForgotPasswordForm', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		Object.defineProperty(window, 'location', {
+			value: {
+				origin: 'http://localhost:5173',
+			},
+			writable: true,
+		});
 		(useNavigate as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
 			navigateMock
 		);
@@ -95,8 +101,10 @@ describe('ForgotPasswordForm', () => {
 
 	it('soumet le formulaire avec un email valide et affiche le message de succès', async () => {
 		// Mock de la réponse API réussie
-		(apiClient.post as ReturnType<typeof vi.fn>).mockResolvedValue({
-			success: true,
+		(
+			authClient.requestPasswordReset as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			error: null,
 		});
 
 		render(<ForgotPasswordForm />);
@@ -110,12 +118,10 @@ describe('ForgotPasswordForm', () => {
 
 		// Vérifier que l'API a été appelée avec les bons paramètres
 		await waitFor(() => {
-			expect(apiClient.post).toHaveBeenCalledWith(
-				'/auth/forgot-password',
-				{
+			expect(authClient.requestPasswordReset).toHaveBeenCalledWith({
 					email: 'utilisateur@exemple.com',
-				}
-			);
+				redirectTo: 'http://localhost:5173/reset-password',
+			});
 		});
 
 		// Vérifier que le message de succès s'affiche
@@ -129,10 +135,11 @@ describe('ForgotPasswordForm', () => {
 
 	it("affiche une erreur si l'API renvoie une erreur", async () => {
 		// Mock de l'erreur API
-		const errorMessage = 'Impossible de se connecter au serveur';
-		(apiClient.post as ReturnType<typeof vi.fn>).mockRejectedValue(
-			new Error(errorMessage)
-		);
+		(
+			authClient.requestPasswordReset as ReturnType<typeof vi.fn>
+		).mockResolvedValue({
+			error: { message: 'Reset password disabled' },
+		});
 
 		render(<ForgotPasswordForm />);
 
@@ -150,16 +157,21 @@ describe('ForgotPasswordForm', () => {
 
 		// Vérifier le contenu de l'erreur
 		const errorMessageContent = screen.getByTestId('error-message');
-		expect(errorMessageContent).toHaveTextContent(errorMessage);
+		expect(errorMessageContent).toHaveTextContent(
+			"Impossible d'envoyer le lien de réinitialisation"
+		);
 	});
 
 	it('désactive les contrôles pendant le chargement', async () => {
 		// Mock d'une réponse API lente
-		(apiClient.post as ReturnType<typeof vi.fn>).mockImplementation(() => {
-			return new Promise((resolve) => {
-				setTimeout(() => resolve({ success: true }), 100);
-			});
-		});
+		(
+			authClient.requestPasswordReset as ReturnType<typeof vi.fn>
+		).mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					setTimeout(() => resolve({ error: null }), 100);
+				})
+		);
 
 		render(<ForgotPasswordForm />);
 

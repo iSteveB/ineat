@@ -47,6 +47,7 @@ Variables principales:
 | `BETTER_AUTH_URL` | Oui | URL publique du backend Better Auth, sans chemin `/api/auth` |
 | `FRONTEND_URL` | Production | Origine frontend autorisee en prod |
 | `CORS_ORIGIN` | Production | Origine CORS supplementaire |
+| `PASSWORD_RESET_WEBHOOK_URL` | Production | Webhook appele par Better Auth pour envoyer les emails de reset password |
 | `GOOGLE_CLIENT_ID` | OAuth | Client ID Google utilise par Better Auth |
 | `GOOGLE_CLIENT_SECRET` | OAuth | Secret Google utilise par Better Auth |
 | `CLOUDINARY_CLOUD_NAME` | Uploads | Cloudinary cloud name |
@@ -68,6 +69,7 @@ pnpm run dev
 Les nouveaux flux web utilisent Better Auth sous `/api/auth/*`:
 
 - email/password: `/api/auth/sign-in/email` et `/api/auth/sign-up/email`;
+- reset password: `/api/auth/request-password-reset` et `/api/auth/reset-password`;
 - Google OAuth: endpoints Better Auth, avec callback serveur `/api/auth/callback/google`;
 - session courante: cookie Better Auth HTTP-only, lu par `SessionAuthGuard` via
   `BetterAuthSessionService`.

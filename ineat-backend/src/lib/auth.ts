@@ -21,6 +21,7 @@ const configuredTrustedOrigins = [
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const passwordResetWebhookUrl = process.env.PASSWORD_RESET_WEBHOOK_URL;
 
 const emailAuthPaths = new Set(['/sign-in/email', '/sign-up/email']);
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -68,6 +69,37 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }, request) => {
+      if (!passwordResetWebhookUrl) {
+        console.warn(
+          'Password reset requested but PASSWORD_RESET_WEBHOOK_URL is not configured.',
+          {
+            email: user.email,
+            resetUrl: url,
+          },
+        );
+        return;
+      }
+
+      const response = await fetch(passwordResetWebhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: user.email,
+          name: user.name,
+          resetUrl: url,
+          userAgent: request?.headers.get('user-agent') ?? null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Password reset webhook failed');
+      }
+    },
     password: {
       hash: hashPassword,
       verify: verifyPassword,

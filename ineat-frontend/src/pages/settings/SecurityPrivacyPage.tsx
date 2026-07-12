@@ -32,6 +32,8 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { userService } from '@/services/userService';
+import { toast } from 'sonner';
 
 const SecurityPrivacyPage = () => {
 	const logout = useAuthStore((state) => state.logout);
@@ -58,26 +60,40 @@ const SecurityPrivacyPage = () => {
 	// État pour la suppression de compte
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
 
-	const handlePasswordSubmit = (e: React.FormEvent): void => {
+	const handlePasswordSubmit = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
+
+		if (!canSubmitPassword || isSubmittingPassword) {
+			return;
+		}
+
 		setIsSubmittingPassword(true);
 
-		// Simuler un appel API
-		setTimeout(() => {
-			console.log('Mot de passe mis à jour');
-			// Ici on appelle notre API
-			// apiClient.updatePassword(passwordInfo)
-			setIsSubmittingPassword(false);
+		try {
+			const response = await userService.updatePassword({
+				currentPassword: passwordInfo.currentPassword,
+				newPassword: passwordInfo.newPassword,
+			});
+
+			toast.success(response.message || 'Mot de passe mis à jour avec succès');
 			setPasswordInfo({
 				currentPassword: '',
 				newPassword: '',
 				confirmPassword: '',
 			});
-		}, 1000);
+		} catch (error) {
+			const message =
+				error instanceof Error
+					? error.message
+					: 'Impossible de mettre à jour le mot de passe';
+			toast.error(message);
+		} finally {
+			setIsSubmittingPassword(false);
+		}
 	};
 
 	const handlePasswordChange = (
-		e: React.ChangeEvent<HTMLInputElement>
+		e: React.ChangeEvent<HTMLInputElement>,
 	): void => {
 		const { name, value } = e.target;
 		setPasswordInfo((prev) => ({ ...prev, [name]: value }));
@@ -98,9 +114,7 @@ const SecurityPrivacyPage = () => {
 		passwordsMatch;
 
 	// Gestionnaire pour les changements de toggles
-	const handleToggleChange = (
-		setting: keyof typeof securitySettings
-	): void => {
+	const handleToggleChange = (setting: keyof typeof securitySettings): void => {
 		setSecuritySettings((prev) => ({
 			...prev,
 			[setting]: !prev[setting],
@@ -119,7 +133,8 @@ const SecurityPrivacyPage = () => {
 						<Button
 							variant='ghost'
 							size='sm'
-							className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-100 shadow-sm'>
+							className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-100 shadow-sm'
+						>
 							<ChevronLeft className='size-5' />
 						</Button>
 					</Link>
@@ -128,8 +143,7 @@ const SecurityPrivacyPage = () => {
 							Sécurité & Confidentialité
 						</h1>
 						<p className='text-sm text-neutral-300'>
-							Gérez vos paramètres de sécurité et de
-							confidentialité
+							Gérez vos paramètres de sécurité et de confidentialité
 						</p>
 					</div>
 				</div>
@@ -146,16 +160,13 @@ const SecurityPrivacyPage = () => {
 							Modifier mon mot de passe
 						</CardTitle>
 						<CardDescription className='text-neutral-300'>
-							Assurez-vous d'utiliser un mot de passe fort et
-							unique
+							Assurez-vous d'utiliser un mot de passe fort et unique
 						</CardDescription>
 					</CardHeader>
 					<form onSubmit={handlePasswordSubmit}>
 						<CardContent className='space-y-4'>
 							<div className='space-y-2'>
-								<Label
-									htmlFor='currentPassword'
-									className='text-neutral-300'>
+								<Label htmlFor='currentPassword' className='text-neutral-300'>
 									Mot de passe actuel
 								</Label>
 								<Input
@@ -164,15 +175,14 @@ const SecurityPrivacyPage = () => {
 									type='password'
 									value={passwordInfo.currentPassword}
 									onChange={handlePasswordChange}
+									disabled={isSubmittingPassword}
 									required
 									className='bg-neutral-50 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none'
 								/>
 							</div>
 
 							<div className='space-y-2'>
-								<Label
-									htmlFor='newPassword'
-									className='text-neutral-300'>
+								<Label htmlFor='newPassword' className='text-neutral-300'>
 									Nouveau mot de passe
 								</Label>
 								<Input
@@ -181,6 +191,7 @@ const SecurityPrivacyPage = () => {
 									type='password'
 									value={passwordInfo.newPassword}
 									onChange={handlePasswordChange}
+									disabled={isSubmittingPassword}
 									required
 									minLength={8}
 									className='bg-neutral-50 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none'
@@ -188,16 +199,13 @@ const SecurityPrivacyPage = () => {
 								{passwordInfo.newPassword.length > 0 &&
 									passwordInfo.newPassword.length < 8 && (
 										<p className='text-sm text-error-100'>
-											Le mot de passe doit contenir au
-											moins 8 caractères
+											Le mot de passe doit contenir au moins 8 caractères
 										</p>
 									)}
 							</div>
 
 							<div className='space-y-2'>
-								<Label
-									htmlFor='confirmPassword'
-									className='text-neutral-300'>
+								<Label htmlFor='confirmPassword' className='text-neutral-300'>
 									Confirmer le mot de passe
 								</Label>
 								<Input
@@ -206,31 +214,28 @@ const SecurityPrivacyPage = () => {
 									type='password'
 									value={passwordInfo.confirmPassword}
 									onChange={handlePasswordChange}
+									disabled={isSubmittingPassword}
 									required
 									className={cn(
 										'bg-neutral-50 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none',
-										passwordInfo.confirmPassword.length >
-											0 && !passwordsMatch
+										passwordInfo.confirmPassword.length > 0 && !passwordsMatch
 											? 'border-error-100'
-											: ''
+											: '',
 									)}
 								/>
-								{passwordInfo.confirmPassword.length > 0 &&
-									!passwordsMatch && (
-										<p className='text-sm text-error-100'>
-											Les mots de passe ne correspondent
-											pas
-										</p>
-									)}
+								{passwordInfo.confirmPassword.length > 0 && !passwordsMatch && (
+									<p className='text-sm text-error-100'>
+										Les mots de passe ne correspondent pas
+									</p>
+								)}
 							</div>
 						</CardContent>
 						<CardFooter>
 							<Button
 								type='submit'
 								className='w-full h-12 bg-success-50 hover:bg-success-50/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
-								disabled={
-									isSubmittingPassword || !canSubmitPassword
-								}>
+								disabled={isSubmittingPassword || !canSubmitPassword}
+							>
 								{isSubmittingPassword ? (
 									<>
 										<Loader2 className='size-4 mr-2 animate-spin' />
@@ -262,20 +267,18 @@ const SecurityPrivacyPage = () => {
 							<div>
 								<Label
 									htmlFor='dataSharing'
-									className='font-medium text-neutral-300'>
+									className='font-medium text-neutral-300'
+								>
 									Partage des données
 								</Label>
 								<p className='text-sm text-neutral-300'>
-									Autoriser le partage anonyme à des fins
-									d'amélioration
+									Autoriser le partage anonyme à des fins d'amélioration
 								</p>
 							</div>
 							<Switch
 								id='dataSharing'
 								checked={securitySettings.dataSharing}
-								onCheckedChange={() =>
-									handleToggleChange('dataSharing')
-								}
+								onCheckedChange={() => handleToggleChange('dataSharing')}
 								className='data-[state=checked]:bg-success-50 data-[state=unchecked]:bg-neutral-200'
 							/>
 						</div>
@@ -283,20 +286,18 @@ const SecurityPrivacyPage = () => {
 							<div>
 								<Label
 									htmlFor='locationTracking'
-									className='font-medium text-neutral-300'>
+									className='font-medium text-neutral-300'
+								>
 									Suivi de localisation
 								</Label>
 								<p className='text-sm text-neutral-300'>
-									Autoriser l'application à utiliser votre
-									localisation
+									Autoriser l'application à utiliser votre localisation
 								</p>
 							</div>
 							<Switch
 								id='locationTracking'
 								checked={securitySettings.locationTracking}
-								onCheckedChange={() =>
-									handleToggleChange('locationTracking')
-								}
+								onCheckedChange={() => handleToggleChange('locationTracking')}
 								className='data-[state=checked]:bg-success-50 data-[state=unchecked]:bg-neutral-200'
 							/>
 						</div>
@@ -304,20 +305,18 @@ const SecurityPrivacyPage = () => {
 							<div>
 								<Label
 									htmlFor='saveSearchHistory'
-									className='font-medium text-neutral-300'>
+									className='font-medium text-neutral-300'
+								>
 									Historique de recherche
 								</Label>
 								<p className='text-sm text-neutral-300'>
-									Enregistrer vos recherches pour des
-									suggestions futures
+									Enregistrer vos recherches pour des suggestions futures
 								</p>
 							</div>
 							<Switch
 								id='saveSearchHistory'
 								checked={securitySettings.saveSearchHistory}
-								onCheckedChange={() =>
-									handleToggleChange('saveSearchHistory')
-								}
+								onCheckedChange={() => handleToggleChange('saveSearchHistory')}
 								className='data-[state=checked]:bg-success-50 data-[state=unchecked]:bg-neutral-200'
 							/>
 						</div>
@@ -336,47 +335,37 @@ const SecurityPrivacyPage = () => {
 					</CardHeader>
 					<CardContent>
 						<Accordion type='single' collapsible className='w-full'>
-							<AccordionItem
-								value='item-1'
-								className='border-neutral-100'>
+							<AccordionItem value='item-1' className='border-neutral-100'>
 								<AccordionTrigger className='text-neutral-300 hover:no-underline hover:text-success-50 transition-colors'>
 									Comment mes données sont-elles utilisées ?
 								</AccordionTrigger>
 								<AccordionContent className='text-neutral-300'>
-									InEat utilise vos données uniquement pour
-									améliorer votre expérience et vous proposer
-									des recettes et suggestions personnalisées.
-									Nous ne vendons jamais vos données
-									personnelles à des tiers. Pour plus de
-									détails, consultez notre politique de
-									confidentialité.
+									InEat utilise vos données uniquement pour améliorer votre
+									expérience et vous proposer des recettes et suggestions
+									personnalisées. Nous ne vendons jamais vos données
+									personnelles à des tiers. Pour plus de détails, consultez
+									notre politique de confidentialité.
 								</AccordionContent>
 							</AccordionItem>
-							<AccordionItem
-								value='item-2'
-								className='border-neutral-100'>
+							<AccordionItem value='item-2' className='border-neutral-100'>
 								<AccordionTrigger className='text-neutral-300 hover:no-underline hover:text-success-50 transition-colors'>
 									Comment sécuriser mon compte ?
 								</AccordionTrigger>
 								<AccordionContent className='text-neutral-300'>
-									Pour une sécurité optimale, nous vous
-									recommandons d'activer l'authentification à
-									deux facteurs, d'utiliser un mot de passe
-									fort et unique, et de surveiller
-									régulièrement les activités de votre compte.
+									Pour une sécurité optimale, nous vous recommandons d'activer
+									l'authentification à deux facteurs, d'utiliser un mot de passe
+									fort et unique, et de surveiller régulièrement les activités
+									de votre compte.
 								</AccordionContent>
 							</AccordionItem>
-							<AccordionItem
-								value='item-3'
-								className='border-neutral-100'>
+							<AccordionItem value='item-3' className='border-neutral-100'>
 								<AccordionTrigger className='text-neutral-300 hover:no-underline hover:text-success-50 transition-colors'>
 									Comment désactiver les notifications ?
 								</AccordionTrigger>
 								<AccordionContent className='text-neutral-300'>
-									Vous pouvez gérer vos préférences de
-									notification dans la section "Notifications"
-									de votre profil. Vous pouvez y désactiver
-									les notifications par type ou complètement.
+									Vous pouvez gérer vos préférences de notification dans la
+									section "Notifications" de votre profil. Vous pouvez y
+									désactiver les notifications par type ou complètement.
 								</AccordionContent>
 							</AccordionItem>
 						</Accordion>
@@ -396,13 +385,13 @@ const SecurityPrivacyPage = () => {
 					<CardContent>
 						<div className='flex flex-col p-4 bg-error-50/5 rounded-xl border border-error-100/20'>
 							<p className='text-sm text-neutral-300 mb-4'>
-								Cette action est définitive et supprimera toutes
-								vos données, recettes sauvegardées, préférences
-								et historique.
+								Cette action est définitive et supprimera toutes vos données,
+								recettes sauvegardées, préférences et historique.
 							</p>
 							<Button
 								onClick={() => setDeleteConfirmOpen(true)}
-								className='bg-error-100 hover:bg-error-100/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'>
+								className='bg-error-100 hover:bg-error-100/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'
+							>
 								<Trash2 className='size-4 mr-2 flex-shrink-0' />
 								<span className='break-words'>
 									Supprimer définitivement mon compte
@@ -414,24 +403,23 @@ const SecurityPrivacyPage = () => {
 			</div>
 
 			{/* Dialog de confirmation de suppression */}
-			<AlertDialog
-				open={deleteConfirmOpen}
-				onOpenChange={setDeleteConfirmOpen}>
+			<AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
 							Êtes-vous sûr de vouloir supprimer votre compte ?
 						</AlertDialogTitle>
 						<AlertDialogDescription>
-							Cette action est irréversible. Vous perdrez toutes
-							vos données et serez déconnecté de l'application.
+							Cette action est irréversible. Vous perdrez toutes vos données et
+							serez déconnecté de l'application.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Annuler</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDeleteAccount}
-							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'>
+							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'
+						>
 							Supprimer définitivement
 						</AlertDialogAction>
 					</AlertDialogFooter>

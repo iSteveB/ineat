@@ -26,6 +26,8 @@ Backend:
 - `BETTER_AUTH_URL`, origine publique du backend sans suffixe `/api/auth`
 - `FRONTEND_URL`
 - `CORS_ORIGIN`
+- `PASSWORD_RESET_WEBHOOK_URL`, webhook d'envoi email pour les liens de
+  reinitialisation de mot de passe
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` si Google OAuth Better Auth est actif
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 - `CLOUDINARY_AVATAR_PRESET`

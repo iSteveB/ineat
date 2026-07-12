@@ -14,6 +14,11 @@ interface UpdateDietaryRestrictionsRequest {
 	diets?: string[];
 }
 
+interface UpdatePasswordRequest {
+	currentPassword: string;
+	newPassword: string;
+}
+
 // Types pour les réponses
 interface UserResponse {
 	id: string;
@@ -42,16 +47,21 @@ interface ApiResponse<T> {
 	message?: string;
 }
 
+interface ApiMessageResponse {
+	success: boolean;
+	message?: string;
+}
+
 export const userService = {
 	/**
 	 * Met à jour les informations personnelles de l'utilisateur
 	 */
 	updatePersonalInfo: async (
-		data: UpdatePersonalInfoRequest
+		data: UpdatePersonalInfoRequest,
 	): Promise<UserResponse> => {
 		const response = await apiClient.patch<ApiResponse<UserResponse>>(
 			'/user/profile',
-			data
+			data,
 		);
 		return response.data;
 	},
@@ -61,7 +71,7 @@ export const userService = {
 	 */
 	getDietaryRestrictions: async (): Promise<DietaryPreferences> => {
 		const response = await apiClient.get<DietaryRestrictionsResponse>(
-			'/user/dietary-restrictions'
+			'/user/dietary-restrictions',
 		);
 		return response.data;
 	},
@@ -70,12 +80,21 @@ export const userService = {
 	 * Met à jour les restrictions alimentaires de l'utilisateur
 	 */
 	updateDietaryRestrictions: async (
-		data: UpdateDietaryRestrictionsRequest
+		data: UpdateDietaryRestrictionsRequest,
 	): Promise<DietaryPreferences> => {
 		const response = await apiClient.patch<DietaryRestrictionsResponse>(
 			'/user/dietary-restrictions',
-			data
+			data,
 		);
 		return response.data;
+	},
+
+	/**
+	 * Met à jour le mot de passe local de l'utilisateur
+	 */
+	updatePassword: async (
+		data: UpdatePasswordRequest,
+	): Promise<ApiMessageResponse> => {
+		return apiClient.patch<ApiMessageResponse>('/user/password', data);
 	},
 };

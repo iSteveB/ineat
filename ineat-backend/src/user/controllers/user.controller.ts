@@ -19,6 +19,7 @@ import { UserService } from '../services/user.service';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { ProfileType } from '../../../prisma/generated/prisma/client';
 import { UpdateDietaryRestrictionsDto } from '../dto/update-dietary-restrictions.dto';
+import { UpdatePasswordDto } from '../dto/update-password.dto';
 
 interface RequestWithUser extends Request {
   user: {
@@ -232,5 +233,36 @@ export class UserController {
     @Body() updateData: UpdateDietaryRestrictionsDto,
   ) {
     return this.userService.updateDietaryRestrictions(req.user.id, updateData);
+  }
+
+  @Patch('password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Mettre à jour le mot de passe',
+    description:
+      'Permet à un utilisateur authentifié de modifier son mot de passe local après vérification du mot de passe actuel',
+  })
+  @ApiBody({
+    type: UpdatePasswordDto,
+    description: 'Mot de passe actuel et nouveau mot de passe',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Mot de passe mis à jour avec succès',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'Mot de passe actuel invalide, nouveau mot de passe invalide ou compte sans mot de passe local',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Non authentifié',
+  })
+  async updatePassword(
+    @Request() req: RequestWithUser,
+    @Body() updateData: UpdatePasswordDto,
+  ) {
+    return this.userService.updatePassword(req.user.id, updateData);
   }
 }

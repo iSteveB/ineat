@@ -13,7 +13,7 @@ import {
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
 import { z } from 'zod';
-import { apiClient } from '@/lib/api-client';
+import { authClient } from '@/lib/auth-client';
 import { EmailSchema } from '@/schemas';
 
 const ForgotPasswordForm = () => {
@@ -55,8 +55,16 @@ const ForgotPasswordForm = () => {
 		setIsLoading(true);
 
 		try {
-			// Appel API pour réinitialiser le mot de passe
-			await apiClient.post('/auth/forgot-password', { email });
+			const { error } = await authClient.requestPasswordReset({
+				email,
+				redirectTo: `${window.location.origin}/reset-password`,
+			});
+
+			if (error) {
+				throw new Error(
+					"Impossible d'envoyer le lien de réinitialisation"
+				);
+			}
 
 			// Afficher le message de succès
 			setIsSuccess(true);
