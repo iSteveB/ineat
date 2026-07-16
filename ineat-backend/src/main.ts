@@ -18,11 +18,9 @@ import {
 } from 'express';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
+import { getAllowedOrigins } from './config/origins';
 
-const legacyAuthPaths = new Set([
-  '/api/auth/profile',
-  '/api/auth/check',
-]);
+const legacyAuthPaths = new Set(['/api/auth/profile', '/api/auth/check']);
 
 const isLegacyAuthPath = (path: string) => legacyAuthPaths.has(path);
 
@@ -67,23 +65,7 @@ async function bootstrap() {
   const frontendUrl = configServiceInstance.get<string>('FRONTEND_URL');
   const corsOrigin = configServiceInstance.get<string>('CORS_ORIGIN');
 
-  let allowedOrigins: string[] = [];
-
-  if (isProduction) {
-    // En production, utiliser les URLs Railway
-    if (frontendUrl) allowedOrigins.push(frontendUrl);
-    if (corsOrigin) allowedOrigins.push(corsOrigin);
-  } else {
-    // En développement, permettre localhost
-    allowedOrigins = [
-      'https://ineat-frontend-developpement.up.railway.app',
-      'https://ineat-backend-developpement.up.railway.app',
-      'https://192.168.1.28:5173',
-      'https://localhost:5173',
-      'http://localhost:5173',
-      'http://localhost:3000',
-    ];
-  }
+  const allowedOrigins = getAllowedOrigins(nodeEnv, frontendUrl, corsOrigin);
 
   app.enableCors({
     origin: allowedOrigins,
@@ -94,13 +76,16 @@ async function bootstrap() {
 
   const betterAuthHandler = toNodeHandler(auth);
   const expressApp = app.getHttpAdapter().getInstance();
-  expressApp.all('/api/auth/*', (req: Request, res: Response, next: NextFunction) => {
-    if (isLegacyAuthPath(req.path)) {
-      return next();
-    }
+  expressApp.all(
+    '/api/auth/*',
+    (req: Request, res: Response, next: NextFunction) => {
+      if (isLegacyAuthPath(req.path)) {
+        return next();
+      }
 
-    return betterAuthHandler(req, res);
-  });
+      return betterAuthHandler(req, res);
+    },
+  );
   app.use(json());
   app.use(urlencoded({ extended: true }));
 

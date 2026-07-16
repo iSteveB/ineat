@@ -5,6 +5,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../prisma/generated/prisma/client';
 import { hashPassword, verifyPassword } from './password';
+import { getAllowedOrigins } from '../config/origins';
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
@@ -12,12 +13,11 @@ const prisma = new PrismaClient({
   }),
 });
 
-const configuredTrustedOrigins = [
+const configuredTrustedOrigins = getAllowedOrigins(
+  process.env.NODE_ENV,
   process.env.FRONTEND_URL,
   process.env.CORS_ORIGIN,
-  'http://localhost:5173',
-  'https://localhost:5173',
-].filter(Boolean) as string[];
+);
 
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;

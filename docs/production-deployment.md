@@ -24,8 +24,9 @@ Backend:
 - `REDIS_URL`
 - `BETTER_AUTH_SECRET`, genere aleatoirement avec au moins 32 caracteres
 - `BETTER_AUTH_URL`, origine publique du backend sans suffixe `/api/auth`
-- `FRONTEND_URL`
-- `CORS_ORIGIN`
+- `FRONTEND_URL=https://ineat.store`
+- `CORS_ORIGIN=https://ineat.store` (plusieurs origines peuvent etre separees
+  par des virgules pendant une migration de domaine)
 - `PASSWORD_RESET_WEBHOOK_URL`, webhook d'envoi email pour les liens de
   reinitialisation de mot de passe
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` si Google OAuth Better Auth est actif
@@ -56,6 +57,8 @@ Avant mise en production:
    colonnes utilisateur `name`, `emailVerified`.
 2. Confirmer que `BETTER_AUTH_URL` correspond exactement a l'origine publique du
    backend, par exemple `https://ineat-backend-production.up.railway.app`.
+   Le domaine `https://ineat.store` est celui du frontend et ne doit etre utilise
+   ici que si l'API est effectivement servie sur cette meme origine.
 3. Confirmer que le frontend utilise `VITE_API_URL` sans suffixe `/api`, afin
    que le client Better Auth cible `${VITE_API_URL}/api/auth`.
 4. Tester `sign-in/email`, `sign-up/email`, `sign-out` et `/api/auth/profile`
@@ -64,7 +67,8 @@ Avant mise en production:
    `GOOGLE_CLIENT_SECRET` sont configures. Le callback attendu cote Google est
    `/api/auth/callback/google`.
 6. Surveiller les logs pour les erreurs d'origine/CSRF Better Auth. Les origines
-   autorisees doivent couvrir `FRONTEND_URL` et `CORS_ORIGIN`.
+   autorisees doivent couvrir `https://ineat.store`, `FRONTEND_URL` et
+   `CORS_ORIGIN`.
 
 Les flux web utilisent exclusivement les sessions Better Auth. Les anciens JWT,
 cookies `auth_token`, strategies Passport et endpoints Nest `login/register`
