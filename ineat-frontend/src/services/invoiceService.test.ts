@@ -8,7 +8,7 @@ import {
 } from './invoiceService';
 import { server } from '@/test/mocks/server';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const invoice = {
 	id: '11111111-1111-4111-8111-111111111111',

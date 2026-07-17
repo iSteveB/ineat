@@ -23,7 +23,7 @@ Backend:
 - `DATABASE_URL`
 - `REDIS_URL`
 - `BETTER_AUTH_SECRET`, genere aleatoirement avec au moins 32 caracteres
-- `BETTER_AUTH_URL`, origine publique du backend sans suffixe `/api/auth`
+- `BETTER_AUTH_URL`, origine publique du backend sans suffixe `/auth`
 - `FRONTEND_URL=https://ineat.store`
 - `CORS_ORIGIN=https://ineat.store` (plusieurs origines peuvent etre separees
   par des virgules pendant une migration de domaine)
@@ -35,14 +35,15 @@ Backend:
 
 Frontend:
 
-- `VITE_API_URL`, sans suffixe `/api`, pointe vers l'origine backend publique.
+- `VITE_API_URL`, pointe vers l'origine backend publique, par exemple
+  `https://api.ineat.store`.
 
 ## Verification Apres Deploiement
 
 1. Verifier que le backend repond `200` sur `/health`.
 2. Verifier que le frontend repond `200` sur `/health`.
-3. Ouvrir le frontend public et confirmer que les appels API ciblent
-   `${VITE_API_URL}/api`.
+3. Ouvrir le frontend public et confirmer que les appels ciblent directement
+   `${VITE_API_URL}`.
 4. Controler les logs backend pour confirmer que `prisma migrate deploy` s'est
    termine avant le demarrage NestJS.
 5. Tester un parcours authentifie simple puis un upload d'avatar si les secrets
@@ -59,13 +60,13 @@ Avant mise en production:
    backend, par exemple `https://ineat-backend-production.up.railway.app`.
    Le domaine `https://ineat.store` est celui du frontend et ne doit etre utilise
    ici que si l'API est effectivement servie sur cette meme origine.
-3. Confirmer que le frontend utilise `VITE_API_URL` sans suffixe `/api`, afin
-   que le client Better Auth cible `${VITE_API_URL}/api/auth`.
-4. Tester `sign-in/email`, `sign-up/email`, `sign-out` et `/api/auth/profile`
+3. Confirmer que le frontend utilise l'origine seule dans `VITE_API_URL`, afin
+   que le client Better Auth cible `${VITE_API_URL}/auth`.
+4. Tester `sign-in/email`, `sign-up/email`, `sign-out` et `/auth/profile`
    depuis le frontend avec cookies `Secure` et `SameSite=None` en production.
 5. Tester Google OAuth via Better Auth si `GOOGLE_CLIENT_ID` et
    `GOOGLE_CLIENT_SECRET` sont configures. Le callback attendu cote Google est
-   `/api/auth/callback/google`.
+   `/auth/callback/google`.
 6. Surveiller les logs pour les erreurs d'origine/CSRF Better Auth. Les origines
    autorisees doivent couvrir `https://ineat.store`, `FRONTEND_URL` et
    `CORS_ORIGIN`.

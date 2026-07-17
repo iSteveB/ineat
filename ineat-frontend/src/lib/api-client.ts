@@ -22,7 +22,10 @@ export class ApiRequestError extends Error {
 	}
 }
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(
+	/\/$/,
+	''
+);
 const DEFAULT_ERROR_MESSAGE = 'Une erreur est survenue. Veuillez réessayer.';
 const NETWORK_ERROR_MESSAGE =
 	'Impossible de joindre le serveur. Vérifiez votre connexion.';

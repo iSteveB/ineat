@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { notificationService } from './notificationService';
 import { server } from '@/test/mocks/server';
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api`;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const notification = {
 	id: '11111111-1111-4111-8111-111111111111',

@@ -33,7 +33,7 @@ cp .env.example .env
 
 | Variable | Obligatoire | Usage |
 | --- | --- | --- |
-| `VITE_API_URL` | Oui | URL du backend sans suffixe `/api`, par exemple `http://localhost:3000` |
+| `VITE_API_URL` | Oui | Origine du backend, par exemple `http://localhost:3000` ou `https://api.ineat.store` |
 
 Exemple:
 
@@ -41,7 +41,7 @@ Exemple:
 VITE_API_URL=http://localhost:3000
 ```
 
-Les services construisent ensuite leurs appels avec `${VITE_API_URL}/api`.
+Les services construisent leurs appels directement depuis `${VITE_API_URL}`.
 
 ## Lancement
 

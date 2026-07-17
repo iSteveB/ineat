@@ -30,7 +30,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 export const auth = betterAuth({
   appName: 'InEat',
   baseURL: process.env.BETTER_AUTH_URL,
-  basePath: '/api/auth',
+  basePath: '/auth',
   secret: process.env.BETTER_AUTH_SECRET,
   database: prismaAdapter(prisma, {
     provider: 'postgresql',

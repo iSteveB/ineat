@@ -27,7 +27,7 @@ describe('getBetterAuthErrorMessage', () => {
 		expect(
 			getBetterAuthErrorMessage(
 				{
-					message: 'Cannot POST /api/auth/sign-in/email',
+					message: 'Cannot POST /auth/sign-in/email',
 				},
 				fallback
 			)

@@ -67,7 +67,7 @@ pnpm run dev
 Par defaut:
 
 - Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:3000/api`
+- Backend API: `http://localhost:3000`
 - Swagger backend en developpement: `http://localhost:3000/docs`
 - Health check: `http://localhost:3000/health`
 
@@ -128,5 +128,5 @@ Le coeur produit repose sur ce flux:
 
 - Le backend charge `.env.${NODE_ENV}`. En developpement, il attend donc `.env.development`.
 - `prisma generate` exige `DATABASE_URL`, meme pour un build sans connexion effective.
-- Les routes backend sont prefixees par `/api`, sauf `/health`.
+- Les routes backend sont exposees directement a la racine du domaine API.
 - Les routes `/app` du frontend sont protegees par verification d'authentification.

@@ -44,7 +44,7 @@ Variables principales:
 | `PORT` | Non | Port HTTP, `3000` par defaut |
 | `DATABASE_URL` | Oui | Connexion PostgreSQL Prisma |
 | `BETTER_AUTH_SECRET` | Oui | Secret de signature/chiffrement Better Auth |
-| `BETTER_AUTH_URL` | Oui | URL publique du backend Better Auth, sans chemin `/api/auth` |
+| `BETTER_AUTH_URL` | Oui | Origine publique du backend Better Auth, sans chemin `/auth` |
 | `FRONTEND_URL` | Production | Origine frontend autorisee en prod |
 | `CORS_ORIGIN` | Production | Origine CORS supplementaire |
 | `PASSWORD_RESET_WEBHOOK_URL` | Production | Webhook appele par Better Auth pour envoyer les emails de reset password |
@@ -66,15 +66,15 @@ pnpm run dev
 
 ## Authentification
 
-Les nouveaux flux web utilisent Better Auth sous `/api/auth/*`:
+Les nouveaux flux web utilisent Better Auth sous `/auth/*`:
 
-- email/password: `/api/auth/sign-in/email` et `/api/auth/sign-up/email`;
-- reset password: `/api/auth/request-password-reset` et `/api/auth/reset-password`;
-- Google OAuth: endpoints Better Auth, avec callback serveur `/api/auth/callback/google`;
+- email/password: `/auth/sign-in/email` et `/auth/sign-up/email`;
+- reset password: `/auth/request-password-reset` et `/auth/reset-password`;
+- Google OAuth: endpoints Better Auth, avec callback serveur `/auth/callback/google`;
 - session courante: cookie Better Auth HTTP-only, lu par `SessionAuthGuard` via
   `BetterAuthSessionService`.
 
-Les routes Nest `/api/auth/profile` et `/api/auth/check` restent presentes pour
+Les routes Nest `/auth/profile` et `/auth/check` restent presentes pour
 le profil metier et la compatibilite du frontend. La
 creation et la revocation des sessions sont gerees par Better Auth.
 
@@ -163,7 +163,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm run build
 
 ## API
 
-Les routes sont prefixees par `/api`, sauf `/health`.
+Les routes sont exposees directement a la racine du domaine API.
 
 En developpement:
 

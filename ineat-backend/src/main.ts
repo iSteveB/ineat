@@ -20,7 +20,7 @@ import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
 import { getAllowedOrigins } from './config/origins';
 
-const legacyAuthPaths = new Set(['/api/auth/profile', '/api/auth/check']);
+const legacyAuthPaths = new Set(['/auth/profile', '/auth/check']);
 
 const isLegacyAuthPath = (path: string) => legacyAuthPaths.has(path);
 
@@ -77,7 +77,7 @@ async function bootstrap() {
   const betterAuthHandler = toNodeHandler(auth);
   const expressApp = app.getHttpAdapter().getInstance();
   expressApp.all(
-    '/api/auth/*',
+    '/auth/*',
     (req: Request, res: Response, next: NextFunction) => {
       if (isLegacyAuthPath(req.path)) {
         return next();
@@ -101,11 +101,6 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
     console.log('📚 Swagger documentation available at /docs');
   }
-
-  // Préfixe global pour les API
-  app.setGlobalPrefix('api', {
-    exclude: ['health'],
-  });
 
   // Validation des requêtes
   app.useGlobalPipes(

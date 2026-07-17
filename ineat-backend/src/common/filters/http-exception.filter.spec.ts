@@ -28,8 +28,8 @@ const createHost = (headers: Record<string, string> = {}) => {
   const request = {
     headers,
     method: 'GET',
-    originalUrl: '/api/test',
-    url: '/api/test',
+    originalUrl: '/test',
+    url: '/test',
   };
   const response = {
     setHeader,
