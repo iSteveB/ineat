@@ -150,12 +150,8 @@ const getPublicErrorMessage = (
 export const apiClient = {
 	// Méthode principale pour effectuer des requêtes
 	async fetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const {
-			skipAuth = false,
-			timeoutMs = DEFAULT_TIMEOUT_MS,
-			...fetchOptions
-		} = options;
+		const { timeoutMs = DEFAULT_TIMEOUT_MS, ...fetchOptions } = options;
+		delete fetchOptions.skipAuth;
 
 		const isFormData = fetchOptions.body instanceof FormData;
 

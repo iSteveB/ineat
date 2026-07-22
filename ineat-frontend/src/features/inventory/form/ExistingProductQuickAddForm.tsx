@@ -265,7 +265,8 @@ export const ExistingProductQuickAddForm: React.FC<
 		setExpiryDateSource(value ? 'MANUAL' : 'ESTIMATED');
 		if (errors.expiryDate) {
 			setErrors((prev) => {
-				const { expiryDate: _removed, ...rest } = prev;
+				const rest = { ...prev };
+				delete rest.expiryDate;
 				return rest;
 			});
 		}
