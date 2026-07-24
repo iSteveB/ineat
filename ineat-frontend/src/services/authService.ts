@@ -26,7 +26,6 @@ interface AuthServiceMethods {
 	logout(): Promise<{ success: boolean; message: string }>;
 	verifyAuthentication(): Promise<boolean>;
 	checkAuthentication(): Promise<AuthCheckResponse>;
-	loginWithGoogle(): Promise<void>;
 }
 
 const toAuthResponse = (user: User): AuthResponse => ({
@@ -263,30 +262,6 @@ export const authService: AuthServiceMethods = {
 		}
 	},
 
-	/**
-	 * Redirection vers l'authentification Google
-	 */
-	async loginWithGoogle(): Promise<void> {
-		const callbackURL = `${window.location.origin}/auth/callback`;
-		const { data, error } = await authClient.signIn.social({
-			provider: 'google',
-			callbackURL,
-		});
-
-		if (error) {
-			throw new Error(
-				getBetterAuthErrorMessage(
-					error,
-					'Impossible de démarrer la connexion Google'
-				)
-			);
-		}
-
-		if (data?.url) {
-			window.location.href = data.url;
-			return;
-		}
-	},
 };
 
 // ===== UTILITAIRES D'AUTHENTIFICATION =====

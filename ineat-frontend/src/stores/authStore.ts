@@ -35,8 +35,6 @@ interface AuthState {
 	getProfile: () => Promise<void>;
 	verifyAuthentication: () => Promise<boolean>;
 	checkAuthentication: () => Promise<boolean>;
-	loginWithGoogle: () => void;
-	handleOAuthCallback: (token?: string) => Promise<void>;
 	setError: (error: string | null) => void;
 	setUser: (user: User) => void;
 	clearUser: () => void;
@@ -259,46 +257,6 @@ export const useAuthStore = create<AuthState>()(
 								: "Erreur de vérification d'authentification",
 					});
 					return false;
-				}
-			},
-
-			/**
-			 * Redirection vers l'authentification Google
-			 */
-			loginWithGoogle: () => {
-				set({ isLoading: true, error: null });
-				void authService.loginWithGoogle().catch((error) => {
-					set({
-						isLoading: false,
-						error:
-							error instanceof Error
-								? error.message
-								: 'Impossible de démarrer la connexion Google',
-					});
-				});
-			},
-
-			/**
-			 * Traitement du callback OAuth
-			 */
-			handleOAuthCallback: async () => {
-				try {
-					set({
-						isLoading: true,
-						error: null,
-					});
-
-					// Récupérer le profil après l'authentification OAuth
-					await get().getProfile();
-				} catch (error) {
-					set({
-						isLoading: false,
-						error:
-							error instanceof Error
-								? error.message
-								: 'Erreur lors du traitement du callback OAuth',
-					});
-					throw error;
 				}
 			},
 

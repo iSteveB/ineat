@@ -29,7 +29,6 @@ Backend:
   par des virgules pendant une migration de domaine)
 - `PASSWORD_RESET_WEBHOOK_URL`, webhook d'envoi email pour les liens de
   reinitialisation de mot de passe
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` si Google OAuth Better Auth est actif
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 - `CLOUDINARY_AVATAR_PRESET`
 
@@ -64,10 +63,7 @@ Avant mise en production:
    que le client Better Auth cible `${VITE_API_URL}/auth`.
 4. Tester `sign-in/email`, `sign-up/email`, `sign-out` et `/auth/profile`
    depuis le frontend avec cookies `Secure` et `SameSite=None` en production.
-5. Tester Google OAuth via Better Auth si `GOOGLE_CLIENT_ID` et
-   `GOOGLE_CLIENT_SECRET` sont configures. Le callback attendu cote Google est
-   `/auth/callback/google`.
-6. Surveiller les logs pour les erreurs d'origine/CSRF Better Auth. Les origines
+5. Surveiller les logs pour les erreurs d'origine/CSRF Better Auth. Les origines
    autorisees doivent couvrir `https://ineat.store`, `FRONTEND_URL` et
    `CORS_ORIGIN`.
 

@@ -18,7 +18,6 @@ describe('RegisterForm', () => {
 	// Préparation des mocks
 	const navigateMock = vi.fn();
 	const registerMock = vi.fn();
-	const loginWithGoogleMock = vi.fn();
 	const setErrorMock = vi.fn();
 	const user = userEvent.setup();
 
@@ -31,66 +30,25 @@ describe('RegisterForm', () => {
 		);
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
-			loginWithGoogle: loginWithGoogleMock,
 			setError: setErrorMock,
 			isLoading: false,
 			error: null,
 		});
 	});
 
-	it('rend correctement la vue initiale avec le bouton Google et le bouton email', () => {
+	it("rend correctement le formulaire d'inscription", () => {
 		render(<RegisterForm />);
 
-		// Vérifier les éléments de la vue initiale
 		expect(screen.getByText('Créer un compte')).toBeInTheDocument();
-		expect(screen.getByTestId('google-button')).toBeInTheDocument();
-		expect(
-			screen.getByTestId('show-email-form-button')
-		).toBeInTheDocument();
-		expect(screen.getByTestId('login-button')).toBeInTheDocument();
-
-		// Vérifier que le formulaire n'est pas encore affiché
-		expect(
-			screen.queryByTestId('register-email-form')
-		).not.toBeInTheDocument();
-	});
-
-	it("affiche le formulaire d'inscription par email lorsqu'on clique sur le bouton", async () => {
-		render(<RegisterForm />);
-
-		const showFormButton = screen.getByTestId('show-email-form-button');
-
-		// Cliquer sur le bouton d'affichage du formulaire
-		await user.click(showFormButton);
-
-		// Vérifier que le formulaire est maintenant affiché
 		expect(screen.getByTestId('register-email-form')).toBeInTheDocument();
+		expect(screen.getByTestId('login-button')).toBeInTheDocument();
 		expect(screen.getByTestId('firstName-input')).toBeInTheDocument();
 		expect(screen.getByTestId('lastName-input')).toBeInTheDocument();
 		expect(screen.getByTestId('email-input')).toBeInTheDocument();
 		expect(screen.getByTestId('password-input')).toBeInTheDocument();
 		expect(screen.getByTestId('confirm-password-input')).toBeInTheDocument();
 		expect(screen.getByTestId('profile-type-group')).toBeInTheDocument();
-		expect(
-			screen.getByTestId('register-submit-button')
-		).toBeInTheDocument();
-
-		// Vérifier que le bouton d'affichage du formulaire n'est plus visible
-		expect(
-			screen.queryByTestId('show-email-form-button')
-		).not.toBeInTheDocument();
-	});
-
-	it("s'inscrit avec Google lorsqu'on clique sur le bouton correspondant", async () => {
-		render(<RegisterForm />);
-
-		const googleButton = screen.getByTestId('google-button');
-
-		// Cliquer sur le bouton d'inscription avec Google
-		await user.click(googleButton);
-
-		// Vérifier que la fonction loginWithGoogle a été appelée
-		expect(loginWithGoogleMock).toHaveBeenCalledTimes(1);
+		expect(screen.getByTestId('register-submit-button')).toBeInTheDocument();
 	});
 
 	it("navigue vers la page de connexion lorsqu'on clique sur le lien correspondant", async () => {
@@ -108,10 +66,6 @@ describe('RegisterForm', () => {
 
 	it('soumet le formulaire avec les données correctes', async () => {
 		render(<RegisterForm />);
-
-		// Afficher le formulaire
-		const showFormButton = screen.getByTestId('show-email-form-button');
-		await user.click(showFormButton);
 
 		// Remplir le formulaire
 		const firstNameInput = screen.getByTestId('firstName-input');
@@ -155,10 +109,6 @@ describe('RegisterForm', () => {
 	it('permet de changer le type de profil', async () => {
 		render(<RegisterForm />);
 
-		// Afficher le formulaire
-		const showFormButton = screen.getByTestId('show-email-form-button');
-		await user.click(showFormButton);
-
 		// Par défaut, 'FAMILY' est sélectionné
 		const studentRadio = screen.getByTestId('profile-type-student');
 
@@ -200,10 +150,6 @@ describe('RegisterForm', () => {
 	it('affiche une erreur si la validation du formulaire échoue', async () => {
 		render(<RegisterForm />);
 
-		// Afficher le formulaire
-		const showFormButton = screen.getByTestId('show-email-form-button');
-		await user.click(showFormButton);
-
 		// Remplir le formulaire avec un mot de passe trop court
 		const firstNameInput = screen.getByTestId('firstName-input');
 		const lastNameInput = screen.getByTestId('lastName-input');
@@ -234,7 +180,6 @@ describe('RegisterForm', () => {
 	it('affiche une erreur si les mots de passe ne correspondent pas', async () => {
 		render(<RegisterForm />);
 
-		await user.click(screen.getByTestId('show-email-form-button'));
 		await user.type(screen.getByTestId('firstName-input'), 'John');
 		await user.type(screen.getByTestId('lastName-input'), 'Doe');
 		await user.type(screen.getByTestId('email-input'), 'john.doe@example.com');
@@ -258,7 +203,6 @@ describe('RegisterForm', () => {
 		// Simuler une erreur dans le store d'authentification
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
-			loginWithGoogle: loginWithGoogleMock,
 			setError: setErrorMock,
 			isLoading: false,
 			error: 'Cette adresse email est déjà utilisée',
@@ -277,10 +221,6 @@ describe('RegisterForm', () => {
 		// D'abord, rendre le composant avec l'état normal
 		const { rerender } = render(<RegisterForm />);
 
-		// Afficher le formulaire
-		const showFormButton = screen.getByTestId('show-email-form-button');
-		await user.click(showFormButton);
-
 		// Vérifier que le formulaire est maintenant affiché et les champs sont activés
 		expect(screen.getByTestId('register-email-form')).toBeInTheDocument();
 		expect(screen.getByTestId('firstName-input')).not.toBeDisabled();
@@ -293,7 +233,6 @@ describe('RegisterForm', () => {
 		// Maintenant, changer le mock pour simuler l'état de chargement
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
-			loginWithGoogle: loginWithGoogleMock,
 			setError: setErrorMock,
 			isLoading: true,
 			error: null,
@@ -318,10 +257,6 @@ describe('RegisterForm', () => {
 
 	it('efface les erreurs lors de la modification des champs', async () => {
 		render(<RegisterForm />);
-
-		// Afficher le formulaire
-		const showFormButton = screen.getByTestId('show-email-form-button');
-		await user.click(showFormButton);
 
 		// Remplir le formulaire avec un mot de passe trop court
 		const firstNameInput = screen.getByTestId('firstName-input');

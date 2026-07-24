@@ -13,7 +13,7 @@ Le depot est organise en deux applications principales:
 
 ## Fonctionnalites
 
-- Authentification email/mot de passe et Google OAuth.
+- Authentification email/mot de passe.
 - Gestion de profil utilisateur, avatar et preferences.
 - Gestion d'inventaire alimentaire avec dates d'achat, peremption, prix et lieu de stockage.
 - Recherche et ajout de produits, avec donnees enrichies OpenFoodFacts cote frontend.
@@ -28,7 +28,6 @@ Le depot est organise en deux applications principales:
 - Redis, requis pour la configuration Bull et les traitements asynchrones
 - Comptes/API externes selon les fonctionnalites activees:
   - Cloudinary pour les uploads
-  - Google OAuth pour la connexion sociale
 
 ## Lancement Local
 

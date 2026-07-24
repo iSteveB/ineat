@@ -19,8 +19,6 @@ const configuredTrustedOrigins = getAllowedOrigins(
   process.env.CORS_ORIGIN,
 );
 
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const passwordResetWebhookUrl = process.env.PASSWORD_RESET_WEBHOOK_URL;
 
 const emailAuthPaths = new Set(['/sign-in/email', '/sign-up/email']);
@@ -126,15 +124,6 @@ export const auth = betterAuth({
       };
     }),
   },
-  socialProviders:
-    googleClientId && googleClientSecret
-      ? {
-          google: {
-            clientId: googleClientId,
-            clientSecret: googleClientSecret,
-          },
-        }
-      : undefined,
   advanced: {
     cookiePrefix: 'ineat',
     defaultCookieAttributes: {
