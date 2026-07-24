@@ -22,6 +22,9 @@ interface BudgetState {
 
 interface BudgetPageState {
 	selectedBudget: Budget | null;
+	selectedBudgetStats: BudgetStats | null;
+	selectedAlerts: BudgetAlert[];
+	selectedExpenses: Expense[];
 	expenses: Expense[];
 	budgetHistory: Budget[];
 	selectedMonth: string;
@@ -62,6 +65,9 @@ const initialBudgetState: BudgetState = {
 
 const initialBudgetPageState: BudgetPageState = {
 	selectedBudget: null,
+	selectedBudgetStats: null,
+	selectedAlerts: [],
+	selectedExpenses: [],
 	expenses: [],
 	budgetHistory: [],
 	selectedMonth: getMonthString(),
@@ -206,18 +212,33 @@ export const useBudgetStore = create<BudgetStore>()(
 				set({ isLoading: true, error: null });
 
 				try {
-					const budget = await budgetService.getBudgetByMonth(month);
+					const currentMonth = getMonthString();
+					const data =
+						month === currentMonth
+							? await budgetService.getCurrentBudget()
+							: await budgetService.getBudgetByMonth(month);
+
+					if (get().selectedMonth !== month) {
+						return;
+					}
 
 					set({
-						selectedBudget: budget,
+						selectedBudget: data?.budget || null,
+						selectedBudgetStats: data?.stats || null,
+						selectedAlerts: data?.alerts || [],
+						selectedExpenses: data?.expenses || [],
 						selectedMonth: month,
 						isLoading: false,
-						expenses: [],
 					});
 				} catch {
+					if (get().selectedMonth !== month) {
+						return;
+					}
 					set({
 						selectedBudget: null,
-						expenses: [],
+						selectedBudgetStats: null,
+						selectedAlerts: [],
+						selectedExpenses: [],
 						isLoading: false,
 						error: 'Impossible de récupérer le budget pour ce mois',
 					});

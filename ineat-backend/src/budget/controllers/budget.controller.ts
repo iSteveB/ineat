@@ -150,10 +150,7 @@ export class BudgetController {
    * GET /budget/month/:month
    */
   @Get('month/:month')
-  async getBudgetByMonth(
-    @Req() req: Request,
-    @Param('month') month: string,
-  ) {
+  async getBudgetByMonth(@Req() req: Request, @Param('month') month: string) {
     try {
       if (!/^\d{4}-\d{2}$/.test(month)) {
         throw new BadRequestException('Le mois doit être au format YYYY-MM');
@@ -161,20 +158,39 @@ export class BudgetController {
 
       const userId = (req.user as { id: string }).id;
       const [year, monthNumber] = month.split('-').map(Number);
-      const monthStart = new Date(year, monthNumber - 1, 1, 0, 0, 0, 0);
-      const monthEnd = new Date(year, monthNumber, 0, 23, 59, 59, 999);
-      const budgets = await this.budgetService.getBudgets(userId);
-      const budget =
-        budgets.find(
-          (candidate) =>
-            candidate.periodStart <= monthEnd &&
-            candidate.periodEnd >= monthStart &&
-            candidate.isActive,
-        ) || null;
+      if (monthNumber < 1 || monthNumber > 12) {
+        throw new BadRequestException(
+          'Le mois doit être compris entre 01 et 12',
+        );
+      }
+
+      const budget = await this.budgetService.getBudgetByMonth(
+        userId,
+        year,
+        monthNumber - 1,
+      );
+
+      if (!budget) {
+        return {
+          success: true,
+          data: null,
+          message: 'Aucun budget défini pour ce mois',
+        };
+      }
+
+      const [stats, expenses] = await Promise.all([
+        this.budgetService.getBudgetStats(budget.id, userId),
+        this.expenseService.getBudgetExpenses(budget.id, userId),
+      ]);
 
       return {
         success: true,
-        data: budget,
+        data: {
+          budget,
+          stats,
+          expenses,
+          alerts: [],
+        },
       };
     } catch (error) {
       if (error instanceof BadRequestException) {
