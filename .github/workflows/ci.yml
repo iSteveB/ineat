@@ -64,8 +64,6 @@ jobs:
       FRONTEND_URL: http://localhost:5173
       CORS_ORIGIN: http://localhost:5173
       CLIENT_URL: http://localhost:5173
-      GOOGLE_CLIENT_ID: ci-google-client-id
-      GOOGLE_CLIENT_SECRET: ci-google-client-secret
       GOOGLE_CALLBACK_URL: http://localhost:3000/api/auth/google/callback
       CLOUDINARY_CLOUD_NAME: ci-cloud
       CLOUDINARY_API_KEY: ci-api-key

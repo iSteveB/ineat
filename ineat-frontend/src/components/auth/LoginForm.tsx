@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import GoogleLogo from '@/assets/google-logo.svg';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '../ui/button';
@@ -14,7 +13,6 @@ import {
 	CardTitle,
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Separator } from '../ui/separator';
 import { z } from 'zod';
 import { LoginCredentialsSchema } from '@/schemas';
 
@@ -36,8 +34,7 @@ const LoginForm = () => {
 	const sessionExpired = search.session === 'expired';
 
 	// État global d'authentification avec Zustand
-	const { login, loginWithGoogle, isLoading, error, setError } =
-		useAuthStore();
+	const { login, isLoading, error, setError } = useAuthStore();
 
 	useEffect(() => {
 		setError(null);
@@ -189,30 +186,6 @@ const LoginForm = () => {
 						{isLoading ? 'Connexion en cours...' : 'Se connecter'}
 					</Button>
 
-					{/* Séparateur */}
-					<div className='relative my-6'>
-						<Separator />
-						<span className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-50 px-2 text-xs text-neutral-300'>
-							ou
-						</span>
-					</div>
-
-					{/* Bouton de connexion Google */}
-					<Button
-						type='button'
-						variant='outline'
-						className='w-full'
-						onClick={() => {
-							setError(null);
-							loginWithGoogle();
-						}}
-						disabled={isLoading}
-						data-testid='google-button'>
-						<span className='p-1 bg-neutral-50 rounded-full'>
-							<img src={GoogleLogo} alt='Google Logo' />
-						</span>
-						Connexion avec Google
-					</Button>
 				</form>
 			</CardContent>
 			<CardFooter className='flex justify-center'>

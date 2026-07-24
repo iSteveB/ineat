@@ -6,7 +6,7 @@ API NestJS de l'application InEat. Elle gere l'authentification, les utilisateur
 
 - NestJS 10
 - Prisma 7 avec PostgreSQL
-- Better Auth pour les sessions web, email/password et Google OAuth
+- Better Auth pour les sessions web et l'authentification email/password
 - Cloudinary pour le stockage des fichiers
 - Swagger en developpement
 
@@ -48,8 +48,6 @@ Variables principales:
 | `FRONTEND_URL` | Production | Origine frontend autorisee en prod |
 | `CORS_ORIGIN` | Production | Origine CORS supplementaire |
 | `PASSWORD_RESET_WEBHOOK_URL` | Production | Webhook appele par Better Auth pour envoyer les emails de reset password |
-| `GOOGLE_CLIENT_ID` | OAuth | Client ID Google utilise par Better Auth |
-| `GOOGLE_CLIENT_SECRET` | OAuth | Secret Google utilise par Better Auth |
 | `CLOUDINARY_CLOUD_NAME` | Uploads | Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Uploads | Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Uploads | Cloudinary API secret |
@@ -70,7 +68,6 @@ Les nouveaux flux web utilisent Better Auth sous `/auth/*`:
 
 - email/password: `/auth/sign-in/email` et `/auth/sign-up/email`;
 - reset password: `/auth/request-password-reset` et `/auth/reset-password`;
-- Google OAuth: endpoints Better Auth, avec callback serveur `/auth/callback/google`;
 - session courante: cookie Better Auth HTTP-only, lu par `SessionAuthGuard` via
   `BetterAuthSessionService`.
 
@@ -175,7 +172,7 @@ Modules principaux:
 
 | Module | Role |
 | --- | --- |
-| `AuthModule` | Sessions Better Auth, email/password, Google OAuth, guards |
+| `AuthModule` | Sessions Better Auth, email/password, guards |
 | `UserModule` | Profil, informations personnelles, restrictions alimentaires |
 | `AvatarModule` | Upload et gestion d'avatar |
 | `CloudinaryModule` | Integration Cloudinary |

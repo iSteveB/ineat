@@ -19,7 +19,6 @@ describe('LoginForm', () => {
 	// Préparation des mocks
 	const navigateMock = vi.fn();
 	const loginMock = vi.fn();
-	const loginWithGoogleMock = vi.fn();
 	const setErrorMock = vi.fn();
 	const user = userEvent.setup();
 
@@ -33,7 +32,6 @@ describe('LoginForm', () => {
 		(useSearch as unknown as ReturnType<typeof vi.fn>).mockReturnValue({});
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
-			loginWithGoogle: loginWithGoogleMock,
 			setError: setErrorMock,
 			isLoading: false,
 			error: null,
@@ -48,7 +46,6 @@ describe('LoginForm', () => {
 		expect(screen.getByTestId('email-input')).toBeInTheDocument();
 		expect(screen.getByTestId('password-input')).toBeInTheDocument();
 		expect(screen.getByTestId('submit-button')).toBeInTheDocument();
-		expect(screen.getByTestId('google-button')).toBeInTheDocument();
 		expect(
 			screen.getByTestId('forgot-password-button')
 		).toBeInTheDocument();
@@ -160,7 +157,6 @@ describe('LoginForm', () => {
 		// Simuler une erreur dans le store d'authentification
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
-			loginWithGoogle: loginWithGoogleMock,
 			setError: setErrorMock,
 			isLoading: false,
 			error: 'Identifiants incorrects',
@@ -179,7 +175,6 @@ describe('LoginForm', () => {
 		// Simuler l'état de chargement
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
-			loginWithGoogle: loginWithGoogleMock,
 			setError: setErrorMock,
 			isLoading: true,
 			error: null,
@@ -191,7 +186,6 @@ describe('LoginForm', () => {
 		expect(screen.getByTestId('email-input')).toBeDisabled();
 		expect(screen.getByTestId('password-input')).toBeDisabled();
 		expect(screen.getByTestId('submit-button')).toBeDisabled();
-		expect(screen.getByTestId('google-button')).toBeDisabled();
 		expect(screen.getByTestId('forgot-password-button')).toBeDisabled();
 		expect(screen.getByTestId('register-button')).toBeDisabled();
 
@@ -199,18 +193,6 @@ describe('LoginForm', () => {
 		expect(screen.getByTestId('submit-button')).toHaveTextContent(
 			'Connexion en cours...'
 		);
-	});
-
-	it("appelle loginWithGoogle lorsqu'on clique sur le bouton Google", async () => {
-		render(<LoginForm />);
-
-		const googleButton = screen.getByTestId('google-button');
-
-		// Cliquer sur le bouton Google
-		await user.click(googleButton);
-
-		// Vérifier que la fonction loginWithGoogle a été appelée
-		expect(loginWithGoogleMock).toHaveBeenCalledTimes(1);
 	});
 
 	it('navigue vers la page de récupération de mot de passe', async () => {
