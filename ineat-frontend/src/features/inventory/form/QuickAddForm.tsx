@@ -260,8 +260,9 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		setExpiryDateSource(value ? 'MANUAL' : 'ESTIMATED');
 		if (errors.expiryDate) {
 			setErrors((prev) => {
-				const { expiryDate: _removed, ...rest } = prev;
-				return rest;
+				const nextErrors = { ...prev };
+				delete nextErrors.expiryDate;
+				return nextErrors;
 			});
 		}
 	};

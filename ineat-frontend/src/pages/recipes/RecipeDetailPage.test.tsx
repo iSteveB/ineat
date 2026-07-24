@@ -161,7 +161,7 @@ describe('RecipeDetailPage', () => {
 		);
 
 		expect(
-			await screen.findByRole('dialog', {
+			await screen.findByRole('alertdialog', {
 				name: /marquer la recette comme faite/i,
 			})
 		).toBeInTheDocument();
@@ -185,7 +185,7 @@ describe('RecipeDetailPage', () => {
 			).toBeDisabled();
 		});
 		expect(
-			screen.queryByRole('dialog', {
+			screen.queryByRole('alertdialog', {
 				name: /marquer la recette comme faite/i,
 			})
 		).not.toBeInTheDocument();
