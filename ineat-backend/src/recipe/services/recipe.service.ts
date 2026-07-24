@@ -286,12 +286,20 @@ export class RecipeService {
     }
 
     const requestedTypes = new Set(request.types);
+    const generatedTypes = new Set<GeneratedRecipePayloadDto['type']>();
     const inventoryIds = new Set(inventory.map((item) => item.productId));
 
     for (const recipe of recipes) {
       if (!requestedTypes.has(recipe.type)) {
         throw new BadRequestException('Une recette générée a un type invalide');
       }
+
+      if (generatedTypes.has(recipe.type)) {
+        throw new BadRequestException(
+          'La génération contient plusieurs recettes du même type',
+        );
+      }
+      generatedTypes.add(recipe.type);
 
       const missingIngredients = recipe.ingredients.filter(
         (ingredient) => ingredient.source === 'MISSING',

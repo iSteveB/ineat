@@ -211,26 +211,36 @@ export const budgetService = {
 		return processBudgetResponse(response);
 	},
 
-	async getBudgetByMonth(month: string): Promise<Budget | null> {
+	async getBudgetByMonth(month: string): Promise<BudgetWithStats | null> {
 		try {
 			const response = await apiClient.get<
-				ApiDataResponse<Budget | RawBudgetApiData | null>
+				ApiDataResponse<BudgetWithStats | null>
 			>(
 				`/budget/month/${month}`
 			);
-			const budget = unwrapApiData(response);
+			const data = unwrapApiData(response);
 
-			if (budget && !isValidBudget(budget as Budget)) {
-				return transformBudgetFromApi(budget as RawBudgetApiData);
+			if (!data) {
+				return null;
 			}
 
-			return budget as Budget | null;
+			let budget = data.budget;
+			if (budget && !isValidBudget(budget)) {
+				budget = transformBudgetFromApi(budget as RawBudgetApiData);
+			}
+
+			return {
+				budget: budget || null,
+				stats: data.stats || null,
+				alerts: data.alerts || [],
+				expenses: data.expenses || [],
+			};
 		} catch (error: unknown) {
 			const err = error as { status?: number };
 			if (err.status === 404) {
 				return null;
 			}
-			return null;
+			throw error;
 		}
 	},
 

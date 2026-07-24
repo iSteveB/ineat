@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useCallback } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 
 import CreateBudget from '@/features/budget/BudgetEditor';
 import EditBudgetDialog from '@/features/budget/EditBudgetDialog';
@@ -16,43 +16,87 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import { AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
+import {
+	AlertTriangle,
+	Loader2,
+	ArrowLeft,
+	ChevronLeft,
+	ChevronRight,
+} from 'lucide-react';
+
+const getCurrentMonth = () => {
+	const now = new Date();
+	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const shiftMonth = (month: string, offset: number) => {
+	const [year, monthNumber] = month.split('-').map(Number);
+	const date = new Date(year, monthNumber - 1 + offset, 1);
+	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const formatMonth = (month: string) => {
+	const [year, monthNumber] = month.split('-').map(Number);
+	const label = new Intl.DateTimeFormat('fr-FR', {
+		month: 'long',
+		year: 'numeric',
+	}).format(new Date(year, monthNumber - 1, 1));
+	return label.charAt(0).toUpperCase() + label.slice(1);
+};
 
 export const BudgetPage: FC = () => {
+	const navigate = useNavigate();
+	const search = useSearch({ from: '/app/budget/' });
+	const currentMonth = getCurrentMonth();
+	const displayedMonth = search.month || currentMonth;
+	const isCurrentMonth = displayedMonth === currentMonth;
 	const {
-		currentBudget,
-		budgetStats,
-		alerts,
-		expenses,
+		selectedBudget,
+		selectedBudgetStats,
+		selectedAlerts,
+		selectedExpenses,
 		isLoading,
 		isLoadingExpenses,
 		error,
-		fetchCurrentBudget,
+		setSelectedMonth,
 	} = useBudgetStore();
 
 	const safeBudgetPeriod = useMemo(() => {
-		if (!currentBudget) {
+		if (!selectedBudget) {
 			return null;
 		}
 
-		if (!isValidBudget(currentBudget)) {
+		if (!isValidBudget(selectedBudget)) {
 			return 'Budget invalide';
 		}
 
 		try {
-			return budgetService.formatBudgetPeriod(currentBudget);
+			return budgetService.formatBudgetPeriod(selectedBudget);
 		} catch {
 			return 'Erreur de formatage';
 		}
-	}, [currentBudget]);
+	}, [selectedBudget]);
 
 	const handleBudgetCreated = useCallback(() => {
-		fetchCurrentBudget();
-	}, [fetchCurrentBudget]);
+		setSelectedMonth(currentMonth);
+	}, [currentMonth, setSelectedMonth]);
 
 	useEffect(() => {
-		fetchCurrentBudget();
-	}, [fetchCurrentBudget]);
+		setSelectedMonth(displayedMonth);
+	}, [displayedMonth, setSelectedMonth]);
+
+	const selectMonth = useCallback(
+		(month: string) => {
+			if (month > currentMonth) {
+				return;
+			}
+			navigate({
+				to: '/app/budget',
+				search: month === currentMonth ? {} : { month },
+			});
+		},
+		[currentMonth, navigate]
+	);
 
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
@@ -73,18 +117,22 @@ export const BudgetPage: FC = () => {
 						<div>
 							<h1 className='text-2xl font-bold text-gray-900'>
 								Budget{' '}
-								{safeBudgetPeriod || 'Période non disponible'}
+								{safeBudgetPeriod || formatMonth(displayedMonth)}
 							</h1>
 							<p className='text-sm text-gray-600'>
-								Suivi de vos dépenses
+								{isCurrentMonth
+									? 'Suivi de vos dépenses'
+									: 'Consultation d’un mois passé'}
 							</p>
 						</div>
 					</div>
 
-					{currentBudget && isValidBudget(currentBudget) && (
+					{isCurrentMonth &&
+						selectedBudget &&
+						isValidBudget(selectedBudget) && (
 						<div className='flex items-center gap-4'>
 							<EditBudgetDialog
-								budget={currentBudget}
+								budget={selectedBudget}
 								onBudgetUpdated={handleBudgetCreated}
 							/>
 						</div>
@@ -93,6 +141,31 @@ export const BudgetPage: FC = () => {
 			</div>
 
 			<div className='max-w-7xl mx-auto p-6 space-y-6'>
+				<div className='flex flex-wrap items-center justify-center gap-3'>
+					<Button
+						variant='outline'
+						size='sm'
+						aria-label='Afficher le mois précédent'
+						onClick={() => selectMonth(shiftMonth(displayedMonth, -1))}>
+						<ChevronLeft className='size-4' />
+					</Button>
+					<div className='min-w-40 text-center font-semibold text-gray-900'>
+						{formatMonth(displayedMonth)}
+					</div>
+					<Button
+						variant='outline'
+						size='sm'
+						aria-label='Afficher le mois suivant'
+						disabled={displayedMonth >= currentMonth}
+						onClick={() => selectMonth(shiftMonth(displayedMonth, 1))}>
+						<ChevronRight className='size-4' />
+					</Button>
+					{!isCurrentMonth && (
+						<Button size='sm' onClick={() => selectMonth(currentMonth)}>
+							Revenir au mois courant
+						</Button>
+					)}
+				</div>
 				{error && (
 					<Alert variant='warning'>
 						<AlertTriangle className='size-4' />
@@ -111,19 +184,32 @@ export const BudgetPage: FC = () => {
 							</div>
 						</CardContent>
 					</Card>
-				) : !currentBudget ||
-				  !budgetStats ||
-				  !isValidBudget(currentBudget) ? (
-					<CreateBudget onBudgetCreated={handleBudgetCreated} />
+				) : !selectedBudget ||
+				  !selectedBudgetStats ||
+				  !isValidBudget(selectedBudget) ? (
+					isCurrentMonth ? (
+						<CreateBudget onBudgetCreated={handleBudgetCreated} />
+					) : (
+						<Card>
+							<CardContent className='py-12 text-center space-y-2'>
+								<h2 className='text-lg font-semibold text-gray-900'>
+									Aucun budget enregistré en {formatMonth(displayedMonth).toLowerCase()}
+								</h2>
+								<p className='text-sm text-gray-600'>
+									Vous pouvez consulter un autre mois ou revenir au mois courant.
+								</p>
+							</CardContent>
+						</Card>
+					)
 				) : (
 					<div className='space-y-6'>
-						<BudgetAlerts alerts={alerts} />
+						{isCurrentMonth && <BudgetAlerts alerts={selectedAlerts} />}
 						<BudgetStatsCards
-							budget={currentBudget}
-							stats={budgetStats}
+							budget={selectedBudget}
+							stats={selectedBudgetStats}
 						/>
 						<ExpenseList
-							expenses={expenses}
+							expenses={selectedExpenses}
 							isLoading={isLoadingExpenses}
 						/>
 					</div>

@@ -41,6 +41,29 @@ describe('BudgetService', () => {
     });
   });
 
+  it('finds a historical budget by month without requiring it to be active', async () => {
+    const historicalBudget = {
+      id: 'budget-april',
+      userId: 'user-1',
+      isActive: false,
+    };
+    prisma.budget.findFirst.mockResolvedValue(historicalBudget);
+
+    const result = await service.getBudgetByMonth('user-1', 2026, 3);
+
+    expect(result).toBe(historicalBudget);
+    expect(prisma.budget.findFirst).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        periodStart: { lte: new Date(2026, 4, 0, 23, 59, 59, 999) },
+        periodEnd: { gte: new Date(2026, 3, 1, 0, 0, 0, 0) },
+      },
+      orderBy: { periodStart: 'desc' },
+    });
+    expect(prisma.budget.create).not.toHaveBeenCalled();
+    expect(prisma.budget.updateMany).not.toHaveBeenCalled();
+  });
+
   it('normalizes updated period boundaries', async () => {
     prisma.budget.findFirst.mockResolvedValue({
       id: 'budget-1',

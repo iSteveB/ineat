@@ -185,6 +185,27 @@ export class BudgetService {
   }
 
   /**
+   * Récupère le budget qui couvre un mois donné, sans créer ni modifier de budget.
+   */
+  async getBudgetByMonth(
+    userId: string,
+    year: number,
+    month: number,
+  ): Promise<Budget | null> {
+    const monthStart = new Date(year, month, 1, 0, 0, 0, 0);
+    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+    return this.prisma.budget.findFirst({
+      where: {
+        userId,
+        periodStart: { lte: monthEnd },
+        periodEnd: { gte: monthStart },
+      },
+      orderBy: { periodStart: 'desc' },
+    });
+  }
+
+  /**
    * Récupère un budget par son ID
    */
   async getBudgetById(
