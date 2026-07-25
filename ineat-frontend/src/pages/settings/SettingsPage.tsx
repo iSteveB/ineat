@@ -76,7 +76,7 @@ const SettingsPage = () => {
 		},
 		{
 			title: 'Abonnement Premium',
-			href: '/app/settings/subscription',
+			href: '/app/subscription',
 			icon: CreditCard,
 			description: 'Plan, facturation, avantages',
 		},
