@@ -23,6 +23,9 @@ export const SubscriptionStatusSchema = z.enum([
 ]);
 export type SubscriptionStatus = z.infer<typeof SubscriptionStatusSchema>;
 
+export const BillingIntervalSchema = z.enum(['MONTHLY', 'YEARLY']);
+export type BillingInterval = z.infer<typeof BillingIntervalSchema>;
+
 export const EffectivePlanSchema = z.enum(['FREE', 'PREMIUM']);
 export type EffectivePlan = z.infer<typeof EffectivePlanSchema>;
 

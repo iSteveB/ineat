@@ -22,6 +22,7 @@ import { BillingService } from './billing.service';
 import {
   CheckoutSessionResponseDto,
   CreateCheckoutSessionDto,
+  PortalSessionResponseDto,
 } from './dto/create-checkout-session.dto';
 
 interface AuthenticatedBillingRequest extends Request {
@@ -73,6 +74,37 @@ export class BillingController {
       req.user,
       dto.interval,
     );
+
+    return {
+      success: true,
+      data: session,
+    };
+  }
+
+  @Post('portal')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Créer une session Stripe Customer Portal',
+    description:
+      "Ouvre le portail Stripe pour gérer l'abonnement, les factures, le moyen de paiement et l'annulation.",
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Session Portal créée',
+    type: PortalSessionResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: "Aucun customer Stripe associé à l'utilisateur",
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentification requise',
+  })
+  async createPortalSession(
+    @Req() req: AuthenticatedBillingRequest,
+  ): Promise<PortalSessionResponseDto> {
+    const session = await this.billingService.createPortalSession(req.user);
 
     return {
       success: true,

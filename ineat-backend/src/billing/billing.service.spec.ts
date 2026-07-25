@@ -23,6 +23,14 @@ describe('BillingService', () => {
         }),
       },
     },
+    billingPortal: {
+      sessions: {
+        create: jest.fn().mockResolvedValue({
+          id: 'bps_test_123',
+          url: 'https://billing.stripe.com/p/session/bps_test_123',
+        }),
+      },
+    },
     subscriptions: {
       retrieve: jest.fn().mockResolvedValue({
         id: 'sub_123',
@@ -53,6 +61,8 @@ describe('BillingService', () => {
           STRIPE_CHECKOUT_SUCCESS_URL:
             'https://ineat.store/app/subscription/success',
           STRIPE_CHECKOUT_CANCEL_URL: 'https://ineat.store/app/subscription',
+          STRIPE_CUSTOMER_PORTAL_RETURN_URL:
+            'https://ineat.store/app/subscription',
         };
 
         return config[key];
@@ -139,6 +149,36 @@ describe('BillingService', () => {
         line_items: [{ price: 'price_yearly', quantity: 1 }],
       }),
     );
+  });
+
+  it('creates a Customer Portal session for an existing Stripe customer', async () => {
+    const { service, stripe } = createService({
+      ...user,
+      stripeCustomerId: 'cus_existing',
+    });
+
+    const session = await service.createPortalSession(user);
+
+    expect(stripe.billingPortal.sessions.create).toHaveBeenCalledWith({
+      customer: 'cus_existing',
+      return_url: 'https://ineat.store/app/subscription',
+    });
+    expect(session).toEqual({
+      id: 'bps_test_123',
+      url: 'https://billing.stripe.com/p/session/bps_test_123',
+    });
+  });
+
+  it('rejects Customer Portal creation when the user has no Stripe customer', async () => {
+    const { service, stripe } = createService({
+      ...user,
+      stripeCustomerId: null,
+    });
+
+    await expect(service.createPortalSession(user)).rejects.toThrow(
+      "Aucun abonnement Stripe n'est encore associé à votre compte.",
+    );
+    expect(stripe.billingPortal.sessions.create).not.toHaveBeenCalled();
   });
 
   it('does not activate Premium from Checkout creation', async () => {
