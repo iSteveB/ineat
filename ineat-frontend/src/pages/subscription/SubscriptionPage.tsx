@@ -20,13 +20,17 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/hooks/useAuth';
 import type { SubscriptionPlan as UserSubscriptionPlan } from '@/schemas';
+import {
+  billingService,
+  type BillingInterval,
+} from '@/services/billingService';
 
 // ===== TYPES =====
 
 /**
  * Types d'abonnement disponibles
  */
-type SubscriptionType = 'FREE' | 'TRIAL' | 'PREMIUM';
+type SubscriptionType = 'FREE' | 'TRIAL' | 'PREMIUM_MONTHLY' | 'PREMIUM_YEARLY';
 
 /**
  * Détails d'un plan d'abonnement
@@ -42,6 +46,7 @@ interface SubscriptionPlan {
   popular?: boolean;
   buttonText: string;
   buttonVariant: 'outline';
+  checkoutInterval?: BillingInterval;
 }
 
 const formatDate = (date?: string | null) => {
@@ -78,11 +83,11 @@ const subscriptionPlans: SubscriptionPlan[] = [
     buttonVariant: 'outline',
   },
   {
-    id: 'PREMIUM',
-    name: 'Premium',
-    price: 4.99,
-    priceDisplay: '4,99€',
-    description: 'Automatisation Drive et inventaire plus rapide',
+    id: 'PREMIUM_MONTHLY',
+    name: 'Premium mensuel',
+    price: 5.99,
+    priceDisplay: '5,99€',
+    description: 'Sans engagement, facturé chaque mois',
     features: [
       'Tout du plan Gratuit',
       'Inventaire jusqu’à 500 articles',
@@ -91,9 +96,28 @@ const subscriptionPlans: SubscriptionPlan[] = [
       '25 imports Drive par mois',
       'Synchronisation avec le budget alimentaire',
     ],
-    popular: true,
     buttonText: 'Commencer Premium',
     buttonVariant: 'outline',
+    checkoutInterval: 'MONTHLY',
+  },
+  {
+    id: 'PREMIUM_YEARLY',
+    name: 'Premium annuel',
+    price: 59.99,
+    priceDisplay: '59,99€',
+    description: 'Environ 2 mois offerts par rapport au mensuel',
+    features: [
+      'Tout du plan Premium mensuel',
+      'Équivalent 5,00€ / mois',
+      'Inventaire jusqu’à 500 articles',
+      '100 générations IA de recettes par mois',
+      '25 imports Drive par mois',
+      'Annulation possible avant le renouvellement',
+    ],
+    popular: true,
+    buttonText: 'Choisir l’annuel',
+    buttonVariant: 'outline',
+    checkoutInterval: 'YEARLY',
   },
 ];
 
@@ -134,36 +158,34 @@ export const SubscriptionPage: React.FC = () => {
   /**
    * Gère la souscription à un plan
    */
-  const handleSubscribe = async (planId: SubscriptionType) => {
-    if (planId === currentPlan && !isTrialExpired) {
+  const handleSubscribe = async (plan: SubscriptionPlan) => {
+    if (plan.id === 'FREE' && currentPlan === 'FREE' && !isTrialExpired) {
       toast.info('Vous êtes déjà sur ce plan');
+      return;
+    }
+
+    if (!plan.checkoutInterval) {
+      toast.info('Ce changement de plan sera bientôt disponible.');
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      // TODO: Implémenter l'appel API pour la souscription
-      // await subscriptionService.subscribe(planId);
-      
-      // Simulation pour le moment
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      if (planId === 'PREMIUM') {
-        toast.success('Abonnement Premium activé avec succès !');
-      } else {
-        toast.success('Retour au plan gratuit effectué');
-      }
-
-      // Rediriger vers l'inventaire ou la page précédente
-      navigate({ to: '/app/inventory' });
-
+      const checkoutSession = await billingService.createCheckoutSession(
+        plan.checkoutInterval
+      );
+      window.location.assign(checkoutSession.url);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la souscription';
       toast.error(errorMessage);
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleStartTrial = () => {
+    toast.info('L’essai gratuit sera activé dans une prochaine étape.');
   };
 
   /**
@@ -327,8 +349,11 @@ export const SubscriptionPage: React.FC = () => {
    */
   const renderPlanCard = (plan: SubscriptionPlan) => {
     const isCurrentPlan = plan.id === currentPlan;
-    const isUpgrade = plan.id === 'PREMIUM' && currentPlan === 'FREE';
-    const isTrialCurrentPlan = plan.id === 'PREMIUM' && isTrial && !isTrialExpired;
+    const isPaidPlan =
+      plan.id === 'PREMIUM_MONTHLY' || plan.id === 'PREMIUM_YEARLY';
+    const isUpgrade = isPaidPlan && currentPlan === 'FREE';
+    const isTrialCurrentPlan = isPaidPlan && isTrial && !isTrialExpired;
+    const isPremiumCurrentPlan = isPaidPlan && currentPlan === 'PREMIUM';
 
     return (
       <Card 
@@ -351,7 +376,9 @@ export const SubscriptionPage: React.FC = () => {
           <div className="flex items-end justify-center gap-1">
             <span className="text-4xl font-bold">{plan.priceDisplay}</span>
             {plan.price > 0 && (
-              <span className="text-muted-foreground mb-1">/mois</span>
+              <span className="text-muted-foreground mb-1">
+                {plan.id === 'PREMIUM_YEARLY' ? '/an' : '/mois'}
+              </span>
             )}
           </div>
           <p className="text-sm text-muted-foreground">{plan.description}</p>
@@ -383,8 +410,13 @@ export const SubscriptionPage: React.FC = () => {
 
           {/* Bouton d'action */}
           <Button
-            onClick={() => handleSubscribe(plan.id)}
-            disabled={isCurrentPlan || isTrialCurrentPlan || isProcessing}
+            onClick={() => handleSubscribe(plan)}
+            disabled={
+              isCurrentPlan ||
+              isTrialCurrentPlan ||
+              isPremiumCurrentPlan ||
+              isProcessing
+            }
             variant={plan.buttonVariant}
             className="w-full"
             size="lg"
@@ -394,8 +426,12 @@ export const SubscriptionPage: React.FC = () => {
                 <div className="animate-spin size-4 border-2 border-current border-t-transparent rounded-full" />
                 Traitement...
               </div>
-            ) : isCurrentPlan || isTrialCurrentPlan ? (
-              isTrialCurrentPlan ? 'Trial actif' : plan.buttonText
+            ) : isCurrentPlan || isTrialCurrentPlan || isPremiumCurrentPlan ? (
+              isTrialCurrentPlan
+                ? 'Trial actif'
+                : isPremiumCurrentPlan
+                  ? 'Premium actif'
+                  : plan.buttonText
             ) : isUpgrade ? (
               <div className="flex items-center gap-2">
                 <Zap className="size-4" />
@@ -406,9 +442,9 @@ export const SubscriptionPage: React.FC = () => {
             )}
           </Button>
 
-          {!isPremium && plan.id === 'PREMIUM' && (
+          {!isPremium && plan.id === 'PREMIUM_MONTHLY' && (
             <Button
-              onClick={() => handleSubscribe('TRIAL')}
+              onClick={handleStartTrial}
               disabled={isProcessing}
               variant="outline"
               className="w-full"
@@ -486,7 +522,7 @@ export const SubscriptionPage: React.FC = () => {
         {renderPremiumHighlights()}
         
         {/* Plans d'abonnement */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {subscriptionPlans.map(renderPlanCard)}
         </div>
         

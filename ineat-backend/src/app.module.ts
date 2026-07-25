@@ -16,9 +16,11 @@ import { ObservabilityModule } from './observability/observability.module';
 import { AdminModule } from './admin/admin.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { RecipeModule } from './recipe/recipe.module';
+import { BillingModule } from './billing/billing.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { validateEnvironment } from './config/env.validation';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env'],
+      validate: validateEnvironment,
     }),
     ObservabilityModule,
     PrismaModule,
@@ -40,6 +43,7 @@ import { SentryModule } from '@sentry/nestjs/setup';
     AdminModule,
     InvoiceModule,
     RecipeModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [

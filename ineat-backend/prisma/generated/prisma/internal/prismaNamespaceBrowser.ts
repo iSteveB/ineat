@@ -64,6 +64,7 @@ export const ModelName = {
   Recipe: 'Recipe',
   RecipeIngredient: 'RecipeIngredient',
   User: 'User',
+  StripeWebhookEvent: 'StripeWebhookEvent',
   UsageQuota: 'UsageQuota',
   Session: 'Session',
   Account: 'Account',
@@ -346,10 +347,30 @@ export const UserScalarFieldEnum = {
   trialEndsAt: 'trialEndsAt',
   currentPeriodStartedAt: 'currentPeriodStartedAt',
   currentPeriodEndsAt: 'currentPeriodEndsAt',
+  stripeCustomerId: 'stripeCustomerId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  stripePriceId: 'stripePriceId',
+  billingInterval: 'billingInterval',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
+  subscriptionCancelledAt: 'subscriptionCancelledAt',
+  lastStripeEventAt: 'lastStripeEventAt',
   avatarUrl: 'avatarUrl'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const StripeWebhookEventScalarFieldEnum = {
+  id: 'id',
+  stripeEventId: 'stripeEventId',
+  type: 'type',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  processedAt: 'processedAt'
+} as const
+
+export type StripeWebhookEventScalarFieldEnum = (typeof StripeWebhookEventScalarFieldEnum)[keyof typeof StripeWebhookEventScalarFieldEnum]
 
 
 export const UsageQuotaScalarFieldEnum = {

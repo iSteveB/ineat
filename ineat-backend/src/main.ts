@@ -86,7 +86,15 @@ async function bootstrap() {
       return betterAuthHandler(req, res);
     },
   );
-  app.use(json());
+  app.use(
+    json({
+      verify: (req: Request & { rawBody?: Buffer }, _res, buf) => {
+        if (req.originalUrl === '/billing/webhook') {
+          req.rawBody = Buffer.from(buf);
+        }
+      },
+    }),
+  );
   app.use(urlencoded({ extended: true }));
 
   // Utilisation de Swagger pour la documentation API (uniquement en dev)

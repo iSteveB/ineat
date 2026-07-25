@@ -17,6 +17,9 @@ export const authUserSelect = {
   trialEndsAt: true,
   currentPeriodStartedAt: true,
   currentPeriodEndsAt: true,
+  billingInterval: true,
+  cancelAtPeriodEnd: true,
+  subscriptionCancelledAt: true,
 } satisfies Prisma.UserSelect;
 
 export type AuthUser = Prisma.UserGetPayload<{

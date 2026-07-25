@@ -36,7 +36,7 @@ export interface AccessPolicy {
 @Injectable()
 export class AccessPolicyService {
   getEffectivePlan(user: AccessPolicyUser, now = new Date()): EffectivePlan {
-    if (this.isPremiumActive(user) || this.isTrialActive(user, now)) {
+    if (this.isPremiumActive(user, now) || this.isTrialActive(user, now)) {
       return 'PREMIUM';
     }
 
@@ -70,10 +70,15 @@ export class AccessPolicyService {
     };
   }
 
-  private isPremiumActive(user: AccessPolicyUser): boolean {
+  private isPremiumActive(user: AccessPolicyUser, now: Date): boolean {
+    const currentPeriodEndsAt = this.toDate(user.currentPeriodEndsAt);
+
     return (
       user.subscriptionPlan === 'PREMIUM' &&
-      user.subscriptionStatus === 'ACTIVE'
+      (user.subscriptionStatus === 'ACTIVE' ||
+        (user.subscriptionStatus === 'CANCELLED' &&
+          !!currentPeriodEndsAt &&
+          currentPeriodEndsAt.getTime() > now.getTime()))
     );
   }
 

@@ -163,4 +163,34 @@ describe('AccessPolicyService', () => {
     expect(policy.capabilities.canAccessAdmin).toBe(true);
     expect(policy.capabilities.canUseRecipes).toBe(true);
   });
+
+  it("devrait conserver les droits Premium jusqu'a la fin de période payée après annulation", () => {
+    const policy = service.getPolicy(
+      {
+        role: 'USER',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'CANCELLED',
+        currentPeriodEndsAt: '2026-05-30T12:00:00.000Z',
+      },
+      now,
+    );
+
+    expect(policy.effectivePlan).toBe('PREMIUM');
+    expect(policy.capabilities.canUseRecipes).toBe(true);
+  });
+
+  it('devrait repasser aux droits Free quand la période payée annulée est terminée', () => {
+    const policy = service.getPolicy(
+      {
+        role: 'USER',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'CANCELLED',
+        currentPeriodEndsAt: '2026-05-28T12:00:00.000Z',
+      },
+      now,
+    );
+
+    expect(policy.effectivePlan).toBe('FREE');
+    expect(policy.capabilities.canUseRecipes).toBe(false);
+  });
 });

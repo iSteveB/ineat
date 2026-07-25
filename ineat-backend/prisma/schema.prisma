@@ -339,6 +339,13 @@ model User {
   trialEndsAt            DateTime?
   currentPeriodStartedAt DateTime?
   currentPeriodEndsAt    DateTime?
+  stripeCustomerId       String?            @unique
+  stripeSubscriptionId   String?            @unique
+  stripePriceId          String?
+  billingInterval        BillingInterval?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  subscriptionCancelledAt DateTime?
+  lastStripeEventAt      DateTime?
   avatarUrl              String?
   Budget                 Budget[]
   Expense                Expense[]
@@ -352,6 +359,19 @@ model User {
   accounts               Account[]
 
   @@map("User")
+}
+
+model StripeWebhookEvent {
+  id            String    @id
+  stripeEventId String    @unique
+  type          String
+  status        String
+  errorMessage  String?
+  createdAt     DateTime  @default(now())
+  processedAt   DateTime?
+
+  @@index([status])
+  @@index([type])
 }
 
 model UsageQuota {
@@ -508,6 +528,11 @@ enum SubscriptionStatus {
   ACTIVE
   EXPIRED
   CANCELLED
+}
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
 }
 
 enum UnitType {

@@ -38,20 +38,50 @@ Puis remplacer les placeholders par les valeurs locales ou les secrets de l'envi
 
 Variables principales:
 
-| Variable | Obligatoire | Usage |
-| --- | --- | --- |
-| `NODE_ENV` | Non | `development` par defaut |
-| `PORT` | Non | Port HTTP, `3000` par defaut |
-| `DATABASE_URL` | Oui | Connexion PostgreSQL Prisma |
-| `BETTER_AUTH_SECRET` | Oui | Secret de signature/chiffrement Better Auth |
-| `BETTER_AUTH_URL` | Oui | Origine publique du backend Better Auth, sans chemin `/auth` |
-| `FRONTEND_URL` | Production | Origine frontend autorisee en prod |
-| `CORS_ORIGIN` | Production | Origine CORS supplementaire |
-| `PASSWORD_RESET_WEBHOOK_URL` | Production | Webhook appele par Better Auth pour envoyer les emails de reset password |
-| `CLOUDINARY_CLOUD_NAME` | Uploads | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Uploads | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Uploads | Cloudinary API secret |
-| `CLOUDINARY_AVATAR_PRESET` | Optionnel | Preset Cloudinary pour avatars |
+| Variable                            | Obligatoire                 | Usage                                                                    |
+| ----------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
+| `NODE_ENV`                          | Non                         | `development` par defaut                                                 |
+| `PORT`                              | Non                         | Port HTTP, `3000` par defaut                                             |
+| `DATABASE_URL`                      | Oui                         | Connexion PostgreSQL Prisma                                              |
+| `BETTER_AUTH_SECRET`                | Oui                         | Secret de signature/chiffrement Better Auth                              |
+| `BETTER_AUTH_URL`                   | Oui                         | Origine publique du backend Better Auth, sans chemin `/auth`             |
+| `FRONTEND_URL`                      | Production                  | Origine frontend autorisee en prod                                       |
+| `CORS_ORIGIN`                       | Production                  | Origine CORS supplementaire                                              |
+| `PASSWORD_RESET_WEBHOOK_URL`        | Production                  | Webhook appele par Better Auth pour envoyer les emails de reset password |
+| `CLOUDINARY_CLOUD_NAME`             | Uploads                     | Cloudinary cloud name                                                    |
+| `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                                       |
+| `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                                    |
+| `CLOUDINARY_AVATAR_PRESET`          | Optionnel                   | Preset Cloudinary pour avatars                                           |
+| `STRIPE_ENABLED`                    | Non                         | Active la validation Stripe hors production quand `true`                 |
+| `STRIPE_SECRET_KEY`                 | Billing prod / Stripe actif | Cle secrete Stripe backend                                               |
+| `STRIPE_PRICE_PREMIUM_MONTHLY_EUR`  | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium mensuel 5,99 EUR TTC                |
+| `STRIPE_PRICE_PREMIUM_YEARLY_EUR`   | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium annuel 59,99 EUR TTC                |
+| `STRIPE_WEBHOOK_SECRET`             | Billing prod / Stripe actif | Secret de signature des webhooks Stripe                                  |
+| `STRIPE_CHECKOUT_SUCCESS_URL`       | Billing prod / Stripe actif | URL de retour apres paiement Checkout reussi                             |
+| `STRIPE_CHECKOUT_CANCEL_URL`        | Billing prod / Stripe actif | URL de retour apres abandon Checkout                                     |
+| `STRIPE_CUSTOMER_PORTAL_RETURN_URL` | Billing prod / Stripe actif | URL de retour depuis le Customer Portal                                  |
+
+### Stripe Billing V1
+
+Le Product Stripe a creer est `InEat Premium`.
+
+Prices catalogue a creer en test Stripe, puis en live:
+
+| Lookup key            |           Montant | Intervalle | Prix public         |
+| --------------------- | ----------------: | ---------- | ------------------- |
+| `premium_monthly_eur` |  599 centimes EUR | `month`    | 5,99 EUR TTC / mois |
+| `premium_yearly_eur`  | 5999 centimes EUR | `year`     | 59,99 EUR TTC / an  |
+
+Ne pas creer de price promotionnelle sauf campagne de lancement explicitement
+validee. Le trial InEat de 3 jours est gratuit, sans carte bancaire, et ne
+passe pas par Stripe en V1.
+
+Les Price IDs restent strictement cote backend. Le frontend devra demander un
+intervalle (`MONTHLY` ou `YEARLY`) et ne jamais envoyer un Price ID libre.
+
+En production, ou des qu'une variable Stripe est renseignee, le backend valide
+la configuration Stripe au demarrage et echoue avec une erreur explicite si une
+variable obligatoire manque.
 
 ## Lancement
 
@@ -170,16 +200,16 @@ En developpement:
 
 Modules principaux:
 
-| Module | Role |
-| --- | --- |
-| `AuthModule` | Sessions Better Auth, email/password, guards |
-| `UserModule` | Profil, informations personnelles, restrictions alimentaires |
-| `AvatarModule` | Upload et gestion d'avatar |
-| `CloudinaryModule` | Integration Cloudinary |
-| `InventoryModule` | Stock utilisateur, ajout manuel, quick add, filtres |
-| `ProductsModule` | Recherche produits et categories |
-| `BudgetModule` | Budgets mensuels et depenses |
-| `PrismaModule` | Acces base de donnees |
+| Module             | Role                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| `AuthModule`       | Sessions Better Auth, email/password, guards                 |
+| `UserModule`       | Profil, informations personnelles, restrictions alimentaires |
+| `AvatarModule`     | Upload et gestion d'avatar                                   |
+| `CloudinaryModule` | Integration Cloudinary                                       |
+| `InventoryModule`  | Stock utilisateur, ajout manuel, quick add, filtres          |
+| `ProductsModule`   | Recherche produits et categories                             |
+| `BudgetModule`     | Budgets mensuels et depenses                                 |
+| `PrismaModule`     | Acces base de donnees                                        |
 
 ## Observabilite Production
 

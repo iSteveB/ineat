@@ -25,6 +25,7 @@ import { Route as AppNotificationsIndexRouteImport } from './routes/app/notifica
 import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/index'
 import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
 import { Route as AppAdminIndexRouteImport } from './routes/app/admin/index'
+import { Route as AppSubscriptionSuccessRouteImport } from './routes/app/subscription/success'
 import { Route as AppRecipesSuggestionsRouteImport } from './routes/app/recipes/suggestions'
 import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$recipeId'
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
@@ -116,6 +117,11 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppSubscriptionSuccessRoute = AppSubscriptionSuccessRouteImport.update({
+  id: '/subscription/success',
+  path: '/subscription/success',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppRecipesSuggestionsRoute = AppRecipesSuggestionsRouteImport.update({
   id: '/recipes/suggestions',
   path: '/recipes/suggestions',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
+  '/app/subscription/success': typeof AppSubscriptionSuccessRoute
   '/app/admin': typeof AppAdminIndexRoute
   '/app/budget': typeof AppBudgetIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
@@ -213,6 +220,7 @@ export interface FileRoutesByTo {
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
+  '/app/subscription/success': typeof AppSubscriptionSuccessRoute
   '/app/admin': typeof AppAdminIndexRoute
   '/app/budget': typeof AppBudgetIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
+  '/app/subscription/success': typeof AppSubscriptionSuccessRoute
   '/app/admin/': typeof AppAdminIndexRoute
   '/app/budget/': typeof AppBudgetIndexRoute
   '/app/inventory/': typeof AppInventoryIndexRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/app/inventory/$productId'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
+    | '/app/subscription/success'
     | '/app/admin'
     | '/app/budget'
     | '/app/inventory'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/app/inventory/$productId'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
+    | '/app/subscription/success'
     | '/app/admin'
     | '/app/budget'
     | '/app/inventory'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/app/inventory/$productId'
     | '/app/recipes/$recipeId'
     | '/app/recipes/suggestions'
+    | '/app/subscription/success'
     | '/app/admin/'
     | '/app/budget/'
     | '/app/inventory/'
@@ -467,6 +479,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/subscription/success': {
+      id: '/app/subscription/success'
+      path: '/subscription/success'
+      fullPath: '/app/subscription/success'
+      preLoaderRoute: typeof AppSubscriptionSuccessRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/recipes/suggestions': {
       id: '/app/recipes/suggestions'
       path: '/recipes/suggestions'
@@ -570,6 +589,7 @@ interface AppRouteRouteChildren {
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesSuggestionsRoute: typeof AppRecipesSuggestionsRoute
+  AppSubscriptionSuccessRoute: typeof AppSubscriptionSuccessRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
   AppInventoryIndexRoute: typeof AppInventoryIndexRoute
@@ -593,6 +613,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesSuggestionsRoute: AppRecipesSuggestionsRoute,
+  AppSubscriptionSuccessRoute: AppSubscriptionSuccessRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
   AppInventoryIndexRoute: AppInventoryIndexRoute,

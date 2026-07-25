@@ -1,0 +1,33 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
+
+export enum BillingInterval {
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
+
+export class CreateCheckoutSessionDto {
+  @ApiProperty({
+    enum: BillingInterval,
+    example: BillingInterval.MONTHLY,
+    description: 'Intervalle de facturation Premium demandé.',
+  })
+  @IsEnum(BillingInterval)
+  interval: BillingInterval;
+}
+
+export class CheckoutSessionResponseDto {
+  @ApiProperty({ example: true })
+  success: true;
+
+  @ApiProperty({
+    example: {
+      id: 'cs_test_...',
+      url: 'https://checkout.stripe.com/c/pay/cs_test_...',
+    },
+  })
+  data: {
+    id: string;
+    url: string;
+  };
+}

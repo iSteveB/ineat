@@ -45,6 +45,10 @@ export const toSafeUserResponse = (
     trialEndsAt: user.trialEndsAt?.toISOString() ?? null,
     currentPeriodStartedAt: user.currentPeriodStartedAt?.toISOString() ?? null,
     currentPeriodEndsAt: user.currentPeriodEndsAt?.toISOString() ?? null,
+    billingInterval: user.billingInterval ?? null,
+    cancelAtPeriodEnd: user.cancelAtPeriodEnd ?? false,
+    subscriptionCancelledAt:
+      user.subscriptionCancelledAt?.toISOString() ?? null,
     effectivePlan: policy.effectivePlan,
     capabilities: policy.capabilities,
     subscription: toLegacySubscription(user),
