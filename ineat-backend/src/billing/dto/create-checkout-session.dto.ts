@@ -31,3 +31,19 @@ export class CheckoutSessionResponseDto {
     url: string;
   };
 }
+
+export class PortalSessionResponseDto {
+  @ApiProperty({ example: true })
+  success: true;
+
+  @ApiProperty({
+    example: {
+      id: 'bps_test_...',
+      url: 'https://billing.stripe.com/p/session/...',
+    },
+  })
+  data: {
+    id: string;
+    url: string;
+  };
+}

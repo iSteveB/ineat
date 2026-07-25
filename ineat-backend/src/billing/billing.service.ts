@@ -74,6 +74,43 @@ export class BillingService {
     };
   }
 
+  async createPortalSession(user: CheckoutUser) {
+    const stripe = this.stripeClientFactory.getClient();
+    const persistedUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: { stripeCustomerId: true },
+    });
+
+    if (!persistedUser) {
+      throw new NotFoundException('Utilisateur introuvable');
+    }
+
+    if (!persistedUser.stripeCustomerId) {
+      throw new BadRequestException({
+        code: 'STRIPE_CUSTOMER_MISSING',
+        message:
+          "Aucun abonnement Stripe n'est encore associé à votre compte.",
+      });
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: persistedUser.stripeCustomerId,
+      return_url: this.getRequiredConfig('STRIPE_CUSTOMER_PORTAL_RETURN_URL'),
+    });
+
+    if (!session.url) {
+      throw new InternalServerErrorException({
+        code: 'STRIPE_PORTAL_URL_MISSING',
+        message: "Impossible d'ouvrir la gestion de l'abonnement.",
+      });
+    }
+
+    return {
+      id: session.id,
+      url: session.url,
+    };
+  }
+
   async handleWebhook(signature?: string, rawBody?: Buffer) {
     if (!signature || !rawBody) {
       throw new BadRequestException('Webhook Stripe invalide');

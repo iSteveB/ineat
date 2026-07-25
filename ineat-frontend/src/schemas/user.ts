@@ -9,6 +9,7 @@ import {
 	UserRoleSchema,
 	SubscriptionPlanSchema,
 	SubscriptionStatusSchema,
+	BillingIntervalSchema,
 	EffectivePlanSchema,
 } from './base';
 import {
@@ -61,6 +62,8 @@ export const UserSchema = z
 		trialEndsAt: z.string().datetime().nullable().optional(),
 		currentPeriodStartedAt: z.string().datetime().nullable().optional(),
 		currentPeriodEndsAt: z.string().datetime().nullable().optional(),
+		billingInterval: BillingIntervalSchema.nullable().optional(),
+		cancelAtPeriodEnd: z.boolean().default(false),
 		effectivePlan: EffectivePlanSchema.default('FREE'),
 		capabilities: AccessCapabilitiesSchema.default(
 			DEFAULT_ACCESS_CAPABILITIES

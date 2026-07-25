@@ -16,7 +16,8 @@ import {
   Users, 
   Shield,
   Zap,
-  Star
+  Star,
+  CreditCard
 } from 'lucide-react';
 import { useUser } from '@/hooks/useAuth';
 import type { SubscriptionPlan as UserSubscriptionPlan } from '@/schemas';
@@ -131,6 +132,7 @@ export const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: user, isLoading: userLoading } = useUser();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPortalOpening, setIsPortalOpening] = useState(false);
 
   const currentPlan: UserSubscriptionPlan = user?.subscriptionPlan || 'FREE';
   const effectivePlan = user?.effectivePlan || 'FREE';
@@ -140,6 +142,9 @@ export const SubscriptionPage: React.FC = () => {
     currentPlan === 'TRIAL' && user?.subscriptionStatus === 'EXPIRED';
   const capabilities = user?.capabilities;
   const trialEndsAt = formatDate(user?.trialEndsAt);
+  const currentPeriodEndsAt = formatDate(user?.currentPeriodEndsAt);
+  const isCancelledAtPeriodEnd =
+    user?.subscriptionStatus === 'CANCELLED' && Boolean(user?.cancelAtPeriodEnd);
   const aiQuotaReached = Boolean(
     capabilities &&
       isPremium &&
@@ -186,6 +191,23 @@ export const SubscriptionPage: React.FC = () => {
 
   const handleStartTrial = () => {
     toast.info('L’essai gratuit sera activé dans une prochaine étape.');
+  };
+
+  const handleManageSubscription = async () => {
+    setIsPortalOpening(true);
+
+    try {
+      const portalSession = await billingService.createPortalSession();
+      window.location.assign(portalSession.url);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Impossible d'ouvrir la gestion de l'abonnement.";
+      toast.error(errorMessage);
+    } finally {
+      setIsPortalOpening(false);
+    }
   };
 
   /**
@@ -262,6 +284,17 @@ export const SubscriptionPage: React.FC = () => {
       );
     }
 
+    if (isCancelledAtPeriodEnd) {
+      return (
+        <Alert className="mb-8 border-orange-200 bg-orange-50">
+          <Crown className="size-4 text-orange-700" />
+          <AlertDescription className="text-orange-800">
+            Votre abonnement restera actif jusqu’au {currentPeriodEndsAt ?? 'terme de la période payée'}.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
     if (!isPremium) {
       return (
         <Alert className="mb-8">
@@ -274,6 +307,42 @@ export const SubscriptionPage: React.FC = () => {
     }
 
     return null;
+  };
+
+  const renderSubscriptionManagement = () => {
+    if (!isPremium || isTrial) return null;
+
+    return (
+      <Card className="mb-8">
+        <CardContent className="flex flex-col gap-4 p-6 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Gestion de l’abonnement</h2>
+            <p className="text-sm text-muted-foreground">
+              {isCancelledAtPeriodEnd
+                ? `Premium reste actif jusqu’au ${currentPeriodEndsAt ?? 'terme de la période payée'}.`
+                : `Facturation ${user?.billingInterval === 'YEARLY' ? 'annuelle' : 'mensuelle'} gérée par Stripe.`}
+            </p>
+          </div>
+          <Button
+            onClick={handleManageSubscription}
+            disabled={isPortalOpening || isProcessing}
+            className="gap-2"
+          >
+            {isPortalOpening ? (
+              <>
+                <div className="animate-spin size-4 border-2 border-current border-t-transparent rounded-full" />
+                Ouverture...
+              </>
+            ) : (
+              <>
+                <CreditCard className="size-4" />
+                Gérer mon abonnement
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    );
   };
 
   const renderQuotaSummary = () => {
@@ -519,6 +588,7 @@ export const SubscriptionPage: React.FC = () => {
         {renderHeader()}
         {renderPlanStatus()}
         {renderQuotaSummary()}
+        {renderSubscriptionManagement()}
         {renderPremiumHighlights()}
         
         {/* Plans d'abonnement */}
