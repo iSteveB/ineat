@@ -43,6 +43,7 @@ export const toSafeUserResponse = (
     subscriptionStatus: user.subscriptionStatus || 'ACTIVE',
     trialStartedAt: user.trialStartedAt?.toISOString() ?? null,
     trialEndsAt: user.trialEndsAt?.toISOString() ?? null,
+    trialUsedAt: user.trialUsedAt?.toISOString() ?? null,
     currentPeriodStartedAt: user.currentPeriodStartedAt?.toISOString() ?? null,
     currentPeriodEndsAt: user.currentPeriodEndsAt?.toISOString() ?? null,
     billingInterval: user.billingInterval ?? null,

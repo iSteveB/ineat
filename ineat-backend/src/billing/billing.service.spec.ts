@@ -151,6 +151,18 @@ describe('BillingService', () => {
     );
   });
 
+  it('rejects an invalid Checkout interval before creating a Stripe session', async () => {
+    const { service, stripe } = createService({
+      ...user,
+      stripeCustomerId: 'cus_existing',
+    });
+
+    await expect(
+      service.createCheckoutSession(user, 'price_attacker' as BillingInterval),
+    ).rejects.toThrow('Intervalle de facturation invalide.');
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+  });
+
   it('creates a Customer Portal session for an existing Stripe customer', async () => {
     const { service, stripe } = createService({
       ...user,
@@ -179,6 +191,69 @@ describe('BillingService', () => {
       "Aucun abonnement Stripe n'est encore associé à votre compte.",
     );
     expect(stripe.billingPortal.sessions.create).not.toHaveBeenCalled();
+  });
+
+  it('starts a 3-day trial without Stripe', async () => {
+    const { service, prisma, stripe } = createService({
+      ...user,
+      subscriptionPlan: 'FREE',
+      subscriptionStatus: 'ACTIVE',
+      trialUsedAt: null,
+      currentPeriodEndsAt: null,
+    });
+    const now = new Date('2026-07-26T07:00:00.000Z');
+
+    const trial = await service.startTrial(user, now);
+
+    expect(stripe.customers.create).not.toHaveBeenCalled();
+    expect(stripe.checkout.sessions.create).not.toHaveBeenCalled();
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: user.id },
+      data: {
+        subscriptionPlan: 'TRIAL',
+        subscriptionStatus: 'ACTIVE',
+        trialStartedAt: now,
+        trialEndsAt: new Date('2026-07-29T07:00:00.000Z'),
+        trialUsedAt: now,
+        currentPeriodStartedAt: now,
+        currentPeriodEndsAt: new Date('2026-07-29T07:00:00.000Z'),
+        billingInterval: null,
+        cancelAtPeriodEnd: false,
+      },
+    });
+    expect(trial).toEqual({
+      trialStartedAt: '2026-07-26T07:00:00.000Z',
+      trialEndsAt: '2026-07-29T07:00:00.000Z',
+    });
+  });
+
+  it('rejects trial start when the trial was already used', async () => {
+    const { service, prisma } = createService({
+      ...user,
+      subscriptionPlan: 'FREE',
+      subscriptionStatus: 'ACTIVE',
+      trialUsedAt: new Date('2026-07-01T00:00:00.000Z'),
+    });
+
+    await expect(service.startTrial(user)).rejects.toThrow(
+      "L'essai gratuit a déjà été utilisé.",
+    );
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('rejects trial start when Premium is already active', async () => {
+    const { service, prisma } = createService({
+      ...user,
+      subscriptionPlan: 'PREMIUM',
+      subscriptionStatus: 'ACTIVE',
+      trialUsedAt: null,
+      currentPeriodEndsAt: new Date('2026-08-01T00:00:00.000Z'),
+    });
+
+    await expect(service.startTrial(user)).rejects.toThrow(
+      'Premium est déjà actif sur votre compte.',
+    );
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('does not activate Premium from Checkout creation', async () => {
@@ -248,6 +323,46 @@ describe('BillingService', () => {
     expect(prisma.stripeWebhookEvent.update).toHaveBeenLastCalledWith({
       where: { stripeEventId: 'evt_checkout' },
       data: expect.objectContaining({ status: 'PROCESSED' }),
+    });
+  });
+
+  it('syncs Premium from customer.subscription.created', async () => {
+    const { service, prisma, stripe } = createService({
+      ...user,
+      stripeCustomerId: 'cus_existing',
+    });
+    stripe.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_subscription_created',
+      type: 'customer.subscription.created',
+      created: 1782864000,
+      data: {
+        object: {
+          id: 'sub_123',
+          customer: 'cus_existing',
+          status: 'active',
+          cancel_at_period_end: false,
+          canceled_at: null,
+          current_period_start: 1782864000,
+          current_period_end: 1785542400,
+          metadata: { userId: user.id },
+          items: {
+            data: [{ price: { id: 'price_monthly' } }],
+          },
+        },
+      },
+    });
+
+    await service.handleWebhook('sig_test', Buffer.from('{}'));
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: user.id },
+      data: expect.objectContaining({
+        stripeSubscriptionId: 'sub_123',
+        billingInterval: 'MONTHLY',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'ACTIVE',
+        currentPeriodEndsAt: new Date('2026-08-01T00:00:00.000Z'),
+      }),
     });
   });
 
@@ -356,6 +471,40 @@ describe('BillingService', () => {
       data: {
         lastStripeEventAt: new Date('2026-07-01T00:00:00.000Z'),
       },
+    });
+  });
+
+  it('syncs the subscription period on invoice.payment_succeeded', async () => {
+    const { service, prisma, stripe } = createService({
+      ...user,
+      stripeCustomerId: 'cus_existing',
+      stripeSubscriptionId: 'sub_123',
+    });
+    stripe.webhooks.constructEvent.mockReturnValue({
+      id: 'evt_invoice_succeeded',
+      type: 'invoice.payment_succeeded',
+      created: 1782864000,
+      data: {
+        object: {
+          customer: 'cus_existing',
+          subscription: 'sub_123',
+        },
+      },
+    });
+
+    await service.handleWebhook('sig_test', Buffer.from('{}'));
+
+    expect(stripe.subscriptions.retrieve).toHaveBeenCalledWith('sub_123');
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: user.id },
+      data: expect.objectContaining({
+        stripeSubscriptionId: 'sub_123',
+        billingInterval: 'MONTHLY',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'ACTIVE',
+        currentPeriodStartedAt: new Date('2026-07-01T00:00:00.000Z'),
+        currentPeriodEndsAt: new Date('2026-08-01T00:00:00.000Z'),
+      }),
     });
   });
 

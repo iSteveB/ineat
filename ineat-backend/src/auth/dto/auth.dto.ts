@@ -11,6 +11,7 @@ export const SafeUserSchema = z.object({
   subscriptionStatus: z.enum(['ACTIVE', 'EXPIRED', 'CANCELLED']).optional(),
   trialStartedAt: z.date().nullable().optional(),
   trialEndsAt: z.date().nullable().optional(),
+  trialUsedAt: z.date().nullable().optional(),
   currentPeriodStartedAt: z.date().nullable().optional(),
   currentPeriodEndsAt: z.date().nullable().optional(),
   billingInterval: z.enum(['MONTHLY', 'YEARLY']).nullable().optional(),

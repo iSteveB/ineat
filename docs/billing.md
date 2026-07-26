@@ -762,6 +762,116 @@ en periode de relance.
   les factures.
 - Stripe webhook comme source de verite des droits payants.
 
+## Checklist de recette Stripe test/live
+
+Cette checklist doit etre rejouee avant chaque deploiement billing majeur et
+avant tout passage d'un environnement Stripe test vers Stripe live.
+
+### Configuration test
+
+- [ ] Verifier que l'environnement backend utilise une cle secrete Stripe test
+  commencant par `sk_test_`.
+- [ ] Verifier que le frontend de developpement pointe vers l'API de
+  developpement.
+- [ ] Verifier que `STRIPE_PRICE_PREMIUM_MONTHLY_EUR` pointe vers la price test
+  Premium mensuelle a 5,99 EUR TTC / mois.
+- [ ] Verifier que `STRIPE_PRICE_PREMIUM_YEARLY_EUR` pointe vers la price test
+  Premium annuelle a 59,99 EUR TTC / an.
+- [ ] Verifier que `STRIPE_WEBHOOK_SECRET` correspond au webhook endpoint test
+  actif.
+- [ ] Verifier que `STRIPE_CHECKOUT_SUCCESS_URL` pointe vers
+  `/app/subscription/success` sur l'environnement teste.
+- [ ] Verifier que `STRIPE_CHECKOUT_CANCEL_URL` pointe vers
+  `/app/subscription` sur l'environnement teste.
+- [ ] Verifier que `STRIPE_CUSTOMER_PORTAL_RETURN_URL` pointe vers
+  `/app/subscription` sur l'environnement teste.
+- [ ] Verifier que Stripe Customer Portal est configure en mode test :
+  factures, moyens de paiement et annulation en fin de periode.
+- [ ] Si Stripe Tax est active, verifier que le produit Stripe a une categorie
+  fiscale logicielle coherente et que le montant public reste affiche TTC.
+
+### Recette fonctionnelle test
+
+- [ ] Free eligible trial : activer "Essayer 3 jours gratuitement" sans Stripe
+  ni carte bancaire.
+- [ ] Trial unique : tenter un second trial et verifier le refus explicite.
+- [ ] Trial actif : verifier `effectivePlan = PREMIUM`, les quotas trial et la
+  date de fin d'essai.
+- [ ] Trial expire : verifier `effectivePlan = FREE` sans suppression de
+  donnees.
+- [ ] Checkout mensuel : choisir Premium mensuel et verifier que Stripe affiche
+  5,99 EUR TTC / mois.
+- [ ] Checkout annuel : choisir Premium annuel et verifier que Stripe affiche
+  59,99 EUR TTC / an.
+- [ ] Price IDs : verifier que le frontend envoie seulement `MONTHLY` ou
+  `YEARLY`, jamais un Price ID Stripe.
+- [ ] Retour Checkout sans webhook : verifier que le retour navigateur seul
+  n'active pas Premium.
+- [ ] Webhook `checkout.session.completed` : verifier l'activation
+  `PREMIUM/ACTIVE`.
+- [ ] Webhook `customer.subscription.created` : verifier la synchronisation de
+  `stripeSubscriptionId`, `stripePriceId`, `billingInterval` et periode
+  courante.
+- [ ] Webhook `customer.subscription.updated` : verifier la mise a jour de la
+  periode courante et du statut d'annulation programmee.
+- [ ] Webhook `invoice.payment_succeeded` : verifier le renouvellement et la
+  nouvelle periode courante.
+- [ ] Webhook `invoice.payment_failed` : verifier que Premium n'est pas coupe
+  brutalement si Stripe garde la subscription recuperable.
+- [ ] Webhook `customer.subscription.deleted` : verifier le passage aux droits
+  effectifs Free.
+- [ ] Webhook rejoue : renvoyer le meme event et verifier l'idempotence.
+- [ ] Signature webhook invalide : verifier le rejet de l'evenement.
+- [ ] Customer Portal : ouvrir le portail depuis un compte Premium et verifier
+  factures, changement de moyen de paiement et annulation.
+- [ ] Annulation en fin de periode : verifier que l'UI affiche "Votre
+  abonnement restera actif jusqu'au {date}" et conserve les droits Premium
+  jusqu'a cette date.
+- [ ] Compte sans `stripeCustomerId` : verifier que l'ouverture du Portal
+  affiche une erreur claire.
+
+### Controle Railway test
+
+- [ ] Verifier que le service backend de developpement possede uniquement les
+  variables Stripe test.
+- [ ] Verifier que le service frontend de developpement ne possede aucun secret
+  Stripe.
+- [ ] Verifier que `VITE_API_URL` pointe vers l'API de developpement.
+- [ ] Verifier les logs backend pendant un cycle Checkout complet.
+- [ ] Verifier qu'aucune erreur webhook ne reste en statut `FAILED` apres la
+  recette.
+
+### Preparation live
+
+- [ ] Creer le produit live `InEat Premium`.
+- [ ] Creer la price live mensuelle a 599 centimes EUR, recurrence mensuelle.
+- [ ] Creer la price live annuelle a 5999 centimes EUR, recurrence annuelle.
+- [ ] Configurer le webhook live `https://api.ineat.store/billing/webhook`.
+- [ ] Copier uniquement le `STRIPE_WEBHOOK_SECRET` live du endpoint live.
+- [ ] Configurer les URLs production :
+  - `STRIPE_CHECKOUT_SUCCESS_URL=https://ineat.store/app/subscription/success`
+  - `STRIPE_CHECKOUT_CANCEL_URL=https://ineat.store/app/subscription`
+  - `STRIPE_CUSTOMER_PORTAL_RETURN_URL=https://ineat.store/app/subscription`
+- [ ] Verifier que la production utilise une cle `sk_live_` et aucune cle
+  `sk_test_`.
+- [ ] Verifier que la production utilise les Price IDs live et aucun Price ID
+  test.
+- [ ] Verifier que le frontend production n'expose aucune cle secrete Stripe.
+- [ ] Verifier Stripe Tax et les mentions TTC avant ouverture publique.
+- [ ] Faire un achat live controle si necessaire, puis annuler/rembourser
+  manuellement depuis Stripe Dashboard.
+
+### Gate de validation
+
+Le passage live est bloque tant que :
+
+- un webhook critique echoue sans explication ;
+- le retour Checkout active Premium sans webhook ;
+- le frontend expose un secret Stripe ou un Price ID arbitraire ;
+- l'annulation coupe Premium avant `currentPeriodEndsAt` ;
+- un utilisateur peut consommer deux trials ;
+- les montants Stripe ne correspondent pas aux prix publics TTC.
+
 ## Roadmap implementation
 
 1. Corriger les quotas backend pour aligner `docs/rbac.md` et le code :

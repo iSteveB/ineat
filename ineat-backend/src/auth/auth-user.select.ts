@@ -15,6 +15,7 @@ export const authUserSelect = {
   subscriptionStatus: true,
   trialStartedAt: true,
   trialEndsAt: true,
+  trialUsedAt: true,
   currentPeriodStartedAt: true,
   currentPeriodEndsAt: true,
   billingInterval: true,

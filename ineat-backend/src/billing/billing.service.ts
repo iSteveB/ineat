@@ -111,6 +111,73 @@ export class BillingService {
     };
   }
 
+  async startTrial(user: CheckoutUser, now = new Date()) {
+    const persistedUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        subscriptionPlan: true,
+        subscriptionStatus: true,
+        trialUsedAt: true,
+        currentPeriodEndsAt: true,
+      },
+    });
+
+    if (!persistedUser) {
+      throw new NotFoundException('Utilisateur introuvable');
+    }
+
+    if (persistedUser.trialUsedAt) {
+      throw new BadRequestException({
+        code: 'TRIAL_ALREADY_USED',
+        message: "L'essai gratuit a déjà été utilisé.",
+      });
+    }
+
+    if (
+      persistedUser.subscriptionPlan === SubscriptionPlan.PREMIUM &&
+      (persistedUser.subscriptionStatus === SubscriptionStatus.ACTIVE ||
+        (persistedUser.subscriptionStatus === SubscriptionStatus.CANCELLED &&
+          persistedUser.currentPeriodEndsAt &&
+          persistedUser.currentPeriodEndsAt.getTime() > now.getTime()))
+    ) {
+      throw new BadRequestException({
+        code: 'PREMIUM_ALREADY_ACTIVE',
+        message: 'Premium est déjà actif sur votre compte.',
+      });
+    }
+
+    if (persistedUser.subscriptionPlan !== SubscriptionPlan.FREE) {
+      throw new BadRequestException({
+        code: 'TRIAL_NOT_AVAILABLE',
+        message: "L'essai gratuit n'est pas disponible pour ce compte.",
+      });
+    }
+
+    const trialStartedAt = now;
+    const trialEndsAt = new Date(trialStartedAt);
+    trialEndsAt.setDate(trialEndsAt.getDate() + 3);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        subscriptionPlan: SubscriptionPlan.TRIAL,
+        subscriptionStatus: SubscriptionStatus.ACTIVE,
+        trialStartedAt,
+        trialEndsAt,
+        trialUsedAt: trialStartedAt,
+        currentPeriodStartedAt: trialStartedAt,
+        currentPeriodEndsAt: trialEndsAt,
+        billingInterval: null,
+        cancelAtPeriodEnd: false,
+      },
+    });
+
+    return {
+      trialStartedAt: trialStartedAt.toISOString(),
+      trialEndsAt: trialEndsAt.toISOString(),
+    };
+  }
+
   async handleWebhook(signature?: string, rawBody?: Buffer) {
     if (!signature || !rawBody) {
       throw new BadRequestException('Webhook Stripe invalide');
@@ -230,6 +297,11 @@ export class BillingService {
         return this.getRequiredConfig('STRIPE_PRICE_PREMIUM_MONTHLY_EUR');
       case BillingInterval.YEARLY:
         return this.getRequiredConfig('STRIPE_PRICE_PREMIUM_YEARLY_EUR');
+      default:
+        throw new BadRequestException({
+          code: 'INVALID_BILLING_INTERVAL',
+          message: 'Intervalle de facturation invalide.',
+        });
     }
   }
 
