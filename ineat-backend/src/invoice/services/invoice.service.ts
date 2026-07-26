@@ -15,6 +15,7 @@ import {
 import { InvoiceProductResolverService } from './invoice-product-resolver.service';
 import { InvoiceUploadService } from './invoice-upload.service';
 import { OpenFoodFactsInvoiceEnrichmentService } from './openfoodfacts-invoice-enrichment.service';
+import { isInvoiceStorageLocation } from './invoice-product-classification';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
 
@@ -226,7 +227,19 @@ export class InvoiceService {
     }
 
     if (updateDto.category !== undefined) {
-      updateData.category = updateDto.category.trim() || null;
+      const category = updateDto.category.trim();
+
+      if (category) {
+        const allowedCategory = await this.prisma.category.findFirst({
+          where: { slug: category },
+        });
+
+        if (!allowedCategory) {
+          throw new BadRequestException("La catégorie sélectionnée n'est pas valide");
+        }
+      }
+
+      updateData.category = category || null;
     }
 
     if (updateDto.productId !== undefined) {
@@ -238,7 +251,15 @@ export class InvoiceService {
     }
 
     if (updateDto.storageLocation !== undefined) {
-      updateData.storageLocation = updateDto.storageLocation.trim() || null;
+      const storageLocation = updateDto.storageLocation.trim();
+
+      if (storageLocation && !isInvoiceStorageLocation(storageLocation)) {
+        throw new BadRequestException(
+          "Le lieu de stockage sélectionné n'est pas valide",
+        );
+      }
+
+      updateData.storageLocation = storageLocation || null;
     }
 
     if (updateDto.notes !== undefined) {
@@ -510,7 +531,10 @@ export class InvoiceService {
       return this.enrichExistingProductFromInvoiceItem(tx, product, item);
     }
 
-    const barcode = this.getValidBarcode(item.selectedEan ?? item.productCode);
+    const barcode = this.getFirstValidBarcode(
+      item.selectedEan,
+      item.productCode,
+    );
 
     if (barcode) {
       const productByBarcode = await tx.product.findUnique({
@@ -598,8 +622,10 @@ export class InvoiceService {
     item: any,
   ) {
     const externalProductData = this.getInvoiceExternalProductData(item);
-    const barcode = this.getValidBarcode(
-      externalProductData?.barcode ?? item.selectedEan ?? item.productCode,
+    const barcode = this.getFirstValidBarcode(
+      externalProductData?.barcode,
+      item.selectedEan,
+      item.productCode,
     );
     const updateData: Record<string, unknown> = {};
 
@@ -953,6 +979,18 @@ export class InvoiceService {
 
     const trimmed = value.trim();
     return /^\d{8,13}$/.test(trimmed) ? trimmed : null;
+  }
+
+  private getFirstValidBarcode(
+    ...values: Array<string | null | undefined>
+  ): string | null {
+    for (const value of values) {
+      const barcode = this.getValidBarcode(value);
+
+      if (barcode) return barcode;
+    }
+
+    return null;
   }
 
   private formatInvoice(invoice: any) {

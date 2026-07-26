@@ -45,6 +45,9 @@ describe('InvoiceService', () => {
     invoiceItem: {
       update: jest.fn(),
     },
+    category: {
+      findFirst: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
 
@@ -181,7 +184,7 @@ describe('InvoiceService', () => {
       detectedName: 'Pommes bio',
       quantity: 3,
       totalPrice: 6.75,
-      storageLocation: 'frigo',
+      storageLocation: 'Réfrigérateur',
       updatedAt: new Date('2026-06-05T11:00:00.000Z'),
     });
     invoiceUploadService.uploadInvoicePdf.mockResolvedValue(
@@ -381,6 +384,11 @@ describe('InvoiceService', () => {
   });
 
   it('corrige une ligne de facture non validée', async () => {
+    prisma.category.findFirst.mockResolvedValue({
+      id: 'category-1',
+      slug: 'fruits-et-legumes',
+    });
+
     const result = await service.updateInvoiceItemForUser(
       'user-1',
       'invoice-1',
@@ -389,7 +397,8 @@ describe('InvoiceService', () => {
         detectedName: ' Pommes bio ',
         quantity: 3,
         totalPrice: 6.75,
-        storageLocation: ' frigo ',
+        category: 'fruits-et-legumes',
+        storageLocation: ' Réfrigérateur ',
       },
     );
 
@@ -413,7 +422,8 @@ describe('InvoiceService', () => {
         detectedName: 'Pommes bio',
         quantity: 3,
         totalPrice: 6.75,
-        storageLocation: 'frigo',
+        category: 'fruits-et-legumes',
+        storageLocation: 'Réfrigérateur',
       }),
       include: {
         Product: {
@@ -429,6 +439,28 @@ describe('InvoiceService', () => {
       quantity: 3,
       totalPrice: 6.75,
     });
+  });
+
+  it('refuse une catégorie qui ne vient pas de la liste interne', async () => {
+    prisma.category.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updateInvoiceItemForUser('user-1', 'invoice-1', 'item-1', {
+        category: 'categorie-inventee',
+      }),
+    ).rejects.toThrow("La catégorie sélectionnée n'est pas valide");
+
+    expect(prisma.invoiceItem.update).not.toHaveBeenCalled();
+  });
+
+  it('refuse un lieu de stockage hors liste interne', async () => {
+    await expect(
+      service.updateInvoiceItemForUser('user-1', 'invoice-1', 'item-1', {
+        storageLocation: 'Garage',
+      }),
+    ).rejects.toThrow("Le lieu de stockage sélectionné n'est pas valide");
+
+    expect(prisma.invoiceItem.update).not.toHaveBeenCalled();
   });
 
   it('recalcule le total depuis la quantité entière et le prix unitaire', async () => {
@@ -635,6 +667,81 @@ describe('InvoiceService', () => {
     expect(result).toMatchObject({
       expenseCount: 1,
       totalBudgetAmount: 4.5,
+    });
+  });
+
+  it("crée l'inventaire sans dépense lorsqu'aucun budget de référence n'existe", async () => {
+    tx.budget.findFirst.mockResolvedValue(null);
+
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.inventoryItem.create).toHaveBeenCalledTimes(1);
+    expect(tx.expense.create).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      validatedItemCount: 1,
+      inventoryItemCount: 1,
+      expenseCount: 0,
+      totalBudgetAmount: 0,
+    });
+  });
+
+  it("utilise la date de création si la date d'achat est absente", async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      purchaseDate: null,
+    });
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        purchaseDate: completedInvoice.createdAt,
+      }),
+    });
+    expect(tx.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        date: completedInvoice.createdAt,
+      }),
+    });
+  });
+
+  it('utilise productCode à la validation si selectedEan est invalide', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      InvoiceItem: [
+        {
+          ...completedInvoice.InvoiceItem[0],
+          selectedEan: 'invalide',
+          productCode: '3564700012345',
+        },
+      ],
+    });
+    tx.product.findUnique.mockResolvedValue({
+      id: 'product-existing',
+      name: 'Pommes',
+      barcode: '3564700012345',
+      Category: { id: 'category-1', slug: 'fruits-et-legumes' },
+    });
+    tx.product.update.mockImplementation(({ data }) => ({
+      id: 'product-existing',
+      name: 'Pommes',
+      ...data,
+    }));
+
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(tx.product.findUnique).toHaveBeenCalledWith({
+      where: { barcode: '3564700012345' },
+      include: { Category: true },
+    });
+    expect(tx.inventoryItem.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ productId: 'product-existing' }),
     });
   });
 

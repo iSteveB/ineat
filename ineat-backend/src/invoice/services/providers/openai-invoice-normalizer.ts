@@ -3,6 +3,11 @@ import {
   AnalyzedInvoice,
   AnalyzedInvoiceItem,
 } from './invoice-analysis-provider';
+import {
+  INVOICE_CATEGORY_SLUGS,
+  normalizeInvoiceCategory,
+  suggestInvoiceStorageLocation,
+} from '../invoice-product-classification';
 
 export type OpenAIInvoiceLineType =
   | 'product'
@@ -37,70 +42,7 @@ export interface OpenAIExtractedInvoicePayload {
   lines: OpenAIExtractedInvoiceLine[];
 }
 
-export const KNOWN_INVOICE_CATEGORY_SLUGS = [
-  'fruits-et-legumes',
-  'viandes-et-poissons',
-  'produits-laitiers',
-  'epicerie-salee',
-  'epicerie-sucree',
-  'surgeles',
-  'boissons',
-  'autres',
-] as const;
-
-const CATEGORY_ALIASES: Record<string, string> = {
-  fruit: 'fruits-et-legumes',
-  fruits: 'fruits-et-legumes',
-  legumes: 'fruits-et-legumes',
-  'fruits legumes': 'fruits-et-legumes',
-  'fruits et legumes': 'fruits-et-legumes',
-  'fruits-et-legumes': 'fruits-et-legumes',
-  viande: 'viandes-et-poissons',
-  viandes: 'viandes-et-poissons',
-  poisson: 'viandes-et-poissons',
-  poissons: 'viandes-et-poissons',
-  'viandes poissons': 'viandes-et-poissons',
-  'viandes-et-poissons': 'viandes-et-poissons',
-  lait: 'produits-laitiers',
-  laitage: 'produits-laitiers',
-  laitages: 'produits-laitiers',
-  'produits laitiers': 'produits-laitiers',
-  'produits-laitiers': 'produits-laitiers',
-  epicerie: 'epicerie-salee',
-  'epicerie salee': 'epicerie-salee',
-  'epicerie-salee': 'epicerie-salee',
-  'epicerie sucree': 'epicerie-sucree',
-  'epicerie-sucree': 'epicerie-sucree',
-  sucre: 'epicerie-sucree',
-  surgeles: 'surgeles',
-  surgele: 'surgeles',
-  boissons: 'boissons',
-  boisson: 'boissons',
-  autres: 'autres',
-};
-
-const STORAGE_BY_CATEGORY: Record<string, string | null> = {
-  'viandes-et-poissons': 'Réfrigérateur',
-  'produits-laitiers': 'Réfrigérateur',
-  surgeles: 'Congélateur',
-  boissons: 'Placard',
-  'epicerie-salee': 'Placard',
-  'epicerie-sucree': 'Placard',
-  'fruits-et-legumes': null,
-  autres: null,
-};
-
-const REFRIGERATED_PRODUCE_PATTERNS = [
-  /\b(salade|endive|epinard|épinard|champignon|fraise|framboise|myrtille)\b/i,
-  /\b(legume|légume|carotte|courgette|poireau|brocoli|chou|tomate)\b/i,
-];
-
-const FRUITIER_PRODUCE_PATTERNS = [
-  /\b(pomme|pommes|poire|poires|banane|bananes|orange|oranges)\b/i,
-  /\b(citron|citrons|mandarine|mandarines|clementine|clementines)\b/i,
-  /\b(clémentine|clémentines|avocat|avocats|kiwi|kiwis)\b/i,
-  /\b(mangue|mangues|peche|peches|pêche|pêches|nectarine|nectarines)\b/i,
-];
+export const KNOWN_INVOICE_CATEGORY_SLUGS = INVOICE_CATEGORY_SLUGS;
 
 const NON_PRODUCT_LABEL_PATTERNS = [
   /\b(total|sous[-\s]?total|montant)\b/i,
@@ -176,8 +118,8 @@ function normalizeInvoiceLine(
     totalPrice: line.totalPrice,
   });
   const { unitPrice, totalPrice } = prices;
-  const category = normalizeCategory(line.categoryHint);
-  const storageLocation = suggestStorageLocation({
+  const category = normalizeInvoiceCategory(line.categoryHint, detectedName);
+  const storageLocation = suggestInvoiceStorageLocation({
     category,
     name: detectedName,
   });
@@ -226,46 +168,6 @@ function adjustLineConfidence(
   }
 
   return Math.max(0.1, roundConfidence(confidence));
-}
-
-function normalizeCategory(value: unknown): string | null {
-  const cleaned = cleanString(value);
-
-  if (!cleaned) {
-    return null;
-  }
-
-  const key = stripAccents(cleaned).toLowerCase().replace(/[_-]/g, ' ').trim();
-  const slugKey = stripAccents(cleaned).toLowerCase().trim();
-  const slug = CATEGORY_ALIASES[key] ?? CATEGORY_ALIASES[slugKey];
-
-  return KNOWN_INVOICE_CATEGORY_SLUGS.includes(slug as any) ? slug : null;
-}
-
-function suggestStorageLocation({
-  category,
-  name,
-}: {
-  category: string | null;
-  name: string;
-}): string | null {
-  if (!category) {
-    return null;
-  }
-
-  if (category === 'fruits-et-legumes') {
-    if (REFRIGERATED_PRODUCE_PATTERNS.some((pattern) => pattern.test(name))) {
-      return 'Réfrigérateur';
-    }
-
-    if (FRUITIER_PRODUCE_PATTERNS.some((pattern) => pattern.test(name))) {
-      return 'Fruitier';
-    }
-
-    return null;
-  }
-
-  return STORAGE_BY_CATEGORY[category] ?? null;
 }
 
 function normalizeBarcode(value: unknown): string | null {
@@ -415,10 +317,6 @@ function roundCurrency(value: number): number {
 
 function roundConfidence(value: number): number {
   return Math.round(value * 100) / 100;
-}
-
-function stripAccents(value: string): string {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
 function toPrismaJson(value: unknown): Prisma.InputJsonValue {

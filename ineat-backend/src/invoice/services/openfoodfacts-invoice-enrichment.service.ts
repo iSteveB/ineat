@@ -5,6 +5,10 @@ import {
   InvoiceExternalProductData,
   InvoiceExternalProductStatus,
 } from './providers/invoice-analysis-provider';
+import {
+  normalizeInvoiceCategory,
+  suggestInvoiceStorageLocation,
+} from './invoice-product-classification';
 
 interface OpenFoodFactsProductResponse {
   status?: number;
@@ -90,7 +94,10 @@ export class OpenFoodFactsInvoiceEnrichmentService {
   }
 
   async enrichItem(item: AnalyzedInvoiceItem): Promise<AnalyzedInvoiceItem> {
-    const barcode = this.getValidBarcode(item.selectedEan ?? item.productCode);
+    const barcode = this.getFirstValidBarcode(
+      item.selectedEan,
+      item.productCode,
+    );
 
     if (!barcode) {
       return {
@@ -103,9 +110,22 @@ export class OpenFoodFactsInvoiceEnrichmentService {
     }
 
     const result = await this.lookupBarcode(barcode);
+    const category = normalizeInvoiceCategory(
+      item.category,
+      ...(result.data?.categoriesTags ?? []),
+      result.data?.name,
+      item.detectedName,
+    );
 
     return {
       ...item,
+      category,
+      storageLocation:
+        item.storageLocation ??
+        suggestInvoiceStorageLocation({
+          category,
+          name: result.data?.name ?? item.detectedName,
+        }),
       selectedEan: barcode,
       suggestedEans: this.mergeSuggestedEans(item.suggestedEans, [barcode]),
       externalProductProvider: OPENFOODFACTS_PROVIDER,
@@ -232,6 +252,7 @@ export class OpenFoodFactsInvoiceEnrichmentService {
       quantity: product.quantity,
       image_front_url: product.image_front_url,
       image_front_small_url: product.image_front_small_url,
+      selected_images: product.selected_images,
       categories_tags: product.categories_tags,
       categories_tags_fr: product.categories_tags_fr,
       categories_tags_en: product.categories_tags_en,
@@ -375,6 +396,20 @@ export class OpenFoodFactsInvoiceEnrichmentService {
 
     const trimmed = value.trim();
     return this.isValidBarcode(trimmed) ? trimmed : null;
+  }
+
+  private getFirstValidBarcode(
+    ...values: Array<string | null | undefined>
+  ): string | null {
+    for (const value of values) {
+      const barcode = this.getValidBarcode(value);
+
+      if (barcode) {
+        return barcode;
+      }
+    }
+
+    return null;
   }
 
   private isValidBarcode(value?: string | null): value is string {

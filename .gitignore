@@ -19,6 +19,7 @@ out/
 
 # Cache
 .npm
+.pnpm-store/
 .eslintcache
 .stylelintcache
 .prettiercache

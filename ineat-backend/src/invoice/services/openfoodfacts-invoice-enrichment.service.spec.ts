@@ -149,6 +149,56 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
     });
   });
 
+  it('ignore une ligne sans code-barres valide sans appeler OpenFoodFacts', async () => {
+    const [result] = await service.enrichItems([
+      {
+        detectedName: 'Produit sans EAN',
+        quantity: 1,
+        confidence: 0.8,
+        selectedEan: 'EAN inconnu',
+        productCode: '123',
+      },
+    ]);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      externalProductProvider: 'openfoodfacts',
+      externalProductStatus: 'SKIPPED',
+      externalProductData: null,
+      externalProductError: null,
+    });
+  });
+
+  it('utilise productCode lorsque selectedEan est présent mais invalide', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        status: 1,
+        product: {
+          code: '3564700012345',
+          product_name_fr: 'Produit de secours',
+        },
+      }),
+    });
+
+    const [result] = await service.enrichItems([
+      {
+        detectedName: 'Produit',
+        quantity: 1,
+        confidence: 0.8,
+        selectedEan: 'invalide',
+        productCode: '3564700012345',
+      },
+    ]);
+
+    expect(fetchMock.mock.calls[0][0]).toContain('/3564700012345');
+    expect(result).toMatchObject({
+      selectedEan: '3564700012345',
+      externalProductStatus: 'FOUND',
+    });
+  });
+
   it('retourne un statut erreur quand OpenFoodFacts échoue', async () => {
     fetchMock.mockRejectedValue(new Error('NETWORK_ERROR'));
 
@@ -190,6 +240,72 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
       barcode: '3564700012345',
       brand: 'Marque test',
       name: null,
+      nutriscore: null,
+      ecoscore: null,
+      novascore: null,
+      ingredients: null,
+      nutrients: null,
+    });
+  });
+
+  it('conserve les données brutes utiles au fallback', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        status: 1,
+        product: {
+          code: '3564700012345',
+          product_name_fr: 'Produit illustré',
+          selected_images: {
+            front: {
+              display: { fr: 'https://images.example/front-fr.jpg' },
+            },
+          },
+        },
+      }),
+    });
+
+    const result = await service.lookupBarcode('3564700012345');
+
+    expect(result.data).toMatchObject({
+      imageUrl: 'https://images.example/front-fr.jpg',
+      raw: {
+        selected_images: {
+          front: {
+            display: { fr: 'https://images.example/front-fr.jpg' },
+          },
+        },
+      },
+    });
+  });
+
+  it('déduit une catégorie et un stockage internes depuis les données OFF', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        status: 1,
+        product: {
+          code: '3564700012345',
+          product_name_fr: 'Yaourt nature',
+          categories_tags_fr: ['fr:produits-laitiers'],
+        },
+      }),
+    });
+
+    const [result] = await service.enrichItems([
+      {
+        detectedName: 'Yaourt',
+        quantity: 4,
+        confidence: 0.8,
+        selectedEan: '3564700012345',
+      },
+    ]);
+
+    expect(result).toMatchObject({
+      category: 'produits-laitiers',
+      storageLocation: 'Réfrigérateur',
     });
   });
 });

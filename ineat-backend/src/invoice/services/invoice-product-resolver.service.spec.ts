@@ -50,6 +50,31 @@ describe('InvoiceProductResolverService', () => {
     });
   });
 
+  it('utilise productCode si selectedEan est présent mais invalide', async () => {
+    tx.product.findUnique.mockResolvedValue({
+      id: 'product-1',
+      barcode: '3564700012345',
+    });
+
+    const [result] = await service.resolveItems(tx, [
+      {
+        detectedName: 'Lait',
+        quantity: 1,
+        confidence: 0.7,
+        selectedEan: 'invalide',
+        productCode: '3564700012345',
+      },
+    ]);
+
+    expect(tx.product.findUnique).toHaveBeenCalledWith({
+      where: { barcode: '3564700012345' },
+    });
+    expect(result).toMatchObject({
+      productId: 'product-1',
+      selectedEan: '3564700012345',
+    });
+  });
+
   it('associe automatiquement un produit unique par nom et catégorie fiable', async () => {
     tx.product.findMany.mockResolvedValue([
       {

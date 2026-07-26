@@ -20,7 +20,10 @@ export class InvoiceProductResolverService {
     tx: any,
     item: AnalyzedInvoiceItem,
   ): Promise<ResolvedInvoiceItem> {
-    const barcode = this.getValidBarcode(item.selectedEan ?? item.productCode);
+    const barcode = this.getFirstValidBarcode(
+      item.selectedEan,
+      item.productCode,
+    );
 
     if (barcode) {
       const productByBarcode = await tx.product.findUnique({
@@ -149,6 +152,20 @@ export class InvoiceProductResolverService {
 
     const trimmed = value.trim();
     return this.isValidBarcode(trimmed) ? trimmed : null;
+  }
+
+  private getFirstValidBarcode(
+    ...values: Array<string | null | undefined>
+  ): string | null {
+    for (const value of values) {
+      const barcode = this.getValidBarcode(value);
+
+      if (barcode) {
+        return barcode;
+      }
+    }
+
+    return null;
   }
 
   private isValidBarcode(value?: string | null): value is string {
