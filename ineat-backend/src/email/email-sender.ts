@@ -1,0 +1,100 @@
+import { createHash } from 'crypto';
+import {
+  createEmailVerificationEmail,
+  createPasswordResetEmail,
+  createWelcomeEmail,
+} from './email.templates';
+import { ResendEmailTransport } from './resend-email.transport';
+import { EmailSendResult, EmailTransport } from './email.types';
+
+let defaultTransport: EmailTransport | undefined;
+
+export const createRecipientReference = (email: string) =>
+  createHash('sha256')
+    .update(email.trim().toLowerCase())
+    .digest('hex')
+    .slice(0, 24);
+
+const createDefaultTransport = (): EmailTransport => {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const from = process.env.EMAIL_FROM?.trim();
+
+  if (!apiKey || !from) {
+    throw new Error('Transactional email is not configured');
+  }
+
+  return new ResendEmailTransport(
+    apiKey,
+    from,
+    process.env.EMAIL_REPLY_TO?.trim() || undefined,
+  );
+};
+
+export const getDefaultEmailTransport = (): EmailTransport => {
+  defaultTransport ??= createDefaultTransport();
+  return defaultTransport;
+};
+
+export async function sendPasswordResetEmail(
+  input: { to: string; name?: string | null; resetUrl: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createPasswordResetEmail(input);
+  const resetFingerprint = createHash('sha256')
+    .update(input.resetUrl)
+    .digest('hex')
+    .slice(0, 32);
+
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'password_reset',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `password-reset/${resetFingerprint}`,
+  });
+}
+
+export async function sendEmailVerificationEmail(
+  input: { to: string; name?: string | null; verificationUrl: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createEmailVerificationEmail(input);
+  const verificationFingerprint = createHash('sha256')
+    .update(input.verificationUrl)
+    .digest('hex')
+    .slice(0, 32);
+
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'email_verification',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `email-verification/${verificationFingerprint}`,
+  });
+}
+
+export async function sendWelcomeEmail(
+  input: {
+    to: string;
+    firstName?: string | null;
+    appUrl: string;
+    userId: string;
+  },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createWelcomeEmail(input);
+
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'welcome',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `welcome/${input.userId}`,
+  });
+}

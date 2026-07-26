@@ -27,8 +27,12 @@ Backend:
 - `FRONTEND_URL=https://ineat.store`
 - `CORS_ORIGIN=https://ineat.store` (plusieurs origines peuvent etre separees
   par des virgules pendant une migration de domaine)
-- `PASSWORD_RESET_WEBHOOK_URL`, webhook d'envoi email pour les liens de
-  reinitialisation de mot de passe
+- `RESEND_API_KEY`, cle d'envoi limitee au domaine transactionnel Resend
+- `EMAIL_ENABLED=true`
+- `EMAIL_FROM=InEat <bonjour@ineat.store>`
+- `EMAIL_REPLY_TO=support@ineat.store`
+- `RESEND_WEBHOOK_SECRET`, secret `whsec_...` fourni lors de la creation du
+  webhook Resend
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 - `CLOUDINARY_AVATAR_PRESET`
 
@@ -36,6 +40,71 @@ Frontend:
 
 - `VITE_API_URL`, pointe vers l'origine backend publique, par exemple
   `https://api.ineat.store`.
+
+## Email Transactionnel Resend
+
+Configuration retenue:
+
+- domaine d'envoi: `ineat.store`;
+- region Resend: Irlande (`eu-west-1`);
+- expediteur: `InEat <bonjour@ineat.store>`;
+- reponses: `support@ineat.store`, boite geree par le service mail LWS;
+- tracking des ouvertures et des clics desactive pour les emails
+  d'authentification;
+- TLS opportuniste pour ne pas bloquer les destinataires ne supportant pas le
+  mode force.
+
+DNS attendus:
+
+- DKIM Resend sur `resend._domainkey.ineat.store`;
+- SPF et MX de return-path Resend sur `send.ineat.store`;
+- DMARC sur `_dmarc.ineat.store`;
+- MX de reception du domaine racine conserve vers le service mail LWS. Ne pas
+  le remplacer par Resend ou Cloudflare Email Routing.
+
+Le plan gratuit Resend autorise 3 000 emails par mois et 100 emails par jour au
+moment de la mise en place. Passer au plan Pro avant d'atteindre regulierement
+80 % de l'une de ces limites.
+
+Les emails sont expedies depuis l'Irlande, mais les metadonnees du compte et les
+logs Resend sont stockes aux Etats-Unis. Le DPA Resend, ses sous-traitants et les
+clauses contractuelles de transfert doivent etre conserves dans le registre des
+sous-traitants InEat.
+
+### Rotation de la cle Resend
+
+1. Creer dans Resend une nouvelle cle limitee a l'envoi depuis `ineat.store`.
+2. Remplacer `RESEND_API_KEY` sur le service backend Railway sans supprimer
+   l'ancienne cle.
+3. Redeployer le backend et envoyer un email de smoke test.
+4. Verifier le statut `Delivered` dans Resend et la reception effective.
+5. Revoquer seulement ensuite l'ancienne cle dans Resend.
+
+Ne jamais copier une cle Resend dans le depot, les logs, un ticket ou une
+capture d'ecran. Les environnements locaux et les tests automatises utilisent
+un provider factice tant qu'aucune cle n'est explicitement configuree.
+
+### Webhook Resend
+
+Configurer un webhook vers `https://api.ineat.store/email/webhook` pour les
+evenements suivants:
+
+- `email.delivered`;
+- `email.delivery_delayed`;
+- `email.bounced`;
+- `email.complained`;
+- `email.failed`;
+- `email.suppressed`.
+
+Le backend verifie obligatoirement les trois en-tetes Svix sur le corps brut,
+puis conserve l'identifiant d'evenement dans `ResendWebhookEvent`. Une livraison
+rejouee est acquittee sans etre traitee une seconde fois. Les rebonds, plaintes,
+echecs et suppressions produisent un evenement d'observabilite sans journaliser
+l'adresse du destinataire.
+
+Lors d'une rotation, creer d'abord le nouveau webhook et installer son secret
+sur Railway. Ne supprimer l'ancien webhook qu'apres un evenement de test signe
+et acquitte en production.
 
 ## Verification Apres Deploiement
 
@@ -47,6 +116,16 @@ Frontend:
    termine avant le demarrage NestJS.
 5. Tester un parcours authentifie simple puis un upload d'avatar si les secrets
    Cloudinary sont disponibles.
+6. Envoyer un email transactionnel de smoke test, verifier son statut dans
+   Resend et confirmer sa reception sans mention `via` inattendue.
+7. Creer un compte avec une adresse inutilisee et verifier qu'aucune session
+   applicative n'est disponible avant validation de l'adresse.
+8. Ouvrir le lien recu: confirmer la redirection vers `/verify-email`, la
+   creation de session, puis la reception unique du bienvenue.
+9. Rejouer le lien et utiliser le bouton de renvoi: verifier les messages neutres,
+   l'absence de second bienvenue et la limite de trois renvois par minute.
+10. Dans Resend, confirmer les evenements de livraison et leur acquittement par
+    `POST /email/webhook`. Une requete sans signature doit recevoir `400`.
 
 ## Auth Better Auth
 
@@ -73,12 +152,15 @@ ont ete retires.
 
 ## Rollback
 
-1. Redeployer le dernier commit stable depuis Railway ou repointer la branche sur
+1. Pour couper uniquement l'email, definir `EMAIL_ENABLED=false` sur le backend
+   puis redeployer. La verification obligatoire et les callbacks d'envoi sont
+   alors suspendus ensemble, afin de ne pas bloquer les nouvelles connexions.
+2. Redeployer le dernier commit stable depuis Railway ou repointer la branche sur
    le commit stable.
-2. Si une migration destructive est en cause, restaurer un backup PostgreSQL avant
+3. Si une migration destructive est en cause, restaurer un backup PostgreSQL avant
    de redeployer le code compatible.
-3. Verifier `/health` backend et frontend.
-4. Controler les logs backend apres rollback.
+4. Verifier `/health` backend et frontend.
+5. Controler les logs backend apres rollback.
 
 Ne pas modifier manuellement le schema de production hors migration Prisma
 commitee, sauf procedure de recuperation documentee.

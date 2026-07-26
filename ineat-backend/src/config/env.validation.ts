@@ -29,6 +29,11 @@ const optionalBoolean = z.preprocess((value) => {
 const baseEnvironmentSchema = z
   .object({
     NODE_ENV: z.string().default('development'),
+    EMAIL_ENABLED: optionalBoolean,
+    RESEND_API_KEY: optionalString,
+    EMAIL_FROM: optionalString,
+    EMAIL_REPLY_TO: optionalString,
+    RESEND_WEBHOOK_SECRET: optionalString,
     STRIPE_ENABLED: optionalBoolean,
     STRIPE_SECRET_KEY: optionalString,
     STRIPE_PRICE_PREMIUM_MONTHLY_EUR: optionalString,
@@ -70,6 +75,16 @@ const stripeEnvironmentSchema = baseEnvironmentSchema.extend({
   STRIPE_CUSTOMER_PORTAL_RETURN_URL: z.string().trim().url(),
 });
 
+const emailEnvironmentSchema = baseEnvironmentSchema.extend({
+  RESEND_API_KEY: z.string().trim().startsWith('re_', {
+    message: 'must be a Resend API key',
+  }),
+  EMAIL_FROM: z.string().trim().regex(/^.+<[^<>\s]+@[^<>\s]+>$/, {
+    message: 'must use the format Name <email@example.com>',
+  }),
+  EMAIL_REPLY_TO: z.string().trim().email(),
+});
+
 const formatZodError = (error: z.ZodError) =>
   error.issues
     .map((issue) => `${issue.path.join('.') || 'ENV'}: ${issue.message}`)
@@ -77,6 +92,12 @@ const formatZodError = (error: z.ZodError) =>
 
 const hasAnyStripeValue = (environment: Record<string, unknown>) =>
   STRIPE_REQUIRED_ENV_KEYS.some((key) => {
+    const value = environment[key];
+    return typeof value === 'string' && value.trim().length > 0;
+  });
+
+const hasAnyEmailValue = (environment: Record<string, unknown>) =>
+  ['RESEND_API_KEY', 'EMAIL_FROM', 'EMAIL_REPLY_TO'].some((key) => {
     const value = environment[key];
     return typeof value === 'string' && value.trim().length > 0;
   });
@@ -93,6 +114,21 @@ export function validateEnvironment(
   }
 
   const environment = baseResult.data;
+  const shouldValidateEmail =
+    environment.NODE_ENV === 'production' ||
+    environment.EMAIL_ENABLED ||
+    hasAnyEmailValue(environment);
+
+  if (shouldValidateEmail) {
+    const emailResult = emailEnvironmentSchema.safeParse(environment);
+
+    if (!emailResult.success) {
+      throw new Error(
+        `Invalid email environment configuration: ${formatZodError(emailResult.error)}`,
+      );
+    }
+  }
+
   const shouldValidateStripe =
     environment.NODE_ENV === 'production' ||
     environment.STRIPE_ENABLED ||

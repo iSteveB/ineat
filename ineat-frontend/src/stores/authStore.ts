@@ -30,7 +30,7 @@ interface AuthState {
 
 	// ===== ACTIONS =====
 	login: (credentials: LoginCredentials) => Promise<void>;
-	register: (data: RegisterData) => Promise<void>;
+	register: (data: RegisterData) => Promise<string>;
 	logout: () => Promise<void>;
 	getProfile: () => Promise<void>;
 	verifyAuthentication: () => Promise<boolean>;
@@ -106,22 +106,15 @@ export const useAuthStore = create<AuthState>()(
 				try {
 					set({ isLoading: true, error: null });
 
-					const response: AuthResponse = await authService.register(
-						data
-					);
-
-					// Extraction et validation de l'utilisateur
-					const user = extractUserFromAuthResponse(response);
-
-					if (!user) {
-						throw new Error("Réponse d'inscription invalide");
-					}
+					const { email } = await authService.register(data);
 
 					set({
-						user,
-						isAuthenticated: true,
+						user: null,
+						isAuthenticated: false,
 						isLoading: false,
 					});
+
+					return email;
 				} catch (error) {
 					set({
 						isLoading: false,

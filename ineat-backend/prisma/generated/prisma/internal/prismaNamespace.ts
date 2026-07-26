@@ -398,6 +398,8 @@ export const ModelName = {
   RecipeIngredient: 'RecipeIngredient',
   User: 'User',
   StripeWebhookEvent: 'StripeWebhookEvent',
+  ResendWebhookEvent: 'ResendWebhookEvent',
+  EmailSuppression: 'EmailSuppression',
   UsageQuota: 'UsageQuota',
   Session: 'Session',
   Account: 'Account',
@@ -417,7 +419,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "usageQuota" | "session" | "account" | "verification"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1457,6 +1459,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ResendWebhookEvent: {
+      payload: Prisma.$ResendWebhookEventPayload<ExtArgs>
+      fields: Prisma.ResendWebhookEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ResendWebhookEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ResendWebhookEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+        }
+        findFirst: {
+          args: Prisma.ResendWebhookEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ResendWebhookEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+        }
+        findMany: {
+          args: Prisma.ResendWebhookEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>[]
+        }
+        create: {
+          args: Prisma.ResendWebhookEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+        }
+        createMany: {
+          args: Prisma.ResendWebhookEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ResendWebhookEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>[]
+        }
+        delete: {
+          args: Prisma.ResendWebhookEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+        }
+        update: {
+          args: Prisma.ResendWebhookEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.ResendWebhookEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ResendWebhookEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ResendWebhookEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.ResendWebhookEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+        }
+        aggregate: {
+          args: Prisma.ResendWebhookEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateResendWebhookEvent>
+        }
+        groupBy: {
+          args: Prisma.ResendWebhookEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResendWebhookEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ResendWebhookEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ResendWebhookEventCountAggregateOutputType> | number
+        }
+      }
+    }
+    EmailSuppression: {
+      payload: Prisma.$EmailSuppressionPayload<ExtArgs>
+      fields: Prisma.EmailSuppressionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EmailSuppressionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EmailSuppressionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>
+        }
+        findFirst: {
+          args: Prisma.EmailSuppressionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EmailSuppressionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>
+        }
+        findMany: {
+          args: Prisma.EmailSuppressionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>[]
+        }
+        create: {
+          args: Prisma.EmailSuppressionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>
+        }
+        createMany: {
+          args: Prisma.EmailSuppressionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EmailSuppressionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>[]
+        }
+        delete: {
+          args: Prisma.EmailSuppressionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>
+        }
+        update: {
+          args: Prisma.EmailSuppressionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>
+        }
+        deleteMany: {
+          args: Prisma.EmailSuppressionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EmailSuppressionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EmailSuppressionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>[]
+        }
+        upsert: {
+          args: Prisma.EmailSuppressionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailSuppressionPayload>
+        }
+        aggregate: {
+          args: Prisma.EmailSuppressionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEmailSuppression>
+        }
+        groupBy: {
+          args: Prisma.EmailSuppressionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmailSuppressionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EmailSuppressionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmailSuppressionCountAggregateOutputType> | number
+        }
+      }
+    }
     UsageQuota: {
       payload: Prisma.$UsageQuotaPayload<ExtArgs>
       fields: Prisma.UsageQuotaFieldRefs
@@ -2038,6 +2188,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   emailVerified: 'emailVerified',
+  welcomeEmailSentAt: 'welcomeEmailSentAt',
   passwordHash: 'passwordHash',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -2077,6 +2228,29 @@ export const StripeWebhookEventScalarFieldEnum = {
 } as const
 
 export type StripeWebhookEventScalarFieldEnum = (typeof StripeWebhookEventScalarFieldEnum)[keyof typeof StripeWebhookEventScalarFieldEnum]
+
+
+export const ResendWebhookEventScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  emailId: 'emailId',
+  emailType: 'emailType',
+  recipientRef: 'recipientRef',
+  eventAt: 'eventAt',
+  processedAt: 'processedAt'
+} as const
+
+export type ResendWebhookEventScalarFieldEnum = (typeof ResendWebhookEventScalarFieldEnum)[keyof typeof ResendWebhookEventScalarFieldEnum]
+
+
+export const EmailSuppressionScalarFieldEnum = {
+  recipientRef: 'recipientRef',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailSuppressionScalarFieldEnum = (typeof EmailSuppressionScalarFieldEnum)[keyof typeof EmailSuppressionScalarFieldEnum]
 
 
 export const UsageQuotaScalarFieldEnum = {
@@ -2672,6 +2846,8 @@ export type GlobalOmitConfig = {
   recipeIngredient?: Prisma.RecipeIngredientOmit
   user?: Prisma.UserOmit
   stripeWebhookEvent?: Prisma.StripeWebhookEventOmit
+  resendWebhookEvent?: Prisma.ResendWebhookEventOmit
+  emailSuppression?: Prisma.EmailSuppressionOmit
   usageQuota?: Prisma.UsageQuotaOmit
   session?: Prisma.SessionOmit
   account?: Prisma.AccountOmit

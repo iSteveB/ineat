@@ -21,12 +21,20 @@ import { authClient } from '../lib/auth-client';
 // ===== INTERFACE DU SERVICE D'AUTHENTIFICATION =====
 interface AuthServiceMethods {
 	login(credentials: LoginCredentials): Promise<AuthResponse>;
-	register(data: RegisterData): Promise<AuthResponse>;
+	register(data: RegisterData): Promise<RegistrationResult>;
+	resendVerificationEmail(email: string): Promise<void>;
 	getProfile(): Promise<User>;
 	logout(): Promise<{ success: boolean; message: string }>;
 	verifyAuthentication(): Promise<boolean>;
 	checkAuthentication(): Promise<AuthCheckResponse>;
 }
+
+export interface RegistrationResult {
+	email: string;
+}
+
+const getEmailVerificationCallbackUrl = () =>
+	`${window.location.origin}/verify-email`;
 
 const toAuthResponse = (user: User): AuthResponse => ({
 	success: true,
@@ -102,7 +110,7 @@ export const authService: AuthServiceMethods = {
 	/**
 	 * Inscription d'un nouvel utilisateur
 	 */
-	async register(data: RegisterData): Promise<AuthResponse> {
+	async register(data: RegisterData): Promise<RegistrationResult> {
 		// Validation des données d'entrée
 		const validation = validateSchema(RegisterDataSchema, data);
 		if (!validation.success) {
@@ -112,49 +120,53 @@ export const authService: AuthServiceMethods = {
 		}
 
 		try {
+			const email = normalizeAuthEmail(data.email);
 			const signUpPayload = {
-				email: normalizeAuthEmail(data.email),
+				email,
 				password: data.password,
 				name: `${data.firstName} ${data.lastName}`.trim(),
 				firstName: data.firstName,
 				lastName: data.lastName,
 				profileType: data.profileType,
+				callbackURL: getEmailVerificationCallbackUrl(),
 			};
 			const { error } = await authClient.signUp.email(
 				signUpPayload as Parameters<typeof authClient.signUp.email>[0]
 			);
 
 			if (error) {
+				if (
+					error.code ===
+					'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
+				) {
+					return { email };
+				}
+
 				throw new Error(
 					getBetterAuthErrorMessage(
 						error,
-						"Impossible de finaliser l'inscription",
-						{
-							USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
-								'Un compte existe déjà avec cette adresse. Connectez-vous.',
-						}
+						"Impossible de finaliser l'inscription"
 					)
 				);
 			}
 
-			const user = await authService.getProfile();
-			const response = toAuthResponse(user);
-			const responseValidation = validateSchema(
-				AuthResponseSchema,
-				response
-			);
-
-			if (!responseValidation.success) {
-				console.warn(
-					"Réponse d'inscription invalide:",
-					responseValidation.error
-				);
-			}
-
-			return response;
+			return { email };
 		} catch (error) {
 			console.error("Erreur lors de l'inscription:", error);
 			throw error;
+		}
+	},
+
+	async resendVerificationEmail(email: string): Promise<void> {
+		const { error } = await authClient.sendVerificationEmail({
+			email: normalizeAuthEmail(email),
+			callbackURL: getEmailVerificationCallbackUrl(),
+		});
+
+		if (error) {
+			throw new Error(
+				"Impossible de renvoyer l'email pour le moment. Réessayez dans quelques instants."
+			);
 		}
 	},
 

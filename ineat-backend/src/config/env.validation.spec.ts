@@ -4,6 +4,9 @@ import { STRIPE_PRICE_CATALOG, STRIPE_PRODUCT_NAME } from './stripe';
 describe('validateEnvironment', () => {
   const validStripeEnvironment = {
     NODE_ENV: 'production',
+    RESEND_API_KEY: 're_test_123',
+    EMAIL_FROM: 'InEat <bonjour@ineat.store>',
+    EMAIL_REPLY_TO: 'support@ineat.store',
     STRIPE_SECRET_KEY: 'sk_test_123',
     STRIPE_PRICE_PREMIUM_MONTHLY_EUR: 'price_monthly_123',
     STRIPE_PRICE_PREMIUM_YEARLY_EUR: 'price_yearly_123',
@@ -21,9 +24,29 @@ describe('validateEnvironment', () => {
   });
 
   it('requires complete Stripe configuration in production', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        RESEND_API_KEY: 're_test_123',
+        EMAIL_FROM: 'InEat <bonjour@ineat.store>',
+        EMAIL_REPLY_TO: 'support@ineat.store',
+      }),
+    ).toThrow(/STRIPE_SECRET_KEY/);
+  });
+
+  it('requires complete email configuration in production', () => {
     expect(() => validateEnvironment({ NODE_ENV: 'production' })).toThrow(
-      /STRIPE_SECRET_KEY/,
+      /RESEND_API_KEY/,
     );
+  });
+
+  it('rejects partially configured email environments', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'development',
+        RESEND_API_KEY: 're_test_123',
+      }),
+    ).toThrow(/EMAIL_FROM/);
   });
 
   it('rejects partially configured Stripe environments', () => {

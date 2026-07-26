@@ -65,6 +65,8 @@ export const ModelName = {
   RecipeIngredient: 'RecipeIngredient',
   User: 'User',
   StripeWebhookEvent: 'StripeWebhookEvent',
+  ResendWebhookEvent: 'ResendWebhookEvent',
+  EmailSuppression: 'EmailSuppression',
   UsageQuota: 'UsageQuota',
   Session: 'Session',
   Account: 'Account',
@@ -333,6 +335,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   name: 'name',
   emailVerified: 'emailVerified',
+  welcomeEmailSentAt: 'welcomeEmailSentAt',
   passwordHash: 'passwordHash',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -372,6 +375,29 @@ export const StripeWebhookEventScalarFieldEnum = {
 } as const
 
 export type StripeWebhookEventScalarFieldEnum = (typeof StripeWebhookEventScalarFieldEnum)[keyof typeof StripeWebhookEventScalarFieldEnum]
+
+
+export const ResendWebhookEventScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  emailId: 'emailId',
+  emailType: 'emailType',
+  recipientRef: 'recipientRef',
+  eventAt: 'eventAt',
+  processedAt: 'processedAt'
+} as const
+
+export type ResendWebhookEventScalarFieldEnum = (typeof ResendWebhookEventScalarFieldEnum)[keyof typeof ResendWebhookEventScalarFieldEnum]
+
+
+export const EmailSuppressionScalarFieldEnum = {
+  recipientRef: 'recipientRef',
+  reason: 'reason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailSuppressionScalarFieldEnum = (typeof EmailSuppressionScalarFieldEnum)[keyof typeof EmailSuppressionScalarFieldEnum]
 
 
 export const UsageQuotaScalarFieldEnum = {

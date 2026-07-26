@@ -89,7 +89,10 @@ async function bootstrap() {
   app.use(
     json({
       verify: (req: Request & { rawBody?: Buffer }, _res, buf) => {
-        if (req.originalUrl === '/billing/webhook') {
+        if (
+          req.originalUrl === '/billing/webhook' ||
+          req.originalUrl === '/email/webhook'
+        ) {
           req.rawBody = Buffer.from(buf);
         }
       },

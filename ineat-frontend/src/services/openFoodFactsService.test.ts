@@ -243,19 +243,11 @@ describe('OpenFoodFactsService', () => {
 		it('devrait gérer les timeouts', async () => {
 			const slowService = new OpenFoodFactsService({ timeout: 10 }); // 10ms timeout
 
-			// Mock d'une réponse très lente (sera interrompue par AbortController)
+			// Mock d'une requête suspendue jusqu'à son interruption.
 			mockFetch.mockImplementationOnce(
 				(_url, options?: RequestInit) =>
-					new Promise((resolve, reject) => {
-						const timeoutId = setTimeout(
-							() =>
-								resolve(
-									createMockResponse(mockNutellaResponse)
-								),
-							100
-						); // 100ms delay
+					new Promise((_resolve, reject) => {
 						options?.signal?.addEventListener('abort', () => {
-							clearTimeout(timeoutId);
 							reject(new DOMException('Aborted', 'AbortError'));
 						});
 					})

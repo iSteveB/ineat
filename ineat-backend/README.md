@@ -47,7 +47,10 @@ Variables principales:
 | `BETTER_AUTH_URL`                   | Oui                         | Origine publique du backend Better Auth, sans chemin `/auth`             |
 | `FRONTEND_URL`                      | Production                  | Origine frontend autorisee en prod                                       |
 | `CORS_ORIGIN`                       | Production                  | Origine CORS supplementaire                                              |
-| `PASSWORD_RESET_WEBHOOK_URL`        | Production                  | Webhook appele par Better Auth pour envoyer les emails de reset password |
+| `EMAIL_ENABLED`                     | Non                         | Active et valide la configuration email hors production                  |
+| `RESEND_API_KEY`                    | Production / email actif    | Cle API Resend limitee au domaine transactionnel                         |
+| `EMAIL_FROM`                        | Production / email actif    | Expediteur au format `InEat <bonjour@ineat.store>`                        |
+| `EMAIL_REPLY_TO`                    | Production / email actif    | Adresse de reponse, par exemple `support@ineat.store`                     |
 | `CLOUDINARY_CLOUD_NAME`             | Uploads                     | Cloudinary cloud name                                                    |
 | `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                                       |
 | `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                                    |

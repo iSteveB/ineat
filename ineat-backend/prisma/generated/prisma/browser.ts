@@ -88,6 +88,16 @@ export type User = Prisma.UserModel
  */
 export type StripeWebhookEvent = Prisma.StripeWebhookEventModel
 /**
+ * Model ResendWebhookEvent
+ *
+ */
+export type ResendWebhookEvent = Prisma.ResendWebhookEventModel
+/**
+ * Model EmailSuppression
+ *
+ */
+export type EmailSuppression = Prisma.EmailSuppressionModel
+/**
  * Model UsageQuota
  * 
  */

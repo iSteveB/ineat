@@ -92,7 +92,7 @@ const RegisterForm = () => {
 
 		try {
 			// Tentative d'inscription via le store Zustand
-			await register({
+			const email = await register({
 				email: formData.email,
 				password: formData.password,
 				firstName: formData.firstName,
@@ -103,8 +103,10 @@ const RegisterForm = () => {
 					| 'SINGLE',
 			});
 
-			// Redirection après inscription réussie
-			navigate({ to: '/app' });
+			navigate({
+				to: '/verify-email-pending',
+				search: { email },
+			});
 		} catch {
 			// Les erreurs sont déjà gérées dans le store
 			// Pas besoin de code supplémentaire ici

@@ -86,7 +86,7 @@ describe('RegisterForm', () => {
 		// Par défaut, le type de profil est déjà défini à 'FAMILY'
 
 		// Simuler une inscription réussie
-		registerMock.mockResolvedValue({ success: true });
+		registerMock.mockResolvedValue('john.doe@example.com');
 
 		// Soumettre le formulaire
 		await user.click(submitButton);
@@ -102,7 +102,10 @@ describe('RegisterForm', () => {
 
 		// Vérifier que la redirection a été appelée
 		await waitFor(() => {
-			expect(navigateMock).toHaveBeenCalledWith({ to: '/app' });
+			expect(navigateMock).toHaveBeenCalledWith({
+				to: '/verify-email-pending',
+				search: { email: 'john.doe@example.com' },
+			});
 		});
 	});
 
@@ -132,7 +135,7 @@ describe('RegisterForm', () => {
 		await user.type(confirmPasswordInput, 'Password123');
 
 		// Simuler une inscription réussie
-		registerMock.mockResolvedValue({ success: true });
+		registerMock.mockResolvedValue('john.doe@example.com');
 
 		// Soumettre le formulaire
 		await user.click(submitButton);

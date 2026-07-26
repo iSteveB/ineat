@@ -21,6 +21,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { validateEnvironment } from './config/env.validation';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { validateEnvironment } from './config/env.validation';
       validate: validateEnvironment,
     }),
     ObservabilityModule,
+    EmailModule,
     PrismaModule,
     AuthModule,
     InventoryModule,
