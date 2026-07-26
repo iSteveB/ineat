@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,7 +17,9 @@ import {
   Shield,
   Zap,
   Star,
-  CreditCard
+  CreditCard,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useRefreshUser, useUser } from '@/hooks/useAuth';
 import type { SubscriptionPlan as UserSubscriptionPlan } from '@/schemas';
@@ -135,6 +137,9 @@ export const SubscriptionPage: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isTrialStarting, setIsTrialStarting] = useState(false);
   const [isPortalOpening, setIsPortalOpening] = useState(false);
+  const [activePlanIndex, setActivePlanIndex] = useState(0);
+  const plansCarouselRef = useRef<HTMLDivElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const currentPlan: UserSubscriptionPlan = user?.subscriptionPlan || 'FREE';
   const effectivePlan = user?.effectivePlan || 'FREE';
@@ -234,6 +239,73 @@ export const SubscriptionPage: React.FC = () => {
    */
   const handleGoBack = () => {
     navigate({ to: '/app/inventory' });
+  };
+
+  const scrollToPlan = (index: number) => {
+    const carousel = plansCarouselRef.current;
+    const slide = carousel?.children.item(index) as HTMLElement | null;
+
+    if (!slide) return;
+
+    slide.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+    setActivePlanIndex(index);
+  };
+
+  const handleCarouselScroll = () => {
+    const carousel = plansCarouselRef.current;
+    if (!carousel) return;
+
+    const carouselCenter = carousel.scrollLeft + carousel.clientWidth / 2;
+    const closestIndex = Array.from(carousel.children).reduce(
+      (closest, child, index) => {
+        const element = child as HTMLElement;
+        const slideCenter = element.offsetLeft + element.offsetWidth / 2;
+        const closestElement = carousel.children.item(closest) as HTMLElement;
+        const closestCenter =
+          closestElement.offsetLeft + closestElement.offsetWidth / 2;
+
+        return Math.abs(slideCenter - carouselCenter) <
+          Math.abs(closestCenter - carouselCenter)
+          ? index
+          : closest;
+      },
+      0
+    );
+
+    setActivePlanIndex(closestIndex);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touchStart = touchStartRef.current;
+    const touch = event.changedTouches[0];
+    touchStartRef.current = null;
+
+    if (!touchStart || !touch) return;
+
+    const horizontalDistance = touchStart.x - touch.clientX;
+    const verticalDistance = touchStart.y - touch.clientY;
+
+    if (
+      Math.abs(horizontalDistance) < 50 ||
+      Math.abs(horizontalDistance) <= Math.abs(verticalDistance)
+    ) {
+      return;
+    }
+
+    const nextIndex = Math.min(
+      subscriptionPlans.length - 1,
+      Math.max(0, activePlanIndex + (horizontalDistance > 0 ? 1 : -1))
+    );
+    scrollToPlan(nextIndex);
   };
 
   // ===== RENDU =====
@@ -458,9 +530,8 @@ export const SubscriptionPage: React.FC = () => {
       isPaidPlan && currentPlan === 'PREMIUM' && isPremium && !isPremiumExpired;
 
     return (
-      <Card 
-        key={plan.id}
-        className={`relative ${plan.popular ? 'border-primary shadow-lg' : ''} ${
+      <Card
+        className={`relative h-full ${plan.popular ? 'border-primary shadow-lg' : ''} ${
           isCurrentPlan || isTrialCurrentPlan ? 'ring-2 ring-primary' : ''
         }`}
       >
@@ -638,10 +709,72 @@ export const SubscriptionPage: React.FC = () => {
         {renderSubscriptionManagement()}
         {renderPremiumHighlights()}
         
-        {/* Plans d'abonnement */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {subscriptionPlans.map(renderPlanCard)}
-        </div>
+        {/* Carousel des plans d'abonnement */}
+        <section className="mb-8" aria-label="Plans d'abonnement">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h2 className="text-xl font-semibold">Choisissez votre plan</h2>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Voir le plan précédent"
+                onClick={() => scrollToPlan(activePlanIndex - 1)}
+                disabled={activePlanIndex === 0}
+              >
+                <ChevronLeft className="size-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="Voir le plan suivant"
+                onClick={() => scrollToPlan(activePlanIndex + 1)}
+                disabled={activePlanIndex === subscriptionPlans.length - 1}
+              >
+                <ChevronRight className="size-5" />
+              </Button>
+            </div>
+          </div>
+
+          <div
+            ref={plansCarouselRef}
+            onScroll={handleCarouselScroll}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={() => {
+              touchStartRef.current = null;
+            }}
+            className="flex touch-pan-x snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain scroll-smooth px-[5%] py-4 md:gap-6 md:px-[15%] lg:px-[27.5%]"
+          >
+            {subscriptionPlans.map((plan, index) => (
+              <div
+                key={plan.id}
+                className="w-[90%] shrink-0 snap-center md:w-[70%] lg:w-[45%]"
+                aria-label={`Plan ${index + 1} sur ${subscriptionPlans.length}`}
+              >
+                {renderPlanCard(plan)}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 flex justify-center gap-2" aria-label="Navigation des plans">
+            {subscriptionPlans.map((plan, index) => (
+              <button
+                key={plan.id}
+                type="button"
+                onClick={() => scrollToPlan(index)}
+                aria-label={`Afficher le plan ${plan.name}`}
+                aria-current={activePlanIndex === index ? 'true' : undefined}
+                className={`h-2.5 rounded-full transition-all ${
+                  activePlanIndex === index
+                    ? 'w-8 bg-primary'
+                    : 'w-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                }`}
+              />
+            ))}
+          </div>
+        </section>
         
         {renderFooterInfo()}
       </div>
