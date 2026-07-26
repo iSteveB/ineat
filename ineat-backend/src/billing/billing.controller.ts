@@ -23,6 +23,7 @@ import {
   CheckoutSessionResponseDto,
   CreateCheckoutSessionDto,
   PortalSessionResponseDto,
+  TrialStartResponseDto,
 } from './dto/create-checkout-session.dto';
 
 interface AuthenticatedBillingRequest extends Request {
@@ -109,6 +110,37 @@ export class BillingController {
     return {
       success: true,
       data: session,
+    };
+  }
+
+  @Post('trial/start')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Activer le trial Premium gratuit',
+    description:
+      "Active un essai Premium de 3 jours sans Stripe et sans moyen de paiement. L'essai ne peut être utilisé qu'une seule fois.",
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: 'Trial Premium activé',
+    type: TrialStartResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Trial indisponible ou déjà utilisé',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Authentification requise',
+  })
+  async startTrial(
+    @Req() req: AuthenticatedBillingRequest,
+  ): Promise<TrialStartResponseDto> {
+    const trial = await this.billingService.startTrial(req.user);
+
+    return {
+      success: true,
+      data: trial,
     };
   }
 

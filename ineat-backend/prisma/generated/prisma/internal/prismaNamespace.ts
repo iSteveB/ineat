@@ -2050,6 +2050,7 @@ export const UserScalarFieldEnum = {
   subscriptionStatus: 'subscriptionStatus',
   trialStartedAt: 'trialStartedAt',
   trialEndsAt: 'trialEndsAt',
+  trialUsedAt: 'trialUsedAt',
   currentPeriodStartedAt: 'currentPeriodStartedAt',
   currentPeriodEndsAt: 'currentPeriodEndsAt',
   stripeCustomerId: 'stripeCustomerId',

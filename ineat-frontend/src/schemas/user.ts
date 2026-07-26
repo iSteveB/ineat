@@ -60,6 +60,7 @@ export const UserSchema = z
 		subscriptionStatus: SubscriptionStatusSchema.default('ACTIVE'),
 		trialStartedAt: z.string().datetime().nullable().optional(),
 		trialEndsAt: z.string().datetime().nullable().optional(),
+		trialUsedAt: z.string().datetime().nullable().optional(),
 		currentPeriodStartedAt: z.string().datetime().nullable().optional(),
 		currentPeriodEndsAt: z.string().datetime().nullable().optional(),
 		billingInterval: BillingIntervalSchema.nullable().optional(),

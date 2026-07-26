@@ -47,3 +47,19 @@ export class PortalSessionResponseDto {
     url: string;
   };
 }
+
+export class TrialStartResponseDto {
+  @ApiProperty({ example: true })
+  success: true;
+
+  @ApiProperty({
+    example: {
+      trialStartedAt: '2026-07-26T07:00:00.000Z',
+      trialEndsAt: '2026-07-29T07:00:00.000Z',
+    },
+  })
+  data: {
+    trialStartedAt: string;
+    trialEndsAt: string;
+  };
+}

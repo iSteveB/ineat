@@ -337,6 +337,7 @@ model User {
   subscriptionStatus     SubscriptionStatus @default(ACTIVE)
   trialStartedAt         DateTime?
   trialEndsAt            DateTime?
+  trialUsedAt            DateTime?
   currentPeriodStartedAt DateTime?
   currentPeriodEndsAt    DateTime?
   stripeCustomerId       String?            @unique

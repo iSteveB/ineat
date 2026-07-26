@@ -19,7 +19,7 @@ import {
   Star,
   CreditCard
 } from 'lucide-react';
-import { useUser } from '@/hooks/useAuth';
+import { useRefreshUser, useUser } from '@/hooks/useAuth';
 import type { SubscriptionPlan as UserSubscriptionPlan } from '@/schemas';
 import {
   billingService,
@@ -131,7 +131,9 @@ const subscriptionPlans: SubscriptionPlan[] = [
 export const SubscriptionPage: React.FC = () => {
   const navigate = useNavigate();
   const { data: user, isLoading: userLoading } = useUser();
+  const refreshUser = useRefreshUser();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isTrialStarting, setIsTrialStarting] = useState(false);
   const [isPortalOpening, setIsPortalOpening] = useState(false);
 
   const currentPlan: UserSubscriptionPlan = user?.subscriptionPlan || 'FREE';
@@ -140,6 +142,9 @@ export const SubscriptionPage: React.FC = () => {
   const isTrial = currentPlan === 'TRIAL';
   const isTrialExpired =
     currentPlan === 'TRIAL' && user?.subscriptionStatus === 'EXPIRED';
+  const isPremiumExpired =
+    currentPlan === 'PREMIUM' && user?.subscriptionStatus === 'EXPIRED';
+  const canStartTrial = currentPlan === 'FREE' && !isPremium && !isTrialExpired;
   const capabilities = user?.capabilities;
   const trialEndsAt = formatDate(user?.trialEndsAt);
   const currentPeriodEndsAt = formatDate(user?.currentPeriodEndsAt);
@@ -189,8 +194,22 @@ export const SubscriptionPage: React.FC = () => {
     }
   };
 
-  const handleStartTrial = () => {
-    toast.info('L’essai gratuit sera activé dans une prochaine étape.');
+  const handleStartTrial = async () => {
+    setIsTrialStarting(true);
+
+    try {
+      await billingService.startTrial();
+      await refreshUser();
+      toast.success('Votre essai Premium est actif pendant 3 jours.');
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Impossible d'activer l'essai gratuit.";
+      toast.error(errorMessage);
+    } finally {
+      setIsTrialStarting(false);
+    }
   };
 
   const handleManageSubscription = async () => {
@@ -262,6 +281,17 @@ export const SubscriptionPage: React.FC = () => {
   );
 
   const renderPlanStatus = () => {
+    if (isPremiumExpired) {
+      return (
+        <Alert className="mb-8 border-orange-200 bg-orange-50">
+          <X className="size-4 text-orange-700" />
+          <AlertDescription className="text-orange-800">
+            Paiement non confirmé. Vos données sont conservées, choisissez une offre Premium pour réactiver l’accès.
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
     if (isTrialExpired) {
       return (
         <Alert className="mb-8 border-orange-200 bg-orange-50">
@@ -300,7 +330,7 @@ export const SubscriptionPage: React.FC = () => {
         <Alert className="mb-8">
           <Sparkles className="size-4" />
           <AlertDescription>
-            Les recettes sont incluses avec Premium. Activez votre essai de 3 jours pour les débloquer.
+            Essayez Premium gratuitement pendant 3 jours, sans carte bancaire.
           </AlertDescription>
         </Alert>
       );
@@ -320,7 +350,9 @@ export const SubscriptionPage: React.FC = () => {
             <p className="text-sm text-muted-foreground">
               {isCancelledAtPeriodEnd
                 ? `Premium reste actif jusqu’au ${currentPeriodEndsAt ?? 'terme de la période payée'}.`
-                : `Facturation ${user?.billingInterval === 'YEARLY' ? 'annuelle' : 'mensuelle'} gérée par Stripe.`}
+                : `Facturation ${user?.billingInterval === 'YEARLY' ? 'annuelle' : 'mensuelle'} gérée par Stripe${
+                    currentPeriodEndsAt ? `, renouvellement le ${currentPeriodEndsAt}` : ''
+                  }.`}
             </p>
           </div>
           <Button
@@ -421,8 +453,9 @@ export const SubscriptionPage: React.FC = () => {
     const isPaidPlan =
       plan.id === 'PREMIUM_MONTHLY' || plan.id === 'PREMIUM_YEARLY';
     const isUpgrade = isPaidPlan && currentPlan === 'FREE';
-    const isTrialCurrentPlan = isPaidPlan && isTrial && !isTrialExpired;
-    const isPremiumCurrentPlan = isPaidPlan && currentPlan === 'PREMIUM';
+    const isTrialCurrentPlan = false;
+    const isPremiumCurrentPlan =
+      isPaidPlan && currentPlan === 'PREMIUM' && isPremium && !isPremiumExpired;
 
     return (
       <Card 
@@ -512,14 +545,28 @@ export const SubscriptionPage: React.FC = () => {
           </Button>
 
           {!isPremium && plan.id === 'PREMIUM_MONTHLY' && (
-            <Button
-              onClick={handleStartTrial}
-              disabled={isProcessing}
-              variant="outline"
-              className="w-full"
-            >
-              Activer l’essai 3 jours
-            </Button>
+            <div className="space-y-2">
+              <Button
+                onClick={handleStartTrial}
+                disabled={!canStartTrial || isProcessing || isTrialStarting}
+                variant="outline"
+                className="w-full"
+              >
+                {isTrialStarting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin size-4 border-2 border-current border-t-transparent rounded-full" />
+                    Activation...
+                  </div>
+                ) : canStartTrial ? (
+                  'Essayer 3 jours gratuitement'
+                ) : (
+                  'Essai déjà utilisé'
+                )}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                Sans carte bancaire
+              </p>
+            </div>
           )}
 
           {(isCurrentPlan || isTrialCurrentPlan) && (
