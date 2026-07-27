@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import {
   Notification,
   NotificationType,
@@ -238,46 +238,51 @@ export class NotificationService {
   private async createOrUpdateNotification(
     data: CreateOrUpdateNotificationInput,
   ): Promise<Notification> {
-    const existing = await this.prisma.notification.findFirst({
-      where: {
-        userId: data.userId,
-        type: data.type,
-        referenceId: data.referenceId,
-        referenceType: data.referenceType,
-      },
+    const deduplicationKey = this.buildDeduplicationKey(data);
+    const existing = await this.prisma.notification.findUnique({
+      where: { deduplicationKey },
     });
+    const occurredAt = new Date();
+    const severityChanged = existing?.title !== data.title;
+    const isNewOccurrence =
+      existing !== null && (severityChanged || existing.resolvedAt !== null);
 
-    if (existing) {
-      const severityChanged = existing.title !== data.title;
-      const isNewOccurrence = severityChanged || existing.resolvedAt !== null;
-      const occurredAt = new Date();
-
-      return this.prisma.notification.update({
-        where: { id: existing.id },
-        data: {
-          title: data.title,
-          message: data.message,
-          resolvedAt: null,
-          lastOccurredAt: occurredAt,
-          ...(isNewOccurrence ? { isRead: false, dismissedAt: null } : {}),
-          updatedAt: occurredAt,
-        },
-      });
-    }
-
-    return this.prisma.notification.create({
-      data: {
+    return this.prisma.notification.upsert({
+      where: { deduplicationKey },
+      create: {
         id: randomUUID(),
+        deduplicationKey,
         userId: data.userId,
         type: data.type,
         title: data.title,
         message: data.message,
         referenceId: data.referenceId,
         referenceType: data.referenceType,
-        lastOccurredAt: new Date(),
-        updatedAt: new Date(),
+        lastOccurredAt: occurredAt,
+        updatedAt: occurredAt,
+      },
+      update: {
+        title: data.title,
+        message: data.message,
+        resolvedAt: null,
+        lastOccurredAt: occurredAt,
+        ...(isNewOccurrence ? { isRead: false, dismissedAt: null } : {}),
+        updatedAt: occurredAt,
       },
     });
+  }
+
+  private buildDeduplicationKey(data: CreateOrUpdateNotificationInput): string {
+    return createHash('md5')
+      .update(
+        [
+          data.userId,
+          data.type,
+          data.referenceType ?? '<none>',
+          data.referenceId ?? '<none>',
+        ].join('\u001f'),
+      )
+      .digest('hex');
   }
 
   private async resolveMissingNotifications(

@@ -2015,6 +2015,7 @@ export const NotificationScalarFieldEnum = {
   isRead: 'isRead',
   referenceId: 'referenceId',
   referenceType: 'referenceType',
+  deduplicationKey: 'deduplicationKey',
   dismissedAt: 'dismissedAt',
   resolvedAt: 'resolvedAt',
   lastOccurredAt: 'lastOccurredAt',

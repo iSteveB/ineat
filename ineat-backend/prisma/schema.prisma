@@ -103,20 +103,21 @@ enum PreparationStatus {
 }
 
 model Notification {
-  id             String           @id
-  userId         String
-  type           NotificationType
-  title          String
-  message        String
-  isRead         Boolean          @default(false)
-  referenceId    String?
-  referenceType  String?
-  dismissedAt    DateTime?
-  resolvedAt     DateTime?
-  lastOccurredAt DateTime         @default(now())
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime
-  User           User             @relation(fields: [userId], references: [id])
+  id               String           @id
+  userId           String
+  type             NotificationType
+  title            String
+  message          String
+  isRead           Boolean          @default(false)
+  referenceId      String?
+  referenceType    String?
+  deduplicationKey String           @unique @db.VarChar(32)
+  dismissedAt      DateTime?
+  resolvedAt       DateTime?
+  lastOccurredAt   DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  User             User             @relation(fields: [userId], references: [id])
 
   @@index([isRead])
   @@index([type])

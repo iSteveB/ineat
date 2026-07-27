@@ -10,9 +10,10 @@ describe('NotificationService', () => {
     },
     notification: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
-      create: jest.fn(),
+      upsert: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
     },
@@ -39,31 +40,35 @@ describe('NotificationService', () => {
       amount: 100,
       Expense: [{ amount: 92 }],
     });
-    prisma.notification.findFirst.mockResolvedValue(null);
-    prisma.notification.create.mockImplementation(({ data }) =>
-      Promise.resolve(data),
+    prisma.notification.findUnique.mockResolvedValue(null);
+    prisma.notification.upsert.mockImplementation(({ create }) =>
+      Promise.resolve(create),
     );
     prisma.notification.findMany.mockResolvedValue([]);
 
     await service.listNotifications('user-1');
 
-    expect(prisma.notification.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+    expect(prisma.notification.upsert).toHaveBeenCalledWith({
+      where: { deduplicationKey: expect.stringMatching(/^[a-f0-9]{32}$/) },
+      create: expect.objectContaining({
         userId: 'user-1',
         type: 'EXPIRY',
         title: 'Produit à consommer très vite',
         referenceId: 'item-1',
         referenceType: 'inventory_item',
       }),
+      update: expect.any(Object),
     });
-    expect(prisma.notification.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
+    expect(prisma.notification.upsert).toHaveBeenCalledWith({
+      where: { deduplicationKey: expect.stringMatching(/^[a-f0-9]{32}$/) },
+      create: expect.objectContaining({
         userId: 'user-1',
         type: 'BUDGET',
         title: 'Budget presque épuisé',
         referenceId: 'budget-1',
         referenceType: 'budget:threshold_90',
       }),
+      update: expect.any(Object),
     });
     expect(prisma.notification.findMany).toHaveBeenLastCalledWith({
       where: {
@@ -86,13 +91,13 @@ describe('NotificationService', () => {
       },
     ]);
     prisma.budget.findFirst.mockResolvedValue(null);
-    prisma.notification.findFirst.mockResolvedValue({
+    prisma.notification.findUnique.mockResolvedValue({
       id: 'notification-1',
       title: 'Produit à consommer très vite',
       isRead: true,
       resolvedAt: null,
     });
-    prisma.notification.update.mockResolvedValue({
+    prisma.notification.upsert.mockResolvedValue({
       id: 'notification-1',
       isRead: true,
     });
@@ -100,10 +105,10 @@ describe('NotificationService', () => {
 
     await expect(service.countUnread('user-1')).resolves.toBe(0);
 
-    expect(prisma.notification.create).not.toHaveBeenCalled();
-    expect(prisma.notification.update).toHaveBeenCalledWith({
-      where: { id: 'notification-1' },
-      data: expect.not.objectContaining({ isRead: expect.anything() }),
+    expect(prisma.notification.upsert).toHaveBeenCalledWith({
+      where: { deduplicationKey: expect.any(String) },
+      create: expect.any(Object),
+      update: expect.not.objectContaining({ isRead: expect.anything() }),
     });
   });
 
@@ -116,13 +121,13 @@ describe('NotificationService', () => {
       },
     ]);
     prisma.budget.findFirst.mockResolvedValue(null);
-    prisma.notification.findFirst.mockResolvedValue({
+    prisma.notification.findUnique.mockResolvedValue({
       id: 'notification-1',
       title: 'Produit bientôt périmé',
       isRead: true,
       resolvedAt: null,
     });
-    prisma.notification.update.mockResolvedValue({
+    prisma.notification.upsert.mockResolvedValue({
       id: 'notification-1',
       isRead: false,
     });
@@ -130,10 +135,39 @@ describe('NotificationService', () => {
 
     await expect(service.countUnread('user-1')).resolves.toBe(1);
 
-    expect(prisma.notification.update).toHaveBeenCalledWith({
-      where: { id: 'notification-1' },
-      data: expect.objectContaining({ isRead: false }),
+    expect(prisma.notification.upsert).toHaveBeenCalledWith({
+      where: { deduplicationKey: expect.any(String) },
+      create: expect.any(Object),
+      update: expect.objectContaining({ isRead: false }),
     });
+  });
+
+  it('uses one stable key for concurrent creations of the same alert', async () => {
+    const storedNotifications = new Map<string, unknown>();
+    prisma.notification.findUnique.mockResolvedValue(null);
+    prisma.notification.upsert.mockImplementation(({ where, create }) => {
+      const key = where.deduplicationKey;
+      if (!storedNotifications.has(key)) {
+        storedNotifications.set(key, create);
+      }
+      return Promise.resolve(storedNotifications.get(key));
+    });
+    const input = {
+      userId: 'user-1',
+      type: 'EXPIRY',
+      title: 'Produit bientôt périmé',
+      message: 'Le lait expire bientôt.',
+      referenceId: 'item-1',
+      referenceType: 'inventory_item',
+    };
+
+    await Promise.all([
+      (service as any).createOrUpdateNotification(input),
+      (service as any).createOrUpdateNotification(input),
+    ]);
+
+    expect(storedNotifications.size).toBe(1);
+    expect(prisma.notification.upsert).toHaveBeenCalledTimes(2);
   });
 
   it('marks one or all notifications as read', async () => {
