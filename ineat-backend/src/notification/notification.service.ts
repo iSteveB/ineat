@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { createHash, randomUUID } from 'crypto';
 import {
   Notification,
@@ -18,7 +22,17 @@ type CreateOrUpdateNotificationInput = {
 type ListNotificationsOptions = {
   includeRead?: boolean;
   limit?: number;
+  cursor?: string;
 };
+
+type NotificationPage = {
+  items: Notification[];
+  nextCursor: string | null;
+  hasNextPage: boolean;
+  unreadCount: number;
+};
+
+const EXPIRY_BATCH_SIZE = 100;
 
 @Injectable()
 export class NotificationService {
@@ -27,17 +41,53 @@ export class NotificationService {
   async listNotifications(
     userId: string,
     options: ListNotificationsOptions = {},
-  ): Promise<Notification[]> {
-    return this.prisma.notification.findMany({
-      where: {
-        userId,
-        resolvedAt: null,
-        dismissedAt: null,
-        ...(options.includeRead ? {} : { isRead: false }),
-      },
-      orderBy: [{ isRead: 'asc' }, { createdAt: 'desc' }],
-      take: this.normalizeLimit(options.limit),
-    });
+  ): Promise<NotificationPage> {
+    const limit = this.normalizeLimit(options.limit);
+    const cursor = options.cursor
+      ? this.decodeCursor(options.cursor)
+      : undefined;
+    const activeWhere = {
+      userId,
+      resolvedAt: null,
+      dismissedAt: null,
+    } as const;
+    const [rows, unreadCount] = await Promise.all([
+      this.prisma.notification.findMany({
+        where: {
+          ...activeWhere,
+          ...(options.includeRead ? {} : { isRead: false }),
+          ...(cursor
+            ? {
+                OR: [
+                  { lastOccurredAt: { lt: cursor.lastOccurredAt } },
+                  {
+                    lastOccurredAt: cursor.lastOccurredAt,
+                    id: { lt: cursor.id },
+                  },
+                ],
+              }
+            : {}),
+        },
+        orderBy: [{ lastOccurredAt: 'desc' }, { id: 'desc' }],
+        take: limit + 1,
+      }),
+      this.prisma.notification.count({
+        where: { ...activeWhere, isRead: false },
+      }),
+    ]);
+    const hasNextPage = rows.length > limit;
+    const items = hasNextPage ? rows.slice(0, limit) : rows;
+    const lastItem = items.at(-1);
+
+    return {
+      items,
+      hasNextPage,
+      nextCursor:
+        hasNextPage && lastItem
+          ? this.encodeCursor(lastItem.lastOccurredAt, lastItem.id)
+          : null,
+      unreadCount,
+    };
   }
 
   async countUnread(userId: string): Promise<number> {
@@ -120,49 +170,65 @@ export class NotificationService {
     limitDate.setDate(limitDate.getDate() + 5);
     limitDate.setHours(23, 59, 59, 999);
 
-    const items = await this.prisma.inventoryItem.findMany({
-      where: {
-        userId,
-        expiryDate: {
-          not: null,
-          lte: limitDate,
-        },
-      },
-      include: { Product: true },
-      orderBy: { expiryDate: 'asc' },
-    });
+    const activeReferences: Array<{
+      referenceId: string;
+      referenceType: string;
+    }> = [];
+    let cursor: string | undefined;
 
-    await Promise.all(
-      items.map((item) => {
-        const days = this.daysUntil(item.expiryDate);
-        const productName = item.Product?.name ?? 'Un produit';
-
-        return this.createOrUpdateNotification({
+    do {
+      const items = await this.prisma.inventoryItem.findMany({
+        where: {
           userId,
-          type: NotificationType.EXPIRY,
-          title:
-            days < 0
-              ? 'Produit périmé'
-              : days <= 2
-                ? 'Produit à consommer très vite'
-                : 'Produit bientôt périmé',
-          message:
-            days < 0
-              ? `${productName} est périmé depuis ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}.`
-              : `${productName} expire dans ${days} jour${days > 1 ? 's' : ''}.`,
-          referenceId: item.id,
-          referenceType: 'inventory_item',
-        });
-      }),
-    );
+          expiryDate: {
+            not: null,
+            lte: limitDate,
+          },
+        },
+        include: { Product: true },
+        orderBy: [{ expiryDate: 'asc' }, { id: 'asc' }],
+        take: EXPIRY_BATCH_SIZE,
+        ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      });
+
+      await Promise.all(
+        items.map((item) => {
+          activeReferences.push({
+            referenceId: item.id,
+            referenceType: 'inventory_item',
+          });
+          const days = this.daysUntil(item.expiryDate);
+          const productName = item.Product?.name ?? 'Un produit';
+
+          return this.createOrUpdateNotification({
+            userId,
+            type: NotificationType.EXPIRY,
+            title:
+              days < 0
+                ? 'Produit périmé'
+                : days <= 2
+                  ? 'Produit à consommer très vite'
+                  : 'Produit bientôt périmé',
+            message:
+              days < 0
+                ? `${productName} est périmé depuis ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}.`
+                : `${productName} expire dans ${days} jour${days > 1 ? 's' : ''}.`,
+            referenceId: item.id,
+            referenceType: 'inventory_item',
+          });
+        }),
+      );
+      cursor = items.at(-1)?.id;
+
+      if (items.length < EXPIRY_BATCH_SIZE) {
+        break;
+      }
+    } while (cursor);
 
     await this.resolveMissingNotifications(
       userId,
       NotificationType.EXPIRY,
-      items.map((item) => ({
-        referenceId: item.id,
-        referenceType: 'inventory_item',
-      })),
+      activeReferences,
     );
   }
 
@@ -347,5 +413,35 @@ export class NotificationService {
     }
 
     return Math.min(Math.max(Math.trunc(limit), 1), 100);
+  }
+
+  private encodeCursor(lastOccurredAt: Date, id: string): string {
+    return Buffer.from(
+      JSON.stringify({ lastOccurredAt: lastOccurredAt.toISOString(), id }),
+    ).toString('base64url');
+  }
+
+  private decodeCursor(cursor: string): {
+    lastOccurredAt: Date;
+    id: string;
+  } {
+    try {
+      const value = JSON.parse(
+        Buffer.from(cursor, 'base64url').toString('utf8'),
+      ) as { lastOccurredAt?: unknown; id?: unknown };
+      const lastOccurredAt = new Date(String(value.lastOccurredAt));
+
+      if (
+        typeof value.id !== 'string' ||
+        value.id.length === 0 ||
+        Number.isNaN(lastOccurredAt.getTime())
+      ) {
+        throw new Error('Invalid cursor payload');
+      }
+
+      return { lastOccurredAt, id: value.id };
+    } catch {
+      throw new BadRequestException('Curseur de notifications invalide');
+    }
   }
 }

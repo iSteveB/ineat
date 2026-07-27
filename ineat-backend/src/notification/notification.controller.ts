@@ -22,6 +22,7 @@ export class NotificationController {
     @Req() req: Request,
     @Query('includeRead') includeRead?: string,
     @Query('limit') limit?: string,
+    @Query('cursor') cursor?: string,
   ) {
     const userId = (req.user as { id: string }).id;
     const notifications = await this.notificationService.listNotifications(
@@ -29,12 +30,18 @@ export class NotificationController {
       {
         includeRead: includeRead === 'true',
         limit: limit ? Number(limit) : undefined,
+        cursor,
       },
     );
 
     return {
       success: true,
-      data: notifications,
+      data: notifications.items,
+      pagination: {
+        nextCursor: notifications.nextCursor,
+        hasNextPage: notifications.hasNextPage,
+      },
+      unreadCount: notifications.unreadCount,
     };
   }
 

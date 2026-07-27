@@ -15,6 +15,7 @@ const notification = {
 	isRead: false,
 	referenceId: '33333333-3333-4333-8333-333333333333',
 	referenceType: 'inventory_item',
+	lastOccurredAt: '2026-05-21T10:00:00.000Z',
 	createdAt: '2026-05-21T10:00:00.000Z',
 	updatedAt: '2026-05-21T10:00:00.000Z',
 };
@@ -29,6 +30,11 @@ describe('notificationService', () => {
 				return HttpResponse.json({
 					success: true,
 					data: [notification],
+					pagination: {
+						nextCursor: 'next-page',
+						hasNextPage: true,
+					},
+					unreadCount: 12,
 				});
 			})
 		);
@@ -36,12 +42,19 @@ describe('notificationService', () => {
 		const result = await notificationService.getNotifications({
 			includeRead: true,
 			limit: 10,
+			cursor: 'current-page',
 		});
 		const searchParams = new URL(requestedUrl).searchParams;
 
-		expect(result).toEqual([notification]);
+		expect(result).toEqual({
+			items: [notification],
+			nextCursor: 'next-page',
+			hasNextPage: true,
+			unreadCount: 12,
+		});
 		expect(searchParams.get('includeRead')).toBe('true');
 		expect(searchParams.get('limit')).toBe('10');
+		expect(searchParams.get('cursor')).toBe('current-page');
 	});
 
 	it('récupère le compteur non lu et marque les notifications lues', async () => {

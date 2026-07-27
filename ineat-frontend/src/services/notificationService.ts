@@ -23,11 +23,27 @@ type ApiResponse<T> = {
 	data: T;
 };
 
+export type NotificationPage = {
+	items: AppNotification[];
+	nextCursor: string | null;
+	hasNextPage: boolean;
+	unreadCount: number;
+};
+
+type NotificationsApiResponse = ApiResponse<AppNotification[]> & {
+	pagination: {
+		nextCursor: string | null;
+		hasNextPage: boolean;
+	};
+	unreadCount: number;
+};
+
 export const notificationService = {
 	async getNotifications(options?: {
 		includeRead?: boolean;
 		limit?: number;
-	}): Promise<AppNotification[]> {
+		cursor?: string;
+	}): Promise<NotificationPage> {
 		const params = new URLSearchParams();
 
 		if (options?.includeRead) {
@@ -36,12 +52,20 @@ export const notificationService = {
 		if (options?.limit) {
 			params.set('limit', options.limit.toString());
 		}
+		if (options?.cursor) {
+			params.set('cursor', options.cursor);
+		}
 
-		const response = await apiClient.get<ApiResponse<AppNotification[]>>(
+		const response = await apiClient.get<NotificationsApiResponse>(
 			`/notifications${params.size ? `?${params.toString()}` : ''}`
 		);
 
-		return response.data;
+		return {
+			items: response.data,
+			nextCursor: response.pagination.nextCursor,
+			hasNextPage: response.pagination.hasNextPage,
+			unreadCount: response.unreadCount,
+		};
 	},
 
 	async getUnreadCount(): Promise<number> {

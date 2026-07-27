@@ -1,5 +1,10 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+	useInfiniteQuery,
+	useMutation,
+	useQueryClient,
+} from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
+import { useEffect, useRef } from 'react';
 import {
 	AlertTriangle,
 	Bell,
@@ -64,14 +69,43 @@ function getNotificationTarget(
 
 function NotificationsPage() {
 	const queryClient = useQueryClient();
-	const { data: notifications = [], isLoading } = useQuery({
+	const loadMoreRef = useRef<HTMLDivElement>(null);
+	const {
+		data,
+		fetchNextPage,
+		hasNextPage,
+		isFetchingNextPage,
+		isLoading,
+	} = useInfiniteQuery({
 		queryKey: ['notifications', 'list'],
-		queryFn: () =>
+		queryFn: ({ pageParam }) =>
 			notificationService.getNotifications({
 				includeRead: true,
 				limit: 50,
+				cursor: pageParam,
 			}),
+		initialPageParam: undefined as string | undefined,
+		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
+	const notifications = data?.pages.flatMap((page) => page.items) ?? [];
+	const unreadCount = data?.pages[0]?.unreadCount ?? 0;
+
+	useEffect(() => {
+		const target = loadMoreRef.current;
+		if (!target || !hasNextPage || isFetchingNextPage) return;
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0]?.isIntersecting) {
+					void fetchNextPage();
+				}
+			},
+			{ rootMargin: '200px' }
+		);
+		observer.observe(target);
+
+		return () => observer.disconnect();
+	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
 	const invalidateNotifications = () => {
 		queryClient.invalidateQueries({ queryKey: ['notifications'] });
@@ -87,10 +121,6 @@ function NotificationsPage() {
 		mutationFn: () => notificationService.markAllAsRead(),
 		onSuccess: invalidateNotifications,
 	});
-
-	const unreadCount = notifications.filter(
-		(notification) => !notification.isRead
-	).length;
 
 	if (isLoading) {
 		return (
@@ -210,6 +240,21 @@ function NotificationsPage() {
 							</article>
 						);
 					})}
+					<div
+						ref={loadMoreRef}
+						className='flex min-h-10 items-center justify-center'
+						aria-live='polite'>
+						{isFetchingNextPage && (
+							<span className='text-sm text-neutral-600'>
+								Chargement des notifications précédentes…
+							</span>
+						)}
+						{!hasNextPage && notifications.length > 0 && (
+							<span className='text-xs text-neutral-500'>
+								Fin des notifications
+							</span>
+						)}
+					</div>
 				</section>
 			)}
 		</div>

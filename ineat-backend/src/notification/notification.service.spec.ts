@@ -72,6 +72,27 @@ describe('NotificationService', () => {
     });
   });
 
+  it('generates every expiry alert beyond the previous limit of 20', async () => {
+    const items = Array.from({ length: 25 }, (_, index) => ({
+      id: `item-${index}`,
+      expiryDate: new Date(),
+      Product: { name: `Produit ${index}` },
+    }));
+    prisma.inventoryItem.findMany.mockResolvedValue(items);
+    prisma.budget.findFirst.mockResolvedValue(null);
+    prisma.notification.findUnique.mockResolvedValue(null);
+    prisma.notification.upsert.mockImplementation(({ create }) =>
+      Promise.resolve(create),
+    );
+
+    await service.synchronizeExpiryNotifications('user-1');
+
+    expect(prisma.notification.upsert).toHaveBeenCalledTimes(25);
+    expect(prisma.inventoryItem.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ take: 100 }),
+    );
+  });
+
   it('lists and counts notifications without synchronizing business data', async () => {
     prisma.notification.findMany.mockResolvedValue([]);
     prisma.notification.count.mockResolvedValue(0);
@@ -89,8 +110,65 @@ describe('NotificationService', () => {
         resolvedAt: null,
         dismissedAt: null,
       },
-      orderBy: [{ isRead: 'asc' }, { createdAt: 'desc' }],
-      take: 50,
+      orderBy: [{ lastOccurredAt: 'desc' }, { id: 'desc' }],
+      take: 51,
+    });
+  });
+
+  it('returns an opaque cursor and the total unread count', async () => {
+    const notifications = [
+      {
+        id: 'notification-3',
+        lastOccurredAt: new Date('2026-07-28T12:00:00.000Z'),
+      },
+      {
+        id: 'notification-2',
+        lastOccurredAt: new Date('2026-07-28T11:00:00.000Z'),
+      },
+      {
+        id: 'notification-1',
+        lastOccurredAt: new Date('2026-07-28T10:00:00.000Z'),
+      },
+    ];
+    prisma.notification.findMany.mockResolvedValue(notifications);
+    prisma.notification.count.mockResolvedValue(73);
+
+    const page = await service.listNotifications('user-1', {
+      includeRead: true,
+      limit: 2,
+    });
+
+    expect(page.items).toEqual(notifications.slice(0, 2));
+    expect(page.hasNextPage).toBe(true);
+    expect(page.nextCursor).toEqual(expect.any(String));
+    expect(page.unreadCount).toBe(73);
+
+    prisma.notification.findMany.mockResolvedValue([]);
+    await service.listNotifications('user-1', {
+      includeRead: true,
+      limit: 2,
+      cursor: page.nextCursor!,
+    });
+
+    expect(prisma.notification.findMany).toHaveBeenLastCalledWith({
+      where: {
+        userId: 'user-1',
+        resolvedAt: null,
+        dismissedAt: null,
+        OR: [
+          {
+            lastOccurredAt: {
+              lt: new Date('2026-07-28T11:00:00.000Z'),
+            },
+          },
+          {
+            lastOccurredAt: new Date('2026-07-28T11:00:00.000Z'),
+            id: { lt: 'notification-2' },
+          },
+        ],
+      },
+      orderBy: [{ lastOccurredAt: 'desc' }, { id: 'desc' }],
+      take: 3,
     });
   });
 
