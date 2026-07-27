@@ -2015,6 +2015,9 @@ export const NotificationScalarFieldEnum = {
   isRead: 'isRead',
   referenceId: 'referenceId',
   referenceType: 'referenceType',
+  dismissedAt: 'dismissedAt',
+  resolvedAt: 'resolvedAt',
+  lastOccurredAt: 'lastOccurredAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

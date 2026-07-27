@@ -33,6 +33,8 @@ export class NotificationService {
     return this.prisma.notification.findMany({
       where: {
         userId,
+        resolvedAt: null,
+        dismissedAt: null,
         ...(options.includeRead ? {} : { isRead: false }),
       },
       orderBy: [{ isRead: 'asc' }, { createdAt: 'desc' }],
@@ -44,7 +46,12 @@ export class NotificationService {
     await this.syncActionableNotifications(userId);
 
     return this.prisma.notification.count({
-      where: { userId, isRead: false },
+      where: {
+        userId,
+        isRead: false,
+        resolvedAt: null,
+        dismissedAt: null,
+      },
     });
   }
 
@@ -69,11 +76,32 @@ export class NotificationService {
 
   async markAllAsRead(userId: string): Promise<{ count: number }> {
     const result = await this.prisma.notification.updateMany({
-      where: { userId, isRead: false },
+      where: {
+        userId,
+        isRead: false,
+        resolvedAt: null,
+        dismissedAt: null,
+      },
       data: { isRead: true, updatedAt: new Date() },
     });
 
     return { count: result.count };
+  }
+
+  async dismiss(userId: string, notificationId: string): Promise<Notification> {
+    const notification = await this.prisma.notification.findFirst({
+      where: { id: notificationId, userId, resolvedAt: null },
+    });
+
+    if (!notification) {
+      throw new NotFoundException('Notification introuvable');
+    }
+
+    const now = new Date();
+    return this.prisma.notification.update({
+      where: { id: notificationId },
+      data: { dismissedAt: now, isRead: true, updatedAt: now },
+    });
   }
 
   private async syncActionableNotifications(userId: string): Promise<void> {
@@ -98,7 +126,6 @@ export class NotificationService {
       },
       include: { Product: true },
       orderBy: { expiryDate: 'asc' },
-      take: 20,
     });
 
     await Promise.all(
@@ -124,6 +151,15 @@ export class NotificationService {
         });
       }),
     );
+
+    await this.resolveMissingNotifications(
+      userId,
+      NotificationType.EXPIRY,
+      items.map((item) => ({
+        referenceId: item.id,
+        referenceType: 'inventory_item',
+      })),
+    );
   }
 
   private async syncBudgetNotifications(userId: string): Promise<void> {
@@ -140,6 +176,11 @@ export class NotificationService {
     });
 
     if (!budget || budget.amount <= 0) {
+      await this.resolveMissingNotifications(
+        userId,
+        NotificationType.BUDGET,
+        [],
+      );
       return;
     }
 
@@ -150,6 +191,11 @@ export class NotificationService {
     const percentage = (spent / budget.amount) * 100;
 
     if (percentage < 75) {
+      await this.resolveMissingNotifications(
+        userId,
+        NotificationType.BUDGET,
+        [],
+      );
       return;
     }
 
@@ -180,6 +226,13 @@ export class NotificationService {
       referenceId: budget.id,
       referenceType: `budget:${alert.key}`,
     });
+
+    await this.resolveMissingNotifications(userId, NotificationType.BUDGET, [
+      {
+        referenceId: budget.id,
+        referenceType: `budget:${alert.key}`,
+      },
+    ]);
   }
 
   private async createOrUpdateNotification(
@@ -196,14 +249,18 @@ export class NotificationService {
 
     if (existing) {
       const severityChanged = existing.title !== data.title;
+      const isNewOccurrence = severityChanged || existing.resolvedAt !== null;
+      const occurredAt = new Date();
 
       return this.prisma.notification.update({
         where: { id: existing.id },
         data: {
           title: data.title,
           message: data.message,
-          ...(severityChanged ? { isRead: false } : {}),
-          updatedAt: new Date(),
+          resolvedAt: null,
+          lastOccurredAt: occurredAt,
+          ...(isNewOccurrence ? { isRead: false, dismissedAt: null } : {}),
+          updatedAt: occurredAt,
         },
       });
     }
@@ -217,8 +274,46 @@ export class NotificationService {
         message: data.message,
         referenceId: data.referenceId,
         referenceType: data.referenceType,
+        lastOccurredAt: new Date(),
         updatedAt: new Date(),
       },
+    });
+  }
+
+  private async resolveMissingNotifications(
+    userId: string,
+    type: NotificationType,
+    activeReferences: Array<{
+      referenceId: string;
+      referenceType: string;
+    }>,
+  ): Promise<void> {
+    const activeNotifications = await this.prisma.notification.findMany({
+      where: { userId, type, resolvedAt: null },
+      select: { id: true, referenceId: true, referenceType: true },
+    });
+    const activeKeys = new Set(
+      activeReferences.map(
+        ({ referenceId, referenceType }) => `${referenceType}:${referenceId}`,
+      ),
+    );
+    const staleIds = activeNotifications
+      .filter(
+        ({ referenceId, referenceType }) =>
+          !referenceId ||
+          !referenceType ||
+          !activeKeys.has(`${referenceType}:${referenceId}`),
+      )
+      .map(({ id }) => id);
+
+    if (staleIds.length === 0) {
+      return;
+    }
+
+    const now = new Date();
+    await this.prisma.notification.updateMany({
+      where: { id: { in: staleIds }, userId },
+      data: { resolvedAt: now, isRead: true, updatedAt: now },
     });
   }
 

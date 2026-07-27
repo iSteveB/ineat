@@ -22,6 +22,7 @@ describe('NotificationService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    prisma.notification.findMany.mockResolvedValue([]);
     service = new NotificationService(prisma as any);
   });
 
@@ -64,8 +65,13 @@ describe('NotificationService', () => {
         referenceType: 'budget:threshold_90',
       }),
     });
-    expect(prisma.notification.findMany).toHaveBeenCalledWith({
-      where: { userId: 'user-1', isRead: false },
+    expect(prisma.notification.findMany).toHaveBeenLastCalledWith({
+      where: {
+        userId: 'user-1',
+        isRead: false,
+        resolvedAt: null,
+        dismissedAt: null,
+      },
       orderBy: [{ isRead: 'asc' }, { createdAt: 'desc' }],
       take: 50,
     });
@@ -84,6 +90,7 @@ describe('NotificationService', () => {
       id: 'notification-1',
       title: 'Produit à consommer très vite',
       isRead: true,
+      resolvedAt: null,
     });
     prisma.notification.update.mockResolvedValue({
       id: 'notification-1',
@@ -113,6 +120,7 @@ describe('NotificationService', () => {
       id: 'notification-1',
       title: 'Produit bientôt périmé',
       isRead: true,
+      resolvedAt: null,
     });
     prisma.notification.update.mockResolvedValue({
       id: 'notification-1',
@@ -147,6 +155,69 @@ describe('NotificationService', () => {
     });
     await expect(service.markAllAsRead('user-1')).resolves.toEqual({
       count: 3,
+    });
+
+    expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        isRead: false,
+        resolvedAt: null,
+        dismissedAt: null,
+      },
+      data: { isRead: true, updatedAt: expect.any(Date) },
+    });
+  });
+
+  it('dismisses an active notification', async () => {
+    prisma.notification.findFirst.mockResolvedValue({
+      id: 'notification-1',
+      userId: 'user-1',
+      resolvedAt: null,
+    });
+    prisma.notification.update.mockResolvedValue({
+      id: 'notification-1',
+      isRead: true,
+      dismissedAt: new Date(),
+    });
+
+    await expect(
+      service.dismiss('user-1', 'notification-1'),
+    ).resolves.toMatchObject({
+      id: 'notification-1',
+      isRead: true,
+    });
+
+    expect(prisma.notification.update).toHaveBeenCalledWith({
+      where: { id: 'notification-1' },
+      data: {
+        dismissedAt: expect.any(Date),
+        isRead: true,
+        updatedAt: expect.any(Date),
+      },
+    });
+  });
+
+  it('resolves expiry notifications whose inventory item is gone', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([]);
+    prisma.budget.findFirst.mockResolvedValue(null);
+    prisma.notification.findMany.mockResolvedValueOnce([
+      {
+        id: 'notification-1',
+        referenceId: 'deleted-item',
+        referenceType: 'inventory_item',
+      },
+    ]);
+    prisma.notification.count.mockResolvedValue(0);
+
+    await service.countUnread('user-1');
+
+    expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['notification-1'] }, userId: 'user-1' },
+      data: {
+        resolvedAt: expect.any(Date),
+        isRead: true,
+        updatedAt: expect.any(Date),
+      },
     });
   });
 });

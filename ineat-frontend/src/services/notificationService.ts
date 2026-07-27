@@ -11,6 +11,9 @@ export type AppNotification = {
 	isRead: boolean;
 	referenceId?: string | null;
 	referenceType?: string | null;
+	dismissedAt?: string | null;
+	resolvedAt?: string | null;
+	lastOccurredAt: string;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -64,5 +67,13 @@ export const notificationService = {
 		>('/notifications/read-all');
 
 		return response.data.count;
+	},
+
+	async dismiss(notificationId: string) {
+		const response = await apiClient.patch<ApiResponse<AppNotification>>(
+			`/notifications/${notificationId}/dismiss`
+		);
+
+		return response.data;
 	},
 };

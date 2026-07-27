@@ -78,4 +78,21 @@ export class NotificationController {
       data: notification,
     };
   }
+
+  @Patch(':notificationId/dismiss')
+  async dismiss(
+    @Req() req: Request,
+    @Param('notificationId') notificationId: string,
+  ) {
+    const userId = (req.user as { id: string }).id;
+    const notification = await this.notificationService.dismiss(
+      userId,
+      notificationId,
+    );
+
+    return {
+      success: true,
+      data: notification,
+    };
+  }
 }

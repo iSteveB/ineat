@@ -61,22 +61,22 @@ model Expense {
 }
 
 model InventoryItem {
-  id               String           @id
-  userId           String
-  productId        String
-  quantity         Float
-  expiryDate       DateTime?
-  expiryDateSource ExpiryDateSource @default(MANUAL)
+  id                String             @id
+  userId            String
+  productId         String
+  quantity          Float
+  expiryDate        DateTime?
+  expiryDateSource  ExpiryDateSource   @default(MANUAL)
   packageStatus     PackageStatus?
   preparationStatus PreparationStatus?
-  purchaseDate     DateTime
-  purchasePrice    Float?
-  storageLocation  String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  notes            String?
-  Product          Product          @relation(fields: [productId], references: [id])
-  User             User             @relation(fields: [userId], references: [id])
+  purchaseDate      DateTime
+  purchasePrice     Float?
+  storageLocation   String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime
+  notes             String?
+  Product           Product            @relation(fields: [productId], references: [id])
+  User              User               @relation(fields: [userId], references: [id])
 
   @@index([expiryDate])
   @@index([productId])
@@ -103,21 +103,25 @@ enum PreparationStatus {
 }
 
 model Notification {
-  id            String           @id
-  userId        String
-  type          NotificationType
-  title         String
-  message       String
-  isRead        Boolean          @default(false)
-  referenceId   String?
-  referenceType String?
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime
-  User          User             @relation(fields: [userId], references: [id])
+  id             String           @id
+  userId         String
+  type           NotificationType
+  title          String
+  message        String
+  isRead         Boolean          @default(false)
+  referenceId    String?
+  referenceType  String?
+  dismissedAt    DateTime?
+  resolvedAt     DateTime?
+  lastOccurredAt DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime
+  User           User             @relation(fields: [userId], references: [id])
 
   @@index([isRead])
   @@index([type])
   @@index([userId])
+  @@index([userId, resolvedAt, dismissedAt])
 }
 
 model Product {
@@ -277,26 +281,26 @@ model ReceiptItem {
 }
 
 model Recipe {
-  id               String             @id
-  userId           String?
-  name             String
-  description      String?
-  instructions     String
-  preparationTime  Int?
-  cookingTime      Int?
-  servings         Int
-  difficulty       RecipeDifficulty
-  imageUrl         String?
-  type             RecipeType         @default(MAIN)
-  source           RecipeSource       @default(MANUAL)
-  basicIngredients Json               @default("[]")
-  missingIngredients Json             @default("[]")
-  steps            Json               @default("[]")
-  doneAt           DateTime?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  RecipeIngredient RecipeIngredient[]
-  User             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String             @id
+  userId             String?
+  name               String
+  description        String?
+  instructions       String
+  preparationTime    Int?
+  cookingTime        Int?
+  servings           Int
+  difficulty         RecipeDifficulty
+  imageUrl           String?
+  type               RecipeType         @default(MAIN)
+  source             RecipeSource       @default(MANUAL)
+  basicIngredients   Json               @default("[]")
+  missingIngredients Json               @default("[]")
+  steps              Json               @default("[]")
+  doneAt             DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime
+  RecipeIngredient   RecipeIngredient[]
+  User               User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, createdAt])
@@ -304,7 +308,7 @@ model Recipe {
 }
 
 model RecipeIngredient {
-  id        String   @id
+  id        String                 @id
   recipeId  String
   productId String?
   name      String
@@ -312,8 +316,8 @@ model RecipeIngredient {
   unit      String
   notes     String?
   source    RecipeIngredientSource @default(INVENTORY)
-  Product   Product? @relation(fields: [productId], references: [id])
-  Recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  Product   Product?               @relation(fields: [productId], references: [id])
+  Recipe    Recipe                 @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@index([productId])
   @@index([recipeId])
@@ -321,44 +325,44 @@ model RecipeIngredient {
 }
 
 model User {
-  id                     String             @id
-  email                  String             @unique
-  name                   String
-  emailVerified          Boolean            @default(false)
-  welcomeEmailSentAt     DateTime?
-  passwordHash           String             @default("")
-  firstName              String             @default("")
-  lastName               String             @default("")
-  profileType            ProfileType        @default(SINGLE)
-  preferences            Json               @default("{}")
-  createdAt              DateTime           @default(now())
-  updatedAt              DateTime
-  role                   UserRole           @default(USER)
-  subscriptionPlan       SubscriptionPlan   @default(FREE)
-  subscriptionStatus     SubscriptionStatus @default(ACTIVE)
-  trialStartedAt         DateTime?
-  trialEndsAt            DateTime?
-  trialUsedAt            DateTime?
-  currentPeriodStartedAt DateTime?
-  currentPeriodEndsAt    DateTime?
-  stripeCustomerId       String?            @unique
-  stripeSubscriptionId   String?            @unique
-  stripePriceId          String?
-  billingInterval        BillingInterval?
-  cancelAtPeriodEnd      Boolean            @default(false)
+  id                      String             @id
+  email                   String             @unique
+  name                    String
+  emailVerified           Boolean            @default(false)
+  welcomeEmailSentAt      DateTime?
+  passwordHash            String             @default("")
+  firstName               String             @default("")
+  lastName                String             @default("")
+  profileType             ProfileType        @default(SINGLE)
+  preferences             Json               @default("{}")
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime
+  role                    UserRole           @default(USER)
+  subscriptionPlan        SubscriptionPlan   @default(FREE)
+  subscriptionStatus      SubscriptionStatus @default(ACTIVE)
+  trialStartedAt          DateTime?
+  trialEndsAt             DateTime?
+  trialUsedAt             DateTime?
+  currentPeriodStartedAt  DateTime?
+  currentPeriodEndsAt     DateTime?
+  stripeCustomerId        String?            @unique
+  stripeSubscriptionId    String?            @unique
+  stripePriceId           String?
+  billingInterval         BillingInterval?
+  cancelAtPeriodEnd       Boolean            @default(false)
   subscriptionCancelledAt DateTime?
-  lastStripeEventAt      DateTime?
-  avatarUrl              String?
-  Budget                 Budget[]
-  Expense                Expense[]
-  InventoryItem          InventoryItem[]
-  Invoice                Invoice[]
-  Notification           Notification[]
-  Recipe                 Recipe[]
-  Receipt                Receipt[]
-  UsageQuota             UsageQuota[]
-  sessions               Session[]
-  accounts               Account[]
+  lastStripeEventAt       DateTime?
+  avatarUrl               String?
+  Budget                  Budget[]
+  Expense                 Expense[]
+  InventoryItem           InventoryItem[]
+  Invoice                 Invoice[]
+  Notification            Notification[]
+  Recipe                  Recipe[]
+  Receipt                 Receipt[]
+  UsageQuota              UsageQuota[]
+  sessions                Session[]
+  accounts                Account[]
 
   @@map("User")
 }
@@ -377,13 +381,13 @@ model StripeWebhookEvent {
 }
 
 model ResendWebhookEvent {
-  id          String   @id
-  type        String
-  emailId     String?
-  emailType   String?
+  id           String   @id
+  type         String
+  emailId      String?
+  emailType    String?
   recipientRef String?
-  eventAt     DateTime
-  processedAt DateTime @default(now())
+  eventAt      DateTime
+  processedAt  DateTime @default(now())
 
   @@index([type, eventAt])
 }
