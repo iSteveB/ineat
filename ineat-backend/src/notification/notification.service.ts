@@ -28,8 +28,6 @@ export class NotificationService {
     userId: string,
     options: ListNotificationsOptions = {},
   ): Promise<Notification[]> {
-    await this.syncActionableNotifications(userId);
-
     return this.prisma.notification.findMany({
       where: {
         userId,
@@ -43,8 +41,6 @@ export class NotificationService {
   }
 
   async countUnread(userId: string): Promise<number> {
-    await this.syncActionableNotifications(userId);
-
     return this.prisma.notification.count({
       where: {
         userId,
@@ -53,6 +49,21 @@ export class NotificationService {
         dismissedAt: null,
       },
     });
+  }
+
+  async synchronizeUser(userId: string): Promise<void> {
+    await Promise.all([
+      this.synchronizeExpiryNotifications(userId),
+      this.synchronizeBudgetNotifications(userId),
+    ]);
+  }
+
+  async synchronizeExpiryNotifications(userId: string): Promise<void> {
+    await this.syncExpiryNotifications(userId);
+  }
+
+  async synchronizeBudgetNotifications(userId: string): Promise<void> {
+    await this.syncBudgetNotifications(userId);
   }
 
   async markAsRead(
@@ -102,13 +113,6 @@ export class NotificationService {
       where: { id: notificationId },
       data: { dismissedAt: now, isRead: true, updatedAt: now },
     });
-  }
-
-  private async syncActionableNotifications(userId: string): Promise<void> {
-    await Promise.all([
-      this.syncExpiryNotifications(userId),
-      this.syncBudgetNotifications(userId),
-    ]);
   }
 
   private async syncExpiryNotifications(userId: string): Promise<void> {

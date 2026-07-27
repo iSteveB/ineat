@@ -1,8 +1,10 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AddManualProductDto, ProductCreatedResponseDto } from '../dto';
@@ -14,6 +16,7 @@ import {
   estimateExpiryDate,
   ExpiryEstimationResult,
 } from './expiry-estimation.service';
+import { NotificationService } from '../../notification/notification.service';
 
 // Types pour les statistiques d'inventaire (conformes au schéma InventoryStats)
 export interface InventoryStats {
@@ -91,10 +94,13 @@ type InventoryItemInput = Pick<
 
 @Injectable()
 export class InventoryService {
+  private readonly logger = new Logger(InventoryService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly budgetService: BudgetService,
     private readonly expenseService: ExpenseService,
+    @Optional() private readonly notifications?: NotificationService,
   ) {}
 
   /**
@@ -111,7 +117,7 @@ export class InventoryService {
     await this.validateProductData(addProductDto);
 
     // Utilisation d'une transaction pour assurer la cohérence des données
-    return await this.prisma.$transaction(async (tx: any) => {
+    const result = await this.prisma.$transaction(async (tx: any) => {
       // 1. Récupérer ou créer le produit
       const product = await this.findOrCreateProduct(tx, addProductDto);
 
@@ -160,6 +166,8 @@ export class InventoryService {
         budgetImpact,
       };
     });
+    await this.refreshExpiryNotifications(userId);
+    return result;
   }
 
   /**
@@ -176,7 +184,7 @@ export class InventoryService {
     await this.validateQuickAddData(quickAddDto);
 
     // Utilisation d'une transaction pour assurer la cohérence
-    return await this.prisma.$transaction(async (tx: any) => {
+    const result = await this.prisma.$transaction(async (tx: any) => {
       // 1. Vérifier que le produit existe
       const product = await this.findProductById(tx, quickAddDto.productId);
 
@@ -225,6 +233,8 @@ export class InventoryService {
         budgetImpact,
       };
     });
+    await this.refreshExpiryNotifications(userId);
+    return result;
   }
 
   /**
@@ -489,7 +499,7 @@ export class InventoryService {
       updatePayload.expiryDateSource = expiryEstimation.source;
     }
 
-    return await this.prisma.inventoryItem.update({
+    const updatedItem = await this.prisma.inventoryItem.update({
       where: { id: inventoryItemId },
       data: updatePayload,
       include: {
@@ -500,6 +510,8 @@ export class InventoryService {
         },
       },
     });
+    await this.refreshExpiryNotifications(userId);
+    return updatedItem;
   }
 
   /**
@@ -522,6 +534,7 @@ export class InventoryService {
     await this.prisma.inventoryItem.delete({
       where: { id: inventoryItemId },
     });
+    await this.refreshExpiryNotifications(userId);
 
     return { success: true, message: "Produit supprimé de l'inventaire" };
   }
@@ -533,7 +546,7 @@ export class InventoryService {
   ) {
     this.validatePositiveQuantity(quantityConsumed);
 
-    return await this.prisma.$transaction(async (tx: any) => {
+    const result = await this.prisma.$transaction(async (tx: any) => {
       const selectedItem = await tx.inventoryItem.findFirst({
         where: {
           id: inventoryItemId,
@@ -625,6 +638,8 @@ export class InventoryService {
         consumedLots,
       };
     });
+    await this.refreshExpiryNotifications(userId);
+    return result;
   }
 
   /**
@@ -645,6 +660,7 @@ export class InventoryService {
         userId,
       },
     });
+    await this.refreshExpiryNotifications(userId);
 
     return {
       success: true,
@@ -657,6 +673,14 @@ export class InventoryService {
   }
 
   // --- MÉTHODES PRIVÉES ---
+
+  private async refreshExpiryNotifications(userId: string): Promise<void> {
+    try {
+      await this.notifications?.synchronizeExpiryNotifications(userId);
+    } catch (error) {
+      this.logger.error('Failed to synchronize expiry notifications', error);
+    }
+  }
 
   /**
    * Calcule le statut d'expiration d'un produit (conforme à la logique dans base.ts)
@@ -917,9 +941,10 @@ export class InventoryService {
 
     if (matchingLot) {
       const nextPurchasePrice =
-        matchingLot.purchasePrice !== null && matchingLot.purchasePrice !== undefined
+        matchingLot.purchasePrice !== null &&
+        matchingLot.purchasePrice !== undefined
           ? matchingLot.purchasePrice + (itemData.purchasePrice ?? 0)
-          : itemData.purchasePrice ?? null;
+          : (itemData.purchasePrice ?? null);
 
       return await tx.inventoryItem.update({
         where: { id: matchingLot.id },
@@ -1024,7 +1049,9 @@ export class InventoryService {
   }
 
   private shouldUseLotAsPrimaryItem(candidate: any, current: any): boolean {
-    return this.compareNullableDates(candidate.expiryDate, current.expiryDate) < 0;
+    return (
+      this.compareNullableDates(candidate.expiryDate, current.expiryDate) < 0
+    );
   }
 
   private compareNullableDates(

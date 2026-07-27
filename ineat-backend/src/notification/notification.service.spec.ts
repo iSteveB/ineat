@@ -27,7 +27,7 @@ describe('NotificationService', () => {
     service = new NotificationService(prisma as any);
   });
 
-  it('synchronizes expiry and budget alerts before listing notifications', async () => {
+  it('synchronizes expiry and budget alerts explicitly', async () => {
     prisma.inventoryItem.findMany.mockResolvedValue([
       {
         id: 'item-1',
@@ -46,7 +46,7 @@ describe('NotificationService', () => {
     );
     prisma.notification.findMany.mockResolvedValue([]);
 
-    await service.listNotifications('user-1');
+    await service.synchronizeUser('user-1');
 
     expect(prisma.notification.upsert).toHaveBeenCalledWith({
       where: { deduplicationKey: expect.stringMatching(/^[a-f0-9]{32}$/) },
@@ -70,7 +70,19 @@ describe('NotificationService', () => {
       }),
       update: expect.any(Object),
     });
-    expect(prisma.notification.findMany).toHaveBeenLastCalledWith({
+  });
+
+  it('lists and counts notifications without synchronizing business data', async () => {
+    prisma.notification.findMany.mockResolvedValue([]);
+    prisma.notification.count.mockResolvedValue(0);
+
+    await service.listNotifications('user-1');
+    await service.countUnread('user-1');
+
+    expect(prisma.inventoryItem.findMany).not.toHaveBeenCalled();
+    expect(prisma.budget.findFirst).not.toHaveBeenCalled();
+    expect(prisma.notification.upsert).not.toHaveBeenCalled();
+    expect(prisma.notification.findMany).toHaveBeenCalledWith({
       where: {
         userId: 'user-1',
         isRead: false,
@@ -103,7 +115,7 @@ describe('NotificationService', () => {
     });
     prisma.notification.count.mockResolvedValue(0);
 
-    await expect(service.countUnread('user-1')).resolves.toBe(0);
+    await service.synchronizeUser('user-1');
 
     expect(prisma.notification.upsert).toHaveBeenCalledWith({
       where: { deduplicationKey: expect.any(String) },
@@ -133,7 +145,7 @@ describe('NotificationService', () => {
     });
     prisma.notification.count.mockResolvedValue(1);
 
-    await expect(service.countUnread('user-1')).resolves.toBe(1);
+    await service.synchronizeUser('user-1');
 
     expect(prisma.notification.upsert).toHaveBeenCalledWith({
       where: { deduplicationKey: expect.any(String) },
@@ -243,7 +255,7 @@ describe('NotificationService', () => {
     ]);
     prisma.notification.count.mockResolvedValue(0);
 
-    await service.countUnread('user-1');
+    await service.synchronizeUser('user-1');
 
     expect(prisma.notification.updateMany).toHaveBeenCalledWith({
       where: { id: { in: ['notification-1'] }, userId: 'user-1' },

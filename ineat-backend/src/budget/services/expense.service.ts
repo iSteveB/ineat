@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Expense } from '../../../prisma/generated/prisma/client';
 import {
@@ -21,12 +21,16 @@ import {
 } from '../schemas/expense.schema';
 import { BudgetService } from './budget.service';
 import { randomUUID } from 'crypto';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class ExpenseService {
+  private readonly logger = new Logger(ExpenseService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly budgetService: BudgetService,
+    @Optional() private readonly notifications?: NotificationService,
   ) {}
 
   /**
@@ -77,6 +81,7 @@ export class ExpenseService {
       },
     });
 
+    await this.refreshNotifications(userId);
     return expense;
   }
 
@@ -176,10 +181,13 @@ export class ExpenseService {
     if (data.category !== undefined) updateData.category = data.category;
     if (data.notes !== undefined) updateData.notes = data.notes;
 
-    return this.prisma.expense.update({
+    const updatedExpense = await this.prisma.expense.update({
       where: { id: expenseId },
       data: updateData,
     });
+
+    await this.refreshNotifications(userId);
+    return updatedExpense;
   }
 
   /**
@@ -368,6 +376,15 @@ export class ExpenseService {
     await this.prisma.expense.delete({
       where: { id: expenseId },
     });
+    await this.refreshNotifications(userId);
+  }
+
+  private async refreshNotifications(userId: string): Promise<void> {
+    try {
+      await this.notifications?.synchronizeBudgetNotifications(userId);
+    } catch (error) {
+      this.logger.error('Failed to synchronize budget notifications', error);
+    }
   }
 
   /**

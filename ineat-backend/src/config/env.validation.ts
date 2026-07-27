@@ -29,6 +29,10 @@ const optionalBoolean = z.preprocess((value) => {
 const baseEnvironmentSchema = z
   .object({
     NODE_ENV: z.string().default('development'),
+    NOTIFICATION_SYNC_INTERVAL_MS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(60_000).optional(),
+    ),
     EMAIL_ENABLED: optionalBoolean,
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,
@@ -79,9 +83,12 @@ const emailEnvironmentSchema = baseEnvironmentSchema.extend({
   RESEND_API_KEY: z.string().trim().startsWith('re_', {
     message: 'must be a Resend API key',
   }),
-  EMAIL_FROM: z.string().trim().regex(/^.+<[^<>\s]+@[^<>\s]+>$/, {
-    message: 'must use the format Name <email@example.com>',
-  }),
+  EMAIL_FROM: z
+    .string()
+    .trim()
+    .regex(/^.+<[^<>\s]+@[^<>\s]+>$/, {
+      message: 'must use the format Name <email@example.com>',
+    }),
   EMAIL_REPLY_TO: z.string().trim().email(),
 });
 

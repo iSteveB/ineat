@@ -3,11 +3,13 @@ import { InventoryController } from './controllers/inventory.controller';
 import { InventoryService } from './services/inventory.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { BudgetModule } from '../budget/budget.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
     PrismaModule, // Module Prisma pour l'accès à la base de données
     BudgetModule, // Module Budget pour la gestion des budgets
+    NotificationModule,
   ],
   controllers: [
     InventoryController, // Controller gérant les requêtes HTTP pour l'inventaire

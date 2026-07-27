@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Budget, Expense } from '../../../prisma/generated/prisma/client';
 import {
@@ -15,10 +15,16 @@ import {
   shouldTriggerAlert,
 } from '../schemas/budget.schema';
 import { randomUUID } from 'crypto';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class BudgetService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(BudgetService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly notifications?: NotificationService,
+  ) {}
 
   private normalizePeriodStart(date: string): Date {
     const normalizedDate = new Date(date);
@@ -94,6 +100,7 @@ export class BudgetService {
       },
     });
 
+    await this.refreshNotifications(userId);
     return budget;
   }
 
@@ -143,10 +150,13 @@ export class BudgetService {
     if (data.periodEnd)
       updateData.periodEnd = this.normalizePeriodEnd(data.periodEnd);
 
-    return this.prisma.budget.update({
+    const updatedBudget = await this.prisma.budget.update({
       where: { id: budgetId },
       data: updateData,
     });
+
+    await this.refreshNotifications(userId);
+    return updatedBudget;
   }
 
   /**
@@ -290,6 +300,7 @@ export class BudgetService {
       this.prisma.expense.deleteMany({ where: { budgetId } }),
       this.prisma.budget.delete({ where: { id: budgetId } }),
     ]);
+    await this.refreshNotifications(userId);
   }
 
   /**
@@ -336,6 +347,14 @@ export class BudgetService {
       },
       data: { isActive: false },
     });
+  }
+
+  private async refreshNotifications(userId: string): Promise<void> {
+    try {
+      await this.notifications?.synchronizeBudgetNotifications(userId);
+    } catch (error) {
+      this.logger.error('Failed to synchronize budget notifications', error);
+    }
   }
 
   private getAlertTitle(type: BudgetAlert['type'], stats: BudgetStats): string {
