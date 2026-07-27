@@ -195,12 +195,14 @@ export class NotificationService {
     });
 
     if (existing) {
+      const severityChanged = existing.title !== data.title;
+
       return this.prisma.notification.update({
         where: { id: existing.id },
         data: {
           title: data.title,
           message: data.message,
-          isRead: false,
+          ...(severityChanged ? { isRead: false } : {}),
           updatedAt: new Date(),
         },
       });

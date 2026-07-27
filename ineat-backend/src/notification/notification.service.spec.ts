@@ -71,7 +71,7 @@ describe('NotificationService', () => {
     });
   });
 
-  it('updates an existing notification instead of duplicating it', async () => {
+  it('updates an existing notification without marking it unread again', async () => {
     prisma.inventoryItem.findMany.mockResolvedValue([
       {
         id: 'item-1',
@@ -82,6 +82,37 @@ describe('NotificationService', () => {
     prisma.budget.findFirst.mockResolvedValue(null);
     prisma.notification.findFirst.mockResolvedValue({
       id: 'notification-1',
+      title: 'Produit à consommer très vite',
+      isRead: true,
+    });
+    prisma.notification.update.mockResolvedValue({
+      id: 'notification-1',
+      isRead: true,
+    });
+    prisma.notification.count.mockResolvedValue(0);
+
+    await expect(service.countUnread('user-1')).resolves.toBe(0);
+
+    expect(prisma.notification.create).not.toHaveBeenCalled();
+    expect(prisma.notification.update).toHaveBeenCalledWith({
+      where: { id: 'notification-1' },
+      data: expect.not.objectContaining({ isRead: expect.anything() }),
+    });
+  });
+
+  it('marks an existing notification unread when its severity changes', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        id: 'item-1',
+        expiryDate: new Date(),
+        Product: { name: 'Yaourt nature' },
+      },
+    ]);
+    prisma.budget.findFirst.mockResolvedValue(null);
+    prisma.notification.findFirst.mockResolvedValue({
+      id: 'notification-1',
+      title: 'Produit bientôt périmé',
+      isRead: true,
     });
     prisma.notification.update.mockResolvedValue({
       id: 'notification-1',
@@ -91,12 +122,9 @@ describe('NotificationService', () => {
 
     await expect(service.countUnread('user-1')).resolves.toBe(1);
 
-    expect(prisma.notification.create).not.toHaveBeenCalled();
     expect(prisma.notification.update).toHaveBeenCalledWith({
       where: { id: 'notification-1' },
-      data: expect.objectContaining({
-        isRead: false,
-      }),
+      data: expect.objectContaining({ isRead: false }),
     });
   });
 
