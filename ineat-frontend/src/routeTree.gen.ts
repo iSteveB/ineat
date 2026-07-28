@@ -34,6 +34,7 @@ import { Route as AppRecipesRecipeIdRouteImport } from './routes/app/recipes/$re
 import { Route as AppInventoryProductIdRouteImport } from './routes/app/inventory/$productId'
 import { Route as AppSettingsSecurityIndexRouteImport } from './routes/app/settings/security/index'
 import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/settings/personal-info/index'
+import { Route as AppSettingsNotificationsIndexRouteImport } from './routes/app/settings/notifications/index'
 import { Route as AppSettingsDietRestrictionsIndexRouteImport } from './routes/app/settings/diet-restrictions/index'
 import { Route as AppInventoryAddIndexRouteImport } from './routes/app/inventory/add/index'
 import { Route as AppInventoryAddSearchRouteImport } from './routes/app/inventory/add/search'
@@ -167,6 +168,12 @@ const AppSettingsPersonalInfoIndexRoute =
     path: '/settings/personal-info/',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const AppSettingsNotificationsIndexRoute =
+  AppSettingsNotificationsIndexRouteImport.update({
+    id: '/settings/notifications/',
+    path: '/settings/notifications/',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 const AppSettingsDietRestrictionsIndexRoute =
   AppSettingsDietRestrictionsIndexRouteImport.update({
     id: '/settings/diet-restrictions/',
@@ -228,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
   '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsIndexRoute
   '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
   '/app/settings/security': typeof AppSettingsSecurityIndexRoute
 }
@@ -259,6 +267,7 @@ export interface FileRoutesByTo {
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
   '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/notifications': typeof AppSettingsNotificationsIndexRoute
   '/app/settings/personal-info': typeof AppSettingsPersonalInfoIndexRoute
   '/app/settings/security': typeof AppSettingsSecurityIndexRoute
 }
@@ -293,6 +302,7 @@ export interface FileRoutesById {
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
   '/app/inventory/add/': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
+  '/app/settings/notifications/': typeof AppSettingsNotificationsIndexRoute
   '/app/settings/personal-info/': typeof AppSettingsPersonalInfoIndexRoute
   '/app/settings/security/': typeof AppSettingsSecurityIndexRoute
 }
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/app/inventory/add/search'
     | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
+    | '/app/settings/notifications'
     | '/app/settings/personal-info'
     | '/app/settings/security'
   fileRoutesByTo: FileRoutesByTo
@@ -358,6 +369,7 @@ export interface FileRouteTypes {
     | '/app/inventory/add/search'
     | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
+    | '/app/settings/notifications'
     | '/app/settings/personal-info'
     | '/app/settings/security'
   id:
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/app/inventory/add/search'
     | '/app/inventory/add/'
     | '/app/settings/diet-restrictions/'
+    | '/app/settings/notifications/'
     | '/app/settings/personal-info/'
     | '/app/settings/security/'
   fileRoutesById: FileRoutesById
@@ -578,6 +591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsPersonalInfoIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/settings/notifications/': {
+      id: '/app/settings/notifications/'
+      path: '/settings/notifications'
+      fullPath: '/app/settings/notifications'
+      preLoaderRoute: typeof AppSettingsNotificationsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/settings/diet-restrictions/': {
       id: '/app/settings/diet-restrictions/'
       path: '/settings/diet-restrictions'
@@ -666,6 +686,7 @@ interface AppRouteRouteChildren {
   AppInventoryAddSearchRoute: typeof AppInventoryAddSearchRoute
   AppInventoryAddIndexRoute: typeof AppInventoryAddIndexRoute
   AppSettingsDietRestrictionsIndexRoute: typeof AppSettingsDietRestrictionsIndexRoute
+  AppSettingsNotificationsIndexRoute: typeof AppSettingsNotificationsIndexRoute
   AppSettingsPersonalInfoIndexRoute: typeof AppSettingsPersonalInfoIndexRoute
   AppSettingsSecurityIndexRoute: typeof AppSettingsSecurityIndexRoute
 }
@@ -691,6 +712,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppInventoryAddSearchRoute: AppInventoryAddSearchRoute,
   AppInventoryAddIndexRoute: AppInventoryAddIndexRoute,
   AppSettingsDietRestrictionsIndexRoute: AppSettingsDietRestrictionsIndexRoute,
+  AppSettingsNotificationsIndexRoute: AppSettingsNotificationsIndexRoute,
   AppSettingsPersonalInfoIndexRoute: AppSettingsPersonalInfoIndexRoute,
   AppSettingsSecurityIndexRoute: AppSettingsSecurityIndexRoute,
 }

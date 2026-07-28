@@ -30,6 +30,15 @@ export type NotificationPage = {
 	unreadCount: number;
 };
 
+export type NotificationPreferences = {
+	inAppEnabled: boolean;
+	emailEnabled: boolean;
+	pushEnabled: boolean;
+	expiry: boolean;
+	budget: boolean;
+	system: boolean;
+};
+
 type NotificationsApiResponse = ApiResponse<AppNotification[]> & {
 	pagination: {
 		nextCursor: string | null;
@@ -74,6 +83,20 @@ export const notificationService = {
 		>('/notifications/unread-count');
 
 		return response.data.count;
+	},
+
+	async getPreferences(): Promise<NotificationPreferences> {
+		const response = await apiClient.get<
+			ApiResponse<NotificationPreferences>
+		>('/notifications/preferences');
+		return response.data;
+	},
+
+	async updatePreferences(changes: Partial<NotificationPreferences>) {
+		const response = await apiClient.patch<
+			ApiResponse<NotificationPreferences>
+		>('/notifications/preferences', changes);
+		return response.data;
 	},
 
 	async markAsRead(notificationId: string, isRead = true) {

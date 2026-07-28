@@ -10,7 +10,10 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
-import { NotificationService } from './notification.service';
+import {
+  NotificationService,
+  type NotificationPreferences,
+} from './notification.service';
 
 @Controller('notifications')
 @UseGuards(SessionAuthGuard)
@@ -53,6 +56,27 @@ export class NotificationController {
     return {
       success: true,
       data: { count },
+    };
+  }
+
+  @Get('preferences')
+  async getPreferences(@Req() req: Request) {
+    const userId = (req.user as { id: string }).id;
+    return {
+      success: true,
+      data: await this.notificationService.getPreferences(userId),
+    };
+  }
+
+  @Patch('preferences')
+  async updatePreferences(
+    @Req() req: Request,
+    @Body() body: Partial<NotificationPreferences>,
+  ) {
+    const userId = (req.user as { id: string }).id;
+    return {
+      success: true,
+      data: await this.notificationService.updatePreferences(userId, body),
     };
   }
 

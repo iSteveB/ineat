@@ -17,6 +17,10 @@ describe('NotificationService', () => {
       update: jest.fn(),
       updateMany: jest.fn(),
     },
+    notificationPreferences: {
+      findUnique: jest.fn(),
+      upsert: jest.fn(),
+    },
   };
 
   let service: NotificationService;
@@ -24,6 +28,7 @@ describe('NotificationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     prisma.notification.findMany.mockResolvedValue([]);
+    prisma.notificationPreferences.findUnique.mockResolvedValue(null);
     service = new NotificationService(prisma as any);
   });
 
@@ -342,6 +347,64 @@ describe('NotificationService', () => {
         isRead: true,
         updatedAt: expect.any(Date),
       },
+    });
+  });
+
+  it('applies notification preferences and resolves a disabled category', async () => {
+    prisma.notificationPreferences.findUnique.mockResolvedValue({
+      inAppEnabled: true,
+      emailEnabled: false,
+      pushEnabled: false,
+      expiry: false,
+      budget: true,
+      system: true,
+    });
+    prisma.notification.findMany.mockResolvedValueOnce([
+      {
+        id: 'notification-1',
+        referenceId: 'item-1',
+        referenceType: 'inventory_item',
+      },
+    ]);
+
+    await service.synchronizeExpiryNotifications('user-1');
+
+    expect(prisma.inventoryItem.findMany).not.toHaveBeenCalled();
+    expect(prisma.notification.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: ['notification-1'] }, userId: 'user-1' },
+      data: {
+        resolvedAt: expect.any(Date),
+        isRead: true,
+        updatedAt: expect.any(Date),
+      },
+    });
+  });
+
+  it('updates preferences and refreshes active notifications', async () => {
+    const preferences = {
+      inAppEnabled: true,
+      emailEnabled: false,
+      pushEnabled: false,
+      expiry: false,
+      budget: true,
+      system: true,
+    };
+    prisma.notificationPreferences.upsert.mockResolvedValue(preferences);
+    prisma.notificationPreferences.findUnique.mockResolvedValue(preferences);
+    prisma.budget.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updatePreferences('user-1', { expiry: false }),
+    ).resolves.toEqual(preferences);
+
+    expect(prisma.notificationPreferences.upsert).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+      create: expect.objectContaining({
+        userId: 'user-1',
+        expiry: false,
+      }),
+      update: { expiry: false, updatedAt: expect.any(Date) },
+      select: expect.any(Object),
     });
   });
 });

@@ -43,6 +43,11 @@ export type InventoryItem = Prisma.InventoryItemModel
  */
 export type Notification = Prisma.NotificationModel
 /**
+ * Model NotificationPreferences
+ *
+ */
+export type NotificationPreferences = Prisma.NotificationPreferencesModel
+/**
  * Model Product
  * 
  */

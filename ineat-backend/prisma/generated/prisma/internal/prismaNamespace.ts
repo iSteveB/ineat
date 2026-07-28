@@ -389,6 +389,7 @@ export const ModelName = {
   Expense: 'Expense',
   InventoryItem: 'InventoryItem',
   Notification: 'Notification',
+  NotificationPreferences: 'NotificationPreferences',
   Product: 'Product',
   Invoice: 'Invoice',
   InvoiceItem: 'InvoiceItem',
@@ -419,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationPreferences" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -790,6 +791,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.NotificationCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.NotificationCountAggregateOutputType> | number
+        }
+      }
+    }
+    NotificationPreferences: {
+      payload: Prisma.$NotificationPreferencesPayload<ExtArgs>
+      fields: Prisma.NotificationPreferencesFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.NotificationPreferencesFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.NotificationPreferencesFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>
+        }
+        findFirst: {
+          args: Prisma.NotificationPreferencesFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.NotificationPreferencesFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>
+        }
+        findMany: {
+          args: Prisma.NotificationPreferencesFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>[]
+        }
+        create: {
+          args: Prisma.NotificationPreferencesCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>
+        }
+        createMany: {
+          args: Prisma.NotificationPreferencesCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.NotificationPreferencesCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>[]
+        }
+        delete: {
+          args: Prisma.NotificationPreferencesDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>
+        }
+        update: {
+          args: Prisma.NotificationPreferencesUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>
+        }
+        deleteMany: {
+          args: Prisma.NotificationPreferencesDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.NotificationPreferencesUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.NotificationPreferencesUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>[]
+        }
+        upsert: {
+          args: Prisma.NotificationPreferencesUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$NotificationPreferencesPayload>
+        }
+        aggregate: {
+          args: Prisma.NotificationPreferencesAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateNotificationPreferences>
+        }
+        groupBy: {
+          args: Prisma.NotificationPreferencesGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationPreferencesGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.NotificationPreferencesCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.NotificationPreferencesCountAggregateOutputType> | number
         }
       }
     }
@@ -2026,6 +2101,21 @@ export const NotificationScalarFieldEnum = {
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
+export const NotificationPreferencesScalarFieldEnum = {
+  userId: 'userId',
+  inAppEnabled: 'inAppEnabled',
+  emailEnabled: 'emailEnabled',
+  pushEnabled: 'pushEnabled',
+  expiry: 'expiry',
+  budget: 'budget',
+  system: 'system',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotificationPreferencesScalarFieldEnum = (typeof NotificationPreferencesScalarFieldEnum)[keyof typeof NotificationPreferencesScalarFieldEnum]
+
+
 export const ProductScalarFieldEnum = {
   id: 'id',
   barcode: 'barcode',
@@ -2841,6 +2931,7 @@ export type GlobalOmitConfig = {
   expense?: Prisma.ExpenseOmit
   inventoryItem?: Prisma.InventoryItemOmit
   notification?: Prisma.NotificationOmit
+  notificationPreferences?: Prisma.NotificationPreferencesOmit
   product?: Prisma.ProductOmit
   invoice?: Prisma.InvoiceOmit
   invoiceItem?: Prisma.InvoiceItemOmit

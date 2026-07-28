@@ -125,6 +125,19 @@ model Notification {
   @@index([userId, resolvedAt, dismissedAt])
 }
 
+model NotificationPreferences {
+  userId       String   @id
+  inAppEnabled Boolean  @default(true)
+  emailEnabled Boolean  @default(false)
+  pushEnabled  Boolean  @default(false)
+  expiry       Boolean  @default(true)
+  budget       Boolean  @default(true)
+  system       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model Product {
   id               String             @id
   barcode          String?            @unique
@@ -326,31 +339,31 @@ model RecipeIngredient {
 }
 
 model User {
-  id                      String             @id
-  email                   String             @unique
+  id                      String                   @id
+  email                   String                   @unique
   name                    String
-  emailVerified           Boolean            @default(false)
+  emailVerified           Boolean                  @default(false)
   welcomeEmailSentAt      DateTime?
-  passwordHash            String             @default("")
-  firstName               String             @default("")
-  lastName                String             @default("")
-  profileType             ProfileType        @default(SINGLE)
-  preferences             Json               @default("{}")
-  createdAt               DateTime           @default(now())
+  passwordHash            String                   @default("")
+  firstName               String                   @default("")
+  lastName                String                   @default("")
+  profileType             ProfileType              @default(SINGLE)
+  preferences             Json                     @default("{}")
+  createdAt               DateTime                 @default(now())
   updatedAt               DateTime
-  role                    UserRole           @default(USER)
-  subscriptionPlan        SubscriptionPlan   @default(FREE)
-  subscriptionStatus      SubscriptionStatus @default(ACTIVE)
+  role                    UserRole                 @default(USER)
+  subscriptionPlan        SubscriptionPlan         @default(FREE)
+  subscriptionStatus      SubscriptionStatus       @default(ACTIVE)
   trialStartedAt          DateTime?
   trialEndsAt             DateTime?
   trialUsedAt             DateTime?
   currentPeriodStartedAt  DateTime?
   currentPeriodEndsAt     DateTime?
-  stripeCustomerId        String?            @unique
-  stripeSubscriptionId    String?            @unique
+  stripeCustomerId        String?                  @unique
+  stripeSubscriptionId    String?                  @unique
   stripePriceId           String?
   billingInterval         BillingInterval?
-  cancelAtPeriodEnd       Boolean            @default(false)
+  cancelAtPeriodEnd       Boolean                  @default(false)
   subscriptionCancelledAt DateTime?
   lastStripeEventAt       DateTime?
   avatarUrl               String?
@@ -359,6 +372,7 @@ model User {
   InventoryItem           InventoryItem[]
   Invoice                 Invoice[]
   Notification            Notification[]
+  NotificationPreferences NotificationPreferences?
   Recipe                  Recipe[]
   Receipt                 Receipt[]
   UsageQuota              UsageQuota[]

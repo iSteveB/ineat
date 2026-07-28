@@ -367,6 +367,7 @@ export type UserWhereInput = {
   InventoryItem?: Prisma.InventoryItemListRelationFilter
   Invoice?: Prisma.InvoiceListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
+  NotificationPreferences?: Prisma.XOR<Prisma.NotificationPreferencesNullableScalarRelationFilter, Prisma.NotificationPreferencesWhereInput> | null
   Recipe?: Prisma.RecipeListRelationFilter
   Receipt?: Prisma.ReceiptListRelationFilter
   UsageQuota?: Prisma.UsageQuotaListRelationFilter
@@ -408,6 +409,7 @@ export type UserOrderByWithRelationInput = {
   InventoryItem?: Prisma.InventoryItemOrderByRelationAggregateInput
   Invoice?: Prisma.InvoiceOrderByRelationAggregateInput
   Notification?: Prisma.NotificationOrderByRelationAggregateInput
+  NotificationPreferences?: Prisma.NotificationPreferencesOrderByWithRelationInput
   Recipe?: Prisma.RecipeOrderByRelationAggregateInput
   Receipt?: Prisma.ReceiptOrderByRelationAggregateInput
   UsageQuota?: Prisma.UsageQuotaOrderByRelationAggregateInput
@@ -452,6 +454,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   InventoryItem?: Prisma.InventoryItemListRelationFilter
   Invoice?: Prisma.InvoiceListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
+  NotificationPreferences?: Prisma.XOR<Prisma.NotificationPreferencesNullableScalarRelationFilter, Prisma.NotificationPreferencesWhereInput> | null
   Recipe?: Prisma.RecipeListRelationFilter
   Receipt?: Prisma.ReceiptListRelationFilter
   UsageQuota?: Prisma.UsageQuotaListRelationFilter
@@ -561,6 +564,7 @@ export type UserCreateInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -602,6 +606,7 @@ export type UserUncheckedCreateInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -643,6 +648,7 @@ export type UserUpdateInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -684,6 +690,7 @@ export type UserUncheckedUpdateInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -941,6 +948,20 @@ export type UserUpdateOneRequiredWithoutNotificationNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationInput, Prisma.UserUpdateWithoutNotificationInput>, Prisma.UserUncheckedUpdateWithoutNotificationInput>
 }
 
+export type UserCreateNestedOneWithoutNotificationPreferencesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationPreferencesInput, Prisma.UserUncheckedCreateWithoutNotificationPreferencesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationPreferencesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutNotificationPreferencesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationPreferencesInput, Prisma.UserUncheckedCreateWithoutNotificationPreferencesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationPreferencesInput
+  upsert?: Prisma.UserUpsertWithoutNotificationPreferencesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationPreferencesInput, Prisma.UserUpdateWithoutNotificationPreferencesInput>, Prisma.UserUncheckedUpdateWithoutNotificationPreferencesInput>
+}
+
 export type UserCreateNestedOneWithoutInvoiceInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutInvoiceInput, Prisma.UserUncheckedCreateWithoutInvoiceInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutInvoiceInput
@@ -1080,6 +1101,7 @@ export type UserCreateWithoutBudgetInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -1120,6 +1142,7 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -1176,6 +1199,7 @@ export type UserUpdateWithoutBudgetInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -1216,6 +1240,7 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -1256,6 +1281,7 @@ export type UserCreateWithoutExpenseInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -1296,6 +1322,7 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -1352,6 +1379,7 @@ export type UserUpdateWithoutExpenseInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -1392,6 +1420,7 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -1432,6 +1461,7 @@ export type UserCreateWithoutInventoryItemInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -1472,6 +1502,7 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -1528,6 +1559,7 @@ export type UserUpdateWithoutInventoryItemInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -1568,6 +1600,7 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -1608,6 +1641,7 @@ export type UserCreateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -1648,6 +1682,7 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -1704,6 +1739,7 @@ export type UserUpdateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -1744,6 +1780,187 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
+  Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
+  Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutNotificationPreferencesInput = {
+  id: string
+  email: string
+  name: string
+  emailVerified?: boolean
+  welcomeEmailSentAt?: Date | string | null
+  passwordHash?: string
+  firstName?: string
+  lastName?: string
+  profileType?: $Enums.ProfileType
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt: Date | string
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  trialUsedAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  stripePriceId?: string | null
+  billingInterval?: $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: boolean
+  subscriptionCancelledAt?: Date | string | null
+  lastStripeEventAt?: Date | string | null
+  avatarUrl?: string | null
+  Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
+  Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
+  Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutNotificationPreferencesInput = {
+  id: string
+  email: string
+  name: string
+  emailVerified?: boolean
+  welcomeEmailSentAt?: Date | string | null
+  passwordHash?: string
+  firstName?: string
+  lastName?: string
+  profileType?: $Enums.ProfileType
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt: Date | string
+  role?: $Enums.UserRole
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  trialUsedAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  stripePriceId?: string | null
+  billingInterval?: $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: boolean
+  subscriptionCancelledAt?: Date | string | null
+  lastStripeEventAt?: Date | string | null
+  avatarUrl?: string | null
+  Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
+  Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
+  InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
+  Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutNotificationPreferencesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationPreferencesInput, Prisma.UserUncheckedCreateWithoutNotificationPreferencesInput>
+}
+
+export type UserUpsertWithoutNotificationPreferencesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutNotificationPreferencesInput, Prisma.UserUncheckedUpdateWithoutNotificationPreferencesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutNotificationPreferencesInput, Prisma.UserUncheckedCreateWithoutNotificationPreferencesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutNotificationPreferencesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutNotificationPreferencesInput, Prisma.UserUncheckedUpdateWithoutNotificationPreferencesInput>
+}
+
+export type UserUpdateWithoutNotificationPreferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  profileType?: Prisma.EnumProfileTypeFieldUpdateOperationsInput | $Enums.ProfileType
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInterval?: Prisma.NullableEnumBillingIntervalFieldUpdateOperationsInput | $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionCancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastStripeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
+  Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
+  Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutNotificationPreferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  profileType?: Prisma.EnumProfileTypeFieldUpdateOperationsInput | $Enums.ProfileType
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInterval?: Prisma.NullableEnumBillingIntervalFieldUpdateOperationsInput | $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionCancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastStripeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
+  Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
+  InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -1784,6 +2001,7 @@ export type UserCreateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -1824,6 +2042,7 @@ export type UserUncheckedCreateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -1880,6 +2099,7 @@ export type UserUpdateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -1920,6 +2140,7 @@ export type UserUncheckedUpdateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -1961,6 +2182,7 @@ export type UserCreateWithoutReceiptInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2001,6 +2223,7 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2057,6 +2280,7 @@ export type UserUpdateWithoutReceiptInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2097,6 +2321,7 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2137,6 +2362,7 @@ export type UserCreateWithoutRecipeInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2177,6 +2403,7 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2233,6 +2460,7 @@ export type UserUpdateWithoutRecipeInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2273,6 +2501,7 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2313,6 +2542,7 @@ export type UserCreateWithoutUsageQuotaInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2353,6 +2583,7 @@ export type UserUncheckedCreateWithoutUsageQuotaInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2409,6 +2640,7 @@ export type UserUpdateWithoutUsageQuotaInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2449,6 +2681,7 @@ export type UserUncheckedUpdateWithoutUsageQuotaInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2489,6 +2722,7 @@ export type UserCreateWithoutSessionsInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -2529,6 +2763,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -2585,6 +2820,7 @@ export type UserUpdateWithoutSessionsInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -2625,6 +2861,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -2665,6 +2902,7 @@ export type UserCreateWithoutAccountsInput = {
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
@@ -2705,6 +2943,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
   Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
   UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
@@ -2761,6 +3000,7 @@ export type UserUpdateWithoutAccountsInput = {
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
@@ -2801,6 +3041,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
   Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
   UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
@@ -2953,6 +3194,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   InventoryItem?: boolean | Prisma.User$InventoryItemArgs<ExtArgs>
   Invoice?: boolean | Prisma.User$InvoiceArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
+  NotificationPreferences?: boolean | Prisma.User$NotificationPreferencesArgs<ExtArgs>
   Recipe?: boolean | Prisma.User$RecipeArgs<ExtArgs>
   Receipt?: boolean | Prisma.User$ReceiptArgs<ExtArgs>
   UsageQuota?: boolean | Prisma.User$UsageQuotaArgs<ExtArgs>
@@ -3061,6 +3303,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   InventoryItem?: boolean | Prisma.User$InventoryItemArgs<ExtArgs>
   Invoice?: boolean | Prisma.User$InvoiceArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
+  NotificationPreferences?: boolean | Prisma.User$NotificationPreferencesArgs<ExtArgs>
   Recipe?: boolean | Prisma.User$RecipeArgs<ExtArgs>
   Receipt?: boolean | Prisma.User$ReceiptArgs<ExtArgs>
   UsageQuota?: boolean | Prisma.User$UsageQuotaArgs<ExtArgs>
@@ -3079,6 +3322,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     InventoryItem: Prisma.$InventoryItemPayload<ExtArgs>[]
     Invoice: Prisma.$InvoicePayload<ExtArgs>[]
     Notification: Prisma.$NotificationPayload<ExtArgs>[]
+    NotificationPreferences: Prisma.$NotificationPreferencesPayload<ExtArgs> | null
     Recipe: Prisma.$RecipePayload<ExtArgs>[]
     Receipt: Prisma.$ReceiptPayload<ExtArgs>[]
     UsageQuota: Prisma.$UsageQuotaPayload<ExtArgs>[]
@@ -3513,6 +3757,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   InventoryItem<T extends Prisma.User$InventoryItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$InventoryItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Invoice<T extends Prisma.User$InvoiceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$InvoiceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Notification<T extends Prisma.User$NotificationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotificationArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  NotificationPreferences<T extends Prisma.User$NotificationPreferencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotificationPreferencesArgs<ExtArgs>>): Prisma.Prisma__NotificationPreferencesClient<runtime.Types.Result.GetResult<Prisma.$NotificationPreferencesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   Recipe<T extends Prisma.User$RecipeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$RecipeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RecipePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Receipt<T extends Prisma.User$ReceiptArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ReceiptArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReceiptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   UsageQuota<T extends Prisma.User$UsageQuotaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$UsageQuotaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsageQuotaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4080,6 +4325,25 @@ export type User$NotificationArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.NotificationPreferences
+ */
+export type User$NotificationPreferencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the NotificationPreferences
+   */
+  select?: Prisma.NotificationPreferencesSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the NotificationPreferences
+   */
+  omit?: Prisma.NotificationPreferencesOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificationPreferencesInclude<ExtArgs> | null
+  where?: Prisma.NotificationPreferencesWhereInput
 }
 
 /**

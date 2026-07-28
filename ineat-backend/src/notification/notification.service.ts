@@ -32,6 +32,24 @@ type NotificationPage = {
   unreadCount: number;
 };
 
+export type NotificationPreferences = {
+  inAppEnabled: boolean;
+  emailEnabled: boolean;
+  pushEnabled: boolean;
+  expiry: boolean;
+  budget: boolean;
+  system: boolean;
+};
+
+const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  inAppEnabled: true,
+  emailEnabled: false,
+  pushEnabled: false,
+  expiry: true,
+  budget: true,
+  system: true,
+};
+
 const EXPIRY_BATCH_SIZE = 100;
 
 @Injectable()
@@ -101,6 +119,69 @@ export class NotificationService {
     });
   }
 
+  async getPreferences(userId: string): Promise<NotificationPreferences> {
+    const preferences = await this.prisma.notificationPreferences.findUnique({
+      where: { userId },
+      select: {
+        inAppEnabled: true,
+        emailEnabled: true,
+        pushEnabled: true,
+        expiry: true,
+        budget: true,
+        system: true,
+      },
+    });
+
+    return preferences ?? DEFAULT_NOTIFICATION_PREFERENCES;
+  }
+
+  async updatePreferences(
+    userId: string,
+    changes: Partial<NotificationPreferences>,
+  ): Promise<NotificationPreferences> {
+    const allowedKeys = Object.keys(DEFAULT_NOTIFICATION_PREFERENCES) as Array<
+      keyof NotificationPreferences
+    >;
+    const data: Partial<NotificationPreferences> = {};
+
+    for (const key of allowedKeys) {
+      const value = changes[key];
+      if (value !== undefined) {
+        if (typeof value !== 'boolean') {
+          throw new BadRequestException(`Préférence ${key} invalide`);
+        }
+        data[key] = value;
+      }
+    }
+
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException('Aucune préférence valide fournie');
+    }
+
+    const now = new Date();
+    const preferences = await this.prisma.notificationPreferences.upsert({
+      where: { userId },
+      create: {
+        userId,
+        ...DEFAULT_NOTIFICATION_PREFERENCES,
+        ...data,
+        updatedAt: now,
+      },
+      update: { ...data, updatedAt: now },
+      select: {
+        inAppEnabled: true,
+        emailEnabled: true,
+        pushEnabled: true,
+        expiry: true,
+        budget: true,
+        system: true,
+      },
+    });
+
+    await this.synchronizeUser(userId);
+    return preferences;
+  }
+
   async synchronizeUser(userId: string): Promise<void> {
     await Promise.all([
       this.synchronizeExpiryNotifications(userId),
@@ -166,6 +247,15 @@ export class NotificationService {
   }
 
   private async syncExpiryNotifications(userId: string): Promise<void> {
+    if (!(await this.isInAppTypeEnabled(userId, NotificationType.EXPIRY))) {
+      await this.resolveMissingNotifications(
+        userId,
+        NotificationType.EXPIRY,
+        [],
+      );
+      return;
+    }
+
     const limitDate = new Date();
     limitDate.setDate(limitDate.getDate() + 5);
     limitDate.setHours(23, 59, 59, 999);
@@ -233,6 +323,15 @@ export class NotificationService {
   }
 
   private async syncBudgetNotifications(userId: string): Promise<void> {
+    if (!(await this.isInAppTypeEnabled(userId, NotificationType.BUDGET))) {
+      await this.resolveMissingNotifications(
+        userId,
+        NotificationType.BUDGET,
+        [],
+      );
+      return;
+    }
+
     const now = new Date();
     const budget = await this.prisma.budget.findFirst({
       where: {
@@ -353,6 +452,21 @@ export class NotificationService {
         ].join('\u001f'),
       )
       .digest('hex');
+  }
+
+  private async isInAppTypeEnabled(
+    userId: string,
+    type: NotificationType,
+  ): Promise<boolean> {
+    const preferences = await this.getPreferences(userId);
+    const typeEnabled =
+      type === NotificationType.EXPIRY
+        ? preferences.expiry
+        : type === NotificationType.BUDGET
+          ? preferences.budget
+          : preferences.system;
+
+    return preferences.inAppEnabled && typeEnabled;
   }
 
   private async resolveMissingNotifications(

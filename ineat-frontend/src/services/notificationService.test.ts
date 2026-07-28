@@ -97,4 +97,39 @@ describe('notificationService', () => {
 			isRead: true,
 		});
 	});
+
+	it('récupère et met à jour les préférences', async () => {
+		const preferences = {
+			inAppEnabled: true,
+			emailEnabled: false,
+			pushEnabled: false,
+			expiry: true,
+			budget: true,
+			system: true,
+		};
+		server.use(
+			http.get(`${API_URL}/notifications/preferences`, () =>
+				HttpResponse.json({ success: true, data: preferences })
+			),
+			http.patch(
+				`${API_URL}/notifications/preferences`,
+				async ({ request }) => {
+					const changes = (await request.json()) as Partial<
+						typeof preferences
+					>;
+					return HttpResponse.json({
+						success: true,
+						data: { ...preferences, ...changes },
+					});
+				}
+			)
+		);
+
+		await expect(notificationService.getPreferences()).resolves.toEqual(
+			preferences
+		);
+		await expect(
+			notificationService.updatePreferences({ expiry: false })
+		).resolves.toMatchObject({ expiry: false });
+	});
 });
