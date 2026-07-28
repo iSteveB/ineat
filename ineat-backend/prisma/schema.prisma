@@ -103,26 +103,47 @@ enum PreparationStatus {
 }
 
 model Notification {
-  id               String           @id
-  userId           String
-  type             NotificationType
-  title            String
-  message          String
-  isRead           Boolean          @default(false)
-  referenceId      String?
-  referenceType    String?
-  deduplicationKey String           @unique @db.VarChar(32)
-  dismissedAt      DateTime?
-  resolvedAt       DateTime?
-  lastOccurredAt   DateTime         @default(now())
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime
-  User             User             @relation(fields: [userId], references: [id])
+  id                String                 @id
+  userId            String
+  type              NotificationType
+  title             String
+  message           String
+  isRead            Boolean                @default(false)
+  referenceId       String?
+  referenceType     String?
+  deduplicationKey  String                 @unique @db.VarChar(32)
+  dismissedAt       DateTime?
+  resolvedAt        DateTime?
+  lastOccurredAt    DateTime               @default(now())
+  occurrenceVersion Int                    @default(1)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime
+  User              User                   @relation(fields: [userId], references: [id])
+  deliveries        NotificationDelivery[]
 
   @@index([isRead])
   @@index([type])
   @@index([userId])
   @@index([userId, resolvedAt, dismissedAt])
+}
+
+model NotificationDelivery {
+  id                String                     @id
+  notificationId    String
+  channel           NotificationChannel
+  occurrenceVersion Int
+  status            NotificationDeliveryStatus @default(PENDING)
+  attemptCount      Int                        @default(0)
+  providerMessageId String?
+  errorMessage      String?
+  nextAttemptAt     DateTime?
+  sentAt            DateTime?
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime
+  Notification      Notification               @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, channel, occurrenceVersion])
+  @@index([status, nextAttemptAt])
 }
 
 model NotificationPreferences {
@@ -505,6 +526,20 @@ enum NotificationType {
   EXPIRY
   BUDGET
   SYSTEM
+}
+
+enum NotificationChannel {
+  EMAIL
+  PUSH
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  SUPPRESSED
+  SKIPPED
 }
 
 enum Novascore {

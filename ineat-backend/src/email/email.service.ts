@@ -3,6 +3,7 @@ import { ObservabilityService } from '../observability/observability.service';
 import {
   getDefaultEmailTransport,
   sendEmailVerificationEmail,
+  sendNotificationAlertEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
 } from './email-sender';
@@ -40,6 +41,19 @@ export class EmailService {
   }) {
     return this.sendObserved('welcome', (transport) =>
       sendWelcomeEmail(input, transport),
+    );
+  }
+
+  async sendNotificationAlert(input: {
+    to: string;
+    title: string;
+    message: string;
+    actionUrl: string;
+    notificationId: string;
+    occurrenceVersion: number;
+  }) {
+    return this.sendObserved('notification_alert', (transport) =>
+      sendNotificationAlertEmail(input, transport),
     );
   }
 

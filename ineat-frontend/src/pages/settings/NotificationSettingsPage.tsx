@@ -104,9 +104,10 @@ export default function NotificationSettingsPage() {
 					/>
 					<PreferenceRow
 						title='Email'
-						description='Bientôt disponible pour les alertes métier.'
+						description='Recevez les alertes métier importantes par email.'
 						checked={preferences.emailEnabled}
-						disabled
+						disabled={mutation.isPending}
+						onCheckedChange={(checked) => update('emailEnabled', checked)}
 						icon={<Mail className='size-5' />}
 					/>
 					<PreferenceRow

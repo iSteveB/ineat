@@ -3,9 +3,11 @@ import {
   Logger,
   OnModuleDestroy,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from './notification.service';
+import { NotificationDeliveryService } from './notification-delivery.service';
 
 const DEFAULT_INTERVAL_MS = 60 * 60 * 1000;
 const USER_BATCH_SIZE = 100;
@@ -21,6 +23,7 @@ export class NotificationSchedulerService
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationService,
+    @Optional() private readonly deliveries?: NotificationDeliveryService,
   ) {}
 
   onModuleInit(): void {
@@ -80,6 +83,7 @@ export class NotificationSchedulerService
       this.logger.log(
         `Notification synchronization completed: ${synchronizedUsers} users, ${failedUsers} failures`,
       );
+      await this.deliveries?.retryPendingDeliveries();
     } catch (error) {
       this.logger.error('Notification synchronization failed', error);
     } finally {

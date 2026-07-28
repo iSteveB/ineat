@@ -59,9 +59,14 @@ export type Expense = Prisma.ExpenseModel
 export type InventoryItem = Prisma.InventoryItemModel
 /**
  * Model Notification
- * 
+ *
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model NotificationDelivery
+ *
+ */
+export type NotificationDelivery = Prisma.NotificationDeliveryModel
 /**
  * Model NotificationPreferences
  *

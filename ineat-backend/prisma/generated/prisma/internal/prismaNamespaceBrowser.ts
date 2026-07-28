@@ -56,6 +56,7 @@ export const ModelName = {
   Expense: 'Expense',
   InventoryItem: 'InventoryItem',
   Notification: 'Notification',
+  NotificationDelivery: 'NotificationDelivery',
   NotificationPreferences: 'NotificationPreferences',
   Product: 'Product',
   Invoice: 'Invoice',
@@ -167,11 +168,30 @@ export const NotificationScalarFieldEnum = {
   dismissedAt: 'dismissedAt',
   resolvedAt: 'resolvedAt',
   lastOccurredAt: 'lastOccurredAt',
+  occurrenceVersion: 'occurrenceVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const NotificationDeliveryScalarFieldEnum = {
+  id: 'id',
+  notificationId: 'notificationId',
+  channel: 'channel',
+  occurrenceVersion: 'occurrenceVersion',
+  status: 'status',
+  attemptCount: 'attemptCount',
+  providerMessageId: 'providerMessageId',
+  errorMessage: 'errorMessage',
+  nextAttemptAt: 'nextAttemptAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type NotificationDeliveryScalarFieldEnum = (typeof NotificationDeliveryScalarFieldEnum)[keyof typeof NotificationDeliveryScalarFieldEnum]
 
 
 export const NotificationPreferencesScalarFieldEnum = {

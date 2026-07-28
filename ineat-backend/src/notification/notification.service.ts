@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { createHash, randomUUID } from 'crypto';
 import {
@@ -9,6 +10,7 @@ import {
   NotificationType,
 } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationDeliveryService } from './notification-delivery.service';
 
 type CreateOrUpdateNotificationInput = {
   userId: string;
@@ -54,7 +56,10 @@ const EXPIRY_BATCH_SIZE = 100;
 
 @Injectable()
 export class NotificationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() private readonly delivery?: NotificationDeliveryService,
+  ) {}
 
   async listNotifications(
     userId: string,
@@ -416,7 +421,7 @@ export class NotificationService {
     const isNewOccurrence =
       existing !== null && (severityChanged || existing.resolvedAt !== null);
 
-    return this.prisma.notification.upsert({
+    const notification = await this.prisma.notification.upsert({
       where: { deduplicationKey },
       create: {
         id: randomUUID(),
@@ -435,10 +440,22 @@ export class NotificationService {
         message: data.message,
         resolvedAt: null,
         lastOccurredAt: occurredAt,
-        ...(isNewOccurrence ? { isRead: false, dismissedAt: null } : {}),
+        ...(isNewOccurrence
+          ? {
+              isRead: false,
+              dismissedAt: null,
+              occurrenceVersion: { increment: 1 },
+            }
+          : {}),
         updatedAt: occurredAt,
       },
     });
+
+    if (!existing || isNewOccurrence) {
+      await this.delivery?.dispatchOccurrence(notification);
+    }
+
+    return notification;
   }
 
   private buildDeduplicationKey(data: CreateOrUpdateNotificationInput): string {
@@ -466,7 +483,12 @@ export class NotificationService {
           ? preferences.budget
           : preferences.system;
 
-    return preferences.inAppEnabled && typeEnabled;
+    return (
+      (preferences.inAppEnabled ||
+        preferences.emailEnabled ||
+        preferences.pushEnabled) &&
+      typeEnabled
+    );
   }
 
   private async resolveMissingNotifications(

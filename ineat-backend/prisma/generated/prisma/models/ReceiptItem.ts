@@ -773,14 +773,6 @@ export type ReceiptItemUncheckedUpdateManyWithoutReceiptNestedInput = {
   deleteMany?: Prisma.ReceiptItemScalarWhereInput | Prisma.ReceiptItemScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ReceiptItemCreateWithoutProductInput = {
   id: string
   detectedName: string

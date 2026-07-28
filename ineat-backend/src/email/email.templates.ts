@@ -124,3 +124,35 @@ export function createWelcomeEmail(input: {
 </html>`,
   };
 }
+
+export function createNotificationAlertEmail(input: {
+  title: string;
+  message: string;
+  actionUrl: string;
+}) {
+  const safeTitle = escapeHtml(input.title);
+  const safeMessage = escapeHtml(input.message);
+  const safeActionUrl = escapeHtml(input.actionUrl);
+
+  return {
+    subject: `${input.title} · InEat`,
+    text: `${input.title}\n\n${input.message}\n\nVoir dans InEat : ${input.actionUrl}`,
+    html: `<!doctype html>
+<html lang="fr">
+  <body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px">
+      <tr><td align="center">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:16px;padding:32px">
+          <tr><td>
+            <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#2f6b3c;text-transform:uppercase">Alerte InEat</p>
+            <h1 style="margin:0 0 16px;font-size:26px;line-height:1.25">${safeTitle}</h1>
+            <p style="margin:0 0 24px;font-size:16px;line-height:1.6">${safeMessage}</p>
+            <p style="margin:0"><a href="${safeActionUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir dans InEat</a></p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+</html>`,
+  };
+}

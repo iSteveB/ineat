@@ -1,6 +1,7 @@
 import { createHash } from 'crypto';
 import {
   createEmailVerificationEmail,
+  createNotificationAlertEmail,
   createPasswordResetEmail,
   createWelcomeEmail,
 } from './email.templates';
@@ -53,6 +54,30 @@ export async function sendPasswordResetEmail(
     type: 'password_reset',
     recipientReference: createRecipientReference(input.to),
     idempotencyKey: `password-reset/${resetFingerprint}`,
+  });
+}
+
+export async function sendNotificationAlertEmail(
+  input: {
+    to: string;
+    title: string;
+    message: string;
+    actionUrl: string;
+    notificationId: string;
+    occurrenceVersion: number;
+  },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createNotificationAlertEmail(input);
+
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'notification_alert',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `notification/${input.notificationId}/${input.occurrenceVersion}/email`,
   });
 }
 

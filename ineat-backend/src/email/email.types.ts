@@ -1,7 +1,8 @@
 export type TransactionalEmailType =
   | 'password_reset'
   | 'email_verification'
-  | 'welcome';
+  | 'welcome'
+  | 'notification_alert';
 
 export interface TransactionalEmailMessage {
   to: string;
