@@ -11,11 +11,16 @@ import {
   sendTrialStartedEmail,
   sendTrialReminderEmail,
   sendTrialExpiredEmail,
+  sendPremiumActivatedEmail,
+  sendPaymentFailedEmail,
+  sendSubscriptionCancelledEmail,
+  sendSubscriptionChangedEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
 import type {
   DailyProductDigestInput,
   TrialEmailInput,
+  BillingEmailInput,
   WeeklyProductDigestInput,
 } from './email.templates';
 
@@ -112,6 +117,44 @@ export class EmailService {
   ) {
     return this.sendObserved('trial_expired', (transport) =>
       sendTrialExpiredEmail(input, transport),
+    );
+  }
+
+  async sendPremiumActivated(
+    input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  ) {
+    return this.sendObserved('premium_activated', (transport) =>
+      sendPremiumActivatedEmail(input, transport),
+    );
+  }
+
+  async sendPaymentFailed(
+    input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  ) {
+    return this.sendObserved('payment_failed', (transport) =>
+      sendPaymentFailedEmail(input, transport),
+    );
+  }
+
+  async sendSubscriptionCancelled(
+    input: BillingEmailInput & {
+      to: string;
+      userId: string;
+      eventId: string;
+      effective: boolean;
+    },
+  ) {
+    return this.sendObserved(
+      input.effective ? 'subscription_expired' : 'subscription_cancelled',
+      (transport) => sendSubscriptionCancelledEmail(input, transport),
+    );
+  }
+
+  async sendSubscriptionChanged(
+    input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  ) {
+    return this.sendObserved('subscription_changed', (transport) =>
+      sendSubscriptionChangedEmail(input, transport),
     );
   }
 

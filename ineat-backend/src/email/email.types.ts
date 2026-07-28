@@ -7,7 +7,12 @@ export type TransactionalEmailType =
   | 'daily_product_digest'
   | 'trial_started'
   | 'trial_reminder'
-  | 'trial_expired';
+  | 'trial_expired'
+  | 'premium_activated'
+  | 'payment_failed'
+  | 'subscription_cancelled'
+  | 'subscription_expired'
+  | 'subscription_changed';
 
 export interface TransactionalEmailMessage {
   to: string;

@@ -88,18 +88,32 @@ describe('BillingService', () => {
     const stripeClientFactory = {
       getClient: jest.fn().mockReturnValue(stripe),
     } as unknown as StripeClientFactory;
+    const email = {
+      sendPremiumActivated: jest
+        .fn()
+        .mockResolvedValue({ messageId: 'email-1' }),
+      sendPaymentFailed: jest.fn().mockResolvedValue({ messageId: 'email-2' }),
+      sendSubscriptionCancelled: jest
+        .fn()
+        .mockResolvedValue({ messageId: 'email-3' }),
+      sendSubscriptionChanged: jest
+        .fn()
+        .mockResolvedValue({ messageId: 'email-4' }),
+    };
 
     const service = new BillingService(
       prisma as never,
       createConfigService(),
       stripeClientFactory,
+      undefined,
+      email as never,
     );
 
-    return { service, prisma, stripe };
+    return { service, prisma, stripe, email };
   };
 
   it('creates a monthly Checkout session with the backend monthly price', async () => {
-    const { service, prisma, stripe } = createService({
+    const { service, prisma, stripe, email } = createService({
       ...user,
       stripeCustomerId: null,
     });
@@ -194,7 +208,7 @@ describe('BillingService', () => {
   });
 
   it('starts a 3-day trial without Stripe', async () => {
-    const { service, prisma, stripe } = createService({
+    const { service, prisma, stripe, email } = createService({
       ...user,
       subscriptionPlan: 'FREE',
       subscriptionStatus: 'ACTIVE',
@@ -280,7 +294,7 @@ describe('BillingService', () => {
   });
 
   it('activates Premium from a signed checkout.session.completed webhook', async () => {
-    const { service, prisma, stripe } = createService({
+    const { service, prisma, stripe, email } = createService({
       ...user,
       stripeCustomerId: 'cus_existing',
     });
@@ -324,6 +338,12 @@ describe('BillingService', () => {
       where: { stripeEventId: 'evt_checkout' },
       data: expect.objectContaining({ status: 'PROCESSED' }),
     });
+    expect(email.sendPremiumActivated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: 'evt_checkout',
+        billingInterval: 'MONTHLY',
+      }),
+    );
   });
 
   it('syncs Premium from customer.subscription.created', async () => {
@@ -367,10 +387,12 @@ describe('BillingService', () => {
   });
 
   it('keeps Premium cancelled until period end when Stripe schedules cancellation', async () => {
-    const { service, prisma, stripe } = createService({
+    const { service, prisma, stripe, email } = createService({
       ...user,
       stripeCustomerId: 'cus_existing',
       stripeSubscriptionId: 'sub_123',
+      stripePriceId: 'price_yearly',
+      cancelAtPeriodEnd: false,
     });
     stripe.webhooks.constructEvent.mockReturnValue({
       id: 'evt_subscription_updated',
@@ -404,10 +426,17 @@ describe('BillingService', () => {
         currentPeriodEndsAt: new Date('2026-08-01T00:00:00.000Z'),
       }),
     });
+    expect(email.sendSubscriptionCancelled).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: 'evt_subscription_updated',
+        effective: false,
+        periodEndsAt: new Date('2026-08-01T00:00:00.000Z'),
+      }),
+    );
   });
 
   it('marks Premium expired when the subscription is deleted', async () => {
-    const { service, prisma, stripe } = createService({
+    const { service, prisma, stripe, email } = createService({
       ...user,
       stripeCustomerId: 'cus_existing',
       stripeSubscriptionId: 'sub_123',
@@ -444,10 +473,16 @@ describe('BillingService', () => {
         subscriptionCancelledAt: new Date('2026-07-01T00:00:00.000Z'),
       }),
     });
+    expect(email.sendSubscriptionCancelled).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventId: 'evt_subscription_deleted',
+        effective: true,
+      }),
+    );
   });
 
   it('does not cut Premium access on invoice.payment_failed', async () => {
-    const { service, prisma, stripe } = createService({
+    const { service, prisma, stripe, email } = createService({
       ...user,
       stripeCustomerId: 'cus_existing',
       stripeSubscriptionId: 'sub_123',
@@ -472,6 +507,9 @@ describe('BillingService', () => {
         lastStripeEventAt: new Date('2026-07-01T00:00:00.000Z'),
       },
     });
+    expect(email.sendPaymentFailed).toHaveBeenCalledWith(
+      expect.objectContaining({ eventId: 'evt_invoice_failed' }),
+    );
   });
 
   it('syncs the subscription period on invoice.payment_succeeded', async () => {

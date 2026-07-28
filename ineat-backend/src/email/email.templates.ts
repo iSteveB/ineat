@@ -48,6 +48,13 @@ export type TrialEmailInput = {
   subscriptionUrl: string;
 };
 
+export type BillingEmailInput = {
+  firstName?: string | null;
+  subscriptionUrl: string;
+  periodEndsAt?: Date | null;
+  billingInterval?: 'MONTHLY' | 'YEARLY' | null;
+};
+
 const formatFrenchDate = (value: Date) =>
   new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'long',
@@ -136,6 +143,103 @@ export function createTrialExpiredEmail(input: TrialEmailInput) {
       actionUrl: input.subscriptionUrl,
       footer:
         'Vous pouvez vous abonner à tout moment depuis votre espace InEat.',
+    }),
+  };
+}
+
+const billingGreeting = (firstName?: string | null) =>
+  firstName?.trim() ? `Bonjour ${firstName.trim()},` : 'Bonjour,';
+
+export function createPremiumActivatedEmail(input: BillingEmailInput) {
+  const greeting = billingGreeting(input.firstName);
+  const interval = input.billingInterval === 'YEARLY' ? 'annuel' : 'mensuel';
+  const body = `Votre abonnement Premium ${interval} est actif. Vous pouvez dès maintenant profiter de toutes les fonctionnalités Premium InEat.`;
+  return {
+    subject: 'Votre abonnement Premium InEat est actif',
+    text: `${greeting}\n\n${body}\n\nGérer mon abonnement : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre abonnement Premium est actif.',
+      title: 'Bienvenue dans Premium',
+      body,
+      actionLabel: 'Gérer mon abonnement',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Les reçus et factures sont disponibles dans votre portail de facturation.',
+    }),
+  };
+}
+
+export function createPaymentFailedEmail(input: BillingEmailInput) {
+  const greeting = billingGreeting(input.firstName);
+  const body =
+    'Le paiement de votre abonnement Premium a échoué. Mettez à jour votre moyen de paiement pour éviter une interruption de service.';
+  return {
+    subject: 'Action requise : paiement InEat échoué',
+    text: `${greeting}\n\n${body}\n\nMettre à jour mon paiement : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre paiement InEat a échoué.',
+      title: 'Mettez à jour votre paiement',
+      body,
+      actionLabel: 'Mettre à jour mon paiement',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Si vous avez déjà régularisé la situation, aucune action supplémentaire n’est nécessaire.',
+    }),
+  };
+}
+
+export function createSubscriptionCancelledEmail(
+  input: BillingEmailInput,
+  effective: boolean,
+) {
+  const greeting = billingGreeting(input.firstName);
+  const endDate = input.periodEndsAt
+    ? formatFrenchDate(input.periodEndsAt)
+    : null;
+  const body = effective
+    ? 'Votre abonnement Premium est terminé. Vos données restent disponibles avec l’offre gratuite.'
+    : `La résiliation de votre abonnement Premium est enregistrée${endDate ? `. Vous conserverez Premium jusqu’au ${endDate}` : ''}.`;
+  return {
+    subject: effective
+      ? 'Votre abonnement Premium est terminé'
+      : 'Résiliation de votre abonnement Premium confirmée',
+    text: `${greeting}\n\n${body}\n\nGérer mon abonnement : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: effective
+        ? 'Votre abonnement Premium est terminé.'
+        : 'Votre résiliation est enregistrée.',
+      title: effective
+        ? 'Votre abonnement est terminé'
+        : 'Résiliation enregistrée',
+      body,
+      actionLabel: effective ? 'Voir les offres' : 'Gérer mon abonnement',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Vous pouvez vous réabonner à tout moment depuis votre espace InEat.',
+    }),
+  };
+}
+
+export function createSubscriptionChangedEmail(input: BillingEmailInput) {
+  const greeting = billingGreeting(input.firstName);
+  const interval =
+    input.billingInterval === 'YEARLY' ? 'annuelle' : 'mensuelle';
+  const body = `Votre formule de facturation Premium est désormais ${interval}. Le détail et la date de prise d’effet sont disponibles dans votre portail de facturation.`;
+  return {
+    subject: 'Votre abonnement Premium a été modifié',
+    text: `${greeting}\n\n${body}\n\nVoir les détails : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre abonnement Premium a été modifié.',
+      title: 'Abonnement modifié',
+      body,
+      actionLabel: 'Voir les détails',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Le portail Stripe présente le détail de votre prochaine échéance.',
     }),
   };
 }

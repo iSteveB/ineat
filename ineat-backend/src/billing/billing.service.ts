@@ -15,6 +15,7 @@ import {
   SubscriptionStatus,
 } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { BillingInterval } from './dto/create-checkout-session.dto';
 import { StripeClientFactory } from './stripe-client.factory';
 import { TrialEmailService } from './trial-email.service';
@@ -35,6 +36,7 @@ export class BillingService {
     private readonly configService: ConfigService,
     private readonly stripeClientFactory: StripeClientFactory,
     @Optional() private readonly trialEmails?: TrialEmailService,
+    @Optional() private readonly email?: EmailService,
   ) {}
 
   async createCheckoutSession(user: CheckoutUser, interval: BillingInterval) {
@@ -367,6 +369,15 @@ export class BillingService {
     if (subscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       await this.syncSubscription(subscription, event, false, userId);
+      await this.sendBillingEventEmail(
+        userId,
+        customerId,
+        subscriptionId,
+        event,
+        'activated',
+        undefined,
+        this.getBillingIntervalForPrice(subscription.items.data[0]?.price?.id),
+      );
       return;
     }
 
@@ -408,9 +419,23 @@ export class BillingService {
       return;
     }
 
-    await this.updateBillingUser(undefined, customerId, subscriptionId, {
-      lastStripeEventAt: this.eventDate(event),
-    });
+    const user = await this.updateBillingUser(
+      undefined,
+      customerId,
+      subscriptionId,
+      {
+        lastStripeEventAt: this.eventDate(event),
+      },
+    );
+    if (user) {
+      await this.sendBillingEventEmail(
+        user.id,
+        customerId,
+        subscriptionId,
+        event,
+        'payment_failed',
+      );
+    }
   }
 
   private async syncSubscription(
@@ -425,7 +450,7 @@ export class BillingService {
     const billingInterval = this.getBillingIntervalForPrice(priceId);
     const status = this.getSubscriptionStatus(subscription, deleted);
 
-    await this.updateBillingUser(
+    const previousUser = await this.updateBillingUser(
       subscription.metadata?.userId ?? fallbackUserId,
       customerId,
       subscriptionId,
@@ -454,6 +479,56 @@ export class BillingService {
         lastStripeEventAt: this.eventDate(event),
       },
     );
+
+    if (!previousUser || event.type === 'checkout.session.completed') return;
+    if (deleted) {
+      await this.sendBillingEventEmail(
+        previousUser.id,
+        customerId,
+        subscriptionId,
+        event,
+        'expired',
+        this.fromUnix(
+          (subscription as unknown as { current_period_end?: number })
+            .current_period_end,
+        ),
+        billingInterval,
+      );
+      return;
+    }
+    if (
+      event.type === 'customer.subscription.updated' &&
+      subscription.cancel_at_period_end &&
+      !previousUser.cancelAtPeriodEnd
+    ) {
+      await this.sendBillingEventEmail(
+        previousUser.id,
+        customerId,
+        subscriptionId,
+        event,
+        'cancelled',
+        this.fromUnix(
+          (subscription as unknown as { current_period_end?: number })
+            .current_period_end,
+        ),
+        billingInterval,
+      );
+    } else if (
+      event.type === 'customer.subscription.updated' &&
+      previousUser.stripePriceId &&
+      priceId &&
+      previousUser.stripePriceId !== priceId
+    ) {
+      await this.sendBillingEventEmail(
+        previousUser.id,
+        customerId,
+        subscriptionId,
+        event,
+        'changed',
+        undefined,
+        billingInterval,
+      );
+    }
   }
 
   private async updateBillingUser(
@@ -475,6 +550,41 @@ export class BillingService {
       where: { id: user.id },
       data,
     });
+    return user;
+  }
+
+  private async sendBillingEventEmail(
+    userId: string | null | undefined,
+    customerId: string | null | undefined,
+    subscriptionId: string | null | undefined,
+    event: Stripe.Event,
+    kind: 'activated' | 'payment_failed' | 'cancelled' | 'expired' | 'changed',
+    periodEndsAt?: Date | null,
+    billingInterval?: PrismaBillingInterval | null,
+  ) {
+    if (!this.email) return;
+    const user = await this.findBillingUser(userId, customerId, subscriptionId);
+    if (!user) return;
+    const subscriptionUrl = `${(this.configService.get<string>('FRONTEND_URL') || 'https://ineat.store').replace(/\/$/, '')}/app/subscription`;
+    const input = {
+      to: user.email,
+      userId: user.id,
+      eventId: event.id,
+      firstName: user.firstName,
+      subscriptionUrl,
+      periodEndsAt,
+      billingInterval,
+    };
+    if (kind === 'activated') await this.email.sendPremiumActivated(input);
+    if (kind === 'payment_failed') await this.email.sendPaymentFailed(input);
+    if (kind === 'cancelled')
+      await this.email.sendSubscriptionCancelled({
+        ...input,
+        effective: false,
+      });
+    if (kind === 'expired')
+      await this.email.sendSubscriptionCancelled({ ...input, effective: true });
+    if (kind === 'changed') await this.email.sendSubscriptionChanged(input);
   }
 
   private async findBillingUser(

@@ -12,6 +12,11 @@ import {
   createTrialReminderEmail,
   createTrialExpiredEmail,
   type TrialEmailInput,
+  type BillingEmailInput,
+  createPremiumActivatedEmail,
+  createPaymentFailedEmail,
+  createSubscriptionCancelledEmail,
+  createSubscriptionChangedEmail,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
 import { EmailSendResult, EmailTransport } from './email.types';
@@ -219,5 +224,75 @@ export const sendTrialExpiredEmail = (
     'trial_expired',
     input,
     createTrialExpiredEmail(input),
+    transport,
+  );
+
+const sendBillingEmail = async (
+  type:
+    | 'premium_activated'
+    | 'payment_failed'
+    | 'subscription_cancelled'
+    | 'subscription_expired'
+    | 'subscription_changed',
+  input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  template: ReturnType<typeof createPremiumActivatedEmail>,
+  transport: EmailTransport,
+) =>
+  transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type,
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `billing/${type}/${input.eventId}`,
+  });
+
+export const sendPremiumActivatedEmail = (
+  input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendBillingEmail(
+    'premium_activated',
+    input,
+    createPremiumActivatedEmail(input),
+    transport,
+  );
+
+export const sendPaymentFailedEmail = (
+  input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendBillingEmail(
+    'payment_failed',
+    input,
+    createPaymentFailedEmail(input),
+    transport,
+  );
+
+export const sendSubscriptionCancelledEmail = (
+  input: BillingEmailInput & {
+    to: string;
+    userId: string;
+    eventId: string;
+    effective: boolean;
+  },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendBillingEmail(
+    input.effective ? 'subscription_expired' : 'subscription_cancelled',
+    input,
+    createSubscriptionCancelledEmail(input, input.effective),
+    transport,
+  );
+
+export const sendSubscriptionChangedEmail = (
+  input: BillingEmailInput & { to: string; userId: string; eventId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendBillingEmail(
+    'subscription_changed',
+    input,
+    createSubscriptionChangedEmail(input),
     transport,
   );
