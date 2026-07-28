@@ -1,8 +1,14 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UsageType } from '../../../prisma/generated/prisma/client';
 import { AccessPolicyService, AccessPolicyUser } from './access-policy.service';
+import { EmailService } from '../../email/email.service';
 
 export interface UsageQuotaState {
   usageType: UsageType;
@@ -15,9 +21,12 @@ export interface UsageQuotaState {
 
 @Injectable()
 export class UsageQuotaService {
+  private readonly logger = new Logger(UsageQuotaService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly accessPolicyService: AccessPolicyService,
+    @Optional() private readonly email?: EmailService,
   ) {}
 
   async getUsageState(
@@ -82,7 +91,7 @@ export class UsageQuotaService {
   ): Promise<UsageQuotaState> {
     const state = await this.assertCanConsume(user, usageType, now);
 
-    await this.prisma.usageQuota.upsert({
+    const persisted = await this.prisma.usageQuota.upsert({
       where: {
         userId_usageType_periodStart_periodEnd: {
           userId: user.id,
@@ -110,7 +119,68 @@ export class UsageQuotaService {
       },
     });
 
-    return this.getUsageState(user, usageType, now);
+    const result = await this.getUsageState(user, usageType, now);
+    if (persisted?.id) {
+      await this.sendQuotaEmailIfNeeded(
+        user.id,
+        persisted.id,
+        usageType,
+        result,
+        Boolean(persisted.warningEmailSentAt),
+        Boolean(persisted.reachedEmailSentAt),
+      );
+    }
+    return result;
+  }
+
+  private async sendQuotaEmailIfNeeded(
+    userId: string,
+    quotaId: string,
+    usageType: UsageType,
+    state: UsageQuotaState,
+    warningSent: boolean,
+    reachedSent: boolean,
+  ): Promise<void> {
+    if (!this.email || !state.periodEnd || state.limit <= 0) return;
+    const reached = state.usedCount >= state.limit;
+    const warning = !reached && state.usedCount >= Math.ceil(state.limit * 0.8);
+    if (
+      (!reached && !warning) ||
+      (reached && reachedSent) ||
+      (warning && warningSent)
+    )
+      return;
+
+    const recipient = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, firstName: true },
+    });
+    if (!recipient) return;
+    try {
+      await this.email.sendQuota({
+        to: recipient.email,
+        firstName: recipient.firstName,
+        userId,
+        quotaId,
+        reached,
+        usageLabel:
+          usageType === 'AI_RECIPE_GENERATION'
+            ? 'générations de recettes IA'
+            : 'imports de factures',
+        usedCount: state.usedCount,
+        limit: state.limit,
+        resetsAt: state.periodEnd,
+        subscriptionUrl: `${(process.env.FRONTEND_URL || 'https://ineat.store').replace(/\/$/, '')}/app/subscription`,
+      });
+      await this.prisma.usageQuota.update({
+        where: { id: quotaId },
+        data: reached
+          ? { reachedEmailSentAt: new Date() }
+          : { warningEmailSentAt: new Date() },
+      });
+    } catch (error) {
+      this.logger.error(`Quota email failed for quota ${quotaId}`, error);
+    }
   }
 
   getQuotaDefinition(
@@ -133,11 +203,7 @@ export class UsageQuotaService {
       return {
         limit: 5,
         periodStart: new Date(
-          Date.UTC(
-            now.getUTCFullYear(),
-            now.getUTCMonth(),
-            now.getUTCDate(),
-          ),
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
         ),
         periodEnd: new Date(
           Date.UTC(

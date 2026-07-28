@@ -12,7 +12,9 @@ export type TransactionalEmailType =
   | 'payment_failed'
   | 'subscription_cancelled'
   | 'subscription_expired'
-  | 'subscription_changed';
+  | 'subscription_changed'
+  | 'quota_warning'
+  | 'quota_reached';
 
 export interface TransactionalEmailMessage {
   to: string;

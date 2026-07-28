@@ -5,24 +5,38 @@ import { UsageQuotaService } from './usage-quota.service';
 describe('UsageQuotaService', () => {
   let service: UsageQuotaService;
   let prisma: {
+    user: { findUnique: jest.Mock };
     usageQuota: {
       findUnique: jest.Mock;
       upsert: jest.Mock;
+      update: jest.Mock;
     };
   };
+  let email: { sendQuota: jest.Mock };
 
   const now = new Date('2026-05-15T12:00:00.000Z');
 
   beforeEach(() => {
     prisma = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          email: 'jane@example.com',
+          firstName: 'Jane',
+        }),
+      },
       usageQuota: {
         findUnique: jest.fn().mockResolvedValue(null),
         upsert: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({}),
       },
+    };
+    email = {
+      sendQuota: jest.fn().mockResolvedValue({ messageId: 'email-1' }),
     };
     service = new UsageQuotaService(
       prisma as any,
       new AccessPolicyService(),
+      email as any,
     );
   });
 
@@ -161,5 +175,70 @@ describe('UsageQuotaService', () => {
       }),
     );
     expect(state.remaining).toBe(22);
+  });
+
+  it('envoie une seule alerte au passage des 80 %', async () => {
+    prisma.usageQuota.findUnique
+      .mockResolvedValueOnce({ usedCount: 3 })
+      .mockResolvedValueOnce({ usedCount: 4 });
+    prisma.usageQuota.upsert.mockResolvedValue({
+      id: 'quota-1',
+      warningEmailSentAt: null,
+      reachedEmailSentAt: null,
+    });
+
+    await service.recordSuccessfulUsage(
+      {
+        id: 'user-1',
+        role: 'USER',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'ACTIVE',
+      },
+      'AI_RECIPE_GENERATION',
+      now,
+    );
+
+    expect(email.sendQuota).toHaveBeenCalledWith(
+      expect.objectContaining({
+        quotaId: 'quota-1',
+        reached: false,
+        usedCount: 4,
+        limit: 5,
+      }),
+    );
+    expect(prisma.usageQuota.update).toHaveBeenCalledWith({
+      where: { id: 'quota-1' },
+      data: { warningEmailSentAt: expect.any(Date) },
+    });
+  });
+
+  it('envoie une alerte quand le quota est atteint', async () => {
+    prisma.usageQuota.findUnique
+      .mockResolvedValueOnce({ usedCount: 4 })
+      .mockResolvedValueOnce({ usedCount: 5 });
+    prisma.usageQuota.upsert.mockResolvedValue({
+      id: 'quota-1',
+      warningEmailSentAt: new Date(),
+      reachedEmailSentAt: null,
+    });
+
+    await service.recordSuccessfulUsage(
+      {
+        id: 'user-1',
+        role: 'USER',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'ACTIVE',
+      },
+      'AI_RECIPE_GENERATION',
+      now,
+    );
+
+    expect(email.sendQuota).toHaveBeenCalledWith(
+      expect.objectContaining({ reached: true }),
+    );
+    expect(prisma.usageQuota.update).toHaveBeenCalledWith({
+      where: { id: 'quota-1' },
+      data: { reachedEmailSentAt: expect.any(Date) },
+    });
   });
 });

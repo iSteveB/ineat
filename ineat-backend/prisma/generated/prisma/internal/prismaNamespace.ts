@@ -2547,7 +2547,9 @@ export const UsageQuotaScalarFieldEnum = {
   usedCount: 'usedCount',
   limit: 'limit',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  warningEmailSentAt: 'warningEmailSentAt',
+  reachedEmailSentAt: 'reachedEmailSentAt'
 } as const
 
 export type UsageQuotaScalarFieldEnum = (typeof UsageQuotaScalarFieldEnum)[keyof typeof UsageQuotaScalarFieldEnum]

@@ -17,6 +17,8 @@ import {
   createPaymentFailedEmail,
   createSubscriptionCancelledEmail,
   createSubscriptionChangedEmail,
+  createQuotaEmail,
+  type QuotaEmailInput,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
 import { EmailSendResult, EmailTransport } from './email.types';
@@ -296,3 +298,25 @@ export const sendSubscriptionChangedEmail = (
     createSubscriptionChangedEmail(input),
     transport,
   );
+
+export const sendQuotaEmail = (
+  input: QuotaEmailInput & {
+    to: string;
+    userId: string;
+    quotaId: string;
+    reached: boolean;
+  },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) => {
+  const template = createQuotaEmail(input, input.reached);
+  const type = input.reached ? 'quota_reached' : 'quota_warning';
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type,
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `quota/${input.quotaId}/${type}`,
+  });
+};

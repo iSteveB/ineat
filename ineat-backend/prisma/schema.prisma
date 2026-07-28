@@ -461,16 +461,18 @@ model EmailSuppression {
 }
 
 model UsageQuota {
-  id          String    @id
-  userId      String
-  usageType   UsageType
-  periodStart DateTime
-  periodEnd   DateTime
-  usedCount   Int       @default(0)
-  limit       Int
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime
-  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String    @id
+  userId             String
+  usageType          UsageType
+  periodStart        DateTime
+  periodEnd          DateTime
+  usedCount          Int       @default(0)
+  limit              Int
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime
+  warningEmailSentAt DateTime?
+  reachedEmailSentAt DateTime?
+  User               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, usageType, periodStart, periodEnd])
   @@index([periodEnd])

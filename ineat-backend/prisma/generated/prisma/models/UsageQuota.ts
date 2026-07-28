@@ -46,6 +46,8 @@ export type UsageQuotaMinAggregateOutputType = {
   limit: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  warningEmailSentAt: Date | null
+  reachedEmailSentAt: Date | null
 }
 
 export type UsageQuotaMaxAggregateOutputType = {
@@ -58,6 +60,8 @@ export type UsageQuotaMaxAggregateOutputType = {
   limit: number | null
   createdAt: Date | null
   updatedAt: Date | null
+  warningEmailSentAt: Date | null
+  reachedEmailSentAt: Date | null
 }
 
 export type UsageQuotaCountAggregateOutputType = {
@@ -70,6 +74,8 @@ export type UsageQuotaCountAggregateOutputType = {
   limit: number
   createdAt: number
   updatedAt: number
+  warningEmailSentAt: number
+  reachedEmailSentAt: number
   _all: number
 }
 
@@ -94,6 +100,8 @@ export type UsageQuotaMinAggregateInputType = {
   limit?: true
   createdAt?: true
   updatedAt?: true
+  warningEmailSentAt?: true
+  reachedEmailSentAt?: true
 }
 
 export type UsageQuotaMaxAggregateInputType = {
@@ -106,6 +114,8 @@ export type UsageQuotaMaxAggregateInputType = {
   limit?: true
   createdAt?: true
   updatedAt?: true
+  warningEmailSentAt?: true
+  reachedEmailSentAt?: true
 }
 
 export type UsageQuotaCountAggregateInputType = {
@@ -118,6 +128,8 @@ export type UsageQuotaCountAggregateInputType = {
   limit?: true
   createdAt?: true
   updatedAt?: true
+  warningEmailSentAt?: true
+  reachedEmailSentAt?: true
   _all?: true
 }
 
@@ -217,6 +229,8 @@ export type UsageQuotaGroupByOutputType = {
   limit: number
   createdAt: Date
   updatedAt: Date
+  warningEmailSentAt: Date | null
+  reachedEmailSentAt: Date | null
   _count: UsageQuotaCountAggregateOutputType | null
   _avg: UsageQuotaAvgAggregateOutputType | null
   _sum: UsageQuotaSumAggregateOutputType | null
@@ -252,6 +266,8 @@ export type UsageQuotaWhereInput = {
   limit?: Prisma.IntFilter<"UsageQuota"> | number
   createdAt?: Prisma.DateTimeFilter<"UsageQuota"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UsageQuota"> | Date | string
+  warningEmailSentAt?: Prisma.DateTimeNullableFilter<"UsageQuota"> | Date | string | null
+  reachedEmailSentAt?: Prisma.DateTimeNullableFilter<"UsageQuota"> | Date | string | null
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
@@ -265,6 +281,8 @@ export type UsageQuotaOrderByWithRelationInput = {
   limit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  warningEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reachedEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   User?: Prisma.UserOrderByWithRelationInput
 }
 
@@ -282,6 +300,8 @@ export type UsageQuotaWhereUniqueInput = Prisma.AtLeast<{
   limit?: Prisma.IntFilter<"UsageQuota"> | number
   createdAt?: Prisma.DateTimeFilter<"UsageQuota"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UsageQuota"> | Date | string
+  warningEmailSentAt?: Prisma.DateTimeNullableFilter<"UsageQuota"> | Date | string | null
+  reachedEmailSentAt?: Prisma.DateTimeNullableFilter<"UsageQuota"> | Date | string | null
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "userId_usageType_periodStart_periodEnd">
 
@@ -295,6 +315,8 @@ export type UsageQuotaOrderByWithAggregationInput = {
   limit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  warningEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reachedEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UsageQuotaCountOrderByAggregateInput
   _avg?: Prisma.UsageQuotaAvgOrderByAggregateInput
   _max?: Prisma.UsageQuotaMaxOrderByAggregateInput
@@ -315,6 +337,8 @@ export type UsageQuotaScalarWhereWithAggregatesInput = {
   limit?: Prisma.IntWithAggregatesFilter<"UsageQuota"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"UsageQuota"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"UsageQuota"> | Date | string
+  warningEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"UsageQuota"> | Date | string | null
+  reachedEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"UsageQuota"> | Date | string | null
 }
 
 export type UsageQuotaCreateInput = {
@@ -326,6 +350,8 @@ export type UsageQuotaCreateInput = {
   limit: number
   createdAt?: Date | string
   updatedAt: Date | string
+  warningEmailSentAt?: Date | string | null
+  reachedEmailSentAt?: Date | string | null
   User: Prisma.UserCreateNestedOneWithoutUsageQuotaInput
 }
 
@@ -339,6 +365,8 @@ export type UsageQuotaUncheckedCreateInput = {
   limit: number
   createdAt?: Date | string
   updatedAt: Date | string
+  warningEmailSentAt?: Date | string | null
+  reachedEmailSentAt?: Date | string | null
 }
 
 export type UsageQuotaUpdateInput = {
@@ -350,6 +378,8 @@ export type UsageQuotaUpdateInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   User?: Prisma.UserUpdateOneRequiredWithoutUsageQuotaNestedInput
 }
 
@@ -363,6 +393,8 @@ export type UsageQuotaUncheckedUpdateInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsageQuotaCreateManyInput = {
@@ -375,6 +407,8 @@ export type UsageQuotaCreateManyInput = {
   limit: number
   createdAt?: Date | string
   updatedAt: Date | string
+  warningEmailSentAt?: Date | string | null
+  reachedEmailSentAt?: Date | string | null
 }
 
 export type UsageQuotaUpdateManyMutationInput = {
@@ -386,6 +420,8 @@ export type UsageQuotaUpdateManyMutationInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsageQuotaUncheckedUpdateManyInput = {
@@ -398,6 +434,8 @@ export type UsageQuotaUncheckedUpdateManyInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsageQuotaListRelationFilter = {
@@ -427,6 +465,8 @@ export type UsageQuotaCountOrderByAggregateInput = {
   limit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  warningEmailSentAt?: Prisma.SortOrder
+  reachedEmailSentAt?: Prisma.SortOrder
 }
 
 export type UsageQuotaAvgOrderByAggregateInput = {
@@ -444,6 +484,8 @@ export type UsageQuotaMaxOrderByAggregateInput = {
   limit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  warningEmailSentAt?: Prisma.SortOrder
+  reachedEmailSentAt?: Prisma.SortOrder
 }
 
 export type UsageQuotaMinOrderByAggregateInput = {
@@ -456,6 +498,8 @@ export type UsageQuotaMinOrderByAggregateInput = {
   limit?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  warningEmailSentAt?: Prisma.SortOrder
+  reachedEmailSentAt?: Prisma.SortOrder
 }
 
 export type UsageQuotaSumOrderByAggregateInput = {
@@ -518,6 +562,8 @@ export type UsageQuotaCreateWithoutUserInput = {
   limit: number
   createdAt?: Date | string
   updatedAt: Date | string
+  warningEmailSentAt?: Date | string | null
+  reachedEmailSentAt?: Date | string | null
 }
 
 export type UsageQuotaUncheckedCreateWithoutUserInput = {
@@ -529,6 +575,8 @@ export type UsageQuotaUncheckedCreateWithoutUserInput = {
   limit: number
   createdAt?: Date | string
   updatedAt: Date | string
+  warningEmailSentAt?: Date | string | null
+  reachedEmailSentAt?: Date | string | null
 }
 
 export type UsageQuotaCreateOrConnectWithoutUserInput = {
@@ -570,6 +618,8 @@ export type UsageQuotaScalarWhereInput = {
   limit?: Prisma.IntFilter<"UsageQuota"> | number
   createdAt?: Prisma.DateTimeFilter<"UsageQuota"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UsageQuota"> | Date | string
+  warningEmailSentAt?: Prisma.DateTimeNullableFilter<"UsageQuota"> | Date | string | null
+  reachedEmailSentAt?: Prisma.DateTimeNullableFilter<"UsageQuota"> | Date | string | null
 }
 
 export type UsageQuotaCreateManyUserInput = {
@@ -581,6 +631,8 @@ export type UsageQuotaCreateManyUserInput = {
   limit: number
   createdAt?: Date | string
   updatedAt: Date | string
+  warningEmailSentAt?: Date | string | null
+  reachedEmailSentAt?: Date | string | null
 }
 
 export type UsageQuotaUpdateWithoutUserInput = {
@@ -592,6 +644,8 @@ export type UsageQuotaUpdateWithoutUserInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsageQuotaUncheckedUpdateWithoutUserInput = {
@@ -603,6 +657,8 @@ export type UsageQuotaUncheckedUpdateWithoutUserInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsageQuotaUncheckedUpdateManyWithoutUserInput = {
@@ -614,6 +670,8 @@ export type UsageQuotaUncheckedUpdateManyWithoutUserInput = {
   limit?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  warningEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reachedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 
@@ -628,6 +686,8 @@ export type UsageQuotaSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   limit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  warningEmailSentAt?: boolean
+  reachedEmailSentAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usageQuota"]>
 
@@ -641,6 +701,8 @@ export type UsageQuotaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   limit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  warningEmailSentAt?: boolean
+  reachedEmailSentAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usageQuota"]>
 
@@ -654,6 +716,8 @@ export type UsageQuotaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   limit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  warningEmailSentAt?: boolean
+  reachedEmailSentAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usageQuota"]>
 
@@ -667,9 +731,11 @@ export type UsageQuotaSelectScalar = {
   limit?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  warningEmailSentAt?: boolean
+  reachedEmailSentAt?: boolean
 }
 
-export type UsageQuotaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "usageType" | "periodStart" | "periodEnd" | "usedCount" | "limit" | "createdAt" | "updatedAt", ExtArgs["result"]["usageQuota"]>
+export type UsageQuotaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "usageType" | "periodStart" | "periodEnd" | "usedCount" | "limit" | "createdAt" | "updatedAt" | "warningEmailSentAt" | "reachedEmailSentAt", ExtArgs["result"]["usageQuota"]>
 export type UsageQuotaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -695,6 +761,8 @@ export type $UsageQuotaPayload<ExtArgs extends runtime.Types.Extensions.Internal
     limit: number
     createdAt: Date
     updatedAt: Date
+    warningEmailSentAt: Date | null
+    reachedEmailSentAt: Date | null
   }, ExtArgs["result"]["usageQuota"]>
   composites: {}
 }
@@ -1128,6 +1196,8 @@ export interface UsageQuotaFieldRefs {
   readonly limit: Prisma.FieldRef<"UsageQuota", 'Int'>
   readonly createdAt: Prisma.FieldRef<"UsageQuota", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"UsageQuota", 'DateTime'>
+  readonly warningEmailSentAt: Prisma.FieldRef<"UsageQuota", 'DateTime'>
+  readonly reachedEmailSentAt: Prisma.FieldRef<"UsageQuota", 'DateTime'>
 }
     
 

@@ -55,6 +55,15 @@ export type BillingEmailInput = {
   billingInterval?: 'MONTHLY' | 'YEARLY' | null;
 };
 
+export type QuotaEmailInput = {
+  firstName?: string | null;
+  usageLabel: string;
+  usedCount: number;
+  limit: number;
+  resetsAt: Date;
+  subscriptionUrl: string;
+};
+
 const formatFrenchDate = (value: Date) =>
   new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'long',
@@ -240,6 +249,32 @@ export function createSubscriptionChangedEmail(input: BillingEmailInput) {
       actionUrl: input.subscriptionUrl,
       footer:
         'Le portail Stripe présente le détail de votre prochaine échéance.',
+    }),
+  };
+}
+
+export function createQuotaEmail(input: QuotaEmailInput, reached: boolean) {
+  const greeting = billingGreeting(input.firstName);
+  const resetDate = formatFrenchDate(input.resetsAt);
+  const body = reached
+    ? `Vous avez utilisé vos ${input.limit} ${input.usageLabel}. Votre quota sera renouvelé le ${resetDate}.`
+    : `Vous avez utilisé ${input.usedCount} de vos ${input.limit} ${input.usageLabel}. Votre quota sera renouvelé le ${resetDate}.`;
+  return {
+    subject: reached
+      ? 'Votre quota InEat est atteint'
+      : 'Votre quota InEat est bientôt atteint',
+    text: `${greeting}\n\n${body}\n\nVoir mon abonnement : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: reached
+        ? 'Votre quota InEat est atteint.'
+        : 'Votre quota InEat est bientôt atteint.',
+      title: reached ? 'Quota atteint' : 'Quota bientôt atteint',
+      body,
+      actionLabel: 'Voir mon abonnement',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Vous pouvez consulter à tout moment votre utilisation depuis votre compte.',
     }),
   };
 }

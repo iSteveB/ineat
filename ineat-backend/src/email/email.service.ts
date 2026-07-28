@@ -15,12 +15,14 @@ import {
   sendPaymentFailedEmail,
   sendSubscriptionCancelledEmail,
   sendSubscriptionChangedEmail,
+  sendQuotaEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
 import type {
   DailyProductDigestInput,
   TrialEmailInput,
   BillingEmailInput,
+  QuotaEmailInput,
   WeeklyProductDigestInput,
 } from './email.templates';
 
@@ -155,6 +157,20 @@ export class EmailService {
   ) {
     return this.sendObserved('subscription_changed', (transport) =>
       sendSubscriptionChangedEmail(input, transport),
+    );
+  }
+
+  async sendQuota(
+    input: QuotaEmailInput & {
+      to: string;
+      userId: string;
+      quotaId: string;
+      reached: boolean;
+    },
+  ) {
+    return this.sendObserved(
+      input.reached ? 'quota_reached' : 'quota_warning',
+      (transport) => sendQuotaEmail(input, transport),
     );
   }
 
