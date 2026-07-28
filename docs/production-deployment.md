@@ -71,6 +71,26 @@ logs Resend sont stockes aux Etats-Unis. Le DPA Resend, ses sous-traitants et le
 clauses contractuelles de transfert doivent etre conserves dans le registre des
 sous-traitants InEat.
 
+### Emails produit et abonnement
+
+Les digests produit et les emails d'abonnement utilisent le meme transport
+Resend que les emails d'authentification. Les familles actives sont :
+
+- digest produit hebdomadaire, actif par defaut le dimanche a 18 h dans le
+  fuseau utilisateur ;
+- digest quotidien actionnable, desactive par defaut ;
+- debut, rappel et fin d'essai Premium ;
+- activation, modification, resiliation et echec de paiement Premium ;
+- seuils de quota a 80 % et 100 %.
+
+Stripe conserve la responsabilite des recus et factures. Verifier que ses
+emails clients sont configures dans le Dashboard Stripe et qu'aucun template
+Resend ne duplique ces documents.
+
+Le scheduler des emails d'essai s'execute toutes les heures. La variable
+optionnelle `BILLING_EMAIL_INTERVAL_MS` permet de modifier cette frequence,
+avec un minimum d'une minute.
+
 ### Rotation de la cle Resend
 
 1. Creer dans Resend une nouvelle cle limitee a l'envoi depuis `ineat.store`.

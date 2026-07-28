@@ -508,6 +508,29 @@ Idempotence :
 - ignorer un evenement deja traite ;
 - ne jamais supposer l'ordre parfait des webhooks.
 
+## Emails d'abonnement
+
+InEat envoie avec Resend les messages transactionnels qui expliquent un
+changement d'acces ou demandent une action utilisateur :
+
+- activation de l'essai gratuit ;
+- rappel dans les 24 heures precedant sa fin ;
+- expiration de l'essai ;
+- activation de Premium apres `checkout.session.completed` ;
+- echec de paiement apres `invoice.payment_failed` ;
+- changement de price mensuelle ou annuelle ;
+- resiliation programmee et resiliation effective ;
+- quota bientot atteint au premier passage a 80 %, puis quota atteint.
+
+Les recus, factures et communications fiscales restent envoyes et heberges par
+Stripe. InEat ne doit pas les dupliquer. Les emails InEat renvoient vers
+`/app/subscription`, qui permet d'ouvrir le Customer Portal Stripe.
+
+Les envois issus des webhooks utilisent le `stripeEventId` dans leur cle
+d'idempotence Resend. Les emails d'essai et de quota sont suivis en base afin
+de ne produire qu'un envoi par evenement ou seuil. Un echec d'envoi ne doit
+jamais annuler une activation d'essai ni une consommation produit deja reussie.
+
 ## Mapping Stripe vers InEat
 
 ### Price mensuelle

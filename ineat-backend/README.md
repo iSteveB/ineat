@@ -51,6 +51,7 @@ Variables principales:
 | `RESEND_API_KEY`                    | Production / email actif    | Cle API Resend limitee au domaine transactionnel                         |
 | `EMAIL_FROM`                        | Production / email actif    | Expediteur au format `InEat <bonjour@ineat.store>`                        |
 | `EMAIL_REPLY_TO`                    | Production / email actif    | Adresse de reponse, par exemple `support@ineat.store`                     |
+| `BILLING_EMAIL_INTERVAL_MS`         | Non                         | Frequence du scheduler des emails d'essai, 1 heure par defaut             |
 | `CLOUDINARY_CLOUD_NAME`             | Uploads                     | Cloudinary cloud name                                                    |
 | `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                                       |
 | `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                                    |
