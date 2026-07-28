@@ -1,5 +1,6 @@
 import {
   sendEmailVerificationEmail,
+  sendDailyProductDigestEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendWeeklyProductDigestEmail,
@@ -165,5 +166,30 @@ describe('sendPasswordResetEmail', () => {
     });
     expect(message.html).toContain('À consommer dans les 7 jours');
     expect(message.text).toContain('75,00 € dépensés');
+  });
+
+  it('renders the daily product digest with a daily idempotency key', async () => {
+    const send = jest.fn().mockResolvedValue({ messageId: 'daily-123' });
+
+    await sendDailyProductDigestEmail(
+      {
+        to: 'steve@example.com',
+        userId: 'user-123',
+        periodKey: '2026-08-03',
+        firstName: 'Steve',
+        urgentItems: [
+          { name: 'Lait', quantity: 1, detail: "expire aujourd'hui" },
+        ],
+        totalUrgentItems: 1,
+        inventoryUrl: 'https://ineat.store/app/inventory',
+        budgetUrl: 'https://ineat.store/app/budget',
+      },
+      { send },
+    );
+
+    expect(send.mock.calls[0][0]).toMatchObject({
+      type: 'daily_product_digest',
+      idempotencyKey: 'daily-product-digest/user-123/2026-08-03',
+    });
   });
 });

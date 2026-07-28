@@ -5,6 +5,7 @@ import { NotificationDeliveryService } from './notification-delivery.service';
 import { NotificationSchedulerService } from './notification-scheduler.service';
 import { NotificationService } from './notification.service';
 import { WeeklyProductDigestService } from './weekly-product-digest.service';
+import { DailyProductDigestService } from './daily-product-digest.service';
 
 @Module({
   imports: [PrismaModule],
@@ -14,6 +15,7 @@ import { WeeklyProductDigestService } from './weekly-product-digest.service';
     NotificationDeliveryService,
     NotificationSchedulerService,
     WeeklyProductDigestService,
+    DailyProductDigestService,
   ],
   exports: [NotificationService],
 })

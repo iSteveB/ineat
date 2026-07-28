@@ -23,7 +23,21 @@ export type WeeklyProductDigestInput = {
   expiringSoon: WeeklyProductDigestItem[];
   recentlyAdded: WeeklyProductDigestItem[];
   totals: { expired: number; expiringSoon: number; recentlyAdded: number };
-  budget?: { spent: number; amount: number; remaining: number; percentage: number };
+  budget?: {
+    spent: number;
+    amount: number;
+    remaining: number;
+    percentage: number;
+  };
+  inventoryUrl: string;
+  budgetUrl: string;
+};
+
+export type DailyProductDigestInput = {
+  firstName?: string | null;
+  urgentItems: WeeklyProductDigestItem[];
+  totalUrgentItems: number;
+  budgetAlert?: string;
   inventoryUrl: string;
   budgetUrl: string;
 };
@@ -61,7 +75,11 @@ export function createWeeklyProductDigestEmail(
   const inventoryUrl = escapeHtml(input.inventoryUrl);
   const budgetUrl = escapeHtml(input.budgetUrl);
   const itemText = (items: WeeklyProductDigestItem[]) =>
-    items.map((item) => `- ${item.name} · ${item.detail} · quantité ${item.quantity}`).join('\n');
+    items
+      .map(
+        (item) => `- ${item.name} · ${item.detail} · quantité ${item.quantity}`,
+      )
+      .join('\n');
   const sections = [
     input.totals.expired
       ? `Produits périmés (${input.totals.expired})\n${itemText(input.expired)}`
@@ -103,6 +121,50 @@ export function createWeeklyProductDigestEmail(
     </td></tr></table>
   </body>
 </html>`,
+  };
+}
+
+export function createDailyProductDigestEmail(input: DailyProductDigestInput) {
+  const firstName = input.firstName?.trim();
+  const greeting = firstName ? `Bonjour ${firstName},` : 'Bonjour,';
+  const inventoryUrl = escapeHtml(input.inventoryUrl);
+  const budgetUrl = escapeHtml(input.budgetUrl);
+  const itemsHtml = input.urgentItems
+    .map(
+      (item) =>
+        `<li style="margin:0 0 8px"><strong>${escapeHtml(item.name)}</strong> · ${escapeHtml(item.detail)} · quantité ${escapeHtml(String(item.quantity))}</li>`,
+    )
+    .join('');
+  const more =
+    input.totalUrgentItems > input.urgentItems.length
+      ? `<p><a href="${inventoryUrl}" style="color:#2f6b3c">Voir les ${input.totalUrgentItems - input.urgentItems.length} autres</a></p>`
+      : '';
+  const budgetHtml = input.budgetAlert
+    ? `<h2 style="margin:24px 0 10px;font-size:18px">Budget</h2><p style="line-height:1.6">${escapeHtml(input.budgetAlert)}</p><p><a href="${budgetUrl}" style="color:#2f6b3c">Voir mon budget</a></p>`
+    : '';
+  const itemsText = input.urgentItems
+    .map(
+      (item) => `- ${item.name} · ${item.detail} · quantité ${item.quantity}`,
+    )
+    .join('\n');
+
+  return {
+    subject: 'Actions du jour dans votre inventaire InEat',
+    text: `${greeting}\n\nVoici ce qui demande votre attention aujourd'hui.\n\n${itemsText}${input.budgetAlert ? `\n\nBudget\n${input.budgetAlert}\n${input.budgetUrl}` : ''}\n\nVoir mon inventaire : ${input.inventoryUrl}`,
+    html: `<!doctype html>
+<html lang="fr"><body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px"><tr><td align="center">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;padding:32px"><tr><td>
+      <p style="margin:0 0 20px;font-size:16px">${escapeHtml(greeting)}</p>
+      <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25">À faire aujourd’hui</h1>
+      <p style="margin:0 0 20px;font-size:16px;line-height:1.6">Voici ce qui demande votre attention dans InEat.</p>
+      ${itemsHtml ? `<h2 style="margin:24px 0 10px;font-size:18px">Produits urgents</h2><ul style="margin:0;padding-left:20px;line-height:1.5">${itemsHtml}</ul>${more}` : ''}
+      ${budgetHtml}
+      <p style="margin:28px 0 0"><a href="${inventoryUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir mon inventaire</a></p>
+      <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#7b8794">Vous recevez ce message car le récapitulatif quotidien est activé dans vos paramètres InEat.</p>
+    </td></tr></table>
+  </td></tr></table>
+</body></html>`,
   };
 }
 

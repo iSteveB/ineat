@@ -3,7 +3,8 @@ export type TransactionalEmailType =
   | 'email_verification'
   | 'welcome'
   | 'notification_alert'
-  | 'weekly_product_digest';
+  | 'weekly_product_digest'
+  | 'daily_product_digest';
 
 export interface TransactionalEmailMessage {
   to: string;

@@ -1,10 +1,12 @@
 import { createHash } from 'crypto';
 import {
   createEmailVerificationEmail,
+  createDailyProductDigestEmail,
   createNotificationAlertEmail,
   createPasswordResetEmail,
   createWeeklyProductDigestEmail,
   type WeeklyProductDigestInput,
+  type DailyProductDigestInput,
   createWelcomeEmail,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
@@ -144,5 +146,25 @@ export async function sendWeeklyProductDigestEmail(
     type: 'weekly_product_digest',
     recipientReference: createRecipientReference(input.to),
     idempotencyKey: `weekly-product-digest/${input.userId}/${input.periodKey}`,
+  });
+}
+
+export async function sendDailyProductDigestEmail(
+  input: DailyProductDigestInput & {
+    to: string;
+    userId: string;
+    periodKey: string;
+  },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createDailyProductDigestEmail(input);
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'daily_product_digest',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `daily-product-digest/${input.userId}/${input.periodKey}`,
   });
 }

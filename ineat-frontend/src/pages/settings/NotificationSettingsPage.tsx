@@ -107,9 +107,12 @@ export default function NotificationSettingsPage() {
 					/>
 					<PreferenceRow
 						title='Récapitulatif quotidien'
-						description='Alertes urgentes et actionnables. Bientôt disponible.'
+						description='Chaque matin : produits urgents et nouveaux seuils budgétaires.'
 						checked={preferences.dailyDigestEnabled}
-						disabled
+						disabled={mutation.isPending}
+						onCheckedChange={(checked) =>
+							update('dailyDigestEnabled', checked)
+						}
 						icon={<Mail className='size-5' />}
 					/>
 				</CardContent>

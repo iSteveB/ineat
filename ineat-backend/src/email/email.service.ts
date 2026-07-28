@@ -3,13 +3,17 @@ import { ObservabilityService } from '../observability/observability.service';
 import {
   getDefaultEmailTransport,
   sendEmailVerificationEmail,
+  sendDailyProductDigestEmail,
   sendNotificationAlertEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendWeeklyProductDigestEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
-import type { WeeklyProductDigestInput } from './email.templates';
+import type {
+  DailyProductDigestInput,
+  WeeklyProductDigestInput,
+} from './email.templates';
 
 @Injectable()
 export class EmailService {
@@ -68,6 +72,18 @@ export class EmailService {
   ) {
     return this.sendObserved('weekly_product_digest', (transport) =>
       sendWeeklyProductDigestEmail(input, transport),
+    );
+  }
+
+  async sendDailyProductDigest(
+    input: DailyProductDigestInput & {
+      to: string;
+      userId: string;
+      periodKey: string;
+    },
+  ) {
+    return this.sendObserved('daily_product_digest', (transport) =>
+      sendDailyProductDigestEmail(input, transport),
     );
   }
 

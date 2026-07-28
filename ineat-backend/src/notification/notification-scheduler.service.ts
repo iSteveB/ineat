@@ -10,6 +10,7 @@ import { NotificationService } from './notification.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { ObservabilityService } from '../observability/observability.service';
 import { WeeklyProductDigestService } from './weekly-product-digest.service';
+import { DailyProductDigestService } from './daily-product-digest.service';
 
 const DEFAULT_INTERVAL_MS = 60 * 60 * 1000;
 const USER_BATCH_SIZE = 100;
@@ -28,6 +29,7 @@ export class NotificationSchedulerService
     @Optional() private readonly deliveries?: NotificationDeliveryService,
     @Optional() private readonly observability?: ObservabilityService,
     @Optional() private readonly weeklyDigests?: WeeklyProductDigestService,
+    @Optional() private readonly dailyDigests?: DailyProductDigestService,
   ) {}
 
   onModuleInit(): void {
@@ -97,6 +99,7 @@ export class NotificationSchedulerService
       );
       await this.deliveries?.retryPendingDeliveries();
       await this.weeklyDigests?.sendDueDigests();
+      await this.dailyDigests?.sendDueDigests();
       const purged = await this.notifications.purgeExpiredNotifications();
       if (purged > 0) {
         this.logger.log(`Notification retention purge: ${purged} rows`);
