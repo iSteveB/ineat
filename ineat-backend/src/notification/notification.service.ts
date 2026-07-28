@@ -10,6 +10,7 @@ import {
   NotificationType,
 } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ObservabilityService } from '../observability/observability.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
 
 type CreateOrUpdateNotificationInput = {
@@ -59,6 +60,7 @@ export class NotificationService {
   constructor(
     private readonly prisma: PrismaService,
     @Optional() private readonly delivery?: NotificationDeliveryService,
+    @Optional() private readonly observability?: ObservabilityService,
   ) {}
 
   async listNotifications(
@@ -183,6 +185,14 @@ export class NotificationService {
       },
     });
 
+    for (const [key, value] of Object.entries(data)) {
+      if (value === false) {
+        this.observability?.increment(
+          `notifications.preferences.disabled.${key}`,
+        );
+      }
+    }
+
     await this.synchronizeUser(userId);
     return preferences;
   }
@@ -215,10 +225,12 @@ export class NotificationService {
       throw new NotFoundException('Notification introuvable');
     }
 
-    return this.prisma.notification.update({
+    const updated = await this.prisma.notification.update({
       where: { id: notificationId },
       data: { isRead, updatedAt: new Date() },
     });
+    this.observability?.increment('notifications.actions.mark_read');
+    return updated;
   }
 
   async markAllAsRead(userId: string): Promise<{ count: number }> {
@@ -231,6 +243,11 @@ export class NotificationService {
       },
       data: { isRead: true, updatedAt: new Date() },
     });
+
+    this.observability?.increment(
+      'notifications.actions.mark_all_read',
+      result.count,
+    );
 
     return { count: result.count };
   }
@@ -245,10 +262,12 @@ export class NotificationService {
     }
 
     const now = new Date();
-    return this.prisma.notification.update({
+    const updated = await this.prisma.notification.update({
       where: { id: notificationId },
       data: { dismissedAt: now, isRead: true, updatedAt: now },
     });
+    this.observability?.increment('notifications.actions.dismiss');
+    return updated;
   }
 
   private async syncExpiryNotifications(userId: string): Promise<void> {
@@ -261,9 +280,8 @@ export class NotificationService {
       return;
     }
 
-    const limitDate = new Date();
-    limitDate.setDate(limitDate.getDate() + 5);
-    limitDate.setHours(23, 59, 59, 999);
+    const timeZone = await this.getUserTimeZone(userId);
+    const limitDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     const activeReferences: Array<{
       referenceId: string;
@@ -288,11 +306,14 @@ export class NotificationService {
 
       await Promise.all(
         items.map((item) => {
+          const days = this.daysUntil(item.expiryDate, timeZone);
+          if (days > 5) {
+            return Promise.resolve();
+          }
           activeReferences.push({
             referenceId: item.id,
             referenceType: 'inventory_item',
           });
-          const days = this.daysUntil(item.expiryDate);
           const productName = item.Product?.name ?? 'Un produit';
 
           return this.createOrUpdateNotification({
@@ -452,6 +473,11 @@ export class NotificationService {
     });
 
     if (!existing || isNewOccurrence) {
+      this.observability?.increment(
+        existing
+          ? 'notifications.occurrences.reopened'
+          : 'notifications.occurrences.created',
+      );
       await this.delivery?.dispatchOccurrence(notification);
     }
 
@@ -526,20 +552,74 @@ export class NotificationService {
       where: { id: { in: staleIds }, userId },
       data: { resolvedAt: now, isRead: true, updatedAt: now },
     });
+    this.observability?.increment(
+      'notifications.occurrences.resolved',
+      staleIds.length,
+    );
   }
 
-  private daysUntil(date: Date | null): number {
+  async purgeExpiredNotifications(retentionDays?: number): Promise<number> {
+    const configured = Number(process.env.NOTIFICATION_RETENTION_DAYS);
+    const days =
+      retentionDays ??
+      (Number.isFinite(configured) && configured >= 30 ? configured : 180);
+    const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const result = await this.prisma.notification.deleteMany({
+      where: {
+        OR: [{ resolvedAt: { lt: cutoff } }, { dismissedAt: { lt: cutoff } }],
+      },
+    });
+    this.observability?.increment(
+      'notifications.retention.purged',
+      result.count,
+    );
+    return result.count;
+  }
+
+  private async getUserTimeZone(userId: string): Promise<string> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { preferences: true },
+    });
+    const preferences = user?.preferences;
+    const candidate =
+      preferences &&
+      typeof preferences === 'object' &&
+      !Array.isArray(preferences)
+        ? ((preferences as Record<string, unknown>).timeZone ??
+          (preferences as Record<string, unknown>).timezone)
+        : undefined;
+
+    if (typeof candidate === 'string') {
+      try {
+        new Intl.DateTimeFormat('fr-FR', { timeZone: candidate }).format();
+        return candidate;
+      } catch {
+        this.observability?.increment('notifications.timezone.invalid');
+      }
+    }
+    return 'Europe/Paris';
+  }
+
+  private daysUntil(date: Date | null, timeZone = 'Europe/Paris'): number {
     if (!date) {
       return 0;
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(date);
-    target.setHours(0, 0, 0, 0);
+    const toDayNumber = (value: Date) => {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).formatToParts(value);
+      const part = (type: Intl.DateTimeFormatPartTypes) =>
+        Number(parts.find((item) => item.type === type)?.value);
+      return Date.UTC(part('year'), part('month') - 1, part('day'));
+    };
 
-    return Math.ceil(
-      (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+    return Math.round(
+      (toDayNumber(date) - toDayNumber(new Date())) / 86_400_000,
     );
   }
 

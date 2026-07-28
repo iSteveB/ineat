@@ -33,6 +33,10 @@ const baseEnvironmentSchema = z
       emptyToUndefined,
       z.coerce.number().int().min(60_000).optional(),
     ),
+    NOTIFICATION_RETENTION_DAYS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(30).default(180),
+    ),
     EMAIL_ENABLED: optionalBoolean,
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,

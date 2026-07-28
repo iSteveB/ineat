@@ -2,6 +2,9 @@ import { NotificationService } from './notification.service';
 
 describe('NotificationService', () => {
   const prisma = {
+    user: {
+      findUnique: jest.fn(),
+    },
     inventoryItem: {
       findMany: jest.fn(),
     },
@@ -16,6 +19,7 @@ describe('NotificationService', () => {
       upsert: jest.fn(),
       update: jest.fn(),
       updateMany: jest.fn(),
+      deleteMany: jest.fn(),
     },
     notificationPreferences: {
       findUnique: jest.fn(),
@@ -28,6 +32,8 @@ describe('NotificationService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     prisma.notification.findMany.mockResolvedValue([]);
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.notification.deleteMany.mockResolvedValue({ count: 0 });
     prisma.notificationPreferences.findUnique.mockResolvedValue(null);
     service = new NotificationService(prisma as any);
   });
@@ -405,6 +411,84 @@ describe('NotificationService', () => {
       }),
       update: { expiry: false, updatedAt: expect.any(Date) },
       select: expect.any(Object),
+    });
+  });
+
+  it.each([
+    [75, 'Budget à surveiller', 'budget:threshold_75'],
+    [90, 'Budget presque épuisé', 'budget:threshold_90'],
+    [100, 'Budget dépassé', 'budget:over_budget'],
+  ])(
+    'creates the expected budget alert at %i%%',
+    async (spent, title, referenceType) => {
+      prisma.budget.findFirst.mockResolvedValue({
+        id: 'budget-1',
+        amount: 100,
+        Expense: [{ amount: spent }],
+      });
+      prisma.notification.findUnique.mockResolvedValue(null);
+      prisma.notification.upsert.mockImplementation(({ create }) =>
+        Promise.resolve(create),
+      );
+
+      await service.synchronizeBudgetNotifications('user-1');
+
+      expect(prisma.notification.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          create: expect.objectContaining({ title, referenceType }),
+        }),
+      );
+    },
+  );
+
+  it('resolves a budget notification after returning below the threshold', async () => {
+    prisma.budget.findFirst.mockResolvedValue({
+      id: 'budget-1',
+      amount: 100,
+      Expense: [{ amount: 74 }],
+    });
+    prisma.notification.findMany.mockResolvedValueOnce([
+      {
+        id: 'notification-1',
+        referenceId: 'budget-1',
+        referenceType: 'budget:threshold_75',
+      },
+    ]);
+
+    await service.synchronizeBudgetNotifications('user-1');
+
+    expect(prisma.notification.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['notification-1'] }, userId: 'user-1' },
+      }),
+    );
+  });
+
+  it('computes calendar days in the user timezone across daylight saving time', () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-03-29T22:30:00.000Z'));
+
+    expect(
+      (service as any).daysUntil(
+        new Date('2026-03-30T22:30:00.000Z'),
+        'Europe/Paris',
+      ),
+    ).toBe(1);
+
+    jest.useRealTimers();
+  });
+
+  it('purges only resolved or dismissed notifications past retention', async () => {
+    prisma.notification.deleteMany.mockResolvedValue({ count: 4 });
+
+    await expect(service.purgeExpiredNotifications(90)).resolves.toBe(4);
+
+    expect(prisma.notification.deleteMany).toHaveBeenCalledWith({
+      where: {
+        OR: [
+          { resolvedAt: { lt: expect.any(Date) } },
+          { dismissedAt: { lt: expect.any(Date) } },
+        ],
+      },
     });
   });
 });

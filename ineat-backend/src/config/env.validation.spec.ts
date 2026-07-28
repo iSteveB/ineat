@@ -20,6 +20,7 @@ describe('validateEnvironment', () => {
     expect(validateEnvironment({ NODE_ENV: 'development' })).toMatchObject({
       NODE_ENV: 'development',
       STRIPE_ENABLED: false,
+      NOTIFICATION_RETENTION_DAYS: 180,
     });
   });
 

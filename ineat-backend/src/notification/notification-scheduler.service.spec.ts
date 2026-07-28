@@ -8,6 +8,7 @@ describe('NotificationSchedulerService', () => {
   };
   const notifications = {
     synchronizeUser: jest.fn(),
+    purgeExpiredNotifications: jest.fn().mockResolvedValue(0),
   };
 
   beforeEach(() => {

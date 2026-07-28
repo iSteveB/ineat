@@ -8,6 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from './notification.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
+import { ObservabilityService } from '../observability/observability.service';
 
 const DEFAULT_INTERVAL_MS = 60 * 60 * 1000;
 const USER_BATCH_SIZE = 100;
@@ -24,6 +25,7 @@ export class NotificationSchedulerService
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationService,
     @Optional() private readonly deliveries?: NotificationDeliveryService,
+    @Optional() private readonly observability?: ObservabilityService,
   ) {}
 
   onModuleInit(): void {
@@ -83,8 +85,29 @@ export class NotificationSchedulerService
       this.logger.log(
         `Notification synchronization completed: ${synchronizedUsers} users, ${failedUsers} failures`,
       );
+      this.observability?.increment(
+        'notifications.synchronization.users',
+        synchronizedUsers,
+      );
+      this.observability?.increment(
+        'notifications.synchronization.failures',
+        failedUsers,
+      );
       await this.deliveries?.retryPendingDeliveries();
+      const purged = await this.notifications.purgeExpiredNotifications();
+      if (purged > 0) {
+        this.logger.log(`Notification retention purge: ${purged} rows`);
+      }
     } catch (error) {
+      this.observability?.trackEvent(
+        'notifications.synchronization.failed',
+        'error',
+        'Notification synchronization failed',
+        {
+          errorName:
+            error instanceof Error ? error.constructor.name : 'Unknown',
+        },
+      );
       this.logger.error('Notification synchronization failed', error);
     } finally {
       this.isRunning = false;

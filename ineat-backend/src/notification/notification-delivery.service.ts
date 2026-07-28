@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   Notification,
@@ -9,6 +9,7 @@ import {
 import { EmailService } from '../email/email.service';
 import { createRecipientReference } from '../email/email-sender';
 import { PrismaService } from '../prisma/prisma.service';
+import { ObservabilityService } from '../observability/observability.service';
 
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [5 * 60_000, 30 * 60_000, 2 * 60 * 60_000];
@@ -20,6 +21,7 @@ export class NotificationDeliveryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
+    @Optional() private readonly observability?: ObservabilityService,
   ) {}
 
   async dispatchOccurrence(notification: Notification): Promise<void> {
@@ -141,6 +143,7 @@ export class NotificationDeliveryService {
         NotificationDeliveryStatus.SKIPPED,
         'Email notifications are disabled by user preferences',
       );
+      this.observability?.increment('notifications.delivery.email.skipped');
       return;
     }
 
@@ -150,6 +153,7 @@ export class NotificationDeliveryService {
         NotificationDeliveryStatus.SKIPPED,
         'Transactional email is disabled',
       );
+      this.observability?.increment('notifications.delivery.email.skipped');
       return;
     }
 
@@ -167,6 +171,7 @@ export class NotificationDeliveryService {
         NotificationDeliveryStatus.SUPPRESSED,
         'Recipient is suppressed',
       );
+      this.observability?.increment('notifications.delivery.email.suppressed');
       return;
     }
 
@@ -212,6 +217,7 @@ export class NotificationDeliveryService {
           updatedAt: new Date(),
         },
       });
+      this.observability?.increment('notifications.delivery.email.sent');
     } catch (error) {
       const attemptCount = delivery.attemptCount + 1;
       const message = error instanceof Error ? error.message : String(error);
@@ -227,6 +233,7 @@ export class NotificationDeliveryService {
           updatedAt: new Date(),
         },
       });
+      this.observability?.increment('notifications.delivery.email.failed');
       this.logger.warn(
         `Notification delivery ${delivery.id} failed: ${message}`,
       );
