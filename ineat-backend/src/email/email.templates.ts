@@ -11,6 +11,101 @@ const escapeHtml = (value: string) =>
       })[character] ?? character,
   );
 
+export type WeeklyProductDigestItem = {
+  name: string;
+  quantity: number;
+  detail: string;
+};
+
+export type WeeklyProductDigestInput = {
+  firstName?: string | null;
+  expired: WeeklyProductDigestItem[];
+  expiringSoon: WeeklyProductDigestItem[];
+  recentlyAdded: WeeklyProductDigestItem[];
+  totals: { expired: number; expiringSoon: number; recentlyAdded: number };
+  budget?: { spent: number; amount: number; remaining: number; percentage: number };
+  inventoryUrl: string;
+  budgetUrl: string;
+};
+
+const formatMoney = (value: number) =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(
+    value,
+  );
+
+const renderDigestSection = (
+  title: string,
+  items: WeeklyProductDigestItem[],
+  total: number,
+  url: string,
+) => {
+  if (total === 0) return '';
+  const rows = items
+    .map(
+      (item) =>
+        `<li style="margin:0 0 8px"><strong>${escapeHtml(item.name)}</strong> · ${escapeHtml(item.detail)} · quantité ${escapeHtml(String(item.quantity))}</li>`,
+    )
+    .join('');
+  const more =
+    total > items.length
+      ? `<p style="margin:8px 0 0"><a href="${escapeHtml(url)}" style="color:#2f6b3c">Voir les ${total - items.length} autres</a></p>`
+      : '';
+  return `<h2 style="margin:24px 0 10px;font-size:18px">${escapeHtml(title)}</h2><ul style="margin:0;padding-left:20px;line-height:1.5">${rows}</ul>${more}`;
+};
+
+export function createWeeklyProductDigestEmail(
+  input: WeeklyProductDigestInput,
+) {
+  const firstName = input.firstName?.trim();
+  const greeting = firstName ? `Bonjour ${firstName},` : 'Bonjour,';
+  const inventoryUrl = escapeHtml(input.inventoryUrl);
+  const budgetUrl = escapeHtml(input.budgetUrl);
+  const itemText = (items: WeeklyProductDigestItem[]) =>
+    items.map((item) => `- ${item.name} · ${item.detail} · quantité ${item.quantity}`).join('\n');
+  const sections = [
+    input.totals.expired
+      ? `Produits périmés (${input.totals.expired})\n${itemText(input.expired)}`
+      : '',
+    input.totals.expiringSoon
+      ? `À consommer dans les 7 jours (${input.totals.expiringSoon})\n${itemText(input.expiringSoon)}`
+      : '',
+    input.budget
+      ? `Budget\n${formatMoney(input.budget.spent)} dépensés sur ${formatMoney(input.budget.amount)} (${input.budget.percentage} %). Reste ${formatMoney(input.budget.remaining)}.`
+      : '',
+    input.totals.recentlyAdded
+      ? `Ajoutés cette semaine (${input.totals.recentlyAdded})\n${itemText(input.recentlyAdded)}`
+      : '',
+  ].filter(Boolean);
+
+  const budgetHtml = input.budget
+    ? `<h2 style="margin:24px 0 10px;font-size:18px">Votre budget</h2><p style="margin:0 0 8px;line-height:1.6"><strong>${formatMoney(input.budget.spent)}</strong> dépensés sur ${formatMoney(input.budget.amount)} (${input.budget.percentage} %). Il vous reste ${formatMoney(input.budget.remaining)}.</p><p style="margin:0"><a href="${budgetUrl}" style="color:#2f6b3c">Voir mon budget</a></p>`
+    : '';
+
+  return {
+    subject: 'Votre semaine InEat : produits à consommer et budget',
+    text: `${greeting}\n\nVoici les informations utiles pour préparer votre semaine.\n\n${sections.join('\n\n')}\n\nVoir mon inventaire : ${input.inventoryUrl}${input.budget ? `\nVoir mon budget : ${input.budgetUrl}` : ''}`,
+    html: `<!doctype html>
+<html lang="fr">
+  <body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
+    <div style="display:none;max-height:0;overflow:hidden">Les produits à consommer et votre budget pour la semaine.</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px"><tr><td align="center">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;padding:32px"><tr><td>
+        <p style="margin:0 0 20px;font-size:16px">${escapeHtml(greeting)}</p>
+        <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25">Préparez votre semaine avec InEat</h1>
+        <p style="margin:0 0 20px;font-size:16px;line-height:1.6">Voici les informations utiles de votre inventaire.</p>
+        ${renderDigestSection('À consommer maintenant', input.expired, input.totals.expired, input.inventoryUrl)}
+        ${renderDigestSection('À consommer dans les 7 jours', input.expiringSoon, input.totals.expiringSoon, input.inventoryUrl)}
+        ${budgetHtml}
+        ${renderDigestSection('Ajoutés cette semaine', input.recentlyAdded, input.totals.recentlyAdded, input.inventoryUrl)}
+        <p style="margin:28px 0 0"><a href="${inventoryUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir mon inventaire</a></p>
+        <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#7b8794">Vous pouvez désactiver ce récapitulatif dans les paramètres de notification InEat.</p>
+      </td></tr></table>
+    </td></tr></table>
+  </body>
+</html>`,
+  };
+}
+
 export function createPasswordResetEmail(input: {
   name?: string | null;
   resetUrl: string;

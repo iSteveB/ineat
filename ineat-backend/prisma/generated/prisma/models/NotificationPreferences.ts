@@ -29,6 +29,8 @@ export type NotificationPreferencesMinAggregateOutputType = {
   inAppEnabled: boolean | null
   emailEnabled: boolean | null
   pushEnabled: boolean | null
+  weeklyDigestEnabled: boolean | null
+  dailyDigestEnabled: boolean | null
   expiry: boolean | null
   budget: boolean | null
   system: boolean | null
@@ -41,6 +43,8 @@ export type NotificationPreferencesMaxAggregateOutputType = {
   inAppEnabled: boolean | null
   emailEnabled: boolean | null
   pushEnabled: boolean | null
+  weeklyDigestEnabled: boolean | null
+  dailyDigestEnabled: boolean | null
   expiry: boolean | null
   budget: boolean | null
   system: boolean | null
@@ -53,6 +57,8 @@ export type NotificationPreferencesCountAggregateOutputType = {
   inAppEnabled: number
   emailEnabled: number
   pushEnabled: number
+  weeklyDigestEnabled: number
+  dailyDigestEnabled: number
   expiry: number
   budget: number
   system: number
@@ -67,6 +73,8 @@ export type NotificationPreferencesMinAggregateInputType = {
   inAppEnabled?: true
   emailEnabled?: true
   pushEnabled?: true
+  weeklyDigestEnabled?: true
+  dailyDigestEnabled?: true
   expiry?: true
   budget?: true
   system?: true
@@ -79,6 +87,8 @@ export type NotificationPreferencesMaxAggregateInputType = {
   inAppEnabled?: true
   emailEnabled?: true
   pushEnabled?: true
+  weeklyDigestEnabled?: true
+  dailyDigestEnabled?: true
   expiry?: true
   budget?: true
   system?: true
@@ -91,6 +101,8 @@ export type NotificationPreferencesCountAggregateInputType = {
   inAppEnabled?: true
   emailEnabled?: true
   pushEnabled?: true
+  weeklyDigestEnabled?: true
+  dailyDigestEnabled?: true
   expiry?: true
   budget?: true
   system?: true
@@ -176,6 +188,8 @@ export type NotificationPreferencesGroupByOutputType = {
   inAppEnabled: boolean
   emailEnabled: boolean
   pushEnabled: boolean
+  weeklyDigestEnabled: boolean
+  dailyDigestEnabled: boolean
   expiry: boolean
   budget: boolean
   system: boolean
@@ -209,6 +223,8 @@ export type NotificationPreferencesWhereInput = {
   inAppEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   emailEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   pushEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
+  weeklyDigestEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
+  dailyDigestEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   expiry?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   budget?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   system?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
@@ -222,6 +238,8 @@ export type NotificationPreferencesOrderByWithRelationInput = {
   inAppEnabled?: Prisma.SortOrder
   emailEnabled?: Prisma.SortOrder
   pushEnabled?: Prisma.SortOrder
+  weeklyDigestEnabled?: Prisma.SortOrder
+  dailyDigestEnabled?: Prisma.SortOrder
   expiry?: Prisma.SortOrder
   budget?: Prisma.SortOrder
   system?: Prisma.SortOrder
@@ -238,6 +256,8 @@ export type NotificationPreferencesWhereUniqueInput = Prisma.AtLeast<{
   inAppEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   emailEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   pushEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
+  weeklyDigestEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
+  dailyDigestEnabled?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   expiry?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   budget?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
   system?: Prisma.BoolFilter<"NotificationPreferences"> | boolean
@@ -251,6 +271,8 @@ export type NotificationPreferencesOrderByWithAggregationInput = {
   inAppEnabled?: Prisma.SortOrder
   emailEnabled?: Prisma.SortOrder
   pushEnabled?: Prisma.SortOrder
+  weeklyDigestEnabled?: Prisma.SortOrder
+  dailyDigestEnabled?: Prisma.SortOrder
   expiry?: Prisma.SortOrder
   budget?: Prisma.SortOrder
   system?: Prisma.SortOrder
@@ -269,6 +291,8 @@ export type NotificationPreferencesScalarWhereWithAggregatesInput = {
   inAppEnabled?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
   emailEnabled?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
   pushEnabled?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
+  weeklyDigestEnabled?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
+  dailyDigestEnabled?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
   expiry?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
   budget?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
   system?: Prisma.BoolWithAggregatesFilter<"NotificationPreferences"> | boolean
@@ -280,6 +304,8 @@ export type NotificationPreferencesCreateInput = {
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -293,6 +319,8 @@ export type NotificationPreferencesUncheckedCreateInput = {
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -304,6 +332,8 @@ export type NotificationPreferencesUpdateInput = {
   inAppEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pushEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dailyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   budget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   system?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -317,6 +347,8 @@ export type NotificationPreferencesUncheckedUpdateInput = {
   inAppEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pushEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dailyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   budget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   system?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -329,6 +361,8 @@ export type NotificationPreferencesCreateManyInput = {
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -340,6 +374,8 @@ export type NotificationPreferencesUpdateManyMutationInput = {
   inAppEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pushEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dailyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   budget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   system?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -352,6 +388,8 @@ export type NotificationPreferencesUncheckedUpdateManyInput = {
   inAppEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pushEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dailyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   budget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   system?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -364,6 +402,8 @@ export type NotificationPreferencesCountOrderByAggregateInput = {
   inAppEnabled?: Prisma.SortOrder
   emailEnabled?: Prisma.SortOrder
   pushEnabled?: Prisma.SortOrder
+  weeklyDigestEnabled?: Prisma.SortOrder
+  dailyDigestEnabled?: Prisma.SortOrder
   expiry?: Prisma.SortOrder
   budget?: Prisma.SortOrder
   system?: Prisma.SortOrder
@@ -376,6 +416,8 @@ export type NotificationPreferencesMaxOrderByAggregateInput = {
   inAppEnabled?: Prisma.SortOrder
   emailEnabled?: Prisma.SortOrder
   pushEnabled?: Prisma.SortOrder
+  weeklyDigestEnabled?: Prisma.SortOrder
+  dailyDigestEnabled?: Prisma.SortOrder
   expiry?: Prisma.SortOrder
   budget?: Prisma.SortOrder
   system?: Prisma.SortOrder
@@ -388,6 +430,8 @@ export type NotificationPreferencesMinOrderByAggregateInput = {
   inAppEnabled?: Prisma.SortOrder
   emailEnabled?: Prisma.SortOrder
   pushEnabled?: Prisma.SortOrder
+  weeklyDigestEnabled?: Prisma.SortOrder
+  dailyDigestEnabled?: Prisma.SortOrder
   expiry?: Prisma.SortOrder
   budget?: Prisma.SortOrder
   system?: Prisma.SortOrder
@@ -436,6 +480,8 @@ export type NotificationPreferencesCreateWithoutUserInput = {
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -447,6 +493,8 @@ export type NotificationPreferencesUncheckedCreateWithoutUserInput = {
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -474,6 +522,8 @@ export type NotificationPreferencesUpdateWithoutUserInput = {
   inAppEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pushEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dailyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   budget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   system?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -485,6 +535,8 @@ export type NotificationPreferencesUncheckedUpdateWithoutUserInput = {
   inAppEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   pushEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  weeklyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  dailyDigestEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   expiry?: Prisma.BoolFieldUpdateOperationsInput | boolean
   budget?: Prisma.BoolFieldUpdateOperationsInput | boolean
   system?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -499,6 +551,8 @@ export type NotificationPreferencesSelect<ExtArgs extends runtime.Types.Extensio
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -512,6 +566,8 @@ export type NotificationPreferencesSelectCreateManyAndReturn<ExtArgs extends run
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -525,6 +581,8 @@ export type NotificationPreferencesSelectUpdateManyAndReturn<ExtArgs extends run
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -538,6 +596,8 @@ export type NotificationPreferencesSelectScalar = {
   inAppEnabled?: boolean
   emailEnabled?: boolean
   pushEnabled?: boolean
+  weeklyDigestEnabled?: boolean
+  dailyDigestEnabled?: boolean
   expiry?: boolean
   budget?: boolean
   system?: boolean
@@ -545,7 +605,7 @@ export type NotificationPreferencesSelectScalar = {
   updatedAt?: boolean
 }
 
-export type NotificationPreferencesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "inAppEnabled" | "emailEnabled" | "pushEnabled" | "expiry" | "budget" | "system" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationPreferences"]>
+export type NotificationPreferencesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "inAppEnabled" | "emailEnabled" | "pushEnabled" | "weeklyDigestEnabled" | "dailyDigestEnabled" | "expiry" | "budget" | "system" | "createdAt" | "updatedAt", ExtArgs["result"]["notificationPreferences"]>
 export type NotificationPreferencesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -566,6 +626,8 @@ export type $NotificationPreferencesPayload<ExtArgs extends runtime.Types.Extens
     inAppEnabled: boolean
     emailEnabled: boolean
     pushEnabled: boolean
+    weeklyDigestEnabled: boolean
+    dailyDigestEnabled: boolean
     expiry: boolean
     budget: boolean
     system: boolean
@@ -999,6 +1061,8 @@ export interface NotificationPreferencesFieldRefs {
   readonly inAppEnabled: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
   readonly emailEnabled: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
   readonly pushEnabled: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
+  readonly weeklyDigestEnabled: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
+  readonly dailyDigestEnabled: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
   readonly expiry: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
   readonly budget: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>
   readonly system: Prisma.FieldRef<"NotificationPreferences", 'Boolean'>

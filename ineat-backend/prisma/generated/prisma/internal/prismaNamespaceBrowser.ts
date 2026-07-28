@@ -58,6 +58,7 @@ export const ModelName = {
   Notification: 'Notification',
   NotificationDelivery: 'NotificationDelivery',
   NotificationPreferences: 'NotificationPreferences',
+  EmailDigestDelivery: 'EmailDigestDelivery',
   Product: 'Product',
   Invoice: 'Invoice',
   InvoiceItem: 'InvoiceItem',
@@ -199,6 +200,8 @@ export const NotificationPreferencesScalarFieldEnum = {
   inAppEnabled: 'inAppEnabled',
   emailEnabled: 'emailEnabled',
   pushEnabled: 'pushEnabled',
+  weeklyDigestEnabled: 'weeklyDigestEnabled',
+  dailyDigestEnabled: 'dailyDigestEnabled',
   expiry: 'expiry',
   budget: 'budget',
   system: 'system',
@@ -207,6 +210,23 @@ export const NotificationPreferencesScalarFieldEnum = {
 } as const
 
 export type NotificationPreferencesScalarFieldEnum = (typeof NotificationPreferencesScalarFieldEnum)[keyof typeof NotificationPreferencesScalarFieldEnum]
+
+
+export const EmailDigestDeliveryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  periodKey: 'periodKey',
+  status: 'status',
+  attemptCount: 'attemptCount',
+  providerMessageId: 'providerMessageId',
+  errorMessage: 'errorMessage',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailDigestDeliveryScalarFieldEnum = (typeof EmailDigestDeliveryScalarFieldEnum)[keyof typeof EmailDigestDeliveryScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {

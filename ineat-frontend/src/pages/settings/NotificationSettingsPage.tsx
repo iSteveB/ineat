@@ -92,6 +92,31 @@ export default function NotificationSettingsPage() {
 
 			<Card>
 				<CardHeader>
+					<CardTitle>Récapitulatifs email</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<PreferenceRow
+						title='Récapitulatif hebdomadaire'
+						description='Chaque dimanche à 18 h : produits à consommer, budget et derniers ajouts.'
+						checked={preferences.weeklyDigestEnabled}
+						disabled={mutation.isPending}
+						onCheckedChange={(checked) =>
+							update('weeklyDigestEnabled', checked)
+						}
+						icon={<Mail className='size-5' />}
+					/>
+					<PreferenceRow
+						title='Récapitulatif quotidien'
+						description='Alertes urgentes et actionnables. Bientôt disponible.'
+						checked={preferences.dailyDigestEnabled}
+						disabled
+						icon={<Mail className='size-5' />}
+					/>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
 					<CardTitle>Canaux</CardTitle>
 				</CardHeader>
 				<CardContent>

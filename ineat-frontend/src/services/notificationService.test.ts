@@ -103,6 +103,8 @@ describe('notificationService', () => {
 			inAppEnabled: true,
 			emailEnabled: false,
 			pushEnabled: false,
+			weeklyDigestEnabled: true,
+			dailyDigestEnabled: false,
 			expiry: true,
 			budget: true,
 			system: true,

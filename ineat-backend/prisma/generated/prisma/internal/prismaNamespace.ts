@@ -391,6 +391,7 @@ export const ModelName = {
   Notification: 'Notification',
   NotificationDelivery: 'NotificationDelivery',
   NotificationPreferences: 'NotificationPreferences',
+  EmailDigestDelivery: 'EmailDigestDelivery',
   Product: 'Product',
   Invoice: 'Invoice',
   InvoiceItem: 'InvoiceItem',
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -940,6 +941,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.NotificationPreferencesCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.NotificationPreferencesCountAggregateOutputType> | number
+        }
+      }
+    }
+    EmailDigestDelivery: {
+      payload: Prisma.$EmailDigestDeliveryPayload<ExtArgs>
+      fields: Prisma.EmailDigestDeliveryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EmailDigestDeliveryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EmailDigestDeliveryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>
+        }
+        findFirst: {
+          args: Prisma.EmailDigestDeliveryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EmailDigestDeliveryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>
+        }
+        findMany: {
+          args: Prisma.EmailDigestDeliveryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>[]
+        }
+        create: {
+          args: Prisma.EmailDigestDeliveryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>
+        }
+        createMany: {
+          args: Prisma.EmailDigestDeliveryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EmailDigestDeliveryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>[]
+        }
+        delete: {
+          args: Prisma.EmailDigestDeliveryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>
+        }
+        update: {
+          args: Prisma.EmailDigestDeliveryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>
+        }
+        deleteMany: {
+          args: Prisma.EmailDigestDeliveryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EmailDigestDeliveryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EmailDigestDeliveryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>[]
+        }
+        upsert: {
+          args: Prisma.EmailDigestDeliveryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmailDigestDeliveryPayload>
+        }
+        aggregate: {
+          args: Prisma.EmailDigestDeliveryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEmailDigestDelivery>
+        }
+        groupBy: {
+          args: Prisma.EmailDigestDeliveryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmailDigestDeliveryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EmailDigestDeliveryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmailDigestDeliveryCountAggregateOutputType> | number
         }
       }
     }
@@ -2200,6 +2275,8 @@ export const NotificationPreferencesScalarFieldEnum = {
   inAppEnabled: 'inAppEnabled',
   emailEnabled: 'emailEnabled',
   pushEnabled: 'pushEnabled',
+  weeklyDigestEnabled: 'weeklyDigestEnabled',
+  dailyDigestEnabled: 'dailyDigestEnabled',
   expiry: 'expiry',
   budget: 'budget',
   system: 'system',
@@ -2208,6 +2285,23 @@ export const NotificationPreferencesScalarFieldEnum = {
 } as const
 
 export type NotificationPreferencesScalarFieldEnum = (typeof NotificationPreferencesScalarFieldEnum)[keyof typeof NotificationPreferencesScalarFieldEnum]
+
+
+export const EmailDigestDeliveryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  periodKey: 'periodKey',
+  status: 'status',
+  attemptCount: 'attemptCount',
+  providerMessageId: 'providerMessageId',
+  errorMessage: 'errorMessage',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailDigestDeliveryScalarFieldEnum = (typeof EmailDigestDeliveryScalarFieldEnum)[keyof typeof EmailDigestDeliveryScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {
@@ -2657,49 +2751,49 @@ export type EnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<
  * Reference to a field of type 'NotificationType[]'
  */
 export type ListEnumNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationType[]'>
-
+    
 
 
 /**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-
+    
 
 
 /**
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-
+    
 
 
 /**
  * Reference to a field of type 'NotificationChannel'
  */
 export type EnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel'>
-
+    
 
 
 /**
  * Reference to a field of type 'NotificationChannel[]'
  */
 export type ListEnumNotificationChannelFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationChannel[]'>
-
+    
 
 
 /**
  * Reference to a field of type 'NotificationDeliveryStatus'
  */
 export type EnumNotificationDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationDeliveryStatus'>
-
+    
 
 
 /**
  * Reference to a field of type 'NotificationDeliveryStatus[]'
  */
 export type ListEnumNotificationDeliveryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NotificationDeliveryStatus[]'>
-
+    
 
 
 /**
@@ -3055,6 +3149,7 @@ export type GlobalOmitConfig = {
   notification?: Prisma.NotificationOmit
   notificationDelivery?: Prisma.NotificationDeliveryOmit
   notificationPreferences?: Prisma.NotificationPreferencesOmit
+  emailDigestDelivery?: Prisma.EmailDigestDeliveryOmit
   product?: Prisma.ProductOmit
   invoice?: Prisma.InvoiceOmit
   invoiceItem?: Prisma.InvoiceItemOmit
@@ -3132,3 +3227,4 @@ export type PrismaAction =
  * `PrismaClient` proxy available in interactive transactions.
  */
 export type TransactionClient = Omit<DefaultPrismaClient, runtime.ITXClientDenyList>
+

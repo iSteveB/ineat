@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { NotificationService } from './notification.service';
 import { NotificationDeliveryService } from './notification-delivery.service';
 import { ObservabilityService } from '../observability/observability.service';
+import { WeeklyProductDigestService } from './weekly-product-digest.service';
 
 const DEFAULT_INTERVAL_MS = 60 * 60 * 1000;
 const USER_BATCH_SIZE = 100;
@@ -26,6 +27,7 @@ export class NotificationSchedulerService
     private readonly notifications: NotificationService,
     @Optional() private readonly deliveries?: NotificationDeliveryService,
     @Optional() private readonly observability?: ObservabilityService,
+    @Optional() private readonly weeklyDigests?: WeeklyProductDigestService,
   ) {}
 
   onModuleInit(): void {
@@ -94,6 +96,7 @@ export class NotificationSchedulerService
         failedUsers,
       );
       await this.deliveries?.retryPendingDeliveries();
+      await this.weeklyDigests?.sendDueDigests();
       const purged = await this.notifications.purgeExpiredNotifications();
       if (purged > 0) {
         this.logger.log(`Notification retention purge: ${purged} rows`);

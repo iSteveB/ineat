@@ -147,16 +147,37 @@ model NotificationDelivery {
 }
 
 model NotificationPreferences {
-  userId       String   @id
-  inAppEnabled Boolean  @default(true)
-  emailEnabled Boolean  @default(false)
-  pushEnabled  Boolean  @default(false)
-  expiry       Boolean  @default(true)
-  budget       Boolean  @default(true)
-  system       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String   @id
+  inAppEnabled        Boolean  @default(true)
+  emailEnabled        Boolean  @default(false)
+  pushEnabled         Boolean  @default(false)
+  weeklyDigestEnabled Boolean  @default(true)
+  dailyDigestEnabled  Boolean  @default(false)
+  expiry              Boolean  @default(true)
+  budget              Boolean  @default(true)
+  system              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime
+  User                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailDigestDelivery {
+  id                String   @id
+  userId            String
+  type              String
+  periodKey         String
+  status            String   @default("PENDING")
+  attemptCount      Int      @default(0)
+  providerMessageId String?
+  errorMessage      String?
+  sentAt            DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime
+  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, periodKey])
+  @@index([status, updatedAt])
+  @@index([userId])
 }
 
 model Product {
@@ -390,6 +411,7 @@ model User {
   avatarUrl               String?
   Budget                  Budget[]
   Expense                 Expense[]
+  EmailDigestDelivery     EmailDigestDelivery[]
   InventoryItem           InventoryItem[]
   Invoice                 Invoice[]
   Notification            Notification[]

@@ -6,8 +6,10 @@ import {
   sendNotificationAlertEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
+  sendWeeklyProductDigestEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
+import type { WeeklyProductDigestInput } from './email.templates';
 
 @Injectable()
 export class EmailService {
@@ -54,6 +56,18 @@ export class EmailService {
   }) {
     return this.sendObserved('notification_alert', (transport) =>
       sendNotificationAlertEmail(input, transport),
+    );
+  }
+
+  async sendWeeklyProductDigest(
+    input: WeeklyProductDigestInput & {
+      to: string;
+      userId: string;
+      periodKey: string;
+    },
+  ) {
+    return this.sendObserved('weekly_product_digest', (transport) =>
+      sendWeeklyProductDigestEmail(input, transport),
     );
   }
 

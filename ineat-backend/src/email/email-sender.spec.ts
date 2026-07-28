@@ -2,6 +2,7 @@ import {
   sendEmailVerificationEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
+  sendWeeklyProductDigestEmail,
 } from './email-sender';
 import { EmailTransport, TransactionalEmailMessage } from './email.types';
 
@@ -128,5 +129,41 @@ describe('sendPasswordResetEmail', () => {
     });
     expect(message.html).toContain('Commencer avec InEat');
     expect(message.text).toContain('Scannez une facture');
+  });
+
+  it('renders the weekly product digest with a period idempotency key', async () => {
+    const send = jest.fn().mockResolvedValue({ messageId: 'digest-123' });
+
+    await sendWeeklyProductDigestEmail(
+      {
+        to: 'steve@example.com',
+        userId: 'user-123',
+        periodKey: '2026-08-02',
+        firstName: 'Steve',
+        expired: [],
+        expiringSoon: [
+          { name: 'Yaourts', quantity: 2, detail: 'expire dans 2 jours' },
+        ],
+        recentlyAdded: [],
+        totals: { expired: 0, expiringSoon: 1, recentlyAdded: 0 },
+        budget: {
+          spent: 75,
+          amount: 100,
+          remaining: 25,
+          percentage: 75,
+        },
+        inventoryUrl: 'https://ineat.store/app/inventory',
+        budgetUrl: 'https://ineat.store/app/budget',
+      },
+      { send },
+    );
+
+    const message = send.mock.calls[0][0] as TransactionalEmailMessage;
+    expect(message).toMatchObject({
+      type: 'weekly_product_digest',
+      idempotencyKey: 'weekly-product-digest/user-123/2026-08-02',
+    });
+    expect(message.html).toContain('À consommer dans les 7 jours');
+    expect(message.text).toContain('75,00 € dépensés');
   });
 });

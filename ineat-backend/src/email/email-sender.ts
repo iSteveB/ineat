@@ -3,6 +3,8 @@ import {
   createEmailVerificationEmail,
   createNotificationAlertEmail,
   createPasswordResetEmail,
+  createWeeklyProductDigestEmail,
+  type WeeklyProductDigestInput,
   createWelcomeEmail,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
@@ -121,5 +123,26 @@ export async function sendWelcomeEmail(
     type: 'welcome',
     recipientReference: createRecipientReference(input.to),
     idempotencyKey: `welcome/${input.userId}`,
+  });
+}
+
+export async function sendWeeklyProductDigestEmail(
+  input: WeeklyProductDigestInput & {
+    to: string;
+    userId: string;
+    periodKey: string;
+  },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createWeeklyProductDigestEmail(input);
+
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'weekly_product_digest',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `weekly-product-digest/${input.userId}/${input.periodKey}`,
   });
 }

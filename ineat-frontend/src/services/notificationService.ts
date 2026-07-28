@@ -34,6 +34,8 @@ export type NotificationPreferences = {
 	inAppEnabled: boolean;
 	emailEnabled: boolean;
 	pushEnabled: boolean;
+	weeklyDigestEnabled: boolean;
+	dailyDigestEnabled: boolean;
 	expiry: boolean;
 	budget: boolean;
 	system: boolean;

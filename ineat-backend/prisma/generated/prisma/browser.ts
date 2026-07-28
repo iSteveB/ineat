@@ -39,19 +39,24 @@ export type Expense = Prisma.ExpenseModel
 export type InventoryItem = Prisma.InventoryItemModel
 /**
  * Model Notification
- *
+ * 
  */
 export type Notification = Prisma.NotificationModel
 /**
  * Model NotificationDelivery
- *
+ * 
  */
 export type NotificationDelivery = Prisma.NotificationDeliveryModel
 /**
  * Model NotificationPreferences
- *
+ * 
  */
 export type NotificationPreferences = Prisma.NotificationPreferencesModel
+/**
+ * Model EmailDigestDelivery
+ * 
+ */
+export type EmailDigestDelivery = Prisma.EmailDigestDeliveryModel
 /**
  * Model Product
  * 
@@ -99,12 +104,12 @@ export type User = Prisma.UserModel
 export type StripeWebhookEvent = Prisma.StripeWebhookEventModel
 /**
  * Model ResendWebhookEvent
- *
+ * 
  */
 export type ResendWebhookEvent = Prisma.ResendWebhookEventModel
 /**
  * Model EmailSuppression
- *
+ * 
  */
 export type EmailSuppression = Prisma.EmailSuppressionModel
 /**

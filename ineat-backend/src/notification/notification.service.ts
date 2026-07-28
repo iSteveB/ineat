@@ -39,6 +39,8 @@ export type NotificationPreferences = {
   inAppEnabled: boolean;
   emailEnabled: boolean;
   pushEnabled: boolean;
+  weeklyDigestEnabled: boolean;
+  dailyDigestEnabled: boolean;
   expiry: boolean;
   budget: boolean;
   system: boolean;
@@ -48,6 +50,8 @@ const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   inAppEnabled: true,
   emailEnabled: false,
   pushEnabled: false,
+  weeklyDigestEnabled: true,
+  dailyDigestEnabled: false,
   expiry: true,
   budget: true,
   system: true,
@@ -133,6 +137,8 @@ export class NotificationService {
         inAppEnabled: true,
         emailEnabled: true,
         pushEnabled: true,
+        weeklyDigestEnabled: true,
+        dailyDigestEnabled: true,
         expiry: true,
         budget: true,
         system: true,
@@ -179,6 +185,8 @@ export class NotificationService {
         inAppEnabled: true,
         emailEnabled: true,
         pushEnabled: true,
+        weeklyDigestEnabled: true,
+        dailyDigestEnabled: true,
         expiry: true,
         budget: true,
         system: true,

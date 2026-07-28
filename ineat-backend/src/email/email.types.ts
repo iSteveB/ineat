@@ -2,7 +2,8 @@ export type TransactionalEmailType =
   | 'password_reset'
   | 'email_verification'
   | 'welcome'
-  | 'notification_alert';
+  | 'notification_alert'
+  | 'weekly_product_digest';
 
 export interface TransactionalEmailMessage {
   to: string;
