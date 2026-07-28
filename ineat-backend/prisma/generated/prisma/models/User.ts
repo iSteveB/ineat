@@ -42,6 +42,9 @@ export type UserMinAggregateOutputType = {
   trialStartedAt: Date | null
   trialEndsAt: Date | null
   trialUsedAt: Date | null
+  trialStartedEmailSentAt: Date | null
+  trialReminderEmailSentAt: Date | null
+  trialExpiredEmailSentAt: Date | null
   currentPeriodStartedAt: Date | null
   currentPeriodEndsAt: Date | null
   stripeCustomerId: string | null
@@ -72,6 +75,9 @@ export type UserMaxAggregateOutputType = {
   trialStartedAt: Date | null
   trialEndsAt: Date | null
   trialUsedAt: Date | null
+  trialStartedEmailSentAt: Date | null
+  trialReminderEmailSentAt: Date | null
+  trialExpiredEmailSentAt: Date | null
   currentPeriodStartedAt: Date | null
   currentPeriodEndsAt: Date | null
   stripeCustomerId: string | null
@@ -103,6 +109,9 @@ export type UserCountAggregateOutputType = {
   trialStartedAt: number
   trialEndsAt: number
   trialUsedAt: number
+  trialStartedEmailSentAt: number
+  trialReminderEmailSentAt: number
+  trialExpiredEmailSentAt: number
   currentPeriodStartedAt: number
   currentPeriodEndsAt: number
   stripeCustomerId: number
@@ -135,6 +144,9 @@ export type UserMinAggregateInputType = {
   trialStartedAt?: true
   trialEndsAt?: true
   trialUsedAt?: true
+  trialStartedEmailSentAt?: true
+  trialReminderEmailSentAt?: true
+  trialExpiredEmailSentAt?: true
   currentPeriodStartedAt?: true
   currentPeriodEndsAt?: true
   stripeCustomerId?: true
@@ -165,6 +177,9 @@ export type UserMaxAggregateInputType = {
   trialStartedAt?: true
   trialEndsAt?: true
   trialUsedAt?: true
+  trialStartedEmailSentAt?: true
+  trialReminderEmailSentAt?: true
+  trialExpiredEmailSentAt?: true
   currentPeriodStartedAt?: true
   currentPeriodEndsAt?: true
   stripeCustomerId?: true
@@ -196,6 +211,9 @@ export type UserCountAggregateInputType = {
   trialStartedAt?: true
   trialEndsAt?: true
   trialUsedAt?: true
+  trialStartedEmailSentAt?: true
+  trialReminderEmailSentAt?: true
+  trialExpiredEmailSentAt?: true
   currentPeriodStartedAt?: true
   currentPeriodEndsAt?: true
   stripeCustomerId?: true
@@ -300,6 +318,9 @@ export type UserGroupByOutputType = {
   trialStartedAt: Date | null
   trialEndsAt: Date | null
   trialUsedAt: Date | null
+  trialStartedEmailSentAt: Date | null
+  trialReminderEmailSentAt: Date | null
+  trialExpiredEmailSentAt: Date | null
   currentPeriodStartedAt: Date | null
   currentPeriodEndsAt: Date | null
   stripeCustomerId: string | null
@@ -352,6 +373,9 @@ export type UserWhereInput = {
   trialStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trialEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trialUsedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialStartedEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialReminderEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   currentPeriodStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   currentPeriodEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   stripeCustomerId?: Prisma.StringNullableFilter<"User"> | string | null
@@ -395,6 +419,9 @@ export type UserOrderByWithRelationInput = {
   trialStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trialUsedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialStartedEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialReminderEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialExpiredEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   currentPeriodStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   currentPeriodEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -443,6 +470,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   trialStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trialEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   trialUsedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialStartedEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialReminderEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   currentPeriodStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   currentPeriodEndsAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   stripePriceId?: Prisma.StringNullableFilter<"User"> | string | null
@@ -484,6 +514,9 @@ export type UserOrderByWithAggregationInput = {
   trialStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   trialUsedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialStartedEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialReminderEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  trialExpiredEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   currentPeriodStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   currentPeriodEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -521,6 +554,9 @@ export type UserScalarWhereWithAggregatesInput = {
   trialStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   trialEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   trialUsedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  trialStartedEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  trialReminderEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   currentPeriodStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   currentPeriodEndsAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -552,6 +588,9 @@ export type UserCreateInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -595,6 +634,9 @@ export type UserUncheckedCreateInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -638,6 +680,9 @@ export type UserUpdateInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -681,6 +726,9 @@ export type UserUncheckedUpdateInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -724,6 +772,9 @@ export type UserCreateManyInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -755,6 +806,9 @@ export type UserUpdateManyMutationInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -786,6 +840,9 @@ export type UserUncheckedUpdateManyInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -827,6 +884,9 @@ export type UserCountOrderByAggregateInput = {
   trialStartedAt?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   trialUsedAt?: Prisma.SortOrder
+  trialStartedEmailSentAt?: Prisma.SortOrder
+  trialReminderEmailSentAt?: Prisma.SortOrder
+  trialExpiredEmailSentAt?: Prisma.SortOrder
   currentPeriodStartedAt?: Prisma.SortOrder
   currentPeriodEndsAt?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
@@ -857,6 +917,9 @@ export type UserMaxOrderByAggregateInput = {
   trialStartedAt?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   trialUsedAt?: Prisma.SortOrder
+  trialStartedEmailSentAt?: Prisma.SortOrder
+  trialReminderEmailSentAt?: Prisma.SortOrder
+  trialExpiredEmailSentAt?: Prisma.SortOrder
   currentPeriodStartedAt?: Prisma.SortOrder
   currentPeriodEndsAt?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
@@ -887,6 +950,9 @@ export type UserMinOrderByAggregateInput = {
   trialStartedAt?: Prisma.SortOrder
   trialEndsAt?: Prisma.SortOrder
   trialUsedAt?: Prisma.SortOrder
+  trialStartedEmailSentAt?: Prisma.SortOrder
+  trialReminderEmailSentAt?: Prisma.SortOrder
+  trialExpiredEmailSentAt?: Prisma.SortOrder
   currentPeriodStartedAt?: Prisma.SortOrder
   currentPeriodEndsAt?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
@@ -1108,6 +1174,9 @@ export type UserCreateWithoutBudgetInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1150,6 +1219,9 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1208,6 +1280,9 @@ export type UserUpdateWithoutBudgetInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1250,6 +1325,9 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1292,6 +1370,9 @@ export type UserCreateWithoutExpenseInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1334,6 +1415,9 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1392,6 +1476,9 @@ export type UserUpdateWithoutExpenseInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1434,6 +1521,9 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1476,6 +1566,9 @@ export type UserCreateWithoutInventoryItemInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1518,6 +1611,9 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1576,6 +1672,9 @@ export type UserUpdateWithoutInventoryItemInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1618,6 +1717,9 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1660,6 +1762,9 @@ export type UserCreateWithoutNotificationInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1702,6 +1807,9 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1760,6 +1868,9 @@ export type UserUpdateWithoutNotificationInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1802,6 +1913,9 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1844,6 +1958,9 @@ export type UserCreateWithoutNotificationPreferencesInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1886,6 +2003,9 @@ export type UserUncheckedCreateWithoutNotificationPreferencesInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -1944,6 +2064,9 @@ export type UserUpdateWithoutNotificationPreferencesInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1986,6 +2109,9 @@ export type UserUncheckedUpdateWithoutNotificationPreferencesInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2028,6 +2154,9 @@ export type UserCreateWithoutEmailDigestDeliveryInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2070,6 +2199,9 @@ export type UserUncheckedCreateWithoutEmailDigestDeliveryInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2128,6 +2260,9 @@ export type UserUpdateWithoutEmailDigestDeliveryInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2170,6 +2305,9 @@ export type UserUncheckedUpdateWithoutEmailDigestDeliveryInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2212,6 +2350,9 @@ export type UserCreateWithoutInvoiceInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2254,6 +2395,9 @@ export type UserUncheckedCreateWithoutInvoiceInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2312,6 +2456,9 @@ export type UserUpdateWithoutInvoiceInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2354,6 +2501,9 @@ export type UserUncheckedUpdateWithoutInvoiceInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2396,6 +2546,9 @@ export type UserCreateWithoutReceiptInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2438,6 +2591,9 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2496,6 +2652,9 @@ export type UserUpdateWithoutReceiptInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2538,6 +2697,9 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2580,6 +2742,9 @@ export type UserCreateWithoutRecipeInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2622,6 +2787,9 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2680,6 +2848,9 @@ export type UserUpdateWithoutRecipeInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2722,6 +2893,9 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2764,6 +2938,9 @@ export type UserCreateWithoutUsageQuotaInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2806,6 +2983,9 @@ export type UserUncheckedCreateWithoutUsageQuotaInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2864,6 +3044,9 @@ export type UserUpdateWithoutUsageQuotaInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2906,6 +3089,9 @@ export type UserUncheckedUpdateWithoutUsageQuotaInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2948,6 +3134,9 @@ export type UserCreateWithoutSessionsInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -2990,6 +3179,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -3048,6 +3240,9 @@ export type UserUpdateWithoutSessionsInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3090,6 +3285,9 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3132,6 +3330,9 @@ export type UserCreateWithoutAccountsInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -3174,6 +3375,9 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   trialStartedAt?: Date | string | null
   trialEndsAt?: Date | string | null
   trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
   currentPeriodStartedAt?: Date | string | null
   currentPeriodEndsAt?: Date | string | null
   stripeCustomerId?: string | null
@@ -3232,6 +3436,9 @@ export type UserUpdateWithoutAccountsInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3274,6 +3481,9 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3437,6 +3647,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   trialStartedAt?: boolean
   trialEndsAt?: boolean
   trialUsedAt?: boolean
+  trialStartedEmailSentAt?: boolean
+  trialReminderEmailSentAt?: boolean
+  trialExpiredEmailSentAt?: boolean
   currentPeriodStartedAt?: boolean
   currentPeriodEndsAt?: boolean
   stripeCustomerId?: boolean
@@ -3481,6 +3694,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   trialStartedAt?: boolean
   trialEndsAt?: boolean
   trialUsedAt?: boolean
+  trialStartedEmailSentAt?: boolean
+  trialReminderEmailSentAt?: boolean
+  trialExpiredEmailSentAt?: boolean
   currentPeriodStartedAt?: boolean
   currentPeriodEndsAt?: boolean
   stripeCustomerId?: boolean
@@ -3512,6 +3728,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   trialStartedAt?: boolean
   trialEndsAt?: boolean
   trialUsedAt?: boolean
+  trialStartedEmailSentAt?: boolean
+  trialReminderEmailSentAt?: boolean
+  trialExpiredEmailSentAt?: boolean
   currentPeriodStartedAt?: boolean
   currentPeriodEndsAt?: boolean
   stripeCustomerId?: boolean
@@ -3543,6 +3762,9 @@ export type UserSelectScalar = {
   trialStartedAt?: boolean
   trialEndsAt?: boolean
   trialUsedAt?: boolean
+  trialStartedEmailSentAt?: boolean
+  trialReminderEmailSentAt?: boolean
+  trialExpiredEmailSentAt?: boolean
   currentPeriodStartedAt?: boolean
   currentPeriodEndsAt?: boolean
   stripeCustomerId?: boolean
@@ -3555,7 +3777,7 @@ export type UserSelectScalar = {
   avatarUrl?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "profileType" | "preferences" | "createdAt" | "updatedAt" | "role" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "profileType" | "preferences" | "createdAt" | "updatedAt" | "role" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Budget?: boolean | Prisma.User$BudgetArgs<ExtArgs>
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
@@ -3609,6 +3831,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     trialStartedAt: Date | null
     trialEndsAt: Date | null
     trialUsedAt: Date | null
+    trialStartedEmailSentAt: Date | null
+    trialReminderEmailSentAt: Date | null
+    trialExpiredEmailSentAt: Date | null
     currentPeriodStartedAt: Date | null
     currentPeriodEndsAt: Date | null
     stripeCustomerId: string | null
@@ -4072,6 +4297,9 @@ export interface UserFieldRefs {
   readonly trialStartedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly trialEndsAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly trialUsedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly trialStartedEmailSentAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly trialReminderEmailSentAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly trialExpiredEmailSentAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly currentPeriodStartedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly currentPeriodEndsAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly stripeCustomerId: Prisma.FieldRef<"User", 'String'>

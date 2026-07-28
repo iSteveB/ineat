@@ -162,18 +162,18 @@ model NotificationPreferences {
 }
 
 model EmailDigestDelivery {
-  id                String   @id
+  id                String    @id
   userId            String
   type              String
   periodKey         String
-  status            String   @default("PENDING")
-  attemptCount      Int      @default(0)
+  status            String    @default("PENDING")
+  attemptCount      Int       @default(0)
   providerMessageId String?
   errorMessage      String?
   sentAt            DateTime?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime  @default(now())
   updatedAt         DateTime
-  User              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, type, periodKey])
   @@index([status, updatedAt])
@@ -381,46 +381,49 @@ model RecipeIngredient {
 }
 
 model User {
-  id                      String                   @id
-  email                   String                   @unique
-  name                    String
-  emailVerified           Boolean                  @default(false)
-  welcomeEmailSentAt      DateTime?
-  passwordHash            String                   @default("")
-  firstName               String                   @default("")
-  lastName                String                   @default("")
-  profileType             ProfileType              @default(SINGLE)
-  preferences             Json                     @default("{}")
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime
-  role                    UserRole                 @default(USER)
-  subscriptionPlan        SubscriptionPlan         @default(FREE)
-  subscriptionStatus      SubscriptionStatus       @default(ACTIVE)
-  trialStartedAt          DateTime?
-  trialEndsAt             DateTime?
-  trialUsedAt             DateTime?
-  currentPeriodStartedAt  DateTime?
-  currentPeriodEndsAt     DateTime?
-  stripeCustomerId        String?                  @unique
-  stripeSubscriptionId    String?                  @unique
-  stripePriceId           String?
-  billingInterval         BillingInterval?
-  cancelAtPeriodEnd       Boolean                  @default(false)
-  subscriptionCancelledAt DateTime?
-  lastStripeEventAt       DateTime?
-  avatarUrl               String?
-  Budget                  Budget[]
-  Expense                 Expense[]
-  EmailDigestDelivery     EmailDigestDelivery[]
-  InventoryItem           InventoryItem[]
-  Invoice                 Invoice[]
-  Notification            Notification[]
-  NotificationPreferences NotificationPreferences?
-  Recipe                  Recipe[]
-  Receipt                 Receipt[]
-  UsageQuota              UsageQuota[]
-  sessions                Session[]
-  accounts                Account[]
+  id                       String                   @id
+  email                    String                   @unique
+  name                     String
+  emailVerified            Boolean                  @default(false)
+  welcomeEmailSentAt       DateTime?
+  passwordHash             String                   @default("")
+  firstName                String                   @default("")
+  lastName                 String                   @default("")
+  profileType              ProfileType              @default(SINGLE)
+  preferences              Json                     @default("{}")
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime
+  role                     UserRole                 @default(USER)
+  subscriptionPlan         SubscriptionPlan         @default(FREE)
+  subscriptionStatus       SubscriptionStatus       @default(ACTIVE)
+  trialStartedAt           DateTime?
+  trialEndsAt              DateTime?
+  trialUsedAt              DateTime?
+  trialStartedEmailSentAt  DateTime?
+  trialReminderEmailSentAt DateTime?
+  trialExpiredEmailSentAt  DateTime?
+  currentPeriodStartedAt   DateTime?
+  currentPeriodEndsAt      DateTime?
+  stripeCustomerId         String?                  @unique
+  stripeSubscriptionId     String?                  @unique
+  stripePriceId            String?
+  billingInterval          BillingInterval?
+  cancelAtPeriodEnd        Boolean                  @default(false)
+  subscriptionCancelledAt  DateTime?
+  lastStripeEventAt        DateTime?
+  avatarUrl                String?
+  Budget                   Budget[]
+  Expense                  Expense[]
+  EmailDigestDelivery      EmailDigestDelivery[]
+  InventoryItem            InventoryItem[]
+  Invoice                  Invoice[]
+  Notification             Notification[]
+  NotificationPreferences  NotificationPreferences?
+  Recipe                   Recipe[]
+  Receipt                  Receipt[]
+  UsageQuota               UsageQuota[]
+  sessions                 Session[]
+  accounts                 Account[]
 
   @@map("User")
 }

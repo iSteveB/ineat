@@ -4,6 +4,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
@@ -16,6 +17,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { BillingInterval } from './dto/create-checkout-session.dto';
 import { StripeClientFactory } from './stripe-client.factory';
+import { TrialEmailService } from './trial-email.service';
 
 type CheckoutUser = {
   id: string;
@@ -32,6 +34,7 @@ export class BillingService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly stripeClientFactory: StripeClientFactory,
+    @Optional() private readonly trialEmails?: TrialEmailService,
   ) {}
 
   async createCheckoutSession(user: CheckoutUser, interval: BillingInterval) {
@@ -88,8 +91,7 @@ export class BillingService {
     if (!persistedUser.stripeCustomerId) {
       throw new BadRequestException({
         code: 'STRIPE_CUSTOMER_MISSING',
-        message:
-          "Aucun abonnement Stripe n'est encore associé à votre compte.",
+        message: "Aucun abonnement Stripe n'est encore associé à votre compte.",
       });
     }
 
@@ -170,6 +172,13 @@ export class BillingService {
         billingInterval: null,
         cancelAtPeriodEnd: false,
       },
+    });
+
+    await this.trialEmails?.sendTrialStarted(user.id).catch((error) => {
+      this.logger.error(
+        `Trial started email failed for user ${user.id}`,
+        error,
+      );
     });
 
     return {

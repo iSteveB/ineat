@@ -42,6 +42,104 @@ export type DailyProductDigestInput = {
   budgetUrl: string;
 };
 
+export type TrialEmailInput = {
+  firstName?: string | null;
+  trialEndsAt: Date;
+  subscriptionUrl: string;
+};
+
+const formatFrenchDate = (value: Date) =>
+  new Intl.DateTimeFormat('fr-FR', {
+    dateStyle: 'long',
+    timeZone: 'Europe/Paris',
+  }).format(value);
+
+const createTrialEmailLayout = (input: {
+  greeting: string;
+  preview: string;
+  title: string;
+  body: string;
+  actionLabel: string;
+  actionUrl: string;
+  footer: string;
+}) => `<!doctype html>
+<html lang="fr"><body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
+  <div style="display:none;max-height:0;overflow:hidden">${escapeHtml(input.preview)}</div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px"><tr><td align="center">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:16px;padding:32px"><tr><td>
+      <p style="margin:0 0 20px;font-size:16px">${escapeHtml(input.greeting)}</p>
+      <h1 style="margin:0 0 16px;font-size:26px;line-height:1.25">${escapeHtml(input.title)}</h1>
+      <p style="margin:0 0 24px;font-size:16px;line-height:1.6">${escapeHtml(input.body)}</p>
+      <p style="margin:0 0 24px"><a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">${escapeHtml(input.actionLabel)}</a></p>
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#7b8794">${escapeHtml(input.footer)}</p>
+    </td></tr></table>
+  </td></tr></table>
+</body></html>`;
+
+export function createTrialStartedEmail(input: TrialEmailInput) {
+  const greeting = input.firstName?.trim()
+    ? `Bonjour ${input.firstName.trim()},`
+    : 'Bonjour,';
+  const endDate = formatFrenchDate(input.trialEndsAt);
+  const body = `Votre essai Premium de 3 jours est actif jusqu’au ${endDate}. Vous avez accès aux fonctionnalités Premium sans carte bancaire.`;
+  return {
+    subject: 'Votre essai Premium InEat commence',
+    text: `${greeting}\n\n${body}\n\nDécouvrir Premium : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre essai Premium est actif.',
+      title: 'Bienvenue dans Premium',
+      body,
+      actionLabel: 'Découvrir Premium',
+      actionUrl: input.subscriptionUrl,
+      footer: 'Nous vous préviendrons avant la fin de votre essai.',
+    }),
+  };
+}
+
+export function createTrialReminderEmail(input: TrialEmailInput) {
+  const greeting = input.firstName?.trim()
+    ? `Bonjour ${input.firstName.trim()},`
+    : 'Bonjour,';
+  const body = `Votre essai Premium se termine demain, le ${formatFrenchDate(input.trialEndsAt)}. Abonnez-vous pour conserver l’accès aux fonctionnalités Premium.`;
+  return {
+    subject: 'Votre essai Premium se termine demain',
+    text: `${greeting}\n\n${body}\n\nVoir les offres : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre essai Premium se termine demain.',
+      title: 'Plus qu’un jour d’essai',
+      body,
+      actionLabel: 'Voir les offres',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Sans abonnement, votre compte repassera automatiquement à l’offre gratuite.',
+    }),
+  };
+}
+
+export function createTrialExpiredEmail(input: TrialEmailInput) {
+  const greeting = input.firstName?.trim()
+    ? `Bonjour ${input.firstName.trim()},`
+    : 'Bonjour,';
+  const body =
+    'Votre essai Premium est terminé. Vos données restent disponibles et vous pouvez continuer à utiliser InEat avec l’offre gratuite.';
+  return {
+    subject: 'Votre essai Premium InEat est terminé',
+    text: `${greeting}\n\n${body}\n\nPasser à Premium : ${input.subscriptionUrl}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre essai Premium est terminé.',
+      title: 'Votre essai est terminé',
+      body,
+      actionLabel: 'Passer à Premium',
+      actionUrl: input.subscriptionUrl,
+      footer:
+        'Vous pouvez vous abonner à tout moment depuis votre espace InEat.',
+    }),
+  };
+}
+
 const formatMoney = (value: number) =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(
     value,

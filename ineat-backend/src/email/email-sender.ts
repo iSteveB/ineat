@@ -8,6 +8,10 @@ import {
   type WeeklyProductDigestInput,
   type DailyProductDigestInput,
   createWelcomeEmail,
+  createTrialStartedEmail,
+  createTrialReminderEmail,
+  createTrialExpiredEmail,
+  type TrialEmailInput,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
 import { EmailSendResult, EmailTransport } from './email.types';
@@ -168,3 +172,52 @@ export async function sendDailyProductDigestEmail(
     idempotencyKey: `daily-product-digest/${input.userId}/${input.periodKey}`,
   });
 }
+
+const sendTrialEmail = async (
+  type: 'trial_started' | 'trial_reminder' | 'trial_expired',
+  input: TrialEmailInput & { to: string; userId: string },
+  template: ReturnType<typeof createTrialStartedEmail>,
+  transport: EmailTransport,
+) =>
+  transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type,
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `${type}/${input.userId}/${input.trialEndsAt.toISOString()}`,
+  });
+
+export const sendTrialStartedEmail = (
+  input: TrialEmailInput & { to: string; userId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendTrialEmail(
+    'trial_started',
+    input,
+    createTrialStartedEmail(input),
+    transport,
+  );
+
+export const sendTrialReminderEmail = (
+  input: TrialEmailInput & { to: string; userId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendTrialEmail(
+    'trial_reminder',
+    input,
+    createTrialReminderEmail(input),
+    transport,
+  );
+
+export const sendTrialExpiredEmail = (
+  input: TrialEmailInput & { to: string; userId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) =>
+  sendTrialEmail(
+    'trial_expired',
+    input,
+    createTrialExpiredEmail(input),
+    transport,
+  );

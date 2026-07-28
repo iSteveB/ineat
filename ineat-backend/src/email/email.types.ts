@@ -4,7 +4,10 @@ export type TransactionalEmailType =
   | 'welcome'
   | 'notification_alert'
   | 'weekly_product_digest'
-  | 'daily_product_digest';
+  | 'daily_product_digest'
+  | 'trial_started'
+  | 'trial_reminder'
+  | 'trial_expired';
 
 export interface TransactionalEmailMessage {
   to: string;

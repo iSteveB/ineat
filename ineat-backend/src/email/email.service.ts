@@ -8,10 +8,14 @@ import {
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendWeeklyProductDigestEmail,
+  sendTrialStartedEmail,
+  sendTrialReminderEmail,
+  sendTrialExpiredEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
 import type {
   DailyProductDigestInput,
+  TrialEmailInput,
   WeeklyProductDigestInput,
 } from './email.templates';
 
@@ -84,6 +88,30 @@ export class EmailService {
   ) {
     return this.sendObserved('daily_product_digest', (transport) =>
       sendDailyProductDigestEmail(input, transport),
+    );
+  }
+
+  async sendTrialStarted(
+    input: TrialEmailInput & { to: string; userId: string },
+  ) {
+    return this.sendObserved('trial_started', (transport) =>
+      sendTrialStartedEmail(input, transport),
+    );
+  }
+
+  async sendTrialReminder(
+    input: TrialEmailInput & { to: string; userId: string },
+  ) {
+    return this.sendObserved('trial_reminder', (transport) =>
+      sendTrialReminderEmail(input, transport),
+    );
+  }
+
+  async sendTrialExpired(
+    input: TrialEmailInput & { to: string; userId: string },
+  ) {
+    return this.sendObserved('trial_expired', (transport) =>
+      sendTrialExpiredEmail(input, transport),
     );
   }
 
