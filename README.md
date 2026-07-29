@@ -6,10 +6,10 @@ InEat est une application de gestion des stocks alimentaires pour particuliers. 
 
 Le depot est organise en deux applications principales:
 
-| Dossier | Role | Stack |
-| --- | --- | --- |
-| `ineat-backend` | API REST, authentification, inventaire et budget | NestJS, Prisma, PostgreSQL, Redis/Bull |
-| `ineat-frontend` | Interface utilisateur SPA | React, Vite, TanStack Router, TanStack Query, Zustand |
+| Dossier          | Role                                             | Stack                                                 |
+| ---------------- | ------------------------------------------------ | ----------------------------------------------------- |
+| `ineat-backend`  | API REST, authentification, inventaire et budget | NestJS, Prisma, PostgreSQL, Redis/Bull                |
+| `ineat-frontend` | Interface utilisateur SPA                        | React, Vite, TanStack Router, TanStack Query, Zustand |
 
 ## Fonctionnalites
 
@@ -25,7 +25,7 @@ Le depot est organise en deux applications principales:
 - Node.js `>=20`
 - pnpm `10.7.0` ou compatible
 - PostgreSQL
-- Redis, requis pour la configuration Bull et les traitements asynchrones
+- Redis, utilise par BullMQ pour les traitements asynchrones du worker
 - Comptes/API externes selon les fonctionnalites activees:
   - Cloudinary pour les uploads
 

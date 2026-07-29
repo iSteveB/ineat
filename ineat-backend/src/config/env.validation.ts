@@ -26,6 +26,16 @@ const optionalBoolean = z.preprocess((value) => {
   return false;
 }, z.boolean());
 
+const optionalSchedulerMode = z.preprocess(
+  emptyToUndefined,
+  z.enum(['legacy', 'bullmq', 'disabled']).default('legacy'),
+);
+
+const optionalDeliveryMode = z.preprocess(
+  emptyToUndefined,
+  z.enum(['legacy', 'bullmq']).default('legacy'),
+);
+
 const baseEnvironmentSchema = z
   .object({
     NODE_ENV: z.string().default('development'),
@@ -50,6 +60,10 @@ const baseEnvironmentSchema = z
     STRIPE_CHECKOUT_SUCCESS_URL: optionalString,
     STRIPE_CHECKOUT_CANCEL_URL: optionalString,
     STRIPE_CUSTOMER_PORTAL_RETURN_URL: optionalString,
+    REDIS_URL: optionalString,
+    REDIS_KEY_PREFIX: optionalString,
+    NOTIFICATION_SCHEDULER_MODE: optionalSchedulerMode,
+    NOTIFICATION_DELIVERY_MODE: optionalDeliveryMode,
   })
   .passthrough();
 
@@ -96,6 +110,10 @@ const emailEnvironmentSchema = baseEnvironmentSchema.extend({
   EMAIL_REPLY_TO: z.string().trim().email(),
 });
 
+const productionEnvironmentSchema = baseEnvironmentSchema.extend({
+  REDIS_URL: z.string().trim().url(),
+});
+
 const formatZodError = (error: z.ZodError) =>
   error.issues
     .map((issue) => `${issue.path.join('.') || 'ENV'}: ${issue.message}`)
@@ -125,6 +143,14 @@ export function validateEnvironment(
   }
 
   const environment = baseResult.data;
+  if (environment.NODE_ENV === 'production') {
+    const productionResult = productionEnvironmentSchema.safeParse(environment);
+    if (!productionResult.success) {
+      throw new Error(
+        `Invalid production environment configuration: ${formatZodError(productionResult.error)}`,
+      );
+    }
+  }
   const shouldValidateEmail =
     environment.NODE_ENV === 'production' ||
     environment.EMAIL_ENABLED ||

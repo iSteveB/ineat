@@ -51,6 +51,7 @@ async function bootstrap() {
     httpsOptions,
     bodyParser: false,
   });
+  app.enableShutdownHooks();
   const configServiceInstance = app.get(ConfigService);
 
   // Middlewares de sécurité et performance

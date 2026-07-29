@@ -10,6 +10,9 @@ import { EmailService } from '../email/email.service';
 import { createRecipientReference } from '../email/email-sender';
 import { PrismaService } from '../prisma/prisma.service';
 import { ObservabilityService } from '../observability/observability.service';
+import { QueueService } from '../jobs/queue.service';
+import { QUEUE_NAMES } from '../redis/redis.constants';
+import { ConfigService } from '@nestjs/config';
 
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAYS_MS = [5 * 60_000, 30 * 60_000, 2 * 60 * 60_000];
@@ -22,6 +25,8 @@ export class NotificationDeliveryService {
     private readonly prisma: PrismaService,
     private readonly email: EmailService,
     @Optional() private readonly observability?: ObservabilityService,
+    @Optional() private readonly queues?: QueueService,
+    @Optional() private readonly config?: ConfigService,
   ) {}
 
   async dispatchOccurrence(notification: Notification): Promise<void> {
@@ -44,7 +49,7 @@ export class NotificationDeliveryService {
         notification,
         NotificationChannel.EMAIL,
       );
-      await this.processEmailDelivery(delivery.id);
+      await this.enqueueEmailDelivery(delivery);
     }
 
     if (preferences?.pushEnabled) {
@@ -84,14 +89,31 @@ export class NotificationDeliveryService {
         attemptCount: { lt: MAX_ATTEMPTS },
         OR: [{ nextAttemptAt: null }, { nextAttemptAt: { lte: now } }],
       },
-      select: { id: true },
+      select: { id: true, nextAttemptAt: true },
       orderBy: { createdAt: 'asc' },
       take: 100,
     });
 
     await Promise.allSettled(
-      deliveries.map(({ id }) => this.processEmailDelivery(id)),
+      deliveries.map(({ id, nextAttemptAt }) =>
+        this.queueEnabled()
+          ? this.queues.add(
+              QUEUE_NAMES.notificationDelivery,
+              'deliver-email',
+              { deliveryId: id },
+              {
+                jobId: `delivery-retry-${id}-${nextAttemptAt?.getTime() ?? 0}`,
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 5 * 60_000 },
+              },
+            )
+          : this.processEmailDelivery(id),
+      ),
     );
+  }
+
+  async processQueuedEmailDelivery(deliveryId: string): Promise<void> {
+    await this.processEmailDelivery(deliveryId, true);
   }
 
   private createDelivery(
@@ -117,7 +139,10 @@ export class NotificationDeliveryService {
     });
   }
 
-  private async processEmailDelivery(deliveryId: string): Promise<void> {
+  private async processEmailDelivery(
+    deliveryId: string,
+    throwOnFailure = false,
+  ): Promise<void> {
     const delivery = await this.prisma.notificationDelivery.findUnique({
       where: { id: deliveryId },
       include: { Notification: { include: { User: true } } },
@@ -237,7 +262,46 @@ export class NotificationDeliveryService {
       this.logger.warn(
         `Notification delivery ${delivery.id} failed: ${message}`,
       );
+      if (throwOnFailure) {
+        throw error;
+      }
     }
+  }
+
+  private async enqueueEmailDelivery(delivery: {
+    id: string;
+    notificationId: string;
+    channel: NotificationChannel;
+    occurrenceVersion: number;
+  }): Promise<void> {
+    if (!this.queueEnabled()) {
+      await this.processEmailDelivery(delivery.id);
+      return;
+    }
+
+    await this.queues!.add(
+      QUEUE_NAMES.notificationDelivery,
+      'deliver-email',
+      { deliveryId: delivery.id },
+      {
+        jobId: [
+          'delivery',
+          delivery.notificationId,
+          delivery.channel.toLowerCase(),
+          delivery.occurrenceVersion,
+        ].join('-'),
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5 * 60_000 },
+      },
+    );
+  }
+
+  private queueEnabled(): boolean {
+    return (
+      Boolean(this.queues) &&
+      this.config?.get<string>('NOTIFICATION_DELIVERY_MODE', 'legacy') ===
+        'bullmq'
+    );
   }
 
   private markTerminal(

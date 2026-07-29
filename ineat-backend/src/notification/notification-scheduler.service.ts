@@ -33,7 +33,11 @@ export class NotificationSchedulerService
   ) {}
 
   onModuleInit(): void {
-    if (process.env.NODE_ENV === 'test') {
+    if (
+      process.env.NODE_ENV === 'test' ||
+      process.env.INEAT_PROCESS_ROLE === 'worker' ||
+      (process.env.NOTIFICATION_SCHEDULER_MODE ?? 'legacy') !== 'legacy'
+    ) {
       return;
     }
 

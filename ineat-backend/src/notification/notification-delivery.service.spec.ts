@@ -42,7 +42,11 @@ describe('NotificationDeliveryService', () => {
     },
   };
 
-  const createContext = (claimCount = 1, suppressed = false) => {
+  const createContext = (
+    claimCount = 1,
+    suppressed = false,
+    withQueue = false,
+  ) => {
     const sendNotificationAlert = jest
       .fn()
       .mockResolvedValue({ messageId: 'message-1' });
@@ -71,11 +75,18 @@ describe('NotificationDeliveryService', () => {
           .mockResolvedValue(suppressed ? { recipientRef: 'ref' } : null),
       },
     };
+    const queues = { add: jest.fn().mockResolvedValue({ id: 'job-1' }) };
+    const config = {
+      get: jest.fn().mockReturnValue(withQueue ? 'bullmq' : 'legacy'),
+    };
     const service = new NotificationDeliveryService(
       prisma as never,
       { sendNotificationAlert } as never,
+      undefined,
+      withQueue ? (queues as never) : undefined,
+      config as never,
     );
-    return { service, prisma, sendNotificationAlert };
+    return { service, prisma, queues, sendNotificationAlert };
   };
 
   const previousEmailEnabled = process.env.EMAIL_ENABLED;
@@ -131,5 +142,37 @@ describe('NotificationDeliveryService', () => {
         }),
       }),
     );
+  });
+
+  it('enqueues an email delivery with a deterministic occurrence id', async () => {
+    const { service, queues, sendNotificationAlert } = createContext(
+      1,
+      false,
+      true,
+    );
+
+    await service.dispatchOccurrence(notification);
+
+    expect(sendNotificationAlert).not.toHaveBeenCalled();
+    expect(queues.add).toHaveBeenCalledWith(
+      'notification-delivery',
+      'deliver-email',
+      { deliveryId: delivery.id },
+      expect.objectContaining({
+        jobId: 'delivery-notification-1-email-1',
+        attempts: 3,
+      }),
+    );
+  });
+
+  it('rethrows provider failures so BullMQ can retry the job', async () => {
+    const { service, sendNotificationAlert } = createContext();
+    sendNotificationAlert.mockRejectedValueOnce(
+      new Error('Resend unavailable'),
+    );
+
+    await expect(
+      service.processQueuedEmailDelivery(delivery.id),
+    ).rejects.toThrow('Resend unavailable');
   });
 });

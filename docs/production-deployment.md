@@ -4,12 +4,42 @@ Cette note decrit le deploiement Railway attendu pour InEat.
 
 ## Services Railway
 
-Le depot contient deux services deployables:
+Le depot contient trois services deployables, auxquels s'ajoute Redis:
 
-| Service | Dossier racine | Build | Start | Health check |
-| --- | --- | --- | --- | --- |
-| Backend | `ineat-backend` | `pnpm install --frozen-lockfile && pnpm prisma generate && pnpm run build` | `pnpm run deploy:start` | `/health` |
-| Frontend | `ineat-frontend` | `pnpm install --frozen-lockfile && pnpm run build` | `caddy run --config Caddyfile --adapter caddyfile` | `/health` |
+| Service  | Dossier racine   | Build                                                                      | Start                                              | Health check    |
+| -------- | ---------------- | -------------------------------------------------------------------------- | -------------------------------------------------- | --------------- |
+| Backend  | `ineat-backend`  | `pnpm install --frozen-lockfile && pnpm prisma generate && pnpm run build` | `pnpm run deploy:start`                            | `/health`       |
+| Worker   | `ineat-backend`  | `pnpm install --frozen-lockfile && pnpm prisma generate && pnpm run build` | `pnpm run start:worker`                            | Aucun port HTTP |
+| Frontend | `ineat-frontend` | `pnpm install --frozen-lockfile && pnpm run build`                         | `caddy run --config Caddyfile --adapter caddyfile` | `/health`       |
+
+Le service Redis est cree depuis le template Railway dans le meme projet et le
+meme environnement. Les services Backend et Worker referencent sa variable sans
+copier le secret:
+
+```env
+REDIS_URL=${{Redis.REDIS_URL}}
+REDIS_KEY_PREFIX=ineat:production
+```
+
+Le basculement du scheduler est controle par service:
+
+- Backend: `NOTIFICATION_SCHEDULER_MODE=disabled` pour couper le timer local;
+- Worker: `NOTIFICATION_SCHEDULER_MODE=bullmq` pour enregistrer et traiter les
+  jobs planifies;
+- rollback: remettre le Backend en `legacy` puis desactiver le Worker. Ne jamais
+  laisser `legacy` et `bullmq` actifs durablement en meme temps.
+
+La livraison email possede un basculement distinct. Conserver
+`NOTIFICATION_DELIVERY_MODE=legacy` pendant la validation du scheduler, puis
+passer Backend et Worker a `bullmq`. En rollback, remettre d'abord le Backend en
+`legacy` afin que les nouvelles alertes continuent a etre envoyees.
+
+La concurrence des synchronisations utilisateur peut etre ajustee avec
+`NOTIFICATION_WORKER_CONCURRENCY` (5 par defaut, 20 maximum).
+
+Redis reste accessible uniquement par le reseau prive Railway; le TCP Proxy
+public doit etre desactive sauf besoin d'administration explicite. PostgreSQL
+reste la source de verite des notifications et livraisons.
 
 Le backend execute `prisma migrate deploy` au demarrage via `pnpm run deploy:start`,
 puis lance l'API NestJS en production. Les migrations doivent donc etre commitees

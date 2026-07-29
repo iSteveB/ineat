@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { ObservabilityService } from './observability/observability.service';
 import { PrismaService } from './prisma/prisma.service';
 import { BetterAuthSessionService } from './auth/services/better-auth-session.service';
+import { RedisService } from './redis/redis.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -31,6 +32,12 @@ describe('AppController', () => {
           provide: BetterAuthSessionService,
           useValue: {
             getAuthenticatedUser: jest.fn(),
+          },
+        },
+        {
+          provide: RedisService,
+          useValue: {
+            ping: jest.fn().mockResolvedValue(true),
           },
         },
       ],

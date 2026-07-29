@@ -4,6 +4,7 @@ import { STRIPE_PRICE_CATALOG, STRIPE_PRODUCT_NAME } from './stripe';
 describe('validateEnvironment', () => {
   const validStripeEnvironment = {
     NODE_ENV: 'production',
+    REDIS_URL: 'redis://redis.railway.internal:6379',
     RESEND_API_KEY: 're_test_123',
     EMAIL_FROM: 'InEat <bonjour@ineat.store>',
     EMAIL_REPLY_TO: 'support@ineat.store',
@@ -21,6 +22,8 @@ describe('validateEnvironment', () => {
       NODE_ENV: 'development',
       STRIPE_ENABLED: false,
       NOTIFICATION_RETENTION_DAYS: 180,
+      NOTIFICATION_SCHEDULER_MODE: 'legacy',
+      NOTIFICATION_DELIVERY_MODE: 'legacy',
     });
   });
 
@@ -28,6 +31,7 @@ describe('validateEnvironment', () => {
     expect(() =>
       validateEnvironment({
         NODE_ENV: 'production',
+        REDIS_URL: 'redis://redis.railway.internal:6379',
         RESEND_API_KEY: 're_test_123',
         EMAIL_FROM: 'InEat <bonjour@ineat.store>',
         EMAIL_REPLY_TO: 'support@ineat.store',
@@ -36,9 +40,12 @@ describe('validateEnvironment', () => {
   });
 
   it('requires complete email configuration in production', () => {
-    expect(() => validateEnvironment({ NODE_ENV: 'production' })).toThrow(
-      /RESEND_API_KEY/,
-    );
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'production',
+        REDIS_URL: 'redis://redis.railway.internal:6379',
+      }),
+    ).toThrow(/RESEND_API_KEY/);
   });
 
   it('rejects partially configured email environments', () => {
@@ -63,6 +70,30 @@ describe('validateEnvironment', () => {
     expect(validateEnvironment(validStripeEnvironment)).toMatchObject(
       validStripeEnvironment,
     );
+  });
+
+  it('requires Redis in production', () => {
+    const { REDIS_URL: _redisUrl, ...withoutRedis } = validStripeEnvironment;
+
+    expect(() => validateEnvironment(withoutRedis)).toThrow(/REDIS_URL/);
+  });
+
+  it('rejects an unknown notification scheduler mode', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'development',
+        NOTIFICATION_SCHEDULER_MODE: 'both',
+      }),
+    ).toThrow(/NOTIFICATION_SCHEDULER_MODE/);
+  });
+
+  it('rejects an unknown notification delivery mode', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'development',
+        NOTIFICATION_DELIVERY_MODE: 'sync-and-queue',
+      }),
+    ).toThrow(/NOTIFICATION_DELIVERY_MODE/);
   });
 });
 
