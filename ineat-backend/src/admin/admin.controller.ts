@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   ParseUUIDPipe,
   UseGuards,
 } from '@nestjs/common';
@@ -41,6 +42,19 @@ export class AdminController {
   @Get('observability')
   getObservability() {
     return this.adminService.getObservability();
+  }
+
+  @Get('queues')
+  getQueues() {
+    return this.adminService.getQueues();
+  }
+
+  @Post('queues/:queueName/jobs/:jobId/retry')
+  retryQueueJob(
+    @Param('queueName') queueName: string,
+    @Param('jobId') jobId: string,
+  ) {
+    return this.adminService.retryQueueJob(queueName, jobId);
   }
 
   @Get('users')

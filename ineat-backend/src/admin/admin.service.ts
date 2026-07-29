@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   SubscriptionPlan,
   UsageType,
@@ -7,6 +11,7 @@ import {
 import { Prisma } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ObservabilityService } from '../observability/observability.service';
+import { QueueMonitoringService } from '../jobs/queue-monitoring.service';
 
 type AdminUserWithUsage = Prisma.UserGetPayload<{
   include: { UsageQuota: true };
@@ -17,6 +22,7 @@ export class AdminService {
   constructor(
     private prisma: PrismaService,
     private observabilityService: ObservabilityService,
+    private queueMonitoringService: QueueMonitoringService,
   ) {}
 
   async getDashboard() {
@@ -30,9 +36,15 @@ export class AdminService {
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.user.count({ where: { role: UserRole.ADMIN } }),
-      this.prisma.user.count({ where: { subscriptionPlan: SubscriptionPlan.FREE } }),
-      this.prisma.user.count({ where: { subscriptionPlan: SubscriptionPlan.TRIAL } }),
-      this.prisma.user.count({ where: { subscriptionPlan: SubscriptionPlan.PREMIUM } }),
+      this.prisma.user.count({
+        where: { subscriptionPlan: SubscriptionPlan.FREE },
+      }),
+      this.prisma.user.count({
+        where: { subscriptionPlan: SubscriptionPlan.TRIAL },
+      }),
+      this.prisma.user.count({
+        where: { subscriptionPlan: SubscriptionPlan.PREMIUM },
+      }),
       this.prisma.user.count({
         where: {
           subscriptionPlan: SubscriptionPlan.TRIAL,
@@ -142,6 +154,20 @@ export class AdminService {
     };
   }
 
+  async getQueues() {
+    return {
+      success: true,
+      data: await this.queueMonitoringService.getSnapshot(),
+    };
+  }
+
+  async retryQueueJob(queueName: string, jobId: string) {
+    return {
+      success: true,
+      data: await this.queueMonitoringService.retryFailedJob(queueName, jobId),
+    };
+  }
+
   private async assertUserExists(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
 
@@ -173,7 +199,8 @@ export class AdminService {
       subscriptionStatus: user.subscriptionStatus,
       trialStartedAt: user.trialStartedAt?.toISOString() ?? null,
       trialEndsAt: user.trialEndsAt?.toISOString() ?? null,
-      currentPeriodStartedAt: user.currentPeriodStartedAt?.toISOString() ?? null,
+      currentPeriodStartedAt:
+        user.currentPeriodStartedAt?.toISOString() ?? null,
       currentPeriodEndsAt: user.currentPeriodEndsAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),

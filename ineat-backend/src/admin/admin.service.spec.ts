@@ -6,6 +6,7 @@ import {
 import { ObservabilityService } from '../observability/observability.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AdminService } from './admin.service';
+import { QueueMonitoringService } from '../jobs/queue-monitoring.service';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -55,7 +56,18 @@ describe('AdminService', () => {
         {
           provide: ObservabilityService,
           useValue: {
-            getSnapshot: jest.fn().mockReturnValue({ events: [], counters: {} }),
+            getSnapshot: jest
+              .fn()
+              .mockReturnValue({ events: [], counters: {} }),
+          },
+        },
+        {
+          provide: QueueMonitoringService,
+          useValue: {
+            getSnapshot: jest.fn().mockResolvedValue({
+              health: 'healthy',
+              queues: [],
+            }),
           },
         },
       ],

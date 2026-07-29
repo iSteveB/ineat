@@ -37,6 +37,47 @@ passer Backend et Worker a `bullmq`. En rollback, remettre d'abord le Backend en
 La concurrence des synchronisations utilisateur peut etre ajustee avec
 `NOTIFICATION_WORKER_CONCURRENCY` (5 par defaut, 20 maximum).
 
+### Supervision BullMQ
+
+La route admin authentifiee `GET /admin/queues` retourne uniquement des
+agregats par file: jobs en attente, actifs, retardes, termines, echoues, age du
+plus ancien job en attente et echecs de la derniere heure. Elle n'expose jamais
+le payload des jobs.
+
+Seuils par defaut:
+
+- degrade: 100 jobs en attente, 5 minutes de retard ou 5 echecs par heure;
+- critique: 1 000 jobs en attente, 30 minutes de retard ou 20 echecs par heure.
+
+Ils peuvent etre ajustes avec `QUEUE_WARNING_BACKLOG`,
+`QUEUE_CRITICAL_BACKLOG`, `QUEUE_WARNING_LAG_MS`, `QUEUE_CRITICAL_LAG_MS`,
+`QUEUE_WARNING_FAILURES_PER_HOUR` et
+`QUEUE_CRITICAL_FAILURES_PER_HOUR`.
+
+Configurer une alerte externe sur un snapshot `degraded` persistant pendant 10
+minutes et une alerte immediate sur `critical`. Les logs worker structurent les
+echecs avec le nom de file, le nom du job, son identifiant et la tentative, sans
+inclure les donnees utilisateur.
+
+### Diagnostic et replay
+
+1. Verifier `/health`, puis `GET /admin/queues` avec un compte administrateur.
+2. Consulter les logs du worker en filtrant `queue.job.failed` et noter la file,
+   le job et la derniere erreur.
+3. Verifier l'etat PostgreSQL correspondant avant tout replay. Pour une
+   livraison, `NotificationDelivery` reste la source de verite.
+4. Corriger la cause externe ou applicative avant de republier.
+5. Rejouer uniquement un job confirme en echec via
+   `POST /admin/queues/:queueName/jobs/:jobId/retry`. La route refuse les files
+   inconnues et les jobs qui ne sont pas dans l'etat `failed`. Ne jamais modifier
+   directement les cles Redis.
+6. Confirmer le retour a `healthy` et l'absence de double livraison. Les cles
+   d'idempotence PostgreSQL et Resend doivent rester actives pendant le replay.
+
+En cas de panne Redis, les lectures API continuent de fonctionner depuis
+PostgreSQL. Ne pas rebasculer simultanement scheduler et livraisons: appliquer
+la sequence de rollback documentee ci-dessus.
+
 Redis reste accessible uniquement par le reseau prive Railway; le TCP Proxy
 public doit etre desactive sauf besoin d'administration explicite. PostgreSQL
 reste la source de verite des notifications et livraisons.

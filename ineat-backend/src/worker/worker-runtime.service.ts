@@ -3,6 +3,7 @@ import {
   Logger,
   OnApplicationShutdown,
   OnModuleInit,
+  Optional,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type Job, Worker } from 'bullmq';
@@ -14,6 +15,7 @@ import { WeeklyProductDigestService } from '../notification/weekly-product-diges
 import { PrismaService } from '../prisma/prisma.service';
 import { QUEUE_NAMES, type QueueName } from '../redis/redis.constants';
 import { RedisService } from '../redis/redis.service';
+import { ObservabilityService } from '../observability/observability.service';
 
 const USER_BATCH_SIZE = 100;
 
@@ -35,6 +37,7 @@ export class WorkerRuntimeService
     private readonly deliveries: NotificationDeliveryService,
     private readonly weeklyDigests: WeeklyProductDigestService,
     private readonly dailyDigests: DailyProductDigestService,
+    @Optional() private readonly observability?: ObservabilityService,
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -96,16 +99,45 @@ export class WorkerRuntimeService
     worker.on('ready', () =>
       this.logger.log(`BullMQ worker ready: ${queueName}`),
     );
-    worker.on('failed', (job, error) =>
+    worker.on('completed', (job) => {
+      this.observability?.increment(`queues.${queueName}.completed`);
+      if (job.processedOn && job.finishedOn) {
+        this.observability?.recordTiming(
+          `queues.${queueName}.duration`,
+          job.finishedOn - job.processedOn,
+          { jobName: job.name },
+        );
+      }
+    });
+    worker.on('failed', (job, error) => {
+      this.observability?.increment(`queues.${queueName}.failed`);
+      this.observability?.trackEvent(
+        'queue.job.failed',
+        'error',
+        'BullMQ job failed',
+        {
+          queueName,
+          jobName: job?.name ?? 'unknown',
+          jobId: job?.id ?? 'unknown',
+          attempt: job?.attemptsMade ?? 0,
+          error,
+        },
+      );
       this.logger.error(
         `Job failed queue=${queueName} jobId=${job?.id ?? 'unknown'} attempt=${job?.attemptsMade ?? 0}: ${error.message}`,
-      ),
-    );
-    worker.on('error', (error) =>
+      );
+    });
+    worker.on('error', (error) => {
+      this.observability?.trackEvent(
+        'queue.worker.error',
+        'error',
+        'BullMQ worker connection error',
+        { queueName, error },
+      );
       this.logger.error(
         `BullMQ worker error queue=${queueName}: ${error.message}`,
-      ),
-    );
+      );
+    });
     this.workers.push(worker);
   }
 
