@@ -23,6 +23,7 @@ import {
 } from './dto/admin-mutation.dto';
 import type { AdminActorContext } from './admin-audit.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import { AdminDashboardQueryDto } from './dto/admin-dashboard-query.dto';
 
 type AdminRequest = Request & {
   user: {
@@ -40,8 +41,8 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('dashboard')
-  getDashboard() {
-    return this.adminService.getDashboard();
+  getDashboard(@Query() query: AdminDashboardQueryDto) {
+    return this.adminService.getDashboard(query);
   }
 
   @Get('observability')

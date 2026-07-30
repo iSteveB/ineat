@@ -91,32 +91,43 @@ export class UsageQuotaService {
   ): Promise<UsageQuotaState> {
     const state = await this.assertCanConsume(user, usageType, now);
 
-    const persisted = await this.prisma.usageQuota.upsert({
-      where: {
-        userId_usageType_periodStart_periodEnd: {
+    const persisted = await this.prisma.$transaction(async (transaction) => {
+      const quota = await transaction.usageQuota.upsert({
+        where: {
+          userId_usageType_periodStart_periodEnd: {
+            userId: user.id,
+            usageType,
+            periodStart: state.periodStart!,
+            periodEnd: state.periodEnd!,
+          },
+        },
+        create: {
+          id: randomUUID(),
           userId: user.id,
           usageType,
           periodStart: state.periodStart!,
           periodEnd: state.periodEnd!,
+          usedCount: 1,
+          limit: state.limit,
+          updatedAt: now,
         },
-      },
-      create: {
-        id: randomUUID(),
-        userId: user.id,
-        usageType,
-        periodStart: state.periodStart!,
-        periodEnd: state.periodEnd!,
-        usedCount: 1,
-        limit: state.limit,
-        updatedAt: now,
-      },
-      update: {
-        usedCount: {
-          increment: 1,
+        update: {
+          usedCount: {
+            increment: 1,
+          },
+          limit: state.limit,
+          updatedAt: now,
         },
-        limit: state.limit,
-        updatedAt: now,
-      },
+      });
+      await transaction.usageEvent.create({
+        data: {
+          id: randomUUID(),
+          userId: user.id,
+          usageType,
+          occurredAt: now,
+        },
+      });
+      return quota;
     });
 
     const result = await this.getUsageState(user, usageType, now);

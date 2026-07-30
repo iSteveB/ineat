@@ -5,30 +5,36 @@ import { UsageQuotaService } from './usage-quota.service';
 describe('UsageQuotaService', () => {
   let service: UsageQuotaService;
   let prisma: {
+    $transaction: jest.Mock;
     user: { findUnique: jest.Mock };
     usageQuota: {
       findUnique: jest.Mock;
       upsert: jest.Mock;
       update: jest.Mock;
     };
+    usageEvent: { create: jest.Mock };
   };
   let email: { sendQuota: jest.Mock };
 
   const now = new Date('2026-05-15T12:00:00.000Z');
 
   beforeEach(() => {
+    const usageQuota = {
+      findUnique: jest.fn().mockResolvedValue(null),
+      upsert: jest.fn().mockResolvedValue({}),
+      update: jest.fn().mockResolvedValue({}),
+    };
+    const usageEvent = { create: jest.fn().mockResolvedValue({}) };
     prisma = {
+      $transaction: jest.fn((callback) => callback({ usageQuota, usageEvent })),
       user: {
         findUnique: jest.fn().mockResolvedValue({
           email: 'jane@example.com',
           firstName: 'Jane',
         }),
       },
-      usageQuota: {
-        findUnique: jest.fn().mockResolvedValue(null),
-        upsert: jest.fn().mockResolvedValue({}),
-        update: jest.fn().mockResolvedValue({}),
-      },
+      usageQuota,
+      usageEvent,
     };
     email = {
       sendQuota: jest.fn().mockResolvedValue({ messageId: 'email-1' }),
@@ -174,7 +180,34 @@ describe('UsageQuotaService', () => {
         }),
       }),
     );
+    expect(prisma.usageEvent.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        usageType: 'DRIVE_IMPORT',
+        occurredAt: now,
+      }),
+    });
     expect(state.remaining).toBe(22);
+  });
+
+  it("annule l'incrément si le journal d'usage ne peut pas être écrit", async () => {
+    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 2 });
+    prisma.usageEvent.create.mockRejectedValue(new Error('database unavailable'));
+
+    await expect(
+      service.recordSuccessfulUsage(
+        {
+          id: 'user-1',
+          role: 'USER',
+          subscriptionPlan: 'PREMIUM',
+          subscriptionStatus: 'ACTIVE',
+        },
+        'DRIVE_IMPORT',
+        now,
+      ),
+    ).rejects.toThrow('database unavailable');
+
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
   });
 
   it('envoie une seule alerte au passage des 80 %', async () => {

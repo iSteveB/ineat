@@ -422,6 +422,7 @@ model User {
   Recipe                   Recipe[]
   Receipt                  Receipt[]
   UsageQuota               UsageQuota[]
+  UsageEvent               UsageEvent[]
   sessions                 Session[]
   accounts                 Account[]
   AdminAuditLog            AdminAuditLog[]          @relation("AdminAuditActor")
@@ -499,6 +500,17 @@ model UsageQuota {
   @@index([periodEnd])
   @@index([usageType])
   @@index([userId])
+}
+
+model UsageEvent {
+  id         String    @id
+  userId     String
+  usageType  UsageType
+  occurredAt DateTime  @default(now())
+  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([usageType, occurredAt])
+  @@index([userId, occurredAt])
 }
 
 model Session {

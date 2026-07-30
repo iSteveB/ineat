@@ -18,6 +18,10 @@ import {
 } from './admin-audit.service';
 import { AccessPolicyService } from '../auth/services/access-policy.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+import {
+  AdminDashboardPeriod,
+  AdminDashboardQueryDto,
+} from './dto/admin-dashboard-query.dto';
 
 const adminUserInclude = {
   UsageQuota: {
@@ -52,14 +56,33 @@ export class AdminService {
     private accessPolicyService: AccessPolicyService,
   ) {}
 
-  async getDashboard() {
+  async getDashboard(query: AdminDashboardQueryDto) {
+    const range = this.resolveDashboardRange(query);
+    const previousRange = {
+      from: new Date(range.from.getTime() - (range.to.getTime() - range.from.getTime())),
+      to: range.from,
+    };
     const [
       totalUsers,
       adminUsers,
       freeUsers,
-      trialUsers,
+      activeTrials,
       premiumUsers,
       expiredTrials,
+      activeUsers,
+      newUsers,
+      previousNewUsers,
+      trialStarts,
+      conversions,
+      cancellations,
+      invoicesProcessed,
+      failedInvoices,
+      failedNotifications,
+      failedWebhooks,
+      aiGenerations,
+      driveImports,
+      queueSnapshot,
+      trends,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.user.count({ where: { role: UserRole.ADMIN } }),
@@ -67,10 +90,23 @@ export class AdminService {
         where: { subscriptionPlan: SubscriptionPlan.FREE },
       }),
       this.prisma.user.count({
-        where: { subscriptionPlan: SubscriptionPlan.TRIAL },
+        where: {
+          subscriptionPlan: SubscriptionPlan.TRIAL,
+          subscriptionStatus: 'ACTIVE',
+          trialEndsAt: { gt: new Date() },
+        },
       }),
       this.prisma.user.count({
-        where: { subscriptionPlan: SubscriptionPlan.PREMIUM },
+        where: {
+          subscriptionPlan: SubscriptionPlan.PREMIUM,
+          OR: [
+            { subscriptionStatus: 'ACTIVE' },
+            {
+              subscriptionStatus: 'CANCELLED',
+              currentPeriodEndsAt: { gt: new Date() },
+            },
+          ],
+        },
       }),
       this.prisma.user.count({
         where: {
@@ -78,22 +114,252 @@ export class AdminService {
           subscriptionStatus: 'EXPIRED',
         },
       }),
+      this.prisma.user.count({
+        where: {
+          sessions: {
+            some: { updatedAt: { gte: range.from, lt: range.to } },
+          },
+        },
+      }),
+      this.prisma.user.count({
+        where: { createdAt: { gte: range.from, lt: range.to } },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: { gte: previousRange.from, lt: previousRange.to },
+        },
+      }),
+      this.prisma.user.count({
+        where: { trialStartedAt: { gte: range.from, lt: range.to } },
+      }),
+      this.prisma.user.count({
+        where: {
+          subscriptionPlan: SubscriptionPlan.PREMIUM,
+          trialUsedAt: { not: null },
+          currentPeriodStartedAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          subscriptionCancelledAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.invoice.count({
+        where: {
+          status: { in: ['COMPLETED', 'VALIDATED'] },
+          updatedAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.invoice.count({
+        where: {
+          status: 'FAILED',
+          updatedAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.notificationDelivery.count({
+        where: {
+          status: 'FAILED',
+          createdAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.stripeWebhookEvent.count({
+        where: {
+          status: 'FAILED',
+          createdAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.usageEvent.count({
+        where: {
+          usageType: 'AI_RECIPE_GENERATION',
+          occurredAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.prisma.usageEvent.count({
+        where: {
+          usageType: 'DRIVE_IMPORT',
+          occurredAt: { gte: range.from, lt: range.to },
+        },
+      }),
+      this.queueMonitoringService.getSnapshot(),
+      this.getDashboardTrends(range.from, range.to),
     ]);
+
+    const failedJobs = queueSnapshot.queues.reduce(
+      (sum, queue) => sum + (queue.counts.failed ?? 0),
+      0,
+    );
 
     return {
       success: true,
       data: {
+        period: {
+          key: query.period ?? '30d',
+          from: range.from.toISOString(),
+          to: range.to.toISOString(),
+        },
         users: {
           total: totalUsers,
           admins: adminUsers,
+          active: activeUsers,
+          new: newUsers,
+          growthRate: this.percentageChange(newUsers, previousNewUsers),
           free: freeUsers,
-          trial: trialUsers,
+          trial: activeTrials,
           premium: premiumUsers,
           expiredTrials,
         },
+        subscriptions: {
+          free: freeUsers,
+          activeTrials,
+          expiredTrials,
+          premium: premiumUsers,
+          trialStarts,
+          conversions,
+          conversionRate:
+            trialStarts === 0 ? 0 : Math.round((conversions / trialStarts) * 1000) / 10,
+          cancellations,
+        },
+        usage: {
+          aiGenerations,
+          driveImports,
+          invoicesProcessed,
+          historyStatus: 'TRACKED_FROM_USAGE_EVENTS',
+        },
+        operations: {
+          failedJobs,
+          failedWebhooks,
+          failedNotifications,
+          failedInvoices,
+        },
+        trends,
+        attention: [
+          { type: 'FAILED_JOBS', count: failedJobs },
+          { type: 'FAILED_WEBHOOKS', count: failedWebhooks },
+          { type: 'FAILED_NOTIFICATIONS', count: failedNotifications },
+          { type: 'FAILED_INVOICES', count: failedInvoices },
+        ].filter((item) => item.count > 0),
         observability: this.observabilityService.getSnapshot(),
       },
     };
+  }
+
+  private resolveDashboardRange(query: AdminDashboardQueryDto) {
+    const period = query.period ?? '30d';
+    const now = new Date();
+    if (period !== 'custom') {
+      const days = this.periodDays(period);
+      return {
+        from: new Date(now.getTime() - days * 24 * 60 * 60_000),
+        to: now,
+      };
+    }
+    if (!query.from || !query.to) {
+      throw new BadRequestException(
+        'Les dates from et to sont requises pour une période personnalisée',
+      );
+    }
+    const from = new Date(`${query.from}T00:00:00.000Z`);
+    const to = new Date(`${query.to}T00:00:00.000Z`);
+    to.setUTCDate(to.getUTCDate() + 1);
+    const durationDays = (to.getTime() - from.getTime()) / (24 * 60 * 60_000);
+    if (durationDays <= 0 || durationDays > 366) {
+      throw new BadRequestException(
+        'La période personnalisée doit contenir entre 1 et 366 jours',
+      );
+    }
+    return { from, to };
+  }
+
+  private periodDays(period: Exclude<AdminDashboardPeriod, 'custom'>) {
+    return Number.parseInt(period, 10);
+  }
+
+  private percentageChange(current: number, previous: number) {
+    if (previous === 0) return current === 0 ? 0 : 100;
+    return Math.round(((current - previous) / previous) * 1000) / 10;
+  }
+
+  private async getDashboardTrends(from: Date, to: Date) {
+    type CountRow = { date: Date | string; count: number | bigint };
+    type SubscriptionRow = CountRow & {
+      trials: number | bigint;
+      conversions: number | bigint;
+    };
+    type OperationRow = CountRow & {
+      successes: number | bigint;
+      failures: number | bigint;
+    };
+    const [registrations, subscriptions, operations] = await Promise.all([
+      this.prisma.$queryRaw<CountRow[]>(Prisma.sql`
+        SELECT DATE_TRUNC('day', "createdAt")::date AS date, COUNT(*)::int AS count
+        FROM "User"
+        WHERE "createdAt" >= ${from} AND "createdAt" < ${to}
+        GROUP BY 1 ORDER BY 1
+      `),
+      this.prisma.$queryRaw<SubscriptionRow[]>(Prisma.sql`
+        SELECT day AS date,
+          SUM(trials)::int AS trials,
+          SUM(conversions)::int AS conversions,
+          SUM(trials + conversions)::int AS count
+        FROM (
+          SELECT DATE_TRUNC('day', "trialStartedAt")::date AS day, 1 AS trials, 0 AS conversions
+          FROM "User"
+          WHERE "trialStartedAt" >= ${from} AND "trialStartedAt" < ${to}
+          UNION ALL
+          SELECT DATE_TRUNC('day', "currentPeriodStartedAt")::date AS day, 0 AS trials, 1 AS conversions
+          FROM "User"
+          WHERE "subscriptionPlan"::text = 'PREMIUM'
+            AND "trialUsedAt" IS NOT NULL
+            AND "currentPeriodStartedAt" >= ${from} AND "currentPeriodStartedAt" < ${to}
+        ) source
+        GROUP BY day ORDER BY day
+      `),
+      this.prisma.$queryRaw<OperationRow[]>(Prisma.sql`
+        SELECT day AS date,
+          SUM(successes)::int AS successes,
+          SUM(failures)::int AS failures,
+          SUM(successes + failures)::int AS count
+        FROM (
+          SELECT DATE_TRUNC('day', "updatedAt")::date AS day,
+            CASE WHEN "status"::text IN ('COMPLETED', 'VALIDATED') THEN 1 ELSE 0 END AS successes,
+            CASE WHEN "status"::text = 'FAILED' THEN 1 ELSE 0 END AS failures
+          FROM "Invoice"
+          WHERE "updatedAt" >= ${from} AND "updatedAt" < ${to}
+          UNION ALL
+          SELECT DATE_TRUNC('day', "createdAt")::date AS day, 0 AS successes, 1 AS failures
+          FROM "NotificationDelivery"
+          WHERE "status"::text = 'FAILED' AND "createdAt" >= ${from} AND "createdAt" < ${to}
+          UNION ALL
+          SELECT DATE_TRUNC('day', "createdAt")::date AS day, 0 AS successes, 1 AS failures
+          FROM "StripeWebhookEvent"
+          WHERE "status" = 'FAILED' AND "createdAt" >= ${from} AND "createdAt" < ${to}
+        ) source
+        GROUP BY day ORDER BY day
+      `),
+    ]);
+    return {
+      registrations: registrations.map((row) => this.countPoint(row)),
+      subscriptions: subscriptions.map((row) => ({
+        date: this.dateKey(row.date),
+        trials: Number(row.trials),
+        conversions: Number(row.conversions),
+      })),
+      operations: operations.map((row) => ({
+        date: this.dateKey(row.date),
+        successes: Number(row.successes),
+        failures: Number(row.failures),
+      })),
+    };
+  }
+
+  private countPoint(row: { date: Date | string; count: number | bigint }) {
+    return { date: this.dateKey(row.date), value: Number(row.count) };
+  }
+
+  private dateKey(value: Date | string) {
+    return (value instanceof Date ? value : new Date(value))
+      .toISOString()
+      .slice(0, 10);
   }
 
   async listUsers(query: AdminUsersQueryDto) {

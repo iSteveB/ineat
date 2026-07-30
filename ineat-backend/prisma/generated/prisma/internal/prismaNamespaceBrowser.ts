@@ -72,6 +72,7 @@ export const ModelName = {
   ResendWebhookEvent: 'ResendWebhookEvent',
   EmailSuppression: 'EmailSuppression',
   UsageQuota: 'UsageQuota',
+  UsageEvent: 'UsageEvent',
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification'
@@ -496,6 +497,16 @@ export const UsageQuotaScalarFieldEnum = {
 } as const
 
 export type UsageQuotaScalarFieldEnum = (typeof UsageQuotaScalarFieldEnum)[keyof typeof UsageQuotaScalarFieldEnum]
+
+
+export const UsageEventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  usageType: 'usageType',
+  occurredAt: 'occurredAt'
+} as const
+
+export type UsageEventScalarFieldEnum = (typeof UsageEventScalarFieldEnum)[keyof typeof UsageEventScalarFieldEnum]
 
 
 export const SessionScalarFieldEnum = {

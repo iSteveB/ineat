@@ -62,14 +62,61 @@ export type AdminUsersPage = {
 };
 
 export type AdminDashboard = {
+	period: { key: '7d' | '30d' | '90d' | 'custom'; from: string; to: string };
 	users: {
 		total: number;
 		admins: number;
+		active: number;
+		new: number;
+		growthRate: number;
 		free: number;
 		trial: number;
 		premium: number;
 		expiredTrials: number;
 	};
+	subscriptions: {
+		free: number;
+		activeTrials: number;
+		expiredTrials: number;
+		premium: number;
+		trialStarts: number;
+		conversions: number;
+		conversionRate: number;
+		cancellations: number;
+	};
+	usage: {
+		aiGenerations: number;
+		driveImports: number;
+		invoicesProcessed: number;
+		historyStatus: string;
+	};
+	operations: {
+		failedJobs: number;
+		failedWebhooks: number;
+		failedNotifications: number;
+		failedInvoices: number;
+	};
+	trends: {
+		registrations: Array<{ date: string; value: number }>;
+		subscriptions: Array<{
+			date: string;
+			trials: number;
+			conversions: number;
+		}>;
+		operations: Array<{
+			date: string;
+			successes: number;
+			failures: number;
+		}>;
+	};
+	attention: Array<{
+		type:
+			| 'FAILED_JOBS'
+			| 'FAILED_WEBHOOKS'
+			| 'FAILED_NOTIFICATIONS'
+			| 'FAILED_INVOICES';
+		count: number;
+	}>;
 	observability: {
 		counters?: Record<string, number>;
 		events?: unknown[];
@@ -77,11 +124,20 @@ export type AdminDashboard = {
 	};
 };
 
+export type AdminDashboardQuery = {
+	period: '7d' | '30d' | '90d' | 'custom';
+	from?: string;
+	to?: string;
+};
+
 export const adminService = {
-	async getDashboard() {
+	async getDashboard(query: AdminDashboardQuery = { period: '30d' }) {
+		const params = new URLSearchParams({ period: query.period });
+		if (query.from) params.set('from', query.from);
+		if (query.to) params.set('to', query.to);
 		const response =
 			await apiClient.get<ApiSuccessResponse<AdminDashboard>>(
-				'/admin/dashboard'
+				`/admin/dashboard?${params.toString()}`
 			);
 		return response.data;
 	},

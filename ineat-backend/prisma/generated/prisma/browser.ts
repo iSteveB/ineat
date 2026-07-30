@@ -123,6 +123,11 @@ export type EmailSuppression = Prisma.EmailSuppressionModel
  */
 export type UsageQuota = Prisma.UsageQuotaModel
 /**
+ * Model UsageEvent
+ * 
+ */
+export type UsageEvent = Prisma.UsageEventModel
+/**
  * Model Session
  * 
  */

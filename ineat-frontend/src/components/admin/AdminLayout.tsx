@@ -68,6 +68,7 @@ export default function AdminLayout() {
 						<Link
 							key={to}
 							to={to}
+							search={to === '/app/admin' ? { period: '30d' } : undefined}
 							aria-current={isActive ? 'page' : undefined}
 							className={cn(
 								'flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
@@ -84,7 +85,10 @@ export default function AdminLayout() {
 		</aside>
 		<section className='min-w-0'>
 			<nav aria-label='Fil d’Ariane' className='mb-4 text-sm text-neutral-500'>
-				<Link to='/app/admin' className='hover:text-neutral-900'>
+				<Link
+					to='/app/admin'
+					search={{ period: '30d' }}
+					className='hover:text-neutral-900'>
 					Administration
 				</Link>
 				{pageLabel !== 'Vue d’ensemble' && (

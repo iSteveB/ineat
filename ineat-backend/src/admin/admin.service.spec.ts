@@ -16,12 +16,17 @@ describe('AdminService', () => {
   let service: AdminService;
   let prisma: {
     $transaction: jest.Mock;
+    $queryRaw: jest.Mock;
     user: {
       count: jest.Mock;
       findMany: jest.Mock;
       findUnique: jest.Mock;
       update: jest.Mock;
     };
+    invoice: { count: jest.Mock };
+    notificationDelivery: { count: jest.Mock };
+    stripeWebhookEvent: { count: jest.Mock };
+    usageEvent: { count: jest.Mock };
   };
   let adminAuditService: { record: jest.Mock };
 
@@ -54,6 +59,8 @@ describe('AdminService', () => {
     },
   };
 
+  afterEach(() => jest.useRealTimers());
+
   beforeEach(async () => {
     const user = {
       count: jest.fn(),
@@ -65,7 +72,12 @@ describe('AdminService', () => {
       $transaction: jest.fn((input) =>
         typeof input === 'function' ? input({ user }) : Promise.all(input),
       ),
+      $queryRaw: jest.fn().mockResolvedValue([]),
       user,
+      invoice: { count: jest.fn() },
+      notificationDelivery: { count: jest.fn() },
+      stripeWebhookEvent: { count: jest.fn() },
+      usageEvent: { count: jest.fn() },
     };
     adminAuditService = { record: jest.fn().mockResolvedValue(undefined) };
 
@@ -141,6 +153,76 @@ describe('AdminService', () => {
       }),
       expect.any(Object),
     );
+  });
+
+  it('calcule les métriques de dashboard sur une période bornée', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-07-30T12:00:00.000Z'));
+    prisma.user.count
+      .mockResolvedValueOnce(100)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(70)
+      .mockResolvedValueOnce(10)
+      .mockResolvedValueOnce(20)
+      .mockResolvedValueOnce(5)
+      .mockResolvedValueOnce(40)
+      .mockResolvedValueOnce(14)
+      .mockResolvedValueOnce(7)
+      .mockResolvedValueOnce(10)
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(2);
+    prisma.invoice.count
+      .mockResolvedValueOnce(25)
+      .mockResolvedValueOnce(4);
+    prisma.notificationDelivery.count.mockResolvedValue(2);
+    prisma.stripeWebhookEvent.count.mockResolvedValue(1);
+    prisma.usageEvent.count
+      .mockResolvedValueOnce(18)
+      .mockResolvedValueOnce(6);
+    prisma.$queryRaw
+      .mockResolvedValueOnce([
+        { date: new Date('2026-07-29T00:00:00.000Z'), count: 2 },
+      ])
+      .mockResolvedValueOnce([
+        {
+          date: new Date('2026-07-29T00:00:00.000Z'),
+          count: 3,
+          trials: 2,
+          conversions: 1,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          date: new Date('2026-07-29T00:00:00.000Z'),
+          count: 5,
+          successes: 4,
+          failures: 1,
+        },
+      ]);
+
+    const result = await service.getDashboard({ period: '7d' });
+
+    expect(result.data.period).toEqual({
+      key: '7d',
+      from: '2026-07-23T12:00:00.000Z',
+      to: '2026-07-30T12:00:00.000Z',
+    });
+    expect(result.data.users).toEqual(
+      expect.objectContaining({ active: 40, new: 14, growthRate: 100 }),
+    );
+    expect(result.data.subscriptions).toEqual(
+      expect.objectContaining({ conversions: 3, conversionRate: 30 }),
+    );
+    expect(result.data.usage).toEqual(
+      expect.objectContaining({
+        invoicesProcessed: 25,
+        aiGenerations: 18,
+        driveImports: 6,
+        historyStatus: 'TRACKED_FROM_USAGE_EVENTS',
+      }),
+    );
+    expect(result.data.trends.registrations).toEqual([
+      { date: '2026-07-29', value: 2 },
+    ]);
   });
 
   it('pagine et filtre la liste des utilisateurs côté serveur', async () => {
