@@ -424,8 +424,29 @@ model User {
   UsageQuota               UsageQuota[]
   sessions                 Session[]
   accounts                 Account[]
+  AdminAuditLog            AdminAuditLog[]          @relation("AdminAuditActor")
 
   @@map("User")
+}
+
+model AdminAuditLog {
+  id            String   @id
+  adminUserId   String
+  action        String
+  resourceType  String
+  resourceId    String
+  previousValue Json?
+  newValue      Json?
+  reason        String
+  ipAddress     String?
+  sessionId     String?
+  createdAt     DateTime @default(now())
+  AdminUser     User     @relation("AdminAuditActor", fields: [adminUserId], references: [id], onDelete: Restrict)
+
+  @@index([adminUserId, createdAt])
+  @@index([resourceType, resourceId, createdAt])
+  @@index([action, createdAt])
+  @@index([createdAt])
 }
 
 model StripeWebhookEvent {

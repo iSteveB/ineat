@@ -66,21 +66,22 @@ export const adminService = {
 		return response.data;
 	},
 
-	async updateUserRole(userId: string, role: UserRole) {
+	async updateUserRole(userId: string, role: UserRole, reason: string) {
 		const response = await apiClient.patch<ApiSuccessResponse<AdminUser>>(
 			`/admin/users/${userId}/role`,
-			{ role }
+			{ role, reason }
 		);
 		return response.data;
 	},
 
 	async updateSubscriptionPlan(
 		userId: string,
-		subscriptionPlan: SubscriptionPlan
+		subscriptionPlan: SubscriptionPlan,
+		reason: string
 	) {
 		const response = await apiClient.patch<ApiSuccessResponse<AdminUser>>(
 			`/admin/users/${userId}/subscription-plan`,
-			{ subscriptionPlan }
+			{ subscriptionPlan, reason }
 		);
 		return response.data;
 	},

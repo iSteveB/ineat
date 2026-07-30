@@ -6,24 +6,27 @@ import {
   Patch,
   Post,
   ParseUUIDPipe,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import {
-  SubscriptionPlan,
-  UserRole,
-} from '../../prisma/generated/prisma/enums';
 import { RequiresRole } from '../auth/decorators/requires-role.decorator';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AdminService } from './admin.service';
+import {
+  RetryQueueJobDto,
+  UpdateRoleDto,
+  UpdateSubscriptionPlanDto,
+} from './dto/admin-mutation.dto';
+import type { AdminActorContext } from './admin-audit.service';
 
-type UpdateRoleBody = {
-  role: UserRole;
-};
-
-type UpdateSubscriptionPlanBody = {
-  subscriptionPlan: SubscriptionPlan;
+type AdminRequest = Request & {
+  user: {
+    id: string;
+    authSessionId?: string;
+  };
 };
 
 @ApiTags('Admin')
@@ -53,8 +56,15 @@ export class AdminController {
   retryQueueJob(
     @Param('queueName') queueName: string,
     @Param('jobId') jobId: string,
+    @Body() body: RetryQueueJobDto,
+    @Req() request: AdminRequest,
   ) {
-    return this.adminService.retryQueueJob(queueName, jobId);
+    return this.adminService.retryQueueJob(
+      queueName,
+      jobId,
+      body.reason,
+      this.actorContext(request),
+    );
   }
 
   @Get('users')
@@ -70,16 +80,36 @@ export class AdminController {
   @Patch('users/:id/role')
   updateRole(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: UpdateRoleBody,
+    @Body() body: UpdateRoleDto,
+    @Req() request: AdminRequest,
   ) {
-    return this.adminService.updateUserRole(id, body.role);
+    return this.adminService.updateUserRole(
+      id,
+      body.role,
+      body.reason,
+      this.actorContext(request),
+    );
   }
 
   @Patch('users/:id/subscription-plan')
   updateSubscriptionPlan(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: UpdateSubscriptionPlanBody,
+    @Body() body: UpdateSubscriptionPlanDto,
+    @Req() request: AdminRequest,
   ) {
-    return this.adminService.updateSubscriptionPlan(id, body.subscriptionPlan);
+    return this.adminService.updateSubscriptionPlan(
+      id,
+      body.subscriptionPlan,
+      body.reason,
+      this.actorContext(request),
+    );
+  }
+
+  private actorContext(request: AdminRequest): AdminActorContext {
+    return {
+      userId: request.user.id,
+      sessionId: request.user.authSessionId,
+      ipAddress: request.ip,
+    };
   }
 }

@@ -98,6 +98,11 @@ export type RecipeIngredient = Prisma.RecipeIngredientModel
  */
 export type User = Prisma.UserModel
 /**
+ * Model AdminAuditLog
+ * 
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
  * Model StripeWebhookEvent
  * 
  */

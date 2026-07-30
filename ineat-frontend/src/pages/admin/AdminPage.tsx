@@ -1,11 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { BarChart3, Shield, Users } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
 	adminService,
 	type AdminUser,
@@ -26,6 +39,20 @@ const quotaLabel: Record<string, string> = {
 	DRIVE_IMPORT: 'Drive',
 };
 
+type PendingAdminChange =
+	| {
+			type: 'role';
+			user: AdminUser;
+			previousValue: UserRole;
+			newValue: UserRole;
+	  }
+	| {
+			type: 'plan';
+			user: AdminUser;
+			previousValue: SubscriptionPlan;
+			newValue: SubscriptionPlan;
+	  };
+
 const formatDate = (date: string | null) => {
 	if (!date) return 'Non défini';
 
@@ -39,6 +66,9 @@ const formatDate = (date: string | null) => {
 export default function AdminPage() {
 	const user = useAuthStore((state) => state.user);
 	const queryClient = useQueryClient();
+	const [pendingChange, setPendingChange] =
+		useState<PendingAdminChange | null>(null);
+	const [changeReason, setChangeReason] = useState('');
 	const canAccessAdmin = Boolean(user?.capabilities.canAccessAdmin);
 
 	const dashboardQuery = useQuery({
@@ -57,13 +87,17 @@ export default function AdminPage() {
 		mutationFn: ({
 			userId,
 			role,
+			reason,
 		}: {
 			userId: string;
 			role: UserRole;
-		}) => adminService.updateUserRole(userId, role),
+			reason: string;
+		}) => adminService.updateUserRole(userId, role, reason),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: adminKeys.users });
 			queryClient.invalidateQueries({ queryKey: adminKeys.dashboard });
+			setPendingChange(null);
+			setChangeReason('');
 			toast.success('Rôle mis à jour');
 		},
 		onError: (error) => {
@@ -75,13 +109,22 @@ export default function AdminPage() {
 		mutationFn: ({
 			userId,
 			subscriptionPlan,
+			reason,
 		}: {
 			userId: string;
 			subscriptionPlan: SubscriptionPlan;
-		}) => adminService.updateSubscriptionPlan(userId, subscriptionPlan),
+			reason: string;
+		}) =>
+			adminService.updateSubscriptionPlan(
+				userId,
+				subscriptionPlan,
+				reason
+			),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: adminKeys.users });
 			queryClient.invalidateQueries({ queryKey: adminKeys.dashboard });
+			setPendingChange(null);
+			setChangeReason('');
 			toast.success('Plan mis à jour');
 		},
 		onError: (error) => {
@@ -112,6 +155,28 @@ export default function AdminPage() {
 
 	const dashboard = dashboardQuery.data;
 	const users = usersQuery.data ?? [];
+	const isMutationPending =
+		updateRoleMutation.isPending || updatePlanMutation.isPending;
+	const canConfirmChange = changeReason.trim().length >= 3;
+
+	const confirmChange = () => {
+		if (!pendingChange || !canConfirmChange || isMutationPending) return;
+
+		if (pendingChange.type === 'role') {
+			updateRoleMutation.mutate({
+				userId: pendingChange.user.id,
+				role: pendingChange.newValue,
+				reason: changeReason.trim(),
+			});
+			return;
+		}
+
+		updatePlanMutation.mutate({
+			userId: pendingChange.user.id,
+			subscriptionPlan: pendingChange.newValue,
+			reason: changeReason.trim(),
+		});
+	};
 
 	return (
 		<div className='mx-auto max-w-6xl space-y-6 p-4 pb-28'>
@@ -171,23 +236,79 @@ export default function AdminPage() {
 							<UserRow
 								key={adminUser.id}
 								user={adminUser}
-								onRoleChange={(role) =>
-									updateRoleMutation.mutate({
-										userId: adminUser.id,
-										role,
-									})
-								}
-								onPlanChange={(subscriptionPlan) =>
-									updatePlanMutation.mutate({
-										userId: adminUser.id,
-										subscriptionPlan,
-									})
-								}
+								disabled={isMutationPending}
+								onRoleChange={(role) => {
+									setChangeReason('');
+									setPendingChange({
+										type: 'role',
+										user: adminUser,
+										previousValue: adminUser.role,
+										newValue: role,
+									});
+								}}
+								onPlanChange={(subscriptionPlan) => {
+									setChangeReason('');
+									setPendingChange({
+										type: 'plan',
+										user: adminUser,
+										previousValue: adminUser.subscriptionPlan,
+										newValue: subscriptionPlan,
+									});
+								}}
 							/>
 						))
 					)}
 				</CardContent>
 			</Card>
+
+			<AlertDialog
+				open={Boolean(pendingChange)}
+				onOpenChange={(open) => {
+					if (!open && !isMutationPending) {
+						setPendingChange(null);
+						setChangeReason('');
+					}
+				}}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle className='text-neutral-900'>
+							Confirmer la modification
+						</AlertDialogTitle>
+						<AlertDialogDescription className='text-neutral-600'>
+							{pendingChange
+								? `${pendingChange.user.firstName} ${pendingChange.user.lastName} : ${pendingChange.previousValue} → ${pendingChange.newValue}`
+								: ''}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<div className='space-y-2'>
+						<Label htmlFor='admin-change-reason'>Justification</Label>
+						<Textarea
+							id='admin-change-reason'
+							value={changeReason}
+							onChange={(event) => setChangeReason(event.target.value)}
+							placeholder='Pourquoi cette modification est-elle nécessaire ?'
+							maxLength={500}
+							disabled={isMutationPending}
+						/>
+						<p className='text-xs text-neutral-500'>
+							Cette justification sera conservée dans le journal d’audit.
+						</p>
+					</div>
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={isMutationPending}>
+							Annuler
+						</AlertDialogCancel>
+						<AlertDialogAction
+							disabled={!canConfirmChange || isMutationPending}
+							onClick={(event) => {
+								event.preventDefault();
+								confirmChange();
+							}}>
+							{isMutationPending ? 'Modification…' : 'Confirmer'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }
@@ -227,10 +348,12 @@ function UserRow({
 	user,
 	onRoleChange,
 	onPlanChange,
+	disabled,
 }: {
 	user: AdminUser;
 	onRoleChange: (role: UserRole) => void;
 	onPlanChange: (subscriptionPlan: SubscriptionPlan) => void;
+	disabled: boolean;
 }) {
 	return (
 		<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-4'>
@@ -255,6 +378,7 @@ function UserRow({
 						</span>
 						<select
 							value={user.role}
+							disabled={disabled}
 							onChange={(event) =>
 								onRoleChange(event.target.value as UserRole)
 							}
@@ -272,6 +396,7 @@ function UserRow({
 						</span>
 						<select
 							value={user.subscriptionPlan}
+							disabled={disabled}
 							onChange={(event) =>
 								onPlanChange(event.target.value as SubscriptionPlan)
 							}

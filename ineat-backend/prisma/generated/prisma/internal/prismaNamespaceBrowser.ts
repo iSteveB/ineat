@@ -67,6 +67,7 @@ export const ModelName = {
   Recipe: 'Recipe',
   RecipeIngredient: 'RecipeIngredient',
   User: 'User',
+  AdminAuditLog: 'AdminAuditLog',
   StripeWebhookEvent: 'StripeWebhookEvent',
   ResendWebhookEvent: 'ResendWebhookEvent',
   EmailSuppression: 'EmailSuppression',
@@ -425,6 +426,23 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  adminUserId: 'adminUserId',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  previousValue: 'previousValue',
+  newValue: 'newValue',
+  reason: 'reason',
+  ipAddress: 'ipAddress',
+  sessionId: 'sessionId',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
 
 
 export const StripeWebhookEventScalarFieldEnum = {

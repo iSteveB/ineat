@@ -48,7 +48,10 @@ export class BetterAuthSessionService {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash, ...safeUser } = user;
-      return safeUser;
+      return {
+        ...safeUser,
+        authSessionId: session.session.id,
+      };
     } catch {
       return null;
     }

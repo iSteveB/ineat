@@ -12,6 +12,10 @@ import { Prisma } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ObservabilityService } from '../observability/observability.service';
 import { QueueMonitoringService } from '../jobs/queue-monitoring.service';
+import {
+  AdminActorContext,
+  AdminAuditService,
+} from './admin-audit.service';
 
 type AdminUserWithUsage = Prisma.UserGetPayload<{
   include: { UsageQuota: true };
@@ -23,6 +27,7 @@ export class AdminService {
     private prisma: PrismaService,
     private observabilityService: ObservabilityService,
     private queueMonitoringService: QueueMonitoringService,
+    private adminAuditService: AdminAuditService,
   ) {}
 
   async getDashboard() {
@@ -99,22 +104,61 @@ export class AdminService {
     };
   }
 
-  async updateUserRole(id: string, role: UserRole) {
+  async updateUserRole(
+    id: string,
+    role: UserRole,
+    reason: string,
+    actor: AdminActorContext,
+  ) {
     if (!Object.values(UserRole).includes(role)) {
       throw new BadRequestException('Rôle invalide');
     }
 
-    await this.assertUserExists(id);
+    const user = await this.prisma.$transaction(async (transaction) => {
+      const previousUser = await transaction.user.findUnique({
+        where: { id },
+      });
+      if (!previousUser) {
+        throw new NotFoundException('Utilisateur non trouvé');
+      }
 
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: { role },
-      include: {
-        UsageQuota: {
-          orderBy: { periodEnd: 'desc' },
-          take: 4,
+      if (previousUser.role === UserRole.ADMIN && role === UserRole.USER) {
+        const otherAdminCount = await transaction.user.count({
+          where: {
+            role: UserRole.ADMIN,
+            id: { not: id },
+          },
+        });
+        if (otherAdminCount === 0) {
+          throw new BadRequestException(
+            'Le dernier administrateur ne peut pas être rétrogradé',
+          );
+        }
+      }
+
+      const updatedUser = await transaction.user.update({
+        where: { id },
+        data: { role },
+        include: {
+          UsageQuota: {
+            orderBy: { periodEnd: 'desc' },
+            take: 4,
+          },
         },
-      },
+      });
+      await this.adminAuditService.record(
+        {
+          ...actor,
+          action: 'USER_ROLE_UPDATED',
+          resourceType: 'USER',
+          resourceId: id,
+          previousValue: { role: previousUser.role },
+          newValue: { role },
+          reason,
+        },
+        transaction,
+      );
+      return updatedUser;
     });
 
     return {
@@ -123,22 +167,48 @@ export class AdminService {
     };
   }
 
-  async updateSubscriptionPlan(id: string, subscriptionPlan: SubscriptionPlan) {
+  async updateSubscriptionPlan(
+    id: string,
+    subscriptionPlan: SubscriptionPlan,
+    reason: string,
+    actor: AdminActorContext,
+  ) {
     if (!Object.values(SubscriptionPlan).includes(subscriptionPlan)) {
       throw new BadRequestException('Plan invalide');
     }
 
-    await this.assertUserExists(id);
-
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: { subscriptionPlan },
-      include: {
-        UsageQuota: {
-          orderBy: { periodEnd: 'desc' },
-          take: 4,
+    const user = await this.prisma.$transaction(async (transaction) => {
+      const previousUser = await transaction.user.findUnique({
+        where: { id },
+      });
+      if (!previousUser) {
+        throw new NotFoundException('Utilisateur non trouvé');
+      }
+      const updatedUser = await transaction.user.update({
+        where: { id },
+        data: { subscriptionPlan },
+        include: {
+          UsageQuota: {
+            orderBy: { periodEnd: 'desc' },
+            take: 4,
+          },
         },
-      },
+      });
+      await this.adminAuditService.record(
+        {
+          ...actor,
+          action: 'USER_SUBSCRIPTION_PLAN_UPDATED',
+          resourceType: 'USER',
+          resourceId: id,
+          previousValue: {
+            subscriptionPlan: previousUser.subscriptionPlan,
+          },
+          newValue: { subscriptionPlan },
+          reason,
+        },
+        transaction,
+      );
+      return updatedUser;
     });
 
     return {
@@ -161,19 +231,32 @@ export class AdminService {
     };
   }
 
-  async retryQueueJob(queueName: string, jobId: string) {
+  async retryQueueJob(
+    queueName: string,
+    jobId: string,
+    reason: string,
+    actor: AdminActorContext,
+  ) {
+    const result = await this.queueMonitoringService.retryFailedJob(
+      queueName,
+      jobId,
+    );
+    await this.adminAuditService.record({
+      ...actor,
+      action: 'QUEUE_JOB_RETRIED',
+      resourceType: 'QUEUE_JOB',
+      resourceId: `${queueName}:${jobId}`,
+      newValue: {
+        queueName: result.queueName,
+        jobId: result.jobId,
+        state: result.state,
+      },
+      reason,
+    });
     return {
       success: true,
-      data: await this.queueMonitoringService.retryFailedJob(queueName, jobId),
+      data: result,
     };
-  }
-
-  private async assertUserExists(id: string) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé');
-    }
   }
 
   private findUserWithUsage(id: string) {

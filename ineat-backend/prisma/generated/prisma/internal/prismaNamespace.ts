@@ -400,6 +400,7 @@ export const ModelName = {
   Recipe: 'Recipe',
   RecipeIngredient: 'RecipeIngredient',
   User: 'User',
+  AdminAuditLog: 'AdminAuditLog',
   StripeWebhookEvent: 'StripeWebhookEvent',
   ResendWebhookEvent: 'ResendWebhookEvent',
   EmailSuppression: 'EmailSuppression',
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "adminAuditLog" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "session" | "account" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1610,6 +1611,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AdminAuditLog: {
+      payload: Prisma.$AdminAuditLogPayload<ExtArgs>
+      fields: Prisma.AdminAuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminAuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminAuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminAuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.AdminAuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.AdminAuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.AdminAuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminAuditLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+        }
+        delete: {
+          args: Prisma.AdminAuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        update: {
+          args: Prisma.AdminAuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminAuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminAuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminAuditLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminAuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminAuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminAuditLog>
+        }
+        groupBy: {
+          args: Prisma.AdminAuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminAuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminAuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminAuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
     StripeWebhookEvent: {
       payload: Prisma.$StripeWebhookEventPayload<ExtArgs>
       fields: Prisma.StripeWebhookEventFieldRefs
@@ -2502,6 +2577,23 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  adminUserId: 'adminUserId',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  previousValue: 'previousValue',
+  newValue: 'newValue',
+  reason: 'reason',
+  ipAddress: 'ipAddress',
+  sessionId: 'sessionId',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
 export const StripeWebhookEventScalarFieldEnum = {
   id: 'id',
   stripeEventId: 'stripeEventId',
@@ -3163,6 +3255,7 @@ export type GlobalOmitConfig = {
   recipe?: Prisma.RecipeOmit
   recipeIngredient?: Prisma.RecipeIngredientOmit
   user?: Prisma.UserOmit
+  adminAuditLog?: Prisma.AdminAuditLogOmit
   stripeWebhookEvent?: Prisma.StripeWebhookEventOmit
   resendWebhookEvent?: Prisma.ResendWebhookEventOmit
   emailSuppression?: Prisma.EmailSuppressionOmit
