@@ -197,6 +197,37 @@ export type AdminQueueSnapshot = {
 	}>;
 };
 
+export type AdminAuditLog = {
+	id: string;
+	action: string;
+	resourceType: string;
+	resourceId: string;
+	previousValue: unknown;
+	newValue: unknown;
+	reason: string;
+	ipAddress: string | null;
+	sessionId: string | null;
+	createdAt: string;
+	admin: {
+		id: string;
+		email: string;
+		firstName: string;
+		lastName: string;
+	};
+};
+
+export type AdminAuditQuery = {
+	page?: number;
+	pageSize?: 10 | 25 | 50 | 100;
+	adminUserId?: string;
+	action?: string;
+	resourceType?: string;
+	resourceId?: string;
+	from?: string;
+	to?: string;
+	order?: 'asc' | 'desc';
+};
+
 export const adminService = {
 	async getDashboard(query: AdminDashboardQuery = { period: '30d' }) {
 		const params = new URLSearchParams({ period: query.period });
@@ -291,6 +322,26 @@ export const adminService = {
 			`/admin/queues/${encodeURIComponent(queueName)}/jobs/${encodeURIComponent(jobId)}/retry`,
 			{ reason }
 		);
+		return response.data;
+	},
+
+	async listAuditLogs(query: AdminAuditQuery = {}) {
+		const params = new URLSearchParams();
+		Object.entries(query).forEach(([key, value]) => {
+			if (value !== undefined && value !== '') params.set(key, String(value));
+		});
+		const suffix = params.size ? `?${params.toString()}` : '';
+		const response = await apiClient.get<
+			ApiSuccessResponse<{
+				items: AdminAuditLog[];
+				pagination: {
+					page: number;
+					pageSize: number;
+					totalItems: number;
+					totalPages: number;
+				};
+			}>
+		>(`/admin/audit-logs${suffix}`);
 		return response.data;
 	},
 };

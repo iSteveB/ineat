@@ -17,7 +17,10 @@ import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AdminService } from './admin.service';
 import { RetryQueueJobDto, UpdateRoleDto } from './dto/admin-mutation.dto';
-import type { AdminActorContext } from './admin-audit.service';
+import {
+  AdminAuditService,
+  type AdminActorContext,
+} from './admin-audit.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { AdminDashboardQueryDto } from './dto/admin-dashboard-query.dto';
 import { AdminBillingService } from './admin-billing.service';
@@ -25,6 +28,7 @@ import {
   AdminReasonDto,
   CreatePromotionCodeDto,
 } from './dto/admin-billing.dto';
+import { AdminAuditQueryDto } from './dto/admin-audit-query.dto';
 
 type AdminRequest = Request & {
   user: {
@@ -42,6 +46,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly adminBillingService: AdminBillingService,
+    private readonly adminAuditService: AdminAuditService,
   ) {}
 
   @Get('dashboard')
@@ -52,6 +57,11 @@ export class AdminController {
   @Get('observability')
   getObservability() {
     return this.adminService.getObservability();
+  }
+
+  @Get('audit-logs')
+  listAuditLogs(@Query() query: AdminAuditQueryDto) {
+    return this.adminAuditService.list(query);
   }
 
   @Get('queues')

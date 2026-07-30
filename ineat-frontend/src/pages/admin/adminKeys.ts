@@ -7,4 +7,5 @@ export const adminKeys = {
 	promotions: ['admin', 'promotions'] as const,
 	premiumUsers: ['admin', 'users', 'premium-subscriptions'] as const,
 	queues: ['admin', 'queues'] as const,
+	audit: (query?: unknown) => ['admin', 'audit', query] as const,
 };
