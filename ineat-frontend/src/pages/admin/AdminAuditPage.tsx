@@ -33,6 +33,7 @@ export default function AdminAuditPage() {
 		pageSize: 25,
 		order: 'desc',
 	});
+	const [draft, setDraft] = useState<AdminAuditQuery>({ order: 'desc' });
 	const [selectedLog, setSelectedLog] = useState<AdminAuditLog | null>(null);
 	const auditQuery = useQuery({
 		queryKey: adminKeys.audit(query),
@@ -41,6 +42,12 @@ export default function AdminAuditPage() {
 	});
 	const updateQuery = (values: Partial<AdminAuditQuery>) =>
 		setQuery((current) => ({ ...current, ...values }));
+	const applyFilters = () =>
+		setQuery({ ...draft, page: 1, pageSize: query.pageSize ?? 25 });
+	const resetFilters = () => {
+		setDraft({ order: 'desc' });
+		setQuery({ page: 1, pageSize: query.pageSize ?? 25, order: 'desc' });
+	};
 	const data = auditQuery.data;
 	const logs = data?.items ?? [];
 	return (
@@ -66,46 +73,46 @@ export default function AdminAuditPage() {
 						<Search className='pointer-events-none absolute left-3 top-3 size-4 text-neutral-400' />
 						<Input
 							className='pl-9'
-							value={query.action ?? ''}
+							value={draft.action ?? ''}
 							onChange={(event) =>
-								updateQuery({
-									page: 1,
+								setDraft((current) => ({
+									...current,
 									action: event.target.value || undefined,
-								})
+								}))
 							}
 							placeholder='Action exacte'
 						/>
 					</label>
 					<Input
 						aria-label='Type de ressource'
-						value={query.resourceType ?? ''}
+						value={draft.resourceType ?? ''}
 						onChange={(event) =>
-							updateQuery({
-								page: 1,
+							setDraft((current) => ({
+								...current,
 								resourceType: event.target.value || undefined,
-							})
+							}))
 						}
 						placeholder='Type de ressource'
 					/>
 					<Input
 						aria-label='Identifiant de ressource'
-						value={query.resourceId ?? ''}
+						value={draft.resourceId ?? ''}
 						onChange={(event) =>
-							updateQuery({
-								page: 1,
+							setDraft((current) => ({
+								...current,
 								resourceId: event.target.value || undefined,
-							})
+							}))
 						}
 						placeholder='Identifiant de ressource'
 					/>
 					<Input
 						aria-label='Identifiant administrateur'
-						value={query.adminUserId ?? ''}
+						value={draft.adminUserId ?? ''}
 						onChange={(event) =>
-							updateQuery({
-								page: 1,
+							setDraft((current) => ({
+								...current,
 								adminUserId: event.target.value || undefined,
-							})
+							}))
 						}
 						placeholder='UUID administrateur'
 					/>
@@ -114,12 +121,12 @@ export default function AdminAuditPage() {
 						<Input
 							type='datetime-local'
 							onChange={(event) =>
-								updateQuery({
-									page: 1,
+								setDraft((current) => ({
+									...current,
 									from: event.target.value
 										? new Date(event.target.value).toISOString()
 										: undefined,
-								})
+								}))
 							}
 						/>
 					</label>
@@ -128,12 +135,12 @@ export default function AdminAuditPage() {
 						<Input
 							type='datetime-local'
 							onChange={(event) =>
-								updateQuery({
-									page: 1,
+								setDraft((current) => ({
+									...current,
 									to: event.target.value
 										? new Date(event.target.value).toISOString()
 										: undefined,
-								})
+								}))
 							}
 						/>
 					</label>
@@ -141,18 +148,24 @@ export default function AdminAuditPage() {
 						Ordre
 						<select
 							className='h-9 w-full rounded-md border bg-white px-3 text-sm'
-							value={query.order}
+							value={draft.order}
 							onChange={(event) =>
-								updateQuery({
-									page: 1,
+								setDraft((current) => ({
+									...current,
 									order: event.target.value as 'asc' | 'desc',
-								})
+								}))
 							}
 						>
 							<option value='desc'>Plus récent</option>
 							<option value='asc'>Plus ancien</option>
 						</select>
 					</label>
+					<div className='flex items-end gap-2'>
+						<Button onClick={applyFilters}>Appliquer</Button>
+						<Button variant='outline' onClick={resetFilters}>
+							Réinitialiser
+						</Button>
+					</div>
 				</CardContent>
 			</Card>
 
@@ -161,6 +174,17 @@ export default function AdminAuditPage() {
 					<CardContent className='p-0'>
 						{auditQuery.isLoading ? (
 							<p className='p-6 text-sm'>Chargement…</p>
+						) : auditQuery.isError ? (
+							<div className='space-y-3 p-6 text-sm text-error-700'>
+								<p>Impossible de charger le journal d’audit.</p>
+								<Button
+									variant='outline'
+									size='sm'
+									onClick={() => auditQuery.refetch()}
+								>
+									Réessayer
+								</Button>
+							</div>
 						) : logs.length === 0 ? (
 							<p className='p-6 text-sm text-neutral-600'>Aucune entrée.</p>
 						) : (

@@ -366,6 +366,21 @@ export default function AdminSubscriptionsPage() {
 				<CardContent className='p-0'>
 					{promotionsQuery.isLoading ? (
 						<p className='p-6 text-sm'>Chargement…</p>
+					) : promotionsQuery.isError ? (
+						<div className='space-y-3 p-6 text-sm text-error-700'>
+							<p>Impossible de charger les promotions Stripe.</p>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() => promotionsQuery.refetch()}
+							>
+								Réessayer
+							</Button>
+						</div>
+					) : promotions.length === 0 ? (
+						<p className='p-6 text-sm text-neutral-600'>
+							Aucun code promotionnel.
+						</p>
 					) : (
 						<Table>
 							<TableHeader>
@@ -430,67 +445,88 @@ export default function AdminSubscriptionsPage() {
 					<CardTitle>Abonnements Premium</CardTitle>
 				</CardHeader>
 				<CardContent className='p-0'>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Utilisateur</TableHead>
-								<TableHead>Échéance</TableHead>
-								<TableHead>État Stripe</TableHead>
-								<TableHead />
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{subscribers.map((user) => (
-								<TableRow key={user.id}>
-									<TableCell>
-										<p className='font-medium'>
-											{user.firstName} {user.lastName}
-										</p>
-										<p className='text-xs text-neutral-500'>{user.email}</p>
-									</TableCell>
-									<TableCell>{formatDate(user.currentPeriodEndsAt)}</TableCell>
-									<TableCell>
-										{user.stripeSubscriptionId ? (
-											<Badge variant='outline'>
-												{user.cancelAtPeriodEnd
-													? 'Annulation programmée'
-													: 'Actif'}
-											</Badge>
-										) : (
-											<span className='text-xs text-neutral-500'>
-												Non associé
-											</span>
-										)}
-									</TableCell>
-									<TableCell>
-										{user.stripeSubscriptionId && (
-											<Button
-												variant='outline'
-												size='sm'
-												onClick={() =>
-													setSubscriptionAction({
-														user,
-														cancelAtPeriodEnd: !user.cancelAtPeriodEnd,
-													})
-												}
-											>
-												{user.cancelAtPeriodEnd ? (
-													<>
-														<RotateCcw className='size-4' /> Retirer
-														l’annulation
-													</>
-												) : (
-													<>
-														<Ban className='size-4' /> Annuler à l’échéance
-													</>
-												)}
-											</Button>
-										)}
-									</TableCell>
+					{subscribersQuery.isLoading ? (
+						<p className='p-6 text-sm'>Chargement…</p>
+					) : subscribersQuery.isError ? (
+						<div className='space-y-3 p-6 text-sm text-error-700'>
+							<p>Impossible de charger les abonnements.</p>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() => subscribersQuery.refetch()}
+							>
+								Réessayer
+							</Button>
+						</div>
+					) : subscribers.length === 0 ? (
+						<p className='p-6 text-sm text-neutral-600'>
+							Aucun abonnement Premium.
+						</p>
+					) : (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Utilisateur</TableHead>
+									<TableHead>Échéance</TableHead>
+									<TableHead>État Stripe</TableHead>
+									<TableHead />
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
+							</TableHeader>
+							<TableBody>
+								{subscribers.map((user) => (
+									<TableRow key={user.id}>
+										<TableCell>
+											<p className='font-medium'>
+												{user.firstName} {user.lastName}
+											</p>
+											<p className='text-xs text-neutral-500'>{user.email}</p>
+										</TableCell>
+										<TableCell>
+											{formatDate(user.currentPeriodEndsAt)}
+										</TableCell>
+										<TableCell>
+											{user.stripeSubscriptionId ? (
+												<Badge variant='outline'>
+													{user.cancelAtPeriodEnd
+														? 'Annulation programmée'
+														: 'Actif'}
+												</Badge>
+											) : (
+												<span className='text-xs text-neutral-500'>
+													Non associé
+												</span>
+											)}
+										</TableCell>
+										<TableCell>
+											{user.stripeSubscriptionId && (
+												<Button
+													variant='outline'
+													size='sm'
+													onClick={() =>
+														setSubscriptionAction({
+															user,
+															cancelAtPeriodEnd: !user.cancelAtPeriodEnd,
+														})
+													}
+												>
+													{user.cancelAtPeriodEnd ? (
+														<>
+															<RotateCcw className='size-4' /> Retirer
+															l’annulation
+														</>
+													) : (
+														<>
+															<Ban className='size-4' /> Annuler à l’échéance
+														</>
+													)}
+												</Button>
+											)}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					)}
 				</CardContent>
 			</Card>
 

@@ -67,6 +67,7 @@ describe('AdminAuditPage', () => {
 		await screen.findByText('STRIPE_PROMOTION_CODE_CREATED');
 
 		await user.type(screen.getByPlaceholderText('Type de ressource'), 'USER');
+		await user.click(screen.getByRole('button', { name: 'Appliquer' }));
 
 		await waitFor(() =>
 			expect(adminService.listAuditLogs).toHaveBeenLastCalledWith(

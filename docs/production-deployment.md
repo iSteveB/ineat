@@ -86,6 +86,33 @@ Le backend execute `prisma migrate deploy` au demarrage via `pnpm run deploy:sta
 puis lance l'API NestJS en production. Les migrations doivent donc etre commitees
 avant tout deploiement.
 
+### Déploiement du dashboard administrateur
+
+Le déploiement doit appliquer les migrations avant de démarrer l'API. La
+migration `20260730110000_add_usage_event` est additive, mais le backend écrit
+un `UsageEvent` dans la même transaction que chaque consommation de quota : un
+backend à jour ne doit donc jamais démarrer sur une base non migrée.
+
+Avant d'activer les commandes Stripe en production :
+
+1. vérifier `STRIPE_ENABLED=true` et toutes les variables Stripe requises ;
+2. confirmer que les produits et prix appartiennent au même compte Stripe que
+   `STRIPE_SECRET_KEY` ;
+3. créer puis désactiver un code promotionnel de test depuis le dashboard ;
+4. vérifier que Checkout affiche le champ de code promotionnel ;
+5. programmer puis retirer l'annulation d'un abonnement de test ;
+6. vérifier les entrées correspondantes dans le journal d'audit.
+
+Les statuts Premium ne doivent jamais être corrigés directement dans
+PostgreSQL. Toute divergence doit être résolue depuis Stripe puis synchronisée
+par webhook. L'ancien endpoint `PATCH /admin/users/:id/subscription-plan` a été
+supprimé et doit répondre `404`.
+
+En rollback applicatif, les tables `AdminAuditLog` et `UsageEvent` peuvent être
+conservées : leurs migrations sont additives. Ne pas supprimer les événements
+d'usage collectés. Un rollback ne doit pas réintroduire la mutation directe des
+plans utilisateur.
+
 ## Variables Production
 
 Backend:
