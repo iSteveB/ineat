@@ -9,6 +9,8 @@ import { AdminService } from './admin.service';
 import { QueueMonitoringService } from '../jobs/queue-monitoring.service';
 import { AdminAuditService } from './admin-audit.service';
 import { BadRequestException } from '@nestjs/common';
+import { AccessPolicyService } from '../auth/services/access-policy.service';
+import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -44,6 +46,12 @@ describe('AdminService', () => {
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     updatedAt: new Date('2026-01-02T00:00:00.000Z'),
     UsageQuota: [],
+    sessions: [],
+    _count: {
+      InventoryItem: 0,
+      Invoice: 0,
+      Recipe: 0,
+    },
   };
 
   beforeEach(async () => {
@@ -54,7 +62,9 @@ describe('AdminService', () => {
       update: jest.fn(),
     };
     prisma = {
-      $transaction: jest.fn((callback) => callback({ user })),
+      $transaction: jest.fn((input) =>
+        typeof input === 'function' ? input({ user }) : Promise.all(input),
+      ),
       user,
     };
     adminAuditService = { record: jest.fn().mockResolvedValue(undefined) };
@@ -86,6 +96,12 @@ describe('AdminService', () => {
         {
           provide: AdminAuditService,
           useValue: adminAuditService,
+        },
+        {
+          provide: AccessPolicyService,
+          useValue: {
+            getEffectivePlan: jest.fn().mockReturnValue('FREE'),
+          },
         },
       ],
     }).compile();
@@ -124,6 +140,54 @@ describe('AdminService', () => {
         reason: 'Support utilisateur',
       }),
       expect.any(Object),
+    );
+  });
+
+  it('pagine et filtre la liste des utilisateurs côté serveur', async () => {
+    prisma.user.findMany.mockResolvedValue([baseUser]);
+    prisma.user.count.mockResolvedValue(26);
+    const query = Object.assign(new AdminUsersQueryDto(), {
+      page: 2,
+      pageSize: 10,
+      search: ' ada ',
+      role: UserRole.USER,
+      sort: 'email' as const,
+      order: 'asc' as const,
+    });
+
+    const result = await service.listUsers(query);
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skip: 10,
+        take: 10,
+        orderBy: { email: 'asc' },
+        where: expect.objectContaining({
+          role: UserRole.USER,
+          OR: expect.arrayContaining([
+            { email: { contains: 'ada', mode: 'insensitive' } },
+          ]),
+        }),
+        include: expect.objectContaining({
+          sessions: expect.objectContaining({
+            take: 1,
+            select: { updatedAt: true },
+          }),
+        }),
+      }),
+    );
+    expect(result.data.pagination).toEqual({
+      page: 2,
+      pageSize: 10,
+      totalItems: 26,
+      totalPages: 3,
+    });
+    expect(result.data.items[0]).toEqual(
+      expect.objectContaining({
+        id: baseUser.id,
+        effectivePlan: 'FREE',
+        counts: { inventoryItems: 0, invoices: 0, recipes: 0 },
+      }),
     );
   });
 

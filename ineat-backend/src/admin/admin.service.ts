@@ -16,9 +16,30 @@ import {
   AdminActorContext,
   AdminAuditService,
 } from './admin-audit.service';
+import { AccessPolicyService } from '../auth/services/access-policy.service';
+import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
+
+const adminUserInclude = {
+  UsageQuota: {
+    orderBy: { periodEnd: 'desc' as const },
+    take: 4,
+  },
+  sessions: {
+    orderBy: { updatedAt: 'desc' as const },
+    take: 1,
+    select: { updatedAt: true },
+  },
+  _count: {
+    select: {
+      InventoryItem: true,
+      Invoice: true,
+      Recipe: true,
+    },
+  },
+} satisfies Prisma.UserInclude;
 
 type AdminUserWithUsage = Prisma.UserGetPayload<{
-  include: { UsageQuota: true };
+  include: typeof adminUserInclude;
 }>;
 
 @Injectable()
@@ -28,6 +49,7 @@ export class AdminService {
     private observabilityService: ObservabilityService,
     private queueMonitoringService: QueueMonitoringService,
     private adminAuditService: AdminAuditService,
+    private accessPolicyService: AccessPolicyService,
   ) {}
 
   async getDashboard() {
@@ -74,20 +96,50 @@ export class AdminService {
     };
   }
 
-  async listUsers() {
-    const users = await this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        UsageQuota: {
-          orderBy: { periodEnd: 'desc' },
-          take: 4,
-        },
-      },
-    });
+  async listUsers(query: AdminUsersQueryDto) {
+    const page = query.page ?? 1;
+    const pageSize = query.pageSize ?? 25;
+    const search = query.search?.trim();
+    const where: Prisma.UserWhereInput = {
+      role: query.role,
+      subscriptionPlan: query.plan,
+      subscriptionStatus: query.status,
+      ...(search
+        ? {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' } },
+              { firstName: { contains: search, mode: 'insensitive' } },
+              { lastName: { contains: search, mode: 'insensitive' } },
+              {
+                name: { contains: search, mode: 'insensitive' },
+              },
+            ],
+          }
+        : {}),
+    };
+    const [users, totalItems] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        where,
+        orderBy: { [query.sort ?? 'createdAt']: query.order ?? 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: adminUserInclude,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+    const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
     return {
       success: true,
-      data: users.map((user) => this.toAdminUser(user)),
+      data: {
+        items: users.map((user) => this.toAdminUser(user)),
+        pagination: {
+          page,
+          pageSize,
+          totalItems,
+          totalPages,
+        },
+      },
     };
   }
 
@@ -139,12 +191,7 @@ export class AdminService {
       const updatedUser = await transaction.user.update({
         where: { id },
         data: { role },
-        include: {
-          UsageQuota: {
-            orderBy: { periodEnd: 'desc' },
-            take: 4,
-          },
-        },
+        include: adminUserInclude,
       });
       await this.adminAuditService.record(
         {
@@ -187,12 +234,7 @@ export class AdminService {
       const updatedUser = await transaction.user.update({
         where: { id },
         data: { subscriptionPlan },
-        include: {
-          UsageQuota: {
-            orderBy: { periodEnd: 'desc' },
-            take: 4,
-          },
-        },
+        include: adminUserInclude,
       });
       await this.adminAuditService.record(
         {
@@ -262,12 +304,7 @@ export class AdminService {
   private findUserWithUsage(id: string) {
     return this.prisma.user.findUnique({
       where: { id },
-      include: {
-        UsageQuota: {
-          orderBy: { periodEnd: 'desc' },
-          take: 4,
-        },
-      },
+      include: adminUserInclude,
     });
   }
 
@@ -287,6 +324,14 @@ export class AdminService {
       currentPeriodEndsAt: user.currentPeriodEndsAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
+      lastActiveAt:
+        user.sessions[0]?.updatedAt.toISOString() ?? user.createdAt.toISOString(),
+      effectivePlan: this.accessPolicyService.getEffectivePlan(user),
+      counts: {
+        inventoryItems: user._count.InventoryItem,
+        invoices: user._count.Invoice,
+        recipes: user._count.Recipe,
+      },
       quotas: user.UsageQuota.map((quota) => ({
         id: quota.id,
         usageType: quota.usageType as UsageType,

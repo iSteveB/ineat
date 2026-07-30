@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import AdminUsersPage from '@/pages/admin/AdminUsersPage';
+import AdminUserDetailPage from '@/pages/admin/AdminUserDetailPage';
 import { adminUserSearchSchema } from '@/pages/admin/adminUserSearch';
 
-export const Route = createFileRoute('/app/admin/users/')({
-	component: AdminUsersPage,
+export const Route = createFileRoute('/app/admin/users/$userId')({
+	component: AdminUserDetailPage,
 	validateSearch: adminUserSearchSchema,
 });

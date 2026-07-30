@@ -8,10 +8,19 @@ import AdminUsersPage from './AdminUsersPage';
 import { adminService } from '@/services/adminService';
 import { useAuthStore } from '@/stores/authStore';
 
+const { navigateMock } = vi.hoisted(() => ({ navigateMock: vi.fn() }));
+
 vi.mock('@tanstack/react-router', () => ({
 	Link: ({ children, to }: { children: ReactNode; to: string }) => (
 		<a href={to}>{children}</a>
 	),
+	useNavigate: () => navigateMock,
+	useSearch: () => ({
+		page: 1,
+		pageSize: 25,
+		sort: 'createdAt',
+		order: 'desc',
+	}),
 }));
 
 vi.mock('@/stores/authStore', () => ({
@@ -24,6 +33,7 @@ vi.mock('@/services/adminService', () => ({
 		listUsers: vi.fn(),
 		updateUserRole: vi.fn(),
 		updateSubscriptionPlan: vi.fn(),
+		getUser: vi.fn(),
 	},
 }));
 
@@ -41,6 +51,9 @@ const adminUser = {
 	currentPeriodEndsAt: null,
 	createdAt: '2026-01-01T00:00:00.000Z',
 	updatedAt: '2026-01-01T00:00:00.000Z',
+	lastActiveAt: '2026-01-02T00:00:00.000Z',
+	effectivePlan: 'FREE' as const,
+	counts: { inventoryItems: 2, invoices: 1, recipes: 0 },
 	quotas: [],
 };
 
@@ -72,9 +85,10 @@ describe('AdminUsersPage', () => {
 			},
 			observability: {},
 		});
-		(adminService.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue([
-			adminUser,
-		]);
+		(adminService.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue({
+			items: [adminUser],
+			pagination: { page: 1, pageSize: 25, totalItems: 1, totalPages: 1 },
+		});
 		(adminService.updateUserRole as ReturnType<typeof vi.fn>).mockResolvedValue({
 			...adminUser,
 			role: 'ADMIN',
@@ -85,7 +99,7 @@ describe('AdminUsersPage', () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		const roleSelect = await screen.findByLabelText('Rôle');
+		const roleSelect = await screen.findByLabelText(`Rôle de ${adminUser.email}`);
 		await user.selectOptions(roleSelect, 'ADMIN');
 
 		expect(screen.getByText('Confirmer la modification')).toBeInTheDocument();
@@ -107,5 +121,37 @@ describe('AdminUsersPage', () => {
 				'Accès support nécessaire'
 			);
 		});
+	});
+
+	it('charge la page depuis l’URL et conserve les filtres en paginant', async () => {
+		const user = userEvent.setup();
+		(adminService.listUsers as ReturnType<typeof vi.fn>).mockResolvedValue({
+			items: [adminUser],
+			pagination: { page: 1, pageSize: 25, totalItems: 30, totalPages: 2 },
+		});
+
+		renderPage();
+
+		await screen.findByText('Ada Lovelace');
+		expect(adminService.listUsers).toHaveBeenCalledWith({
+			page: 1,
+			pageSize: 25,
+			sort: 'createdAt',
+			order: 'desc',
+		});
+		await user.selectOptions(screen.getByLabelText('Plan'), 'PREMIUM');
+		expect(navigateMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				to: '/app/admin/users',
+				search: expect.objectContaining({ page: 1, plan: 'PREMIUM' }),
+			})
+		);
+
+		await user.click(screen.getByRole('button', { name: /Suivant/ }));
+		expect(navigateMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				search: expect.objectContaining({ page: 2 }),
+			})
+		);
 	});
 });

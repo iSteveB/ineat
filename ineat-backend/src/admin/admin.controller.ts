@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   ParseUUIDPipe,
   Req,
   UseGuards,
@@ -21,6 +22,7 @@ import {
   UpdateSubscriptionPlanDto,
 } from './dto/admin-mutation.dto';
 import type { AdminActorContext } from './admin-audit.service';
+import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 
 type AdminRequest = Request & {
   user: {
@@ -68,8 +70,8 @@ export class AdminController {
   }
 
   @Get('users')
-  listUsers() {
-    return this.adminService.listUsers();
+  listUsers(@Query() query: AdminUsersQueryDto) {
+    return this.adminService.listUsers(query);
   }
 
   @Get('users/:id')

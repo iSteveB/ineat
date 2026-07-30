@@ -30,7 +30,35 @@ export type AdminUser = {
 	currentPeriodEndsAt: string | null;
 	createdAt: string;
 	updatedAt: string;
+	lastActiveAt: string;
+	effectivePlan: 'FREE' | 'PREMIUM';
+	counts: {
+		inventoryItems: number;
+		invoices: number;
+		recipes: number;
+	};
 	quotas: AdminQuota[];
+};
+
+export type AdminUsersQuery = {
+	page?: number;
+	pageSize?: 10 | 25 | 50;
+	search?: string;
+	role?: UserRole;
+	plan?: SubscriptionPlan;
+	status?: AdminUser['subscriptionStatus'];
+	sort?: 'createdAt' | 'email' | 'lastName';
+	order?: 'asc' | 'desc';
+};
+
+export type AdminUsersPage = {
+	items: AdminUser[];
+	pagination: {
+		page: number;
+		pageSize: number;
+		totalItems: number;
+		totalPages: number;
+	};
 };
 
 export type AdminDashboard = {
@@ -58,11 +86,23 @@ export const adminService = {
 		return response.data;
 	},
 
-	async listUsers() {
+	async listUsers(query: AdminUsersQuery = {}) {
+		const params = new URLSearchParams();
+		Object.entries(query).forEach(([key, value]) => {
+			if (value !== undefined && value !== '') params.set(key, String(value));
+		});
+		const suffix = params.size > 0 ? `?${params.toString()}` : '';
 		const response =
-			await apiClient.get<ApiSuccessResponse<AdminUser[]>>(
-				'/admin/users'
+			await apiClient.get<ApiSuccessResponse<AdminUsersPage>>(
+				`/admin/users${suffix}`
 			);
+		return response.data;
+	},
+
+	async getUser(userId: string) {
+		const response = await apiClient.get<ApiSuccessResponse<AdminUser>>(
+			`/admin/users/${userId}`
+		);
 		return response.data;
 	},
 

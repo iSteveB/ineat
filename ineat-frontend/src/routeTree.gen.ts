@@ -46,6 +46,7 @@ import { Route as AppInventoryAddSearchRouteImport } from './routes/app/inventor
 import { Route as AppInventoryAddScanRouteImport } from './routes/app/inventory/add/scan'
 import { Route as AppInventoryAddManualRouteImport } from './routes/app/inventory/add/manual'
 import { Route as AppInventoryAddDriveRouteImport } from './routes/app/inventory/add/drive'
+import { Route as AppAdminUsersUserIdRouteImport } from './routes/app/admin/users/$userId'
 
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/app',
@@ -236,6 +237,11 @@ const AppInventoryAddDriveRoute = AppInventoryAddDriveRouteImport.update({
   path: '/inventory/add/drive',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppAdminUsersUserIdRoute = AppAdminUsersUserIdRouteImport.update({
+  id: '/users/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/app/recipes': typeof AppRecipesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
   '/app/subscription': typeof AppSubscriptionIndexRoute
+  '/app/admin/users/$userId': typeof AppAdminUsersUserIdRoute
   '/app/inventory/add/drive': typeof AppInventoryAddDriveRoute
   '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
@@ -297,6 +304,7 @@ export interface FileRoutesByTo {
   '/app/recipes': typeof AppRecipesIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
   '/app/subscription': typeof AppSubscriptionIndexRoute
+  '/app/admin/users/$userId': typeof AppAdminUsersUserIdRoute
   '/app/inventory/add/drive': typeof AppInventoryAddDriveRoute
   '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
@@ -337,6 +345,7 @@ export interface FileRoutesById {
   '/app/recipes/': typeof AppRecipesIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
   '/app/subscription/': typeof AppSubscriptionIndexRoute
+  '/app/admin/users/$userId': typeof AppAdminUsersUserIdRoute
   '/app/inventory/add/drive': typeof AppInventoryAddDriveRoute
   '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
@@ -377,6 +386,7 @@ export interface FileRouteTypes {
     | '/app/recipes'
     | '/app/settings'
     | '/app/subscription'
+    | '/app/admin/users/$userId'
     | '/app/inventory/add/drive'
     | '/app/inventory/add/manual'
     | '/app/inventory/add/scan'
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/app/recipes'
     | '/app/settings'
     | '/app/subscription'
+    | '/app/admin/users/$userId'
     | '/app/inventory/add/drive'
     | '/app/inventory/add/manual'
     | '/app/inventory/add/scan'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/app/recipes/'
     | '/app/settings/'
     | '/app/subscription/'
+    | '/app/admin/users/$userId'
     | '/app/inventory/add/drive'
     | '/app/inventory/add/manual'
     | '/app/inventory/add/scan'
@@ -734,6 +746,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryAddDriveRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/admin/users/$userId': {
+      id: '/app/admin/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/app/admin/users/$userId'
+      preLoaderRoute: typeof AppAdminUsersUserIdRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
   }
 }
 
@@ -761,6 +780,7 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
 
 interface AppAdminRouteRouteChildren {
   AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminUsersUserIdRoute: typeof AppAdminUsersUserIdRoute
   AppAdminAuditIndexRoute: typeof AppAdminAuditIndexRoute
   AppAdminOperationsIndexRoute: typeof AppAdminOperationsIndexRoute
   AppAdminSubscriptionsIndexRoute: typeof AppAdminSubscriptionsIndexRoute
@@ -769,6 +789,7 @@ interface AppAdminRouteRouteChildren {
 
 const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
   AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminUsersUserIdRoute: AppAdminUsersUserIdRoute,
   AppAdminAuditIndexRoute: AppAdminAuditIndexRoute,
   AppAdminOperationsIndexRoute: AppAdminOperationsIndexRoute,
   AppAdminSubscriptionsIndexRoute: AppAdminSubscriptionsIndexRoute,

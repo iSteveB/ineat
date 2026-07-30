@@ -37,7 +37,11 @@ export default function AdminLayout() {
 
 	if (!canAccessAdmin) return <AdminAccessDenied />;
 
-	const pageLabel = pageLabels[location.pathname] ?? 'Administration';
+	const pageLabel =
+		pageLabels[location.pathname] ??
+		(location.pathname.startsWith('/app/admin/users/')
+			? 'Détail utilisateur'
+			: 'Administration');
 	return (
 		<div className='mx-auto grid w-full max-w-7xl gap-6 p-4 pb-28 lg:grid-cols-[15rem_minmax(0,1fr)] lg:p-6'>
 		<aside className='lg:sticky lg:top-4 lg:self-start'>
