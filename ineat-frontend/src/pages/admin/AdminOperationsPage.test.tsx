@@ -7,7 +7,12 @@ import { adminService } from '@/services/adminService';
 import AdminOperationsPage from './AdminOperationsPage';
 
 vi.mock('@/services/adminService', () => ({
-	adminService: { getQueues: vi.fn(), retryQueueJob: vi.fn() },
+	adminService: {
+		getQueues: vi.fn(),
+		listQueueJobs: vi.fn(),
+		listIncidents: vi.fn(),
+		retryQueueJob: vi.fn(),
+	},
 }));
 
 const snapshot = {
@@ -68,6 +73,26 @@ describe('AdminOperationsPage', () => {
 		(adminService.retryQueueJob as ReturnType<typeof vi.fn>).mockResolvedValue({
 			state: 'waiting',
 		});
+		(adminService.listQueueJobs as ReturnType<typeof vi.fn>).mockResolvedValue({
+			queueName: 'notification-delivery',
+			state: 'failed',
+			items: [],
+			pagination: { page: 1, pageSize: 25, totalItems: 0, totalPages: 1 },
+		});
+		(adminService.listIncidents as ReturnType<typeof vi.fn>).mockResolvedValue({
+			type: 'INVOICE',
+			items: [
+				{
+					id: 'invoice-1',
+					category: 'Analyse de facture',
+					status: 'FAILED',
+					subtype: 'OPENAI',
+					error: 'Document illisible',
+					occurredAt: '2026-07-30T17:58:00.000Z',
+				},
+			],
+			pagination: { page: 1, pageSize: 25, totalItems: 1, totalPages: 1 },
+		});
 	});
 
 	it('affiche la santé et les métadonnées sûres des jobs', async () => {
@@ -105,5 +130,13 @@ describe('AdminOperationsPage', () => {
 				'Incident résolu'
 			)
 		);
+	});
+
+	it('affiche les incidents applicatifs sans donnée métier brute', async () => {
+		renderPage();
+
+		expect(await screen.findByText('Document illisible')).toBeInTheDocument();
+		expect(screen.getByText('Analyse de facture')).toBeInTheDocument();
+		expect(adminService.listIncidents).toHaveBeenCalledWith('INVOICE', 1, 25);
 	});
 });

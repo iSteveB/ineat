@@ -7,5 +7,9 @@ export const adminKeys = {
 	promotions: ['admin', 'promotions'] as const,
 	premiumUsers: ['admin', 'users', 'premium-subscriptions'] as const,
 	queues: ['admin', 'queues'] as const,
+	queueJobs: (queueName: string, state: string, page: number) =>
+		['admin', 'queues', queueName, state, page] as const,
+	incidents: (type: string, page: number) =>
+		['admin', 'incidents', type, page] as const,
 	audit: (query?: unknown) => ['admin', 'audit', query] as const,
 };

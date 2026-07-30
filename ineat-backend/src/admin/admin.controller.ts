@@ -29,6 +29,11 @@ import {
   CreatePromotionCodeDto,
 } from './dto/admin-billing.dto';
 import { AdminAuditQueryDto } from './dto/admin-audit-query.dto';
+import {
+  AdminIncidentsQueryDto,
+  AdminQueueJobsQueryDto,
+} from './dto/admin-operations-query.dto';
+import { AdminOperationsService } from './admin-operations.service';
 
 type AdminRequest = Request & {
   user: {
@@ -47,6 +52,7 @@ export class AdminController {
     private readonly adminService: AdminService,
     private readonly adminBillingService: AdminBillingService,
     private readonly adminAuditService: AdminAuditService,
+    private readonly adminOperationsService: AdminOperationsService,
   ) {}
 
   @Get('dashboard')
@@ -67,6 +73,22 @@ export class AdminController {
   @Get('queues')
   getQueues() {
     return this.adminService.getQueues();
+  }
+
+  @Get('queues/:queueName/jobs')
+  async listQueueJobs(
+    @Param('queueName') queueName: string,
+    @Query() query: AdminQueueJobsQueryDto,
+  ) {
+    return {
+      success: true,
+      data: await this.adminService.listQueueJobs(queueName, query),
+    };
+  }
+
+  @Get('incidents')
+  listIncidents(@Query() query: AdminIncidentsQueryDto) {
+    return this.adminOperationsService.listIncidents(query);
   }
 
   @Post('queues/:queueName/jobs/:jobId/retry')

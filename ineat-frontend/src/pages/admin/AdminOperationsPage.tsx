@@ -26,7 +26,11 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { adminKeys } from '@/pages/admin/adminKeys';
-import { adminService } from '@/services/adminService';
+import {
+	adminService,
+	type AdminIncidentType,
+	type AdminQueueJobState,
+} from '@/services/adminService';
 
 type FailedJob = {
 	queueName: string;
@@ -54,10 +58,27 @@ export default function AdminOperationsPage() {
 	const queryClient = useQueryClient();
 	const [jobToRetry, setJobToRetry] = useState<FailedJob | null>(null);
 	const [reason, setReason] = useState('');
+	const [queueName, setQueueName] = useState('');
+	const [jobState, setJobState] = useState<AdminQueueJobState>('failed');
+	const [jobsPage, setJobsPage] = useState(1);
+	const [incidentType, setIncidentType] =
+		useState<AdminIncidentType>('INVOICE');
+	const [incidentsPage, setIncidentsPage] = useState(1);
 	const queuesQuery = useQuery({
 		queryKey: adminKeys.queues,
 		queryFn: adminService.getQueues,
 		refetchInterval: 15_000,
+	});
+	const selectedQueue = queueName || queuesQuery.data?.queues[0]?.name || '';
+	const jobsQuery = useQuery({
+		queryKey: adminKeys.queueJobs(selectedQueue, jobState, jobsPage),
+		queryFn: () =>
+			adminService.listQueueJobs(selectedQueue, jobState, jobsPage, 25),
+		enabled: Boolean(selectedQueue),
+	});
+	const incidentsQuery = useQuery({
+		queryKey: adminKeys.incidents(incidentType, incidentsPage),
+		queryFn: () => adminService.listIncidents(incidentType, incidentsPage, 25),
 	});
 	const retryMutation = useMutation({
 		mutationFn: ({
@@ -69,6 +90,9 @@ export default function AdminOperationsPage() {
 		}) => adminService.retryQueueJob(job.queueName, job.id, justification),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: adminKeys.queues });
+			queryClient.invalidateQueries({
+				queryKey: ['admin', 'queues', selectedQueue],
+			});
 			closeDialog();
 			toast.success('Job replacé dans la file');
 		},
@@ -189,6 +213,175 @@ export default function AdminOperationsPage() {
 
 			<Card>
 				<CardHeader>
+					<CardTitle>Explorateur de jobs</CardTitle>
+				</CardHeader>
+				<CardContent className='space-y-4'>
+					<div className='flex flex-wrap gap-3'>
+						<label className='space-y-1 text-sm font-medium'>
+							File
+							<select
+								aria-label='File'
+								className='block h-10 rounded-md border border-neutral-300 bg-white px-3'
+								value={selectedQueue}
+								onChange={(event) => {
+									setQueueName(event.target.value);
+									setJobsPage(1);
+								}}
+							>
+								{snapshot.queues.map((queue) => (
+									<option key={queue.name} value={queue.name}>
+										{queue.name}
+									</option>
+								))}
+							</select>
+						</label>
+						<label className='space-y-1 text-sm font-medium'>
+							État
+							<select
+								aria-label='État du job'
+								className='block h-10 rounded-md border border-neutral-300 bg-white px-3'
+								value={jobState}
+								onChange={(event) => {
+									setJobState(event.target.value as AdminQueueJobState);
+									setJobsPage(1);
+								}}
+							>
+								<option value='waiting'>En attente</option>
+								<option value='active'>Actifs</option>
+								<option value='failed'>En échec</option>
+							</select>
+						</label>
+					</div>
+					<PagedStatus
+						loading={jobsQuery.isLoading}
+						error={jobsQuery.isError}
+						empty={!jobsQuery.data?.items.length}
+					/>
+					{jobsQuery.data?.items.length ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Job</TableHead>
+									<TableHead>État / erreur</TableHead>
+									<TableHead>Tentatives</TableHead>
+									<TableHead>Date</TableHead>
+									<TableHead />
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{jobsQuery.data.items.map((job) => (
+									<TableRow key={job.id}>
+										<TableCell>
+											<p className='font-medium'>{job.name}</p>
+											<p className='font-mono text-xs text-neutral-500'>
+												{job.id}
+											</p>
+										</TableCell>
+										<TableCell>{job.failedReason || job.state}</TableCell>
+										<TableCell>{job.attemptsMade}</TableCell>
+										<TableCell>
+											{formatDate(
+												job.finishedAt || job.processedAt || job.createdAt
+											)}
+										</TableCell>
+										<TableCell>
+											{job.state === 'failed' && (
+												<Button
+													variant='outline'
+													size='sm'
+													onClick={() =>
+														setJobToRetry({
+															queueName: selectedQueue,
+															id: job.id,
+															name: job.name,
+															attemptsMade: job.attemptsMade,
+															failedReason:
+																job.failedReason || 'Erreur non renseignée',
+															failedAt: job.finishedAt || job.createdAt,
+														})
+													}
+												>
+													<RefreshCw className='size-4' /> Relancer
+												</Button>
+											)}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					) : null}
+					<Pagination
+						page={jobsQuery.data?.pagination.page || jobsPage}
+						totalPages={jobsQuery.data?.pagination.totalPages || 1}
+						onChange={setJobsPage}
+					/>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Incidents applicatifs</CardTitle>
+				</CardHeader>
+				<CardContent className='space-y-4'>
+					<label className='space-y-1 text-sm font-medium'>
+						Source
+						<select
+							aria-label="Type d'incident"
+							className='block h-10 rounded-md border border-neutral-300 bg-white px-3'
+							value={incidentType}
+							onChange={(event) => {
+								setIncidentType(event.target.value as AdminIncidentType);
+								setIncidentsPage(1);
+							}}
+						>
+							<option value='INVOICE'>Analyses de factures</option>
+							<option value='NOTIFICATION'>Notifications</option>
+							<option value='STRIPE_WEBHOOK'>Webhooks Stripe</option>
+							<option value='RESEND'>Webhooks Resend</option>
+						</select>
+					</label>
+					<PagedStatus
+						loading={incidentsQuery.isLoading}
+						error={incidentsQuery.isError}
+						empty={!incidentsQuery.data?.items.length}
+					/>
+					{incidentsQuery.data?.items.length ? (
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Incident</TableHead>
+									<TableHead>Type</TableHead>
+									<TableHead>Erreur</TableHead>
+									<TableHead>Date</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{incidentsQuery.data.items.map((incident) => (
+									<TableRow key={incident.id}>
+										<TableCell>
+											<p className='font-medium'>{incident.category}</p>
+											<p className='font-mono text-xs text-neutral-500'>
+												{incident.id}
+											</p>
+										</TableCell>
+										<TableCell>{incident.subtype || incident.status}</TableCell>
+										<TableCell className='max-w-md'>{incident.error}</TableCell>
+										<TableCell>{formatDate(incident.occurredAt)}</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					) : null}
+					<Pagination
+						page={incidentsQuery.data?.pagination.page || incidentsPage}
+						totalPages={incidentsQuery.data?.pagination.totalPages || 1}
+						onChange={setIncidentsPage}
+					/>
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
 					<CardTitle>Jobs en échec ({failedJobs.length})</CardTitle>
 				</CardHeader>
 				<CardContent className='p-0'>
@@ -288,6 +481,63 @@ function Count({ label, value }: { label: string; value: number }) {
 		<div className='rounded-lg bg-neutral-50 p-2'>
 			<p className='text-lg font-semibold'>{value}</p>
 			<p className='text-xs text-neutral-500'>{label}</p>
+		</div>
+	);
+}
+
+function formatDate(value: string) {
+	return new Intl.DateTimeFormat('fr-FR', {
+		dateStyle: 'short',
+		timeStyle: 'short',
+	}).format(new Date(value));
+}
+
+function PagedStatus({
+	loading,
+	error,
+	empty,
+}: {
+	loading: boolean;
+	error: boolean;
+	empty: boolean;
+}) {
+	if (loading) return <p className='text-sm text-neutral-500'>Chargement…</p>;
+	if (error)
+		return <p className='text-sm text-error-700'>Données indisponibles.</p>;
+	if (empty) return <p className='text-sm text-neutral-500'>Aucun résultat.</p>;
+	return null;
+}
+
+function Pagination({
+	page,
+	totalPages,
+	onChange,
+}: {
+	page: number;
+	totalPages: number;
+	onChange: (page: number) => void;
+}) {
+	return (
+		<div className='flex items-center justify-end gap-3 text-sm'>
+			<Button
+				variant='outline'
+				size='sm'
+				disabled={page <= 1}
+				onClick={() => onChange(page - 1)}
+			>
+				Précédent
+			</Button>
+			<span>
+				Page {page} sur {totalPages}
+			</span>
+			<Button
+				variant='outline'
+				size='sm'
+				disabled={page >= totalPages}
+				onClick={() => onChange(page + 1)}
+			>
+				Suivant
+			</Button>
 		</div>
 	);
 }

@@ -79,6 +79,48 @@ export class QueueMonitoringService {
     };
   }
 
+  async listJobs(
+    queueName: string,
+    state: 'waiting' | 'active' | 'failed',
+    page = 1,
+    pageSize = 25,
+  ) {
+    const name = this.parseQueueName(queueName);
+    const queue = this.queues.queue(name);
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+    const [jobs, counts] = await Promise.all([
+      queue.getJobs([state], start, end, false),
+      queue.getJobCounts(state),
+    ]);
+    const totalItems = counts[state] ?? 0;
+    return {
+      queueName: name,
+      state,
+      items: jobs.map((job) => ({
+        id: job.id ?? 'unknown',
+        name: job.name,
+        state,
+        attemptsMade: job.attemptsMade,
+        failedReason:
+          state === 'failed' ? this.safeFailureReason(job.failedReason) : null,
+        createdAt: new Date(job.timestamp).toISOString(),
+        processedAt: job.processedOn
+          ? new Date(job.processedOn).toISOString()
+          : null,
+        finishedAt: job.finishedOn
+          ? new Date(job.finishedOn).toISOString()
+          : null,
+      })),
+      pagination: {
+        page,
+        pageSize,
+        totalItems,
+        totalPages: Math.max(1, Math.ceil(totalItems / pageSize)),
+      },
+    };
+  }
+
   private async resetPersistentDelivery(
     queueName: QueueName,
     jobName: string,
@@ -165,10 +207,7 @@ export class QueueMonitoringService {
     return value
       .replace(/(Bearer\s+)[^\s]+/gi, '$1[redacted]')
       .replace(/\bsk_(?:live|test)_[A-Za-z0-9]+\b/g, '[redacted]')
-      .replace(
-        /([?&](?:token|key|secret|password)=)[^&\s]+/gi,
-        '$1[redacted]',
-      )
+      .replace(/([?&](?:token|key|secret|password)=)[^&\s]+/gi, '$1[redacted]')
       .replace(/[\r\n\t]+/g, ' ')
       .slice(0, 300);
   }

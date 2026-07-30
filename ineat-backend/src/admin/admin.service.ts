@@ -12,16 +12,14 @@ import { Prisma } from '../../prisma/generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ObservabilityService } from '../observability/observability.service';
 import { QueueMonitoringService } from '../jobs/queue-monitoring.service';
-import {
-  AdminActorContext,
-  AdminAuditService,
-} from './admin-audit.service';
+import { AdminActorContext, AdminAuditService } from './admin-audit.service';
 import { AccessPolicyService } from '../auth/services/access-policy.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import {
   AdminDashboardPeriod,
   AdminDashboardQueryDto,
 } from './dto/admin-dashboard-query.dto';
+import { AdminQueueJobsQueryDto } from './dto/admin-operations-query.dto';
 
 const adminUserInclude = {
   UsageQuota: {
@@ -59,7 +57,9 @@ export class AdminService {
   async getDashboard(query: AdminDashboardQueryDto) {
     const range = this.resolveDashboardRange(query);
     const previousRange = {
-      from: new Date(range.from.getTime() - (range.to.getTime() - range.from.getTime())),
+      from: new Date(
+        range.from.getTime() - (range.to.getTime() - range.from.getTime()),
+      ),
       to: range.from,
     };
     const [
@@ -216,7 +216,9 @@ export class AdminService {
           trialStarts,
           conversions,
           conversionRate:
-            trialStarts === 0 ? 0 : Math.round((conversions / trialStarts) * 1000) / 10,
+            trialStarts === 0
+              ? 0
+              : Math.round((conversions / trialStarts) * 1000) / 10,
           cancellations,
         },
         usage: {
@@ -494,6 +496,15 @@ export class AdminService {
     };
   }
 
+  listQueueJobs(queueName: string, query: AdminQueueJobsQueryDto) {
+    return this.queueMonitoringService.listJobs(
+      queueName,
+      query.state,
+      query.page ?? 1,
+      query.pageSize ?? 25,
+    );
+  }
+
   async retryQueueJob(
     queueName: string,
     jobId: string,
@@ -550,7 +561,8 @@ export class AdminService {
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
       lastActiveAt:
-        user.sessions[0]?.updatedAt.toISOString() ?? user.createdAt.toISOString(),
+        user.sessions[0]?.updatedAt.toISOString() ??
+        user.createdAt.toISOString(),
       effectivePlan: this.accessPolicyService.getEffectivePlan(user),
       counts: {
         inventoryItems: user._count.InventoryItem,

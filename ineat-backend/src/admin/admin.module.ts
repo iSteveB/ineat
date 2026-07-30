@@ -8,6 +8,7 @@ import { JobsModule } from '../jobs/jobs.module';
 import { AdminAuditService } from './admin-audit.service';
 import { BillingModule } from '../billing/billing.module';
 import { AdminBillingService } from './admin-billing.service';
+import { AdminOperationsService } from './admin-operations.service';
 
 @Module({
   imports: [
@@ -18,6 +19,11 @@ import { AdminBillingService } from './admin-billing.service';
     BillingModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, AdminAuditService, AdminBillingService],
+  providers: [
+    AdminService,
+    AdminAuditService,
+    AdminBillingService,
+    AdminOperationsService,
+  ],
 })
 export class AdminModule {}

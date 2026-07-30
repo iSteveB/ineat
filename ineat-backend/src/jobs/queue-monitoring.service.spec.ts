@@ -190,6 +190,45 @@ describe('QueueMonitoringService', () => {
     );
   });
 
+  it('pagine les jobs sans exposer leur payload', async () => {
+    queue.getJobs.mockResolvedValue([
+      {
+        id: 'job-2',
+        name: 'analyze-invoice',
+        attemptsMade: 1,
+        failedReason: 'Provider unavailable',
+        timestamp: new Date('2026-07-30T10:00:00.000Z').getTime(),
+        processedOn: new Date('2026-07-30T10:01:00.000Z').getTime(),
+        finishedOn: new Date('2026-07-30T10:02:00.000Z').getTime(),
+        data: { pdfUrl: 'never-expose-me' },
+      },
+    ]);
+    queue.getJobCounts.mockResolvedValue({ failed: 26 });
+    const service = new QueueMonitoringService(
+      queues as any,
+      config as any,
+      observability as any,
+      prisma as any,
+    );
+
+    const result = await service.listJobs(QUEUE_NAMES.system, 'failed', 2, 10);
+
+    expect(queue.getJobs).toHaveBeenCalledWith(['failed'], 10, 19, false);
+    expect(result.pagination).toEqual({
+      page: 2,
+      pageSize: 10,
+      totalItems: 26,
+      totalPages: 3,
+    });
+    expect(result.items[0]).not.toHaveProperty('data');
+    expect(result.items[0]).toEqual(
+      expect.objectContaining({
+        id: 'job-2',
+        failedReason: 'Provider unavailable',
+      }),
+    );
+  });
+
   it('refuses to retry a job that is not failed', async () => {
     queue.getJob.mockResolvedValue({
       id: 'job-1',

@@ -197,6 +197,57 @@ export type AdminQueueSnapshot = {
 	}>;
 };
 
+export type AdminQueueJobState = 'waiting' | 'active' | 'failed';
+
+export type AdminQueueJobsPage = {
+	queueName: string;
+	state: AdminQueueJobState;
+	items: Array<{
+		id: string;
+		name: string;
+		state: AdminQueueJobState;
+		attemptsMade: number;
+		failedReason: string | null;
+		createdAt: string;
+		processedAt: string | null;
+		finishedAt: string | null;
+	}>;
+	pagination: {
+		page: number;
+		pageSize: number;
+		totalItems: number;
+		totalPages: number;
+	};
+};
+
+export type AdminIncidentType =
+	| 'INVOICE'
+	| 'NOTIFICATION'
+	| 'STRIPE_WEBHOOK'
+	| 'RESEND';
+
+export type AdminIncidentsPage = {
+	type: AdminIncidentType;
+	items: Array<{
+		id: string;
+		category: string;
+		status: string;
+		subtype: string | null;
+		attempts?: number;
+		emailType?: string | null;
+		error: string;
+		occurredAt: string;
+		createdAt?: string;
+		processedAt?: string | null;
+	}>;
+	pagination: {
+		page: number;
+		pageSize: number;
+		totalItems: number;
+		totalPages: number;
+	};
+};
+
 export type AdminAuditLog = {
 	id: string;
 	action: string;
@@ -307,6 +358,37 @@ export const adminService = {
 			await apiClient.get<ApiSuccessResponse<AdminQueueSnapshot>>(
 				'/admin/queues'
 			);
+		return response.data;
+	},
+
+	async listQueueJobs(
+		queueName: string,
+		state: AdminQueueJobState,
+		page = 1,
+		pageSize = 25
+	) {
+		const params = new URLSearchParams({
+			state,
+			page: String(page),
+			pageSize: String(pageSize),
+		});
+		const response = await apiClient.get<
+			ApiSuccessResponse<AdminQueueJobsPage>
+		>(
+			`/admin/queues/${encodeURIComponent(queueName)}/jobs?${params.toString()}`
+		);
+		return response.data;
+	},
+
+	async listIncidents(type: AdminIncidentType, page = 1, pageSize = 25) {
+		const params = new URLSearchParams({
+			type,
+			page: String(page),
+			pageSize: String(pageSize),
+		});
+		const response = await apiClient.get<
+			ApiSuccessResponse<AdminIncidentsPage>
+		>(`/admin/incidents?${params.toString()}`);
 		return response.data;
 	},
 
