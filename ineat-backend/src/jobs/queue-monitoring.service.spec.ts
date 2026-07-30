@@ -32,7 +32,7 @@ describe('QueueMonitoringService', () => {
     queue.getJob.mockResolvedValue(null);
   });
 
-  it('returns aggregate counts without exposing job payloads', async () => {
+  it('returns sanitized failures without exposing job payloads', async () => {
     const service = new QueueMonitoringService(
       queues as any,
       config as any,
@@ -51,7 +51,45 @@ describe('QueueMonitoringService', () => {
         recentFailuresLastHour: 0,
       }),
     );
-    expect(snapshot.queues[0]).not.toHaveProperty('jobs');
+    expect(snapshot.queues[0]).toHaveProperty('failedJobs', []);
+  });
+
+  it('exposes only safe metadata for failed jobs', async () => {
+    queue.getJobs.mockImplementation((types: string[]) =>
+      types.includes('failed')
+        ? Promise.resolve([
+            {
+              id: 'job-1',
+              name: 'deliver-email',
+              attemptsMade: 3,
+              failedReason:
+                'SMTP failed\nBearer private-token https://x.test?token=secret',
+              finishedOn: Date.now(),
+              timestamp: Date.now() - 1000,
+              data: { token: 'never-expose-me' },
+            },
+          ])
+        : Promise.resolve([]),
+    );
+    const service = new QueueMonitoringService(
+      queues as any,
+      config as any,
+      observability as any,
+      prisma as any,
+    );
+
+    const snapshot = await service.getSnapshot();
+
+    expect(snapshot.queues[0].failedJobs[0]).toEqual(
+      expect.objectContaining({
+        id: 'job-1',
+        name: 'deliver-email',
+        attemptsMade: 3,
+        failedReason:
+          'SMTP failed Bearer [redacted] https://x.test?token=[redacted]',
+      }),
+    );
+    expect(snapshot.queues[0].failedJobs[0]).not.toHaveProperty('data');
   });
 
   it('marks a queue degraded when its backlog reaches the warning threshold', async () => {

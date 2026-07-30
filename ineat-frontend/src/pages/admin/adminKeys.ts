@@ -6,4 +6,5 @@ export const adminKeys = {
 	user: (userId: string) => ['admin', 'user', userId] as const,
 	promotions: ['admin', 'promotions'] as const,
 	premiumUsers: ['admin', 'users', 'premium-subscriptions'] as const,
+	queues: ['admin', 'queues'] as const,
 };

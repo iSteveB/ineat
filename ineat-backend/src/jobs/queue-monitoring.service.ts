@@ -150,7 +150,27 @@ export class QueueMonitoringService {
       counts,
       oldestWaitingAgeMs,
       recentFailuresLastHour: recentFailures,
+      failedJobs: failedJobs.map((job) => ({
+        id: job.id ?? 'unknown',
+        name: job.name,
+        attemptsMade: job.attemptsMade,
+        failedReason: this.safeFailureReason(job.failedReason),
+        failedAt: new Date(job.finishedOn ?? job.timestamp).toISOString(),
+      })),
     };
+  }
+
+  private safeFailureReason(value?: string): string {
+    if (!value) return 'Erreur non renseignée';
+    return value
+      .replace(/(Bearer\s+)[^\s]+/gi, '$1[redacted]')
+      .replace(/\bsk_(?:live|test)_[A-Za-z0-9]+\b/g, '[redacted]')
+      .replace(
+        /([?&](?:token|key|secret|password)=)[^&\s]+/gi,
+        '$1[redacted]',
+      )
+      .replace(/[\r\n\t]+/g, ' ')
+      .slice(0, 300);
   }
 
   private parseQueueName(value: string): QueueName {

@@ -167,6 +167,36 @@ export type CreatePromotionCodeInput = {
 	reason: string;
 };
 
+export type AdminQueueSnapshot = {
+	timestamp: string;
+	health: 'healthy' | 'degraded' | 'critical';
+	thresholds: {
+		warningBacklog: number;
+		criticalBacklog: number;
+		warningLagMs: number;
+		criticalLagMs: number;
+		warningFailuresPerHour: number;
+		criticalFailuresPerHour: number;
+	};
+	queues: Array<{
+		name: string;
+		health: 'healthy' | 'degraded' | 'critical';
+		counts: Record<
+			'waiting' | 'active' | 'delayed' | 'failed' | 'completed' | 'paused',
+			number
+		>;
+		oldestWaitingAgeMs: number;
+		recentFailuresLastHour: number;
+		failedJobs: Array<{
+			id: string;
+			name: string;
+			attemptsMade: number;
+			failedReason: string;
+			failedAt: string;
+		}>;
+	}>;
+};
+
 export const adminService = {
 	async getDashboard(query: AdminDashboardQuery = { period: '30d' }) {
 		const params = new URLSearchParams({ period: query.period });
@@ -238,6 +268,29 @@ export const adminService = {
 		const response = await apiClient.post<
 			ApiSuccessResponse<{ id: string; cancelAtPeriodEnd: boolean }>
 		>(`/admin/users/${userId}/subscription/${action}`, { reason });
+		return response.data;
+	},
+
+	async getQueues() {
+		const response =
+			await apiClient.get<ApiSuccessResponse<AdminQueueSnapshot>>(
+				'/admin/queues'
+			);
+		return response.data;
+	},
+
+	async retryQueueJob(queueName: string, jobId: string, reason: string) {
+		const response = await apiClient.post<
+			ApiSuccessResponse<{
+				queueName: string;
+				jobId: string;
+				jobName: string;
+				state: string;
+			}>
+		>(
+			`/admin/queues/${encodeURIComponent(queueName)}/jobs/${encodeURIComponent(jobId)}/retry`,
+			{ reason }
+		);
 		return response.data;
 	},
 };
