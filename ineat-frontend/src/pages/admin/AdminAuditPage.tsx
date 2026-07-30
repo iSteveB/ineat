@@ -293,6 +293,14 @@ function AuditDetail({ log }: { log: AdminAuditLog }) {
 				<p className='break-all font-mono text-xs'>
 					{log.resourceType} · {log.resourceId}
 				</p>
+				{log.resourceType === 'USER' && (
+					<a
+						className='mt-2 inline-block font-medium text-primary hover:underline'
+						href={`/app/admin/users/${encodeURIComponent(log.resourceId)}`}
+					>
+						Voir la fiche utilisateur
+					</a>
+				)}
 			</div>
 			<div>
 				<p className='text-xs text-neutral-500'>Justification</p>

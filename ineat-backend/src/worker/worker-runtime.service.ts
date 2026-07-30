@@ -42,6 +42,7 @@ export class WorkerRuntimeService
 
   async onModuleInit(): Promise<void> {
     this.startWorker(QUEUE_NAMES.system, this.processSystemJob.bind(this), 1);
+    await this.registerSystemSchedulers();
 
     if (this.schedulerMode() !== 'bullmq') {
       this.logger.warn(
@@ -142,10 +143,37 @@ export class WorkerRuntimeService
   }
 
   private async processSystemJob(job: Job): Promise<unknown> {
-    if (job.name !== 'ping') {
-      throw new Error(`Unsupported system job: ${job.name}`);
+    if (job.name === 'ping') {
+      return { pong: true, processedAt: new Date().toISOString() };
     }
-    return { pong: true, processedAt: new Date().toISOString() };
+    if (job.name === 'purge-admin-audit') {
+      return this.purgeExpiredAdminAuditLogs();
+    }
+    throw new Error(`Unsupported system job: ${job.name}`);
+  }
+
+  private async purgeExpiredAdminAuditLogs(now = new Date()) {
+    const retentionDays = this.config.get<number>(
+      'ADMIN_AUDIT_RETENTION_DAYS',
+      365,
+    );
+    const cutoff = new Date(now.getTime() - retentionDays * 24 * 60 * 60_000);
+    const result = await this.prisma.adminAuditLog.deleteMany({
+      where: { createdAt: { lt: cutoff } },
+    });
+    this.logger.log(
+      `Admin audit retention completed: ${result.count} entries deleted before ${cutoff.toISOString()}`,
+    );
+    return { deletedCount: result.count, cutoff: cutoff.toISOString() };
+  }
+
+  private async registerSystemSchedulers(): Promise<void> {
+    await this.queues.upsertScheduler(
+      QUEUE_NAMES.system,
+      'admin-audit-retention-daily',
+      { pattern: '30 3 * * *' },
+      { name: 'purge-admin-audit', data: {} },
+    );
   }
 
   private async processNotificationSyncJob(job: Job): Promise<unknown> {

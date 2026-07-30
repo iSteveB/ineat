@@ -23,7 +23,10 @@ describe('WorkerRuntimeService', () => {
     addBulk: jest.fn().mockResolvedValue([]),
     upsertScheduler: jest.fn().mockResolvedValue({}),
   };
-  const prisma = { user: { findMany: jest.fn() } };
+  const prisma = {
+    user: { findMany: jest.fn() },
+    adminAuditLog: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
+  };
   const notifications = {
     synchronizeUser: jest.fn(),
     purgeExpiredNotifications: jest.fn(),
@@ -59,7 +62,13 @@ describe('WorkerRuntimeService', () => {
     await service.onModuleInit();
 
     expect(Worker).toHaveBeenCalledTimes(6);
-    expect(queues.upsertScheduler).toHaveBeenCalledTimes(5);
+    expect(queues.upsertScheduler).toHaveBeenCalledTimes(6);
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.system,
+      'admin-audit-retention-daily',
+      { pattern: '30 3 * * *' },
+      { name: 'purge-admin-audit', data: {} },
+    );
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.notificationsSync,
       'notifications-hourly',
@@ -78,7 +87,13 @@ describe('WorkerRuntimeService', () => {
     await service.onModuleInit();
 
     expect(Worker).toHaveBeenCalledTimes(1);
-    expect(queues.upsertScheduler).not.toHaveBeenCalled();
+    expect(queues.upsertScheduler).toHaveBeenCalledTimes(1);
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.system,
+      'admin-audit-retention-daily',
+      { pattern: '30 3 * * *' },
+      { name: 'purge-admin-audit', data: {} },
+    );
   });
 
   it('fans out users in bounded batches with deterministic job ids', async () => {
@@ -114,5 +129,23 @@ describe('WorkerRuntimeService', () => {
         take: 100,
       }),
     );
+  });
+
+  it('purges admin audit entries older than the configured retention', async () => {
+    config.get.mockReturnValue(365 as any);
+    prisma.adminAuditLog.deleteMany.mockResolvedValue({ count: 4 });
+    const service = createService();
+
+    const result = await (service as any).purgeExpiredAdminAuditLogs(
+      new Date('2026-07-31T00:00:00.000Z'),
+    );
+
+    expect(prisma.adminAuditLog.deleteMany).toHaveBeenCalledWith({
+      where: { createdAt: { lt: new Date('2025-07-31T00:00:00.000Z') } },
+    });
+    expect(result).toEqual({
+      deletedCount: 4,
+      cutoff: '2025-07-31T00:00:00.000Z',
+    });
   });
 });

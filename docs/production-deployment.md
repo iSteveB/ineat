@@ -19,6 +19,7 @@ copier le secret:
 ```env
 REDIS_URL=${{Redis.REDIS_URL}}
 REDIS_KEY_PREFIX=ineat:production
+ADMIN_AUDIT_RETENTION_DAYS=365
 ```
 
 Le basculement du scheduler est controle par service:

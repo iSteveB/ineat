@@ -47,6 +47,10 @@ const baseEnvironmentSchema = z
       emptyToUndefined,
       z.coerce.number().int().min(30).default(180),
     ),
+    ADMIN_AUDIT_RETENTION_DAYS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(30).max(3650).default(365),
+    ),
     EMAIL_ENABLED: optionalBoolean,
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,

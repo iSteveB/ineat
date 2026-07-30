@@ -75,4 +75,37 @@ describe('AdminAuditPage', () => {
 			)
 		);
 	});
+
+	it('propose un lien vers la fiche pour une ressource utilisateur', async () => {
+		const user = userEvent.setup();
+		(adminService.listAuditLogs as ReturnType<typeof vi.fn>).mockResolvedValue({
+			items: [
+				{
+					id: 'audit-user',
+					action: 'USER_ROLE_UPDATED',
+					resourceType: 'USER',
+					resourceId: 'user-42',
+					previousValue: { role: 'USER' },
+					newValue: { role: 'ADMIN' },
+					reason: 'Équipe support',
+					ipAddress: null,
+					sessionId: null,
+					createdAt: '2026-07-30T12:00:00.000Z',
+					admin: {
+						id: 'admin-1',
+						email: 'admin@example.com',
+						firstName: 'Ada',
+						lastName: 'Admin',
+					},
+				},
+			],
+			pagination: { page: 1, pageSize: 25, totalItems: 1, totalPages: 1 },
+		});
+		renderPage();
+
+		await user.click(await screen.findByText('USER_ROLE_UPDATED'));
+		expect(
+			screen.getByRole('link', { name: 'Voir la fiche utilisateur' })
+		).toHaveAttribute('href', '/app/admin/users/user-42');
+	});
 });

@@ -22,6 +22,7 @@ describe('validateEnvironment', () => {
       NODE_ENV: 'development',
       STRIPE_ENABLED: false,
       NOTIFICATION_RETENTION_DAYS: 180,
+      ADMIN_AUDIT_RETENTION_DAYS: 365,
       NOTIFICATION_SCHEDULER_MODE: 'legacy',
       NOTIFICATION_DELIVERY_MODE: 'legacy',
     });
