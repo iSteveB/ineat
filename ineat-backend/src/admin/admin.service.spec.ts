@@ -273,39 +273,6 @@ describe('AdminService', () => {
     );
   });
 
-  it('met à jour le plan sans modifier le rôle', async () => {
-    prisma.user.findUnique.mockResolvedValue(baseUser);
-    prisma.user.update.mockResolvedValue({
-      ...baseUser,
-      role: UserRole.USER,
-      subscriptionPlan: SubscriptionPlan.PREMIUM,
-    });
-
-    const result = await service.updateSubscriptionPlan(
-      baseUser.id,
-      SubscriptionPlan.PREMIUM,
-      'Accès exceptionnel',
-      actor,
-    );
-
-    expect(prisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: baseUser.id },
-        data: { subscriptionPlan: SubscriptionPlan.PREMIUM },
-      }),
-    );
-    expect(result.data.role).toBe(UserRole.USER);
-    expect(result.data.subscriptionPlan).toBe(SubscriptionPlan.PREMIUM);
-    expect(adminAuditService.record).toHaveBeenCalledWith(
-      expect.objectContaining({
-        action: 'USER_SUBSCRIPTION_PLAN_UPDATED',
-        previousValue: { subscriptionPlan: SubscriptionPlan.FREE },
-        newValue: { subscriptionPlan: SubscriptionPlan.PREMIUM },
-      }),
-      expect.any(Object),
-    );
-  });
-
   it('refuse de rétrograder le dernier administrateur', async () => {
     prisma.user.findUnique.mockResolvedValue({
       ...baseUser,
@@ -326,19 +293,4 @@ describe('AdminService', () => {
     expect(adminAuditService.record).not.toHaveBeenCalled();
   });
 
-  it('n’audite pas une mutation qui échoue', async () => {
-    prisma.user.findUnique.mockResolvedValue(baseUser);
-    prisma.user.update.mockRejectedValue(new Error('database unavailable'));
-
-    await expect(
-      service.updateSubscriptionPlan(
-        baseUser.id,
-        SubscriptionPlan.PREMIUM,
-        'Support utilisateur',
-        actor,
-      ),
-    ).rejects.toThrow('database unavailable');
-
-    expect(adminAuditService.record).not.toHaveBeenCalled();
-  });
 });

@@ -28,6 +28,10 @@ export type AdminUser = {
 	trialEndsAt: string | null;
 	currentPeriodStartedAt: string | null;
 	currentPeriodEndsAt: string | null;
+	stripeCustomerId: string | null;
+	stripeSubscriptionId: string | null;
+	billingInterval: 'MONTHLY' | 'YEARLY' | null;
+	cancelAtPeriodEnd: boolean;
 	createdAt: string;
 	updatedAt: string;
 	lastActiveAt: string;
@@ -130,15 +134,47 @@ export type AdminDashboardQuery = {
 	to?: string;
 };
 
+export type AdminPromotionCode = {
+	id: string;
+	code: string;
+	active: boolean;
+	createdAt: string;
+	expiresAt: string | null;
+	maxRedemptions: number | null;
+	timesRedeemed: number;
+	customerId: string | null;
+	couponId: string | null;
+	name: string | null;
+	percentOff: number | null;
+	amountOff: number | null;
+	currency: string | null;
+	duration: 'once' | 'repeating' | 'forever' | null;
+	durationInMonths: number | null;
+};
+
+export type CreatePromotionCodeInput = {
+	code: string;
+	name: string;
+	discountType: 'PERCENT' | 'FIXED';
+	percentOff?: number;
+	amountOff?: number;
+	duration: 'ONCE' | 'REPEATING' | 'FOREVER';
+	durationInMonths?: number;
+	expiresAt?: string;
+	maxRedemptions?: number;
+	firstTimeOnly: boolean;
+	stripeCustomerId?: string;
+	reason: string;
+};
+
 export const adminService = {
 	async getDashboard(query: AdminDashboardQuery = { period: '30d' }) {
 		const params = new URLSearchParams({ period: query.period });
 		if (query.from) params.set('from', query.from);
 		if (query.to) params.set('to', query.to);
-		const response =
-			await apiClient.get<ApiSuccessResponse<AdminDashboard>>(
-				`/admin/dashboard?${params.toString()}`
-			);
+		const response = await apiClient.get<ApiSuccessResponse<AdminDashboard>>(
+			`/admin/dashboard?${params.toString()}`
+		);
 		return response.data;
 	},
 
@@ -148,10 +184,9 @@ export const adminService = {
 			if (value !== undefined && value !== '') params.set(key, String(value));
 		});
 		const suffix = params.size > 0 ? `?${params.toString()}` : '';
-		const response =
-			await apiClient.get<ApiSuccessResponse<AdminUsersPage>>(
-				`/admin/users${suffix}`
-			);
+		const response = await apiClient.get<ApiSuccessResponse<AdminUsersPage>>(
+			`/admin/users${suffix}`
+		);
 		return response.data;
 	},
 
@@ -170,15 +205,39 @@ export const adminService = {
 		return response.data;
 	},
 
-	async updateSubscriptionPlan(
+	async listPromotionCodes() {
+		const response =
+			await apiClient.get<ApiSuccessResponse<AdminPromotionCode[]>>(
+				'/admin/promotions'
+			);
+		return response.data;
+	},
+
+	async createPromotionCode(input: CreatePromotionCodeInput) {
+		const response = await apiClient.post<
+			ApiSuccessResponse<AdminPromotionCode>
+		>('/admin/promotions', input);
+		return response.data;
+	},
+
+	async deactivatePromotionCode(promotionCodeId: string, reason: string) {
+		const response = await apiClient.post<
+			ApiSuccessResponse<AdminPromotionCode>
+		>(`/admin/promotions/${promotionCodeId}/deactivate`, { reason });
+		return response.data;
+	},
+
+	async setSubscriptionCancellation(
 		userId: string,
-		subscriptionPlan: SubscriptionPlan,
+		cancelAtPeriodEnd: boolean,
 		reason: string
 	) {
-		const response = await apiClient.patch<ApiSuccessResponse<AdminUser>>(
-			`/admin/users/${userId}/subscription-plan`,
-			{ subscriptionPlan, reason }
-		);
+		const action = cancelAtPeriodEnd
+			? 'schedule-cancellation'
+			: 'revoke-cancellation';
+		const response = await apiClient.post<
+			ApiSuccessResponse<{ id: string; cancelAtPeriodEnd: boolean }>
+		>(`/admin/users/${userId}/subscription/${action}`, { reason });
 		return response.data;
 	},
 };

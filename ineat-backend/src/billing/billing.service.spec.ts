@@ -135,6 +135,7 @@ describe('BillingService', () => {
     expect(stripe.checkout.sessions.create).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: 'subscription',
+        allow_promotion_codes: true,
         customer: 'cus_new',
         line_items: [{ price: 'price_monthly', quantity: 1 }],
         success_url: 'https://ineat.store/app/subscription/success',

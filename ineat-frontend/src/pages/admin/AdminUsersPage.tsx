@@ -36,14 +36,12 @@ import {
 	type AdminUsersQuery,
 } from '@/services/adminService';
 
-type PendingAdminChange =
-	| { type: 'role'; user: AdminUser; previousValue: UserRole; newValue: UserRole }
-	| {
-			type: 'plan';
-			user: AdminUser;
-			previousValue: SubscriptionPlan;
-			newValue: SubscriptionPlan;
-	  };
+type PendingAdminChange = {
+	type: 'role';
+	user: AdminUser;
+	previousValue: UserRole;
+	newValue: UserRole;
+};
 
 const formatDate = (value: string | null) =>
 	value
@@ -59,8 +57,9 @@ export default function AdminUsersPage() {
 	const navigate = useNavigate();
 	const search = useSearch({ from: '/app/admin/users/' });
 	const [searchValue, setSearchValue] = useState(search.search ?? '');
-	const [pendingChange, setPendingChange] =
-		useState<PendingAdminChange | null>(null);
+	const [pendingChange, setPendingChange] = useState<PendingAdminChange | null>(
+		null
+	);
 	const [changeReason, setChangeReason] = useState('');
 	const query: AdminUsersQuery = search;
 	const usersQuery = useQuery({
@@ -102,7 +101,8 @@ export default function AdminUsersPage() {
 			queryClient.invalidateQueries({ queryKey: adminKeys.dashboard });
 			closeDialog();
 		},
-		onError: (error: Error) => toast.error(error.message || 'Action impossible'),
+		onError: (error: Error) =>
+			toast.error(error.message || 'Action impossible'),
 	};
 	const updateRoleMutation = useMutation({
 		mutationFn: (change: { userId: string; role: UserRole; reason: string }) =>
@@ -113,39 +113,13 @@ export default function AdminUsersPage() {
 			toast.success('Rôle mis à jour');
 		},
 	});
-	const updatePlanMutation = useMutation({
-		mutationFn: (change: {
-			userId: string;
-			subscriptionPlan: SubscriptionPlan;
-			reason: string;
-		}) =>
-			adminService.updateSubscriptionPlan(
-				change.userId,
-				change.subscriptionPlan,
-				change.reason
-			),
-		...mutationOptions,
-		onSuccess: () => {
-			mutationOptions.onSuccess();
-			toast.success('Plan mis à jour');
-		},
-	});
-	const isMutationPending =
-		updateRoleMutation.isPending || updatePlanMutation.isPending;
+	const isMutationPending = updateRoleMutation.isPending;
 	const confirmChange = () => {
 		if (!pendingChange || changeReason.trim().length < 3 || isMutationPending)
 			return;
-		if (pendingChange.type === 'role') {
-			updateRoleMutation.mutate({
-				userId: pendingChange.user.id,
-				role: pendingChange.newValue,
-				reason: changeReason.trim(),
-			});
-			return;
-		}
-		updatePlanMutation.mutate({
+		updateRoleMutation.mutate({
 			userId: pendingChange.user.id,
-			subscriptionPlan: pendingChange.newValue,
+			role: pendingChange.newValue,
 			reason: changeReason.trim(),
 		});
 	};
@@ -157,7 +131,9 @@ export default function AdminUsersPage() {
 		<div className='space-y-6'>
 			<header>
 				<p className='text-sm font-medium text-primary'>Administration</p>
-				<h1 className='text-2xl font-semibold text-neutral-900'>Utilisateurs</h1>
+				<h1 className='text-2xl font-semibold text-neutral-900'>
+					Utilisateurs
+				</h1>
 				<p className='mt-1 text-sm text-neutral-600'>
 					{pagination?.totalItems ?? 0} compte(s) correspondant aux critères.
 				</p>
@@ -257,9 +233,11 @@ export default function AdminUsersPage() {
 							Impossible de charger les utilisateurs.
 						</p>
 					)}
-					{!usersQuery.isLoading && !usersQuery.isError && users.length === 0 && (
-						<p className='p-6 text-sm text-neutral-600'>Aucun utilisateur.</p>
-					)}
+					{!usersQuery.isLoading &&
+						!usersQuery.isError &&
+						users.length === 0 && (
+							<p className='p-6 text-sm text-neutral-600'>Aucun utilisateur.</p>
+						)}
 					{users.length > 0 && (
 						<Table>
 							<TableHeader>
@@ -280,13 +258,18 @@ export default function AdminUsersPage() {
 												to='/app/admin/users/$userId'
 												params={{ userId: adminUser.id }}
 												search={search}
-												className='font-medium text-neutral-900 hover:underline'>
+												className='font-medium text-neutral-900 hover:underline'
+											>
 												{adminUser.firstName} {adminUser.lastName}
 											</Link>
-											<p className='text-xs text-neutral-500'>{adminUser.email}</p>
+											<p className='text-xs text-neutral-500'>
+												{adminUser.email}
+											</p>
 										</TableCell>
 										<TableCell>
-											<Badge variant='secondary'>{adminUser.effectivePlan}</Badge>
+											<Badge variant='secondary'>
+												{adminUser.effectivePlan}
+											</Badge>
 											<p className='mt-1 text-xs text-neutral-500'>
 												{adminUser.subscriptionStatus}
 											</p>
@@ -316,21 +299,12 @@ export default function AdminUsersPage() {
 											/>
 										</TableCell>
 										<TableCell>
-											<InlineSelect
-												label={`Plan de ${adminUser.email}`}
-												value={adminUser.subscriptionPlan}
-												disabled={isMutationPending}
-												onChange={(plan) => {
-													setChangeReason('');
-													setPendingChange({
-														type: 'plan',
-														user: adminUser,
-														previousValue: adminUser.subscriptionPlan,
-														newValue: plan as SubscriptionPlan,
-													});
-												}}
-												options={['FREE', 'TRIAL', 'PREMIUM']}
-											/>
+											<Badge variant='outline'>
+												{adminUser.subscriptionPlan}
+											</Badge>
+											<p className='mt-1 text-xs text-neutral-500'>
+												Lecture seule · synchronisé par Stripe
+											</p>
 										</TableCell>
 									</TableRow>
 								))}
@@ -350,14 +324,16 @@ export default function AdminUsersPage() {
 							variant='outline'
 							size='sm'
 							disabled={pagination.page <= 1}
-							onClick={() => updateSearch({ page: pagination.page - 1 })}>
+							onClick={() => updateSearch({ page: pagination.page - 1 })}
+						>
 							<ChevronLeft className='size-4' /> Précédent
 						</Button>
 						<Button
 							variant='outline'
 							size='sm'
 							disabled={pagination.page >= pagination.totalPages}
-							onClick={() => updateSearch({ page: pagination.page + 1 })}>
+							onClick={() => updateSearch({ page: pagination.page + 1 })}
+						>
 							Suivant <ChevronRight className='size-4' />
 						</Button>
 					</div>
@@ -396,7 +372,8 @@ function FilterSelect({
 				aria-label={label}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm'>
+				className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm'
+			>
 				{allowAll && <option value=''>Tous · {label}</option>}
 				{options.map((option) => (
 					<option key={option}>{option}</option>
@@ -425,7 +402,8 @@ function InlineSelect({
 			value={value}
 			disabled={disabled}
 			onChange={(event) => onChange(event.target.value)}
-			className='rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm disabled:opacity-60'>
+			className='rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm disabled:opacity-60'
+		>
 			{options.map((option) => (
 				<option key={option}>{option}</option>
 			))}
@@ -451,7 +429,8 @@ function ChangeConfirmationDialog({
 	return (
 		<AlertDialog
 			open={Boolean(change)}
-			onOpenChange={(open) => !open && !pending && onCancel()}>
+			onOpenChange={(open) => !open && !pending && onCancel()}
+		>
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle className='text-neutral-900'>
@@ -481,7 +460,8 @@ function ChangeConfirmationDialog({
 						onClick={(event) => {
 							event.preventDefault();
 							onConfirm();
-						}}>
+						}}
+					>
 						{pending ? 'Modification…' : 'Confirmer'}
 					</AlertDialogAction>
 				</AlertDialogFooter>

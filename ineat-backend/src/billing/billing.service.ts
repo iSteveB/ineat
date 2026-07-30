@@ -44,6 +44,7 @@ export class BillingService {
     const customerId = await this.getOrCreateStripeCustomer(stripe, user);
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      allow_promotion_codes: true,
       customer: customerId,
       line_items: [
         {

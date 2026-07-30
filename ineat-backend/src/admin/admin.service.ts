@@ -480,51 +480,6 @@ export class AdminService {
     };
   }
 
-  async updateSubscriptionPlan(
-    id: string,
-    subscriptionPlan: SubscriptionPlan,
-    reason: string,
-    actor: AdminActorContext,
-  ) {
-    if (!Object.values(SubscriptionPlan).includes(subscriptionPlan)) {
-      throw new BadRequestException('Plan invalide');
-    }
-
-    const user = await this.prisma.$transaction(async (transaction) => {
-      const previousUser = await transaction.user.findUnique({
-        where: { id },
-      });
-      if (!previousUser) {
-        throw new NotFoundException('Utilisateur non trouvé');
-      }
-      const updatedUser = await transaction.user.update({
-        where: { id },
-        data: { subscriptionPlan },
-        include: adminUserInclude,
-      });
-      await this.adminAuditService.record(
-        {
-          ...actor,
-          action: 'USER_SUBSCRIPTION_PLAN_UPDATED',
-          resourceType: 'USER',
-          resourceId: id,
-          previousValue: {
-            subscriptionPlan: previousUser.subscriptionPlan,
-          },
-          newValue: { subscriptionPlan },
-          reason,
-        },
-        transaction,
-      );
-      return updatedUser;
-    });
-
-    return {
-      success: true,
-      data: this.toAdminUser(user),
-    };
-  }
-
   getObservability() {
     return {
       success: true,
@@ -588,6 +543,10 @@ export class AdminService {
       currentPeriodStartedAt:
         user.currentPeriodStartedAt?.toISOString() ?? null,
       currentPeriodEndsAt: user.currentPeriodEndsAt?.toISOString() ?? null,
+      stripeCustomerId: user.stripeCustomerId,
+      stripeSubscriptionId: user.stripeSubscriptionId,
+      billingInterval: user.billingInterval,
+      cancelAtPeriodEnd: user.cancelAtPeriodEnd,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
       lastActiveAt:

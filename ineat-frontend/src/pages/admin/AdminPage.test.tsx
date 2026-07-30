@@ -32,7 +32,6 @@ vi.mock('@/services/adminService', () => ({
 		getDashboard: vi.fn(),
 		listUsers: vi.fn(),
 		updateUserRole: vi.fn(),
-		updateSubscriptionPlan: vi.fn(),
 		getUser: vi.fn(),
 	},
 }));
@@ -49,6 +48,10 @@ const adminUser = {
 	trialEndsAt: null,
 	currentPeriodStartedAt: null,
 	currentPeriodEndsAt: null,
+	stripeCustomerId: null,
+	stripeSubscriptionId: null,
+	billingInterval: null,
+	cancelAtPeriodEnd: false,
 	createdAt: '2026-01-01T00:00:00.000Z',
 	updatedAt: '2026-01-01T00:00:00.000Z',
 	lastActiveAt: '2026-01-02T00:00:00.000Z',
@@ -89,17 +92,21 @@ describe('AdminUsersPage', () => {
 			items: [adminUser],
 			pagination: { page: 1, pageSize: 25, totalItems: 1, totalPages: 1 },
 		});
-		(adminService.updateUserRole as ReturnType<typeof vi.fn>).mockResolvedValue({
-			...adminUser,
-			role: 'ADMIN',
-		});
+		(adminService.updateUserRole as ReturnType<typeof vi.fn>).mockResolvedValue(
+			{
+				...adminUser,
+				role: 'ADMIN',
+			}
+		);
 	});
 
 	it('demande confirmation et justification avant un changement de rôle', async () => {
 		const user = userEvent.setup();
 		renderPage();
 
-		const roleSelect = await screen.findByLabelText(`Rôle de ${adminUser.email}`);
+		const roleSelect = await screen.findByLabelText(
+			`Rôle de ${adminUser.email}`
+		);
 		await user.selectOptions(roleSelect, 'ADMIN');
 
 		expect(screen.getByText('Confirmer la modification')).toBeInTheDocument();

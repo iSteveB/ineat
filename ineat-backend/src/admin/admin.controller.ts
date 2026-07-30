@@ -16,14 +16,15 @@ import { RequiresRole } from '../auth/decorators/requires-role.decorator';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AdminService } from './admin.service';
-import {
-  RetryQueueJobDto,
-  UpdateRoleDto,
-  UpdateSubscriptionPlanDto,
-} from './dto/admin-mutation.dto';
+import { RetryQueueJobDto, UpdateRoleDto } from './dto/admin-mutation.dto';
 import type { AdminActorContext } from './admin-audit.service';
 import { AdminUsersQueryDto } from './dto/admin-users-query.dto';
 import { AdminDashboardQueryDto } from './dto/admin-dashboard-query.dto';
+import { AdminBillingService } from './admin-billing.service';
+import {
+  AdminReasonDto,
+  CreatePromotionCodeDto,
+} from './dto/admin-billing.dto';
 
 type AdminRequest = Request & {
   user: {
@@ -38,7 +39,10 @@ type AdminRequest = Request & {
 @RequiresRole('ADMIN')
 @UseGuards(SessionAuthGuard, RoleGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly adminBillingService: AdminBillingService,
+  ) {}
 
   @Get('dashboard')
   getDashboard(@Query() query: AdminDashboardQueryDto) {
@@ -94,15 +98,58 @@ export class AdminController {
     );
   }
 
-  @Patch('users/:id/subscription-plan')
-  updateSubscriptionPlan(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: UpdateSubscriptionPlanDto,
+  @Get('promotions')
+  listPromotionCodes() {
+    return this.adminBillingService.listPromotionCodes();
+  }
+
+  @Post('promotions')
+  createPromotionCode(
+    @Body() body: CreatePromotionCodeDto,
     @Req() request: AdminRequest,
   ) {
-    return this.adminService.updateSubscriptionPlan(
+    return this.adminBillingService.createPromotionCode(
+      body,
+      this.actorContext(request),
+    );
+  }
+
+  @Post('promotions/:id/deactivate')
+  deactivatePromotionCode(
+    @Param('id') id: string,
+    @Body() body: AdminReasonDto,
+    @Req() request: AdminRequest,
+  ) {
+    return this.adminBillingService.deactivatePromotionCode(
       id,
-      body.subscriptionPlan,
+      body.reason,
+      this.actorContext(request),
+    );
+  }
+
+  @Post('users/:id/subscription/schedule-cancellation')
+  scheduleSubscriptionCancellation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: AdminReasonDto,
+    @Req() request: AdminRequest,
+  ) {
+    return this.adminBillingService.setCancellationAtPeriodEnd(
+      id,
+      true,
+      body.reason,
+      this.actorContext(request),
+    );
+  }
+
+  @Post('users/:id/subscription/revoke-cancellation')
+  revokeSubscriptionCancellation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: AdminReasonDto,
+    @Req() request: AdminRequest,
+  ) {
+    return this.adminBillingService.setCancellationAtPeriodEnd(
+      id,
+      false,
       body.reason,
       this.actorContext(request),
     );

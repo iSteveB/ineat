@@ -4,4 +4,6 @@ export const adminKeys = {
 	usersRoot: ['admin', 'users'] as const,
 	users: (query?: unknown) => ['admin', 'users', query] as const,
 	user: (userId: string) => ['admin', 'user', userId] as const,
+	promotions: ['admin', 'promotions'] as const,
+	premiumUsers: ['admin', 'users', 'premium-subscriptions'] as const,
 };
