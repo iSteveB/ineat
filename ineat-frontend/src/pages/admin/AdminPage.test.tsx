@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import AdminPage from './AdminPage';
+import AdminUsersPage from './AdminUsersPage';
 import { adminService } from '@/services/adminService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -50,12 +50,12 @@ const renderPage = () => {
 	});
 	return render(
 		<QueryClientProvider client={queryClient}>
-			<AdminPage />
+			<AdminUsersPage />
 		</QueryClientProvider>
 	);
 };
 
-describe('AdminPage', () => {
+describe('AdminUsersPage', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({

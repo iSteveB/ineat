@@ -19,6 +19,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-pass
 import { Route as AuthRegisterRouteImport } from './routes/_auth/register'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/_auth/forgot-password'
+import { Route as AppAdminRouteRouteImport } from './routes/app/admin/route'
 import { Route as AppSubscriptionIndexRouteImport } from './routes/app/subscription/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/app/settings/index'
 import { Route as AppRecipesIndexRouteImport } from './routes/app/recipes/index'
@@ -37,6 +38,10 @@ import { Route as AppSettingsPersonalInfoIndexRouteImport } from './routes/app/s
 import { Route as AppSettingsNotificationsIndexRouteImport } from './routes/app/settings/notifications/index'
 import { Route as AppSettingsDietRestrictionsIndexRouteImport } from './routes/app/settings/diet-restrictions/index'
 import { Route as AppInventoryAddIndexRouteImport } from './routes/app/inventory/add/index'
+import { Route as AppAdminUsersIndexRouteImport } from './routes/app/admin/users/index'
+import { Route as AppAdminSubscriptionsIndexRouteImport } from './routes/app/admin/subscriptions/index'
+import { Route as AppAdminOperationsIndexRouteImport } from './routes/app/admin/operations/index'
+import { Route as AppAdminAuditIndexRouteImport } from './routes/app/admin/audit/index'
 import { Route as AppInventoryAddSearchRouteImport } from './routes/app/inventory/add/search'
 import { Route as AppInventoryAddScanRouteImport } from './routes/app/inventory/add/scan'
 import { Route as AppInventoryAddManualRouteImport } from './routes/app/inventory/add/manual'
@@ -91,6 +96,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => AuthRouteRoute,
 } as any)
+const AppAdminRouteRoute = AppAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppSubscriptionIndexRoute = AppSubscriptionIndexRouteImport.update({
   id: '/subscription/',
   path: '/subscription/',
@@ -127,9 +137,9 @@ const AppBudgetIndexRoute = AppBudgetIndexRouteImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => AppRouteRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAdminRouteRoute,
 } as any)
 const AppSubscriptionSuccessRoute = AppSubscriptionSuccessRouteImport.update({
   id: '/subscription/success',
@@ -185,6 +195,27 @@ const AppInventoryAddIndexRoute = AppInventoryAddIndexRouteImport.update({
   path: '/inventory/add/',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppAdminUsersIndexRoute = AppAdminUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
+const AppAdminSubscriptionsIndexRoute =
+  AppAdminSubscriptionsIndexRouteImport.update({
+    id: '/subscriptions/',
+    path: '/subscriptions/',
+    getParentRoute: () => AppAdminRouteRoute,
+  } as any)
+const AppAdminOperationsIndexRoute = AppAdminOperationsIndexRouteImport.update({
+  id: '/operations/',
+  path: '/operations/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
+const AppAdminAuditIndexRoute = AppAdminAuditIndexRouteImport.update({
+  id: '/audit/',
+  path: '/audit/',
+  getParentRoute: () => AppAdminRouteRoute,
+} as any)
 const AppInventoryAddSearchRoute = AppInventoryAddSearchRouteImport.update({
   id: '/inventory/add/search',
   path: '/inventory/add/search',
@@ -209,6 +240,7 @@ const AppInventoryAddDriveRoute = AppInventoryAddDriveRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteRouteWithChildren
+  '/app/admin': typeof AppAdminRouteRouteWithChildren
   '/forgot-password': typeof AuthForgotPasswordRoute
   '/login': typeof AuthLoginRoute
   '/register': typeof AuthRegisterRoute
@@ -221,7 +253,7 @@ export interface FileRoutesByFullPath {
   '/app/recipes/suggestions': typeof AppRecipesSuggestionsRoute
   '/app/settings/subscription': typeof AppSettingsSubscriptionRoute
   '/app/subscription/success': typeof AppSubscriptionSuccessRoute
-  '/app/admin': typeof AppAdminIndexRoute
+  '/app/admin/': typeof AppAdminIndexRoute
   '/app/budget': typeof AppBudgetIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
   '/app/notifications': typeof AppNotificationsIndexRoute
@@ -233,6 +265,10 @@ export interface FileRoutesByFullPath {
   '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
+  '/app/admin/audit': typeof AppAdminAuditIndexRoute
+  '/app/admin/operations': typeof AppAdminOperationsIndexRoute
+  '/app/admin/subscriptions': typeof AppAdminSubscriptionsIndexRoute
+  '/app/admin/users': typeof AppAdminUsersIndexRoute
   '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/notifications': typeof AppSettingsNotificationsIndexRoute
@@ -265,6 +301,10 @@ export interface FileRoutesByTo {
   '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
+  '/app/admin/audit': typeof AppAdminAuditIndexRoute
+  '/app/admin/operations': typeof AppAdminOperationsIndexRoute
+  '/app/admin/subscriptions': typeof AppAdminSubscriptionsIndexRoute
+  '/app/admin/users': typeof AppAdminUsersIndexRoute
   '/app/inventory/add': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/notifications': typeof AppSettingsNotificationsIndexRoute
@@ -276,6 +316,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_auth': typeof AuthRouteRouteWithChildren
   '/app': typeof AppRouteRouteWithChildren
+  '/app/admin': typeof AppAdminRouteRouteWithChildren
   '/_auth/forgot-password': typeof AuthForgotPasswordRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/register': typeof AuthRegisterRoute
@@ -300,6 +341,10 @@ export interface FileRoutesById {
   '/app/inventory/add/manual': typeof AppInventoryAddManualRoute
   '/app/inventory/add/scan': typeof AppInventoryAddScanRoute
   '/app/inventory/add/search': typeof AppInventoryAddSearchRoute
+  '/app/admin/audit/': typeof AppAdminAuditIndexRoute
+  '/app/admin/operations/': typeof AppAdminOperationsIndexRoute
+  '/app/admin/subscriptions/': typeof AppAdminSubscriptionsIndexRoute
+  '/app/admin/users/': typeof AppAdminUsersIndexRoute
   '/app/inventory/add/': typeof AppInventoryAddIndexRoute
   '/app/settings/diet-restrictions/': typeof AppSettingsDietRestrictionsIndexRoute
   '/app/settings/notifications/': typeof AppSettingsNotificationsIndexRoute
@@ -311,6 +356,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/app/admin'
     | '/forgot-password'
     | '/login'
     | '/register'
@@ -323,7 +369,7 @@ export interface FileRouteTypes {
     | '/app/recipes/suggestions'
     | '/app/settings/subscription'
     | '/app/subscription/success'
-    | '/app/admin'
+    | '/app/admin/'
     | '/app/budget'
     | '/app/inventory'
     | '/app/notifications'
@@ -335,6 +381,10 @@ export interface FileRouteTypes {
     | '/app/inventory/add/manual'
     | '/app/inventory/add/scan'
     | '/app/inventory/add/search'
+    | '/app/admin/audit'
+    | '/app/admin/operations'
+    | '/app/admin/subscriptions'
+    | '/app/admin/users'
     | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
     | '/app/settings/notifications'
@@ -367,6 +417,10 @@ export interface FileRouteTypes {
     | '/app/inventory/add/manual'
     | '/app/inventory/add/scan'
     | '/app/inventory/add/search'
+    | '/app/admin/audit'
+    | '/app/admin/operations'
+    | '/app/admin/subscriptions'
+    | '/app/admin/users'
     | '/app/inventory/add'
     | '/app/settings/diet-restrictions'
     | '/app/settings/notifications'
@@ -377,6 +431,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_auth'
     | '/app'
+    | '/app/admin'
     | '/_auth/forgot-password'
     | '/_auth/login'
     | '/_auth/register'
@@ -401,6 +456,10 @@ export interface FileRouteTypes {
     | '/app/inventory/add/manual'
     | '/app/inventory/add/scan'
     | '/app/inventory/add/search'
+    | '/app/admin/audit/'
+    | '/app/admin/operations/'
+    | '/app/admin/subscriptions/'
+    | '/app/admin/users/'
     | '/app/inventory/add/'
     | '/app/settings/diet-restrictions/'
     | '/app/settings/notifications/'
@@ -486,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof AuthRouteRoute
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/app/subscription/': {
       id: '/app/subscription/'
       path: '/subscription'
@@ -537,10 +603,10 @@ declare module '@tanstack/react-router' {
     }
     '/app/admin/': {
       id: '/app/admin/'
-      path: '/admin'
-      fullPath: '/app/admin'
+      path: '/'
+      fullPath: '/app/admin/'
       preLoaderRoute: typeof AppAdminIndexRouteImport
-      parentRoute: typeof AppRouteRoute
+      parentRoute: typeof AppAdminRouteRoute
     }
     '/app/subscription/success': {
       id: '/app/subscription/success'
@@ -612,6 +678,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInventoryAddIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/admin/users/': {
+      id: '/app/admin/users/'
+      path: '/users'
+      fullPath: '/app/admin/users'
+      preLoaderRoute: typeof AppAdminUsersIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
+    '/app/admin/subscriptions/': {
+      id: '/app/admin/subscriptions/'
+      path: '/subscriptions'
+      fullPath: '/app/admin/subscriptions'
+      preLoaderRoute: typeof AppAdminSubscriptionsIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
+    '/app/admin/operations/': {
+      id: '/app/admin/operations/'
+      path: '/operations'
+      fullPath: '/app/admin/operations'
+      preLoaderRoute: typeof AppAdminOperationsIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
+    '/app/admin/audit/': {
+      id: '/app/admin/audit/'
+      path: '/audit'
+      fullPath: '/app/admin/audit'
+      preLoaderRoute: typeof AppAdminAuditIndexRouteImport
+      parentRoute: typeof AppAdminRouteRoute
+    }
     '/app/inventory/add/search': {
       id: '/app/inventory/add/search'
       path: '/inventory/add/search'
@@ -665,14 +759,34 @@ const AuthRouteRouteWithChildren = AuthRouteRoute._addFileChildren(
   AuthRouteRouteChildren,
 )
 
+interface AppAdminRouteRouteChildren {
+  AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminAuditIndexRoute: typeof AppAdminAuditIndexRoute
+  AppAdminOperationsIndexRoute: typeof AppAdminOperationsIndexRoute
+  AppAdminSubscriptionsIndexRoute: typeof AppAdminSubscriptionsIndexRoute
+  AppAdminUsersIndexRoute: typeof AppAdminUsersIndexRoute
+}
+
+const AppAdminRouteRouteChildren: AppAdminRouteRouteChildren = {
+  AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminAuditIndexRoute: AppAdminAuditIndexRoute,
+  AppAdminOperationsIndexRoute: AppAdminOperationsIndexRoute,
+  AppAdminSubscriptionsIndexRoute: AppAdminSubscriptionsIndexRoute,
+  AppAdminUsersIndexRoute: AppAdminUsersIndexRoute,
+}
+
+const AppAdminRouteRouteWithChildren = AppAdminRouteRoute._addFileChildren(
+  AppAdminRouteRouteChildren,
+)
+
 interface AppRouteRouteChildren {
+  AppAdminRouteRoute: typeof AppAdminRouteRouteWithChildren
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
   AppRecipesSuggestionsRoute: typeof AppRecipesSuggestionsRoute
   AppSettingsSubscriptionRoute: typeof AppSettingsSubscriptionRoute
   AppSubscriptionSuccessRoute: typeof AppSubscriptionSuccessRoute
-  AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
   AppInventoryIndexRoute: typeof AppInventoryIndexRoute
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
@@ -692,13 +806,13 @@ interface AppRouteRouteChildren {
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAdminRouteRoute: AppAdminRouteRouteWithChildren,
   AppIndexRoute: AppIndexRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,
   AppRecipesSuggestionsRoute: AppRecipesSuggestionsRoute,
   AppSettingsSubscriptionRoute: AppSettingsSubscriptionRoute,
   AppSubscriptionSuccessRoute: AppSubscriptionSuccessRoute,
-  AppAdminIndexRoute: AppAdminIndexRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
   AppInventoryIndexRoute: AppInventoryIndexRoute,
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
