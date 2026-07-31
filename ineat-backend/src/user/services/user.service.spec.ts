@@ -116,6 +116,35 @@ describe('UserService.updatePassword', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
+  it('préserve les autres préférences lors de la mise à jour des allergies', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      preferences: {
+        allergens: ['gluten'],
+        diets: ['vegetarian'],
+        timeZone: 'Europe/Paris',
+      },
+    });
+    prisma.user.update.mockResolvedValue({});
+
+    await expect(
+      service.updateDietaryRestrictions('user-id', { allergens: [] }),
+    ).resolves.toMatchObject({
+      data: { allergens: [], diets: ['vegetarian'] },
+    });
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-id' },
+      data: {
+        preferences: {
+          allergens: [],
+          diets: ['vegetarian'],
+          timeZone: 'Europe/Paris',
+        },
+      },
+    });
+  });
+
   it('met à jour le credential Better Auth quand le mot de passe actuel est valide', async () => {
     prisma.account.findFirst.mockResolvedValue({
       id: 'account-id',
