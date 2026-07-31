@@ -15,7 +15,6 @@ import {
 	CardTitle,
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const RegisterForm = () => {
 	// États locaux du formulaire
@@ -25,7 +24,6 @@ const RegisterForm = () => {
 		confirmPassword: '',
 		firstName: '',
 		lastName: '',
-		profileType: 'FAMILY',
 	});
 	const [formError, setFormError] = useState<string | null>(null);
 
@@ -49,16 +47,6 @@ const RegisterForm = () => {
 		setFormData((prev) => ({
 			...prev,
 			[name]: value,
-		}));
-		setFormError(null);
-		setError(null);
-	};
-
-	// Mise à jour du type de profil (radiogroup)
-	const handleProfileTypeChange = (value: string) => {
-		setFormData((prev) => ({
-			...prev,
-			profileType: value,
 		}));
 		setFormError(null);
 		setError(null);
@@ -97,10 +85,6 @@ const RegisterForm = () => {
 				password: formData.password,
 				firstName: formData.firstName,
 				lastName: formData.lastName,
-				profileType: formData.profileType as
-					| 'FAMILY'
-					| 'STUDENT'
-					| 'SINGLE',
 			});
 
 			navigate({
@@ -206,47 +190,6 @@ const RegisterForm = () => {
 						disabled={isLoading}
 						data-testid='confirm-password-input'
 					/>
-				</div>
-
-				{/* Type de profil */}
-				<div className='space-y-2'>
-					<Label>Type de profil</Label>
-					<RadioGroup
-						value={formData.profileType}
-						onValueChange={handleProfileTypeChange}
-						className='flex flex-col space-y-2'
-						data-testid='profile-type-group'>
-						<div className='flex items-center space-x-2'>
-							<RadioGroupItem
-								value='FAMILY'
-								id='FAMILY'
-								data-testid='profile-type-family'
-							/>
-							<Label htmlFor='FAMILY' className='cursor-pointer'>
-								Famille
-							</Label>
-						</div>
-						<div className='flex items-center space-x-2'>
-							<RadioGroupItem
-								value='STUDENT'
-								id='STUDENT'
-								data-testid='profile-type-student'
-							/>
-							<Label htmlFor='STUDENT' className='cursor-pointer'>
-								Étudiant
-							</Label>
-						</div>
-						<div className='flex items-center space-x-2'>
-							<RadioGroupItem
-								value='SINGLE'
-								id='SINGLE'
-								data-testid='profile-type-single'
-							/>
-							<Label htmlFor='SINGLE' className='cursor-pointer'>
-								Personne seule
-							</Label>
-						</div>
-					</RadioGroup>
 				</div>
 
 				{/* Bouton d'inscription */}

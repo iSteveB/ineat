@@ -86,7 +86,7 @@ describe('UserMenu', () => {
 				firstName: 'John',
 				lastName: 'Doe',
 				email: 'john.doe@example.com',
-				profileType: 'FAMILY',
+				defaultServings: 4,
 			},
 			logout: logoutMock,
 		});
@@ -100,44 +100,7 @@ describe('UserMenu', () => {
 		expect(screen.getByTestId('user-email')).toHaveTextContent(
 			'john.doe@example.com'
 		);
-		expect(screen.getByTestId('user-profile-type')).toHaveTextContent(
-			'Famille'
-		);
-	});
-
-	it('convertit correctement les types de profil en libellés français', () => {
-		// Tester chaque type de profil
-		const profileTypes = [
-			{ type: 'FAMILY', label: 'Famille' },
-			{ type: 'STUDENT', label: 'Étudiant' },
-			{ type: 'SINGLE', label: 'Solo' },
-			{ type: 'UNKNOWN', label: 'Inconnu' }, // Cas par défaut
-		];
-
-		for (const { type, label } of profileTypes) {
-			// Simuler un utilisateur avec ce type de profil
-			(
-				useAuthStore as unknown as ReturnType<typeof vi.fn>
-			).mockReturnValue({
-				user: {
-					firstName: 'John',
-					lastName: 'Doe',
-					email: 'john.doe@example.com',
-					profileType: type,
-				},
-				logout: logoutMock,
-			});
-
-			const { unmount } = render(<UserMenu />);
-
-			// Vérifier que le libellé du type de profil est correct
-			expect(screen.getByTestId('user-profile-type')).toHaveTextContent(
-				label
-			);
-
-			// Démonter le composant avant de tester le type suivant
-			unmount();
-		}
+		expect(screen.queryByTestId('user-profile-type')).not.toBeInTheDocument();
 	});
 
 	it("gère correctement l'absence de nom et prénom", () => {
@@ -145,7 +108,7 @@ describe('UserMenu', () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
 				email: 'john.doe@example.com',
-				profileType: 'FAMILY',
+				defaultServings: 4,
 			},
 			logout: logoutMock,
 		});
@@ -163,7 +126,7 @@ describe('UserMenu', () => {
 				firstName: 'John',
 				lastName: 'Doe',
 				email: 'john.doe@example.com',
-				profileType: 'FAMILY',
+				defaultServings: 4,
 			},
 			logout: logoutMock,
 		});
@@ -195,7 +158,7 @@ describe('UserMenu', () => {
 				firstName: 'John',
 				lastName: 'Doe',
 				email: 'john.doe@example.com',
-				profileType: 'FAMILY',
+				defaultServings: 4,
 			},
 			logout: logoutMock,
 		});
@@ -229,7 +192,7 @@ describe('UserMenu', () => {
 				firstName: 'John',
 				lastName: 'Doe',
 				email: 'john.doe@example.com',
-				profileType: 'FAMILY',
+				defaultServings: 4,
 			},
 			logout: logoutMock,
 		});

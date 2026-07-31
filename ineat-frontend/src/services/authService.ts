@@ -127,7 +127,6 @@ export const authService: AuthServiceMethods = {
 				name: `${data.firstName} ${data.lastName}`.trim(),
 				firstName: data.firstName,
 				lastName: data.lastName,
-				profileType: data.profileType,
 				callbackURL: getEmailVerificationCallbackUrl(),
 			};
 			const { error } = await authClient.signUp.email(

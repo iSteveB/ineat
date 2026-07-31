@@ -47,7 +47,7 @@ describe('RegisterForm', () => {
 		expect(screen.getByTestId('email-input')).toBeInTheDocument();
 		expect(screen.getByTestId('password-input')).toBeInTheDocument();
 		expect(screen.getByTestId('confirm-password-input')).toBeInTheDocument();
-		expect(screen.getByTestId('profile-type-group')).toBeInTheDocument();
+		expect(screen.queryByText('Type de profil')).not.toBeInTheDocument();
 		expect(screen.getByTestId('register-submit-button')).toBeInTheDocument();
 	});
 
@@ -83,8 +83,6 @@ describe('RegisterForm', () => {
 		await user.type(passwordInput, 'Password123');
 		await user.type(confirmPasswordInput, 'Password123');
 
-		// Par défaut, le type de profil est déjà défini à 'FAMILY'
-
 		// Simuler une inscription réussie
 		registerMock.mockResolvedValue('john.doe@example.com');
 
@@ -97,7 +95,6 @@ describe('RegisterForm', () => {
 			lastName: 'Doe',
 			email: 'john.doe@example.com',
 			password: 'Password123',
-			profileType: 'FAMILY',
 		});
 
 		// Vérifier que la redirection a été appelée
@@ -106,47 +103,6 @@ describe('RegisterForm', () => {
 				to: '/verify-email-pending',
 				search: { email: 'john.doe@example.com' },
 			});
-		});
-	});
-
-	it('permet de changer le type de profil', async () => {
-		render(<RegisterForm />);
-
-		// Par défaut, 'FAMILY' est sélectionné
-		const studentRadio = screen.getByTestId('profile-type-student');
-
-		// Changer le type de profil à 'STUDENT'
-		await user.click(studentRadio);
-
-		// Remplir le reste du formulaire
-		const firstNameInput = screen.getByTestId('firstName-input');
-		const lastNameInput = screen.getByTestId('lastName-input');
-		const emailInput = screen.getByTestId('email-input');
-		const passwordInput = screen.getByTestId('password-input');
-		const confirmPasswordInput = screen.getByTestId(
-			'confirm-password-input'
-		);
-		const submitButton = screen.getByTestId('register-submit-button');
-
-		await user.type(firstNameInput, 'John');
-		await user.type(lastNameInput, 'Doe');
-		await user.type(emailInput, 'john.doe@example.com');
-		await user.type(passwordInput, 'Password123');
-		await user.type(confirmPasswordInput, 'Password123');
-
-		// Simuler une inscription réussie
-		registerMock.mockResolvedValue('john.doe@example.com');
-
-		// Soumettre le formulaire
-		await user.click(submitButton);
-
-		// Vérifier que la fonction register a été appelée avec le bon type de profil
-		expect(registerMock).toHaveBeenCalledWith({
-			firstName: 'John',
-			lastName: 'Doe',
-			email: 'john.doe@example.com',
-			password: 'Password123',
-			profileType: 'STUDENT',
 		});
 	});
 

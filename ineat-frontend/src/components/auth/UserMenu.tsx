@@ -31,20 +31,6 @@ export function UserMenu() {
     return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
   };
 
-  // Mapper les types de profil à des libellés en français
-  const getProfileTypeLabel = (): string => {
-    switch (user.profileType) {
-      case 'FAMILY':
-        return 'Famille';
-      case 'STUDENT':
-        return 'Étudiant';
-      case 'SINGLE':
-        return 'Solo';
-      default:
-        return 'Inconnu';
-    }
-  };
-
   // Handler pour la déconnexion
   const handleLogout = async () => {
     try {
@@ -96,9 +82,6 @@ export function UserMenu() {
             </p>
             <p className="text-xs leading-none text-muted-foreground" data-testid="user-email">
               {user.email}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground" data-testid="user-profile-type">
-              {getProfileTypeLabel()}
             </p>
           </div>
         </DropdownMenuLabel>
