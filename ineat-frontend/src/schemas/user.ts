@@ -55,6 +55,7 @@ export const UserSchema = z
 		avatarUrl: z.string().url("URL d'avatar invalide").optional(),
 		defaultServings: z.number().int().min(1).max(20).default(4),
 		primaryGoal: PrimaryGoalSchema.nullable().default(null),
+		profileOnboardingCompletedAt: z.string().datetime().nullable().default(null),
 		preferences: z
 			.object({
 				allergens: z.array(z.string()).default([]),

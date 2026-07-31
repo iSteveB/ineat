@@ -21,6 +21,7 @@ interface UpdatePersonalInfoDto {
   email?: string;
   defaultServings?: number;
   primaryGoal?: PrimaryGoal | null;
+  completeProfileOnboarding?: boolean;
 }
 
 const PRIMARY_GOALS = new Set<string>(Object.values(PrimaryGoal));
@@ -86,6 +87,9 @@ export class UserService {
         }),
         ...(updateData.primaryGoal !== undefined && {
           primaryGoal: updateData.primaryGoal,
+        }),
+        ...(updateData.completeProfileOnboarding === true && {
+          profileOnboardingCompletedAt: new Date(),
         }),
       },
     });

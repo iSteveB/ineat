@@ -403,6 +403,7 @@ export const UserScalarFieldEnum = {
   lastName: 'lastName',
   defaultServings: 'defaultServings',
   primaryGoal: 'primaryGoal',
+  profileOnboardingCompletedAt: 'profileOnboardingCompletedAt',
   preferences: 'preferences',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

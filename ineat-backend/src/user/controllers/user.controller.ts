@@ -37,6 +37,7 @@ interface UpdatePersonalInfoDto {
   email?: string;
   defaultServings?: number;
   primaryGoal?: PrimaryGoal | null;
+  completeProfileOnboarding?: boolean;
 }
 
 @ApiTags('User')
@@ -110,6 +111,11 @@ export class UserController {
           nullable: true,
           enum: ['REDUCE_WASTE', 'SAVE_MONEY', 'EAT_BETTER', 'FIND_MEAL_IDEAS'],
           description: "Objectif principal de l'utilisateur",
+        },
+        completeProfileOnboarding: {
+          type: 'boolean',
+          description: 'Marque la personnalisation initiale comme terminée',
+          example: true,
         },
       },
     },

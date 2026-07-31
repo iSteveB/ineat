@@ -13,6 +13,7 @@ import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as AuthRouteRouteImport } from './routes/_auth/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppOnboardingRouteImport } from './routes/app/onboarding'
 import { Route as AuthVerifyEmailPendingRouteImport } from './routes/_auth/verify-email-pending'
 import { Route as AuthVerifyEmailRouteImport } from './routes/_auth/verify-email'
 import { Route as AuthResetPasswordRouteImport } from './routes/_auth/reset-password'
@@ -65,6 +66,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppOnboardingRoute = AppOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AuthVerifyEmailPendingRoute = AuthVerifyEmailPendingRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof AuthResetPasswordRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/verify-email-pending': typeof AuthVerifyEmailPendingRoute
+  '/app/onboarding': typeof AppOnboardingRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof AuthResetPasswordRoute
   '/verify-email': typeof AuthVerifyEmailRoute
   '/verify-email-pending': typeof AuthVerifyEmailPendingRoute
+  '/app/onboarding': typeof AppOnboardingRoute
   '/app': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -331,6 +339,7 @@ export interface FileRoutesById {
   '/_auth/reset-password': typeof AuthResetPasswordRoute
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_auth/verify-email-pending': typeof AuthVerifyEmailPendingRoute
+  '/app/onboarding': typeof AppOnboardingRoute
   '/app/': typeof AppIndexRoute
   '/app/inventory/$productId': typeof AppInventoryProductIdRoute
   '/app/recipes/$recipeId': typeof AppRecipesRecipeIdRoute
@@ -372,6 +381,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verify-email'
     | '/verify-email-pending'
+    | '/app/onboarding'
     | '/app/'
     | '/app/inventory/$productId'
     | '/app/recipes/$recipeId'
@@ -409,6 +419,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/verify-email'
     | '/verify-email-pending'
+    | '/app/onboarding'
     | '/app'
     | '/app/inventory/$productId'
     | '/app/recipes/$recipeId'
@@ -449,6 +460,7 @@ export interface FileRouteTypes {
     | '/_auth/reset-password'
     | '/_auth/verify-email'
     | '/_auth/verify-email-pending'
+    | '/app/onboarding'
     | '/app/'
     | '/app/inventory/$productId'
     | '/app/recipes/$recipeId'
@@ -513,6 +525,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/onboarding': {
+      id: '/app/onboarding'
+      path: '/onboarding'
+      fullPath: '/app/onboarding'
+      preLoaderRoute: typeof AppOnboardingRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_auth/verify-email-pending': {
@@ -802,6 +821,7 @@ const AppAdminRouteRouteWithChildren = AppAdminRouteRoute._addFileChildren(
 
 interface AppRouteRouteChildren {
   AppAdminRouteRoute: typeof AppAdminRouteRouteWithChildren
+  AppOnboardingRoute: typeof AppOnboardingRoute
   AppIndexRoute: typeof AppIndexRoute
   AppInventoryProductIdRoute: typeof AppInventoryProductIdRoute
   AppRecipesRecipeIdRoute: typeof AppRecipesRecipeIdRoute
@@ -828,6 +848,7 @@ interface AppRouteRouteChildren {
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAdminRouteRoute: AppAdminRouteRouteWithChildren,
+  AppOnboardingRoute: AppOnboardingRoute,
   AppIndexRoute: AppIndexRoute,
   AppInventoryProductIdRoute: AppInventoryProductIdRoute,
   AppRecipesRecipeIdRoute: AppRecipesRecipeIdRoute,

@@ -3,11 +3,12 @@ import { PrimaryGoal } from '@/schemas';
 
 // Types pour les requêtes
 interface UpdatePersonalInfoRequest {
-	firstName: string;
-	lastName: string;
-	email: string;
+	firstName?: string;
+	lastName?: string;
+	email?: string;
 	defaultServings?: number;
 	primaryGoal?: PrimaryGoal | null;
+	completeProfileOnboarding?: boolean;
 }
 
 interface UpdateDietaryRestrictionsRequest {
@@ -28,6 +29,7 @@ interface UserResponse {
 	email: string;
 	defaultServings: number;
 	primaryGoal: PrimaryGoal | null;
+	profileOnboardingCompletedAt: string | null;
 	avatarUrl?: string;
 	createdAt: string;
 	updatedAt: string;

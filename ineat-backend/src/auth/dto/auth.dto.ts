@@ -9,6 +9,7 @@ export const SafeUserSchema = z.object({
   primaryGoal: z
     .enum(['REDUCE_WASTE', 'SAVE_MONEY', 'EAT_BETTER', 'FIND_MEAL_IDEAS'])
     .nullable(),
+  profileOnboardingCompletedAt: z.date().nullable(),
   role: z.enum(['USER', 'ADMIN']).optional(),
   subscriptionPlan: z.enum(['FREE', 'TRIAL', 'PREMIUM']).optional(),
   subscriptionStatus: z.enum(['ACTIVE', 'EXPIRED', 'CANCELLED']).optional(),

@@ -39,6 +39,8 @@ export const toSafeUserResponse = (
     lastName: user.lastName,
     defaultServings: user.defaultServings,
     primaryGoal: user.primaryGoal,
+    profileOnboardingCompletedAt:
+      user.profileOnboardingCompletedAt?.toISOString() ?? null,
     role: user.role || 'USER',
     subscriptionPlan: user.subscriptionPlan || 'FREE',
     subscriptionStatus: user.subscriptionStatus || 'ACTIVE',

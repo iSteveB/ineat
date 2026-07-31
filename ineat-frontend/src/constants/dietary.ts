@@ -1,0 +1,16 @@
+export const COMMON_ALLERGENS = [
+	{ id: 'gluten', label: 'Gluten' },
+	{ id: 'lactose', label: 'Lactose' },
+	{ id: 'eggs', label: 'Œufs' },
+	{ id: 'nuts', label: 'Fruits à coque' },
+	{ id: 'peanuts', label: 'Arachides' },
+	{ id: 'soy', label: 'Soja' },
+	{ id: 'fish', label: 'Poisson' },
+	{ id: 'shellfish', label: 'Crustacés' },
+	{ id: 'molluscs', label: 'Mollusques' },
+	{ id: 'celery', label: 'Céleri' },
+	{ id: 'mustard', label: 'Moutarde' },
+	{ id: 'sesame', label: 'Sésame' },
+	{ id: 'sulphites', label: 'Sulfites' },
+	{ id: 'lupin', label: 'Lupin' },
+] as const;

@@ -14,6 +14,7 @@ interface RequestWithUser extends ExpressRequest {
     lastName: string;
     defaultServings: number;
     primaryGoal?: string | null;
+    profileOnboardingCompletedAt?: Date | null;
     role?: string;
     subscriptionPlan?: string;
     subscriptionStatus?: string;

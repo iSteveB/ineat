@@ -45,6 +45,7 @@ export type UserMinAggregateOutputType = {
   lastName: string | null
   defaultServings: number | null
   primaryGoal: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   role: $Enums.UserRole | null
@@ -79,6 +80,7 @@ export type UserMaxAggregateOutputType = {
   lastName: string | null
   defaultServings: number | null
   primaryGoal: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
   role: $Enums.UserRole | null
@@ -113,6 +115,7 @@ export type UserCountAggregateOutputType = {
   lastName: number
   defaultServings: number
   primaryGoal: number
+  profileOnboardingCompletedAt: number
   preferences: number
   createdAt: number
   updatedAt: number
@@ -158,6 +161,7 @@ export type UserMinAggregateInputType = {
   lastName?: true
   defaultServings?: true
   primaryGoal?: true
+  profileOnboardingCompletedAt?: true
   createdAt?: true
   updatedAt?: true
   role?: true
@@ -192,6 +196,7 @@ export type UserMaxAggregateInputType = {
   lastName?: true
   defaultServings?: true
   primaryGoal?: true
+  profileOnboardingCompletedAt?: true
   createdAt?: true
   updatedAt?: true
   role?: true
@@ -226,6 +231,7 @@ export type UserCountAggregateInputType = {
   lastName?: true
   defaultServings?: true
   primaryGoal?: true
+  profileOnboardingCompletedAt?: true
   preferences?: true
   createdAt?: true
   updatedAt?: true
@@ -258,13 +264,13 @@ export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   where?: Prisma.UserWhereInput
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-   *
+   * 
    * Determine the order of Users to fetch.
    */
   orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-   *
+   * 
    * Sets the start position
    */
   cursor?: Prisma.UserWhereUniqueInput
@@ -348,6 +354,7 @@ export type UserGroupByOutputType = {
   lastName: string
   defaultServings: number
   primaryGoal: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt: Date | null
   preferences: runtime.JsonValue
   createdAt: Date
   updatedAt: Date
@@ -406,6 +413,7 @@ export type UserWhereInput = {
   lastName?: Prisma.StringFilter<"User"> | string
   defaultServings?: Prisma.IntFilter<"User"> | number
   primaryGoal?: Prisma.EnumPrimaryGoalNullableFilter<"User"> | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   preferences?: Prisma.JsonFilter<"User">
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -455,6 +463,7 @@ export type UserOrderByWithRelationInput = {
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
   primaryGoal?: Prisma.SortOrderInput | Prisma.SortOrder
+  profileOnboardingCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   preferences?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -509,6 +518,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   lastName?: Prisma.StringFilter<"User"> | string
   defaultServings?: Prisma.IntFilter<"User"> | number
   primaryGoal?: Prisma.EnumPrimaryGoalNullableFilter<"User"> | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   preferences?: Prisma.JsonFilter<"User">
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -556,6 +566,7 @@ export type UserOrderByWithAggregationInput = {
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
   primaryGoal?: Prisma.SortOrderInput | Prisma.SortOrder
+  profileOnboardingCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   preferences?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -599,6 +610,7 @@ export type UserScalarWhereWithAggregatesInput = {
   lastName?: Prisma.StringWithAggregatesFilter<"User"> | string
   defaultServings?: Prisma.IntWithAggregatesFilter<"User"> | number
   primaryGoal?: Prisma.EnumPrimaryGoalNullableWithAggregatesFilter<"User"> | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   preferences?: Prisma.JsonWithAggregatesFilter<"User">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -634,6 +646,7 @@ export type UserCreateInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -683,6 +696,7 @@ export type UserUncheckedCreateInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -732,6 +746,7 @@ export type UserUpdateInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -781,6 +796,7 @@ export type UserUncheckedUpdateInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -830,6 +846,7 @@ export type UserCreateManyInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -865,6 +882,7 @@ export type UserUpdateManyMutationInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -900,6 +918,7 @@ export type UserUncheckedUpdateManyInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -945,6 +964,7 @@ export type UserCountOrderByAggregateInput = {
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
   primaryGoal?: Prisma.SortOrder
+  profileOnboardingCompletedAt?: Prisma.SortOrder
   preferences?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -984,6 +1004,7 @@ export type UserMaxOrderByAggregateInput = {
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
   primaryGoal?: Prisma.SortOrder
+  profileOnboardingCompletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -1018,6 +1039,7 @@ export type UserMinOrderByAggregateInput = {
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
   primaryGoal?: Prisma.SortOrder
+  profileOnboardingCompletedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
@@ -1274,6 +1296,7 @@ export type UserCreateWithoutBudgetInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1322,6 +1345,7 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1386,6 +1410,7 @@ export type UserUpdateWithoutBudgetInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1434,6 +1459,7 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1482,6 +1508,7 @@ export type UserCreateWithoutExpenseInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1530,6 +1557,7 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1594,6 +1622,7 @@ export type UserUpdateWithoutExpenseInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1642,6 +1671,7 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1690,6 +1720,7 @@ export type UserCreateWithoutInventoryItemInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1738,6 +1769,7 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1802,6 +1834,7 @@ export type UserUpdateWithoutInventoryItemInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1850,6 +1883,7 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1898,6 +1932,7 @@ export type UserCreateWithoutNotificationInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1946,6 +1981,7 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2010,6 +2046,7 @@ export type UserUpdateWithoutNotificationInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2058,6 +2095,7 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2106,6 +2144,7 @@ export type UserCreateWithoutNotificationPreferencesInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2154,6 +2193,7 @@ export type UserUncheckedCreateWithoutNotificationPreferencesInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2218,6 +2258,7 @@ export type UserUpdateWithoutNotificationPreferencesInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2266,6 +2307,7 @@ export type UserUncheckedUpdateWithoutNotificationPreferencesInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2314,6 +2356,7 @@ export type UserCreateWithoutEmailDigestDeliveryInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2362,6 +2405,7 @@ export type UserUncheckedCreateWithoutEmailDigestDeliveryInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2426,6 +2470,7 @@ export type UserUpdateWithoutEmailDigestDeliveryInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2474,6 +2519,7 @@ export type UserUncheckedUpdateWithoutEmailDigestDeliveryInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2522,6 +2568,7 @@ export type UserCreateWithoutInvoiceInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2570,6 +2617,7 @@ export type UserUncheckedCreateWithoutInvoiceInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2634,6 +2682,7 @@ export type UserUpdateWithoutInvoiceInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2682,6 +2731,7 @@ export type UserUncheckedUpdateWithoutInvoiceInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2730,6 +2780,7 @@ export type UserCreateWithoutReceiptInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2778,6 +2829,7 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2842,6 +2894,7 @@ export type UserUpdateWithoutReceiptInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2890,6 +2943,7 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2938,6 +2992,7 @@ export type UserCreateWithoutRecipeInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -2986,6 +3041,7 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3050,6 +3106,7 @@ export type UserUpdateWithoutRecipeInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3098,6 +3155,7 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3146,6 +3204,7 @@ export type UserCreateWithoutAdminAuditLogInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3194,6 +3253,7 @@ export type UserUncheckedCreateWithoutAdminAuditLogInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3258,6 +3318,7 @@ export type UserUpdateWithoutAdminAuditLogInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3306,6 +3367,7 @@ export type UserUncheckedUpdateWithoutAdminAuditLogInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3354,6 +3416,7 @@ export type UserCreateWithoutUsageQuotaInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3402,6 +3465,7 @@ export type UserUncheckedCreateWithoutUsageQuotaInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3466,6 +3530,7 @@ export type UserUpdateWithoutUsageQuotaInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3514,6 +3579,7 @@ export type UserUncheckedUpdateWithoutUsageQuotaInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3562,6 +3628,7 @@ export type UserCreateWithoutUsageEventInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3610,6 +3677,7 @@ export type UserUncheckedCreateWithoutUsageEventInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3674,6 +3742,7 @@ export type UserUpdateWithoutUsageEventInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3722,6 +3791,7 @@ export type UserUncheckedUpdateWithoutUsageEventInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3770,6 +3840,7 @@ export type UserCreateWithoutSessionsInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3818,6 +3889,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -3882,6 +3954,7 @@ export type UserUpdateWithoutSessionsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3930,6 +4003,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -3978,6 +4052,7 @@ export type UserCreateWithoutAccountsInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -4026,6 +4101,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   lastName?: string
   defaultServings?: number
   primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt: Date | string
@@ -4090,6 +4166,7 @@ export type UserUpdateWithoutAccountsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4138,6 +4215,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
   primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -4325,6 +4403,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   lastName?: boolean
   defaultServings?: boolean
   primaryGoal?: boolean
+  profileOnboardingCompletedAt?: boolean
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4375,6 +4454,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastName?: boolean
   defaultServings?: boolean
   primaryGoal?: boolean
+  profileOnboardingCompletedAt?: boolean
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4410,6 +4490,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   lastName?: boolean
   defaultServings?: boolean
   primaryGoal?: boolean
+  profileOnboardingCompletedAt?: boolean
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4445,6 +4526,7 @@ export type UserSelectScalar = {
   lastName?: boolean
   defaultServings?: boolean
   primaryGoal?: boolean
+  profileOnboardingCompletedAt?: boolean
   preferences?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -4469,7 +4551,7 @@ export type UserSelectScalar = {
   avatarUrl?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "defaultServings" | "primaryGoal" | "preferences" | "createdAt" | "updatedAt" | "role" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "defaultServings" | "primaryGoal" | "profileOnboardingCompletedAt" | "preferences" | "createdAt" | "updatedAt" | "role" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Budget?: boolean | Prisma.User$BudgetArgs<ExtArgs>
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
@@ -4519,6 +4601,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lastName: string
     defaultServings: number
     primaryGoal: $Enums.PrimaryGoal | null
+    profileOnboardingCompletedAt: Date | null
     preferences: runtime.JsonValue
     createdAt: Date
     updatedAt: Date
@@ -4988,6 +5071,7 @@ export interface UserFieldRefs {
   readonly lastName: Prisma.FieldRef<"User", 'String'>
   readonly defaultServings: Prisma.FieldRef<"User", 'Int'>
   readonly primaryGoal: Prisma.FieldRef<"User", 'PrimaryGoal'>
+  readonly profileOnboardingCompletedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly preferences: Prisma.FieldRef<"User", 'Json'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>

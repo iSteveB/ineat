@@ -8,6 +8,7 @@ export const authUserSelect = {
   lastName: true,
   defaultServings: true,
   primaryGoal: true,
+  profileOnboardingCompletedAt: true,
   preferences: true,
   createdAt: true,
   updatedAt: true,
