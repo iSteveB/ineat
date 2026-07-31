@@ -89,4 +89,64 @@ describe("ProfileOnboardingPage", () => {
       });
     });
   });
+
+  it("enregistre les valeurs par défaut avec aucune allergie et sans objectif", async () => {
+    const user = userEvent.setup();
+    render(<ProfileOnboardingPage />);
+
+    expect(
+      screen.getByLabelText(
+        "Pour combien de personnes cuisinez-vous habituellement ?",
+      ),
+    ).toHaveValue(4);
+    expect(screen.getByLabelText("Aucune")).toBeChecked();
+
+    await user.click(
+      screen.getByRole("button", { name: "Enregistrer et continuer" }),
+    );
+
+    await waitFor(() => {
+      expect(userService.updateDietaryRestrictions).toHaveBeenCalledWith({
+        allergens: [],
+      });
+      expect(userService.updatePersonalInfo).toHaveBeenCalledWith({
+        defaultServings: 4,
+        primaryGoal: null,
+        completeProfileOnboarding: true,
+      });
+    });
+  });
+
+  it("conserve les choix et ne redirige pas quand l’enregistrement échoue", async () => {
+    const user = userEvent.setup();
+    vi.mocked(userService.updatePersonalInfo).mockRejectedValueOnce(
+      new Error("API indisponible"),
+    );
+    render(<ProfileOnboardingPage />);
+
+    const servings = screen.getByLabelText(
+      "Pour combien de personnes cuisinez-vous habituellement ?",
+    );
+    await user.clear(servings);
+    await user.type(servings, "3");
+    await user.click(screen.getByLabelText("Gluten"));
+    await user.click(
+      screen.getByRole("button", { name: /Réduire le gaspillage/ }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Enregistrer et continuer" }),
+    );
+
+    await waitFor(() => {
+      expect(navigate).not.toHaveBeenCalled();
+      expect(
+        screen.getByRole("button", { name: "Enregistrer et continuer" }),
+      ).toBeEnabled();
+    });
+    expect(servings).toHaveValue(3);
+    expect(screen.getByLabelText("Gluten")).toBeChecked();
+    expect(
+      screen.getByRole("button", { name: /Réduire le gaspillage/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
 });
