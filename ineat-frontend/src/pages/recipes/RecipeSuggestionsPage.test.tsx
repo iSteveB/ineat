@@ -181,7 +181,7 @@ describe('RecipeSuggestionsPage', () => {
 		await waitFor(() => {
 			expect(recipeService.generateRecipes).toHaveBeenCalledWith({
 				types: ['STARTER', 'DESSERT'],
-				servings: 2,
+				servings: 4,
 				mode: 'FLEXIBLE',
 				extraIngredientLimit: 5,
 			});

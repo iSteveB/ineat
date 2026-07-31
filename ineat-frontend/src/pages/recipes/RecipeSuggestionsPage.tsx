@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
@@ -51,13 +51,17 @@ export function RecipeSuggestionsPage() {
 	);
 	const quotaRemaining = user?.capabilities.aiRecipeGenerationRemaining ?? 0;
 	const [selectedTypes, setSelectedTypes] = useState<RecipeType[]>(['MAIN']);
-	const [servings, setServings] = useState(2);
+	const [servings, setServings] = useState(user?.defaultServings ?? 4);
 	const [mode, setMode] = useState<RecipeGenerationMode>('STRICT');
 	const [extraIngredientLimit, setExtraIngredientLimit] = useState(3);
 	const [generatedRecipes, setGeneratedRecipes] = useState<GeneratedRecipe[]>(
 		[]
 	);
 	const [openedRecipeId, setOpenedRecipeId] = useState<string | null>(null);
+
+	useEffect(() => {
+		setServings(user?.defaultServings ?? 4);
+	}, [user?.defaultServings]);
 
 	const { data: inventory = [] } = useInventory(undefined, {
 		enabled: canUseRecipes,
