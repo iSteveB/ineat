@@ -144,6 +144,34 @@ export default function AdminUsersPage() {
 					<CardTitle>Recherche et filtres</CardTitle>
 				</CardHeader>
 				<CardContent className='grid gap-3 md:grid-cols-2 xl:grid-cols-5'>
+					{(search.activeFrom || search.createdFrom) && (
+						<div className='flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm md:col-span-2 xl:col-span-5'>
+							<p>
+								<strong>
+									{search.activeFrom
+										? 'Actifs sur la période'
+										: 'Inscrits sur la période'}
+								</strong>{' '}
+								· {formatRange(search.activeFrom ?? search.createdFrom)} au{' '}
+								{formatRange(search.activeTo ?? search.createdTo)}
+							</p>
+							<Button
+								variant='outline'
+								size='sm'
+								onClick={() =>
+									updateSearch({
+										page: 1,
+										activeFrom: undefined,
+										activeTo: undefined,
+										createdFrom: undefined,
+										createdTo: undefined,
+									})
+								}
+							>
+								Retirer le filtre de période
+							</Button>
+						</div>
+					)}
 					<label className='relative xl:col-span-2'>
 						<span className='sr-only'>Rechercher un utilisateur</span>
 						<Search className='pointer-events-none absolute left-3 top-3 size-4 text-neutral-400' />
@@ -350,6 +378,14 @@ export default function AdminUsersPage() {
 			/>
 		</div>
 	);
+}
+
+function formatRange(value?: string) {
+	return value
+		? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(
+				new Date(value)
+			)
+		: '—';
 }
 
 function FilterSelect({

@@ -54,15 +54,21 @@ const formatDuration = (milliseconds: number) => {
 	return `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 };
 
-export default function AdminOperationsPage() {
+export default function AdminOperationsPage({
+	initialIncidentType = 'INVOICE',
+	initialJobState = 'failed',
+}: {
+	initialIncidentType?: AdminIncidentType;
+	initialJobState?: AdminQueueJobState;
+}) {
 	const queryClient = useQueryClient();
 	const [jobToRetry, setJobToRetry] = useState<FailedJob | null>(null);
 	const [reason, setReason] = useState('');
 	const [queueName, setQueueName] = useState('');
-	const [jobState, setJobState] = useState<AdminQueueJobState>('failed');
+	const [jobState, setJobState] = useState<AdminQueueJobState>(initialJobState);
 	const [jobsPage, setJobsPage] = useState(1);
 	const [incidentType, setIncidentType] =
-		useState<AdminIncidentType>('INVOICE');
+		useState<AdminIncidentType>(initialIncidentType);
 	const [incidentsPage, setIncidentsPage] = useState(1);
 	const queuesQuery = useQuery({
 		queryKey: adminKeys.queues,

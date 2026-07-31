@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
 import {
+  IsDateString,
   IsEnum,
   IsIn,
   IsInt,
@@ -46,6 +47,22 @@ export class AdminUsersQueryDto {
   @IsOptional()
   @IsEnum(SubscriptionStatus)
   status?: SubscriptionStatus;
+
+  @IsOptional()
+  @IsDateString()
+  activeFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  activeTo?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdFrom?: string;
+
+  @IsOptional()
+  @IsDateString()
+  createdTo?: string;
 
   @IsOptional()
   @IsIn(adminUserSortFields)

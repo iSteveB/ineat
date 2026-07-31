@@ -372,6 +372,28 @@ export class AdminService {
       role: query.role,
       subscriptionPlan: query.plan,
       subscriptionStatus: query.status,
+      createdAt:
+        query.createdFrom || query.createdTo
+          ? {
+              ...(query.createdFrom
+                ? { gte: new Date(query.createdFrom) }
+                : {}),
+              ...(query.createdTo ? { lt: new Date(query.createdTo) } : {}),
+            }
+          : undefined,
+      sessions:
+        query.activeFrom || query.activeTo
+          ? {
+              some: {
+                updatedAt: {
+                  ...(query.activeFrom
+                    ? { gte: new Date(query.activeFrom) }
+                    : {}),
+                  ...(query.activeTo ? { lt: new Date(query.activeTo) } : {}),
+                },
+              },
+            }
+          : undefined,
       ...(search
         ? {
             OR: [

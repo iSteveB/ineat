@@ -51,6 +51,10 @@ export type AdminUsersQuery = {
 	role?: UserRole;
 	plan?: SubscriptionPlan;
 	status?: AdminUser['subscriptionStatus'];
+	activeFrom?: string;
+	activeTo?: string;
+	createdFrom?: string;
+	createdTo?: string;
 	sort?: 'createdAt' | 'email' | 'lastName';
 	order?: 'asc' | 'desc';
 };

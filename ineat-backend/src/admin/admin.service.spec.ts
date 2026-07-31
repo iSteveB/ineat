@@ -170,14 +170,10 @@ describe('AdminService', () => {
       .mockResolvedValueOnce(10)
       .mockResolvedValueOnce(3)
       .mockResolvedValueOnce(2);
-    prisma.invoice.count
-      .mockResolvedValueOnce(25)
-      .mockResolvedValueOnce(4);
+    prisma.invoice.count.mockResolvedValueOnce(25).mockResolvedValueOnce(4);
     prisma.notificationDelivery.count.mockResolvedValue(2);
     prisma.stripeWebhookEvent.count.mockResolvedValue(1);
-    prisma.usageEvent.count
-      .mockResolvedValueOnce(18)
-      .mockResolvedValueOnce(6);
+    prisma.usageEvent.count.mockResolvedValueOnce(18).mockResolvedValueOnce(6);
     prisma.$queryRaw
       .mockResolvedValueOnce([
         { date: new Date('2026-07-29T00:00:00.000Z'), count: 2 },
@@ -233,6 +229,8 @@ describe('AdminService', () => {
       pageSize: 10,
       search: ' ada ',
       role: UserRole.USER,
+      activeFrom: '2026-07-01T00:00:00.000Z',
+      activeTo: '2026-08-01T00:00:00.000Z',
       sort: 'email' as const,
       order: 'asc' as const,
     });
@@ -246,6 +244,14 @@ describe('AdminService', () => {
         orderBy: { email: 'asc' },
         where: expect.objectContaining({
           role: UserRole.USER,
+          sessions: {
+            some: {
+              updatedAt: {
+                gte: new Date('2026-07-01T00:00:00.000Z'),
+                lt: new Date('2026-08-01T00:00:00.000Z'),
+              },
+            },
+          },
           OR: expect.arrayContaining([
             { email: { contains: 'ada', mode: 'insensitive' } },
           ]),
@@ -292,5 +298,4 @@ describe('AdminService', () => {
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(adminAuditService.record).not.toHaveBeenCalled();
   });
-
 });
