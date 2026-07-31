@@ -64,6 +64,10 @@ export type QuotaEmailInput = {
   subscriptionUrl: string;
 };
 
+export type AccountDeletedEmailInput = {
+  firstName?: string | null;
+};
+
 const formatFrenchDate = (value: Date) =>
   new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'long',
@@ -158,6 +162,26 @@ export function createTrialExpiredEmail(input: TrialEmailInput) {
 
 const billingGreeting = (firstName?: string | null) =>
   firstName?.trim() ? `Bonjour ${firstName.trim()},` : 'Bonjour,';
+
+export function createAccountDeletedEmail(input: AccountDeletedEmailInput) {
+  const greeting = billingGreeting(input.firstName);
+  const body =
+    'Votre compte InEat et les données associées ont été supprimés. Certains documents restent conservés conformément à nos obligations légales.';
+  return {
+    subject: 'Votre compte InEat a été supprimé',
+    text: `${greeting}\n\n${body}`,
+    html: createTrialEmailLayout({
+      greeting,
+      preview: 'Votre compte InEat a été supprimé.',
+      title: 'Suppression confirmée',
+      body,
+      actionLabel: 'Retourner sur InEat',
+      actionUrl: 'https://ineat.store',
+      footer:
+        'Les documents conservés ne sont pas utilisés à des fins commerciales.',
+    }),
+  };
+}
 
 export function createPremiumActivatedEmail(input: BillingEmailInput) {
   const greeting = billingGreeting(input.firstName);

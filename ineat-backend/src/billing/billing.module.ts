@@ -11,6 +11,6 @@ import { TrialEmailService } from './trial-email.service';
   imports: [ConfigModule, PrismaModule, AuthModule],
   controllers: [BillingController],
   providers: [BillingService, StripeClientFactory, TrialEmailService],
-  exports: [StripeClientFactory],
+  exports: [BillingService, StripeClientFactory],
 })
 export class BillingModule {}

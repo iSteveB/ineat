@@ -1,5 +1,14 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ChevronLeft, Info, Lock, Shield, Trash2 } from 'lucide-react';
+import {
+	BellRing,
+	ChevronLeft,
+	Info,
+	Leaf,
+	Lock,
+	PiggyBank,
+	Shield,
+	Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -36,6 +45,7 @@ import { userService } from '@/services/userService';
 import { toast } from 'sonner';
 
 const SecurityPrivacyPage = () => {
+	const deleteConfirmationPhrase = 'SUPPRIMER DÉFINITIVEMENT MON COMPTE';
 	const clearUser = useAuthStore((state) => state.clearUser);
 	const navigate = useNavigate();
 
@@ -59,7 +69,9 @@ const SecurityPrivacyPage = () => {
 		useState<boolean>(false);
 
 	// État pour la suppression de compte
+	const [deleteBenefitsOpen, setDeleteBenefitsOpen] = useState<boolean>(false);
 	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState<boolean>(false);
+	const [deleteConfirmation, setDeleteConfirmation] = useState<string>('');
 	const [isDeletingAccount, setIsDeletingAccount] = useState<boolean>(false);
 
 	const handlePasswordSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -113,11 +125,11 @@ const SecurityPrivacyPage = () => {
 		setIsDeletingAccount(true);
 
 		try {
-			const response = await userService.deleteAccount();
+			const response = await userService.deleteAccount(deleteConfirmation);
 			toast.success(response.message || 'Compte supprimé avec succès');
 			setDeleteConfirmOpen(false);
 			clearUser();
-			navigate({ to: '/login', replace: true });
+			navigate({ to: '/', replace: true });
 		} catch (error) {
 			const message =
 				error instanceof Error
@@ -409,11 +421,12 @@ const SecurityPrivacyPage = () => {
 					<CardContent>
 						<div className='flex flex-col p-4 bg-error-50/5 rounded-xl border border-error-100/20'>
 							<p className='text-sm text-neutral-300 mb-4'>
-								Cette action est définitive et supprimera toutes vos données,
-								recettes sauvegardées, préférences et historique.
+								Cette action supprimera définitivement votre compte et les
+								données associées, à l’exception des documents conservés
+								conformément à nos obligations légales.
 							</p>
 							<Button
-								onClick={() => setDeleteConfirmOpen(true)}
+								onClick={() => setDeleteBenefitsOpen(true)}
 								className='bg-error-100 hover:bg-error-100/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'
 							>
 								<Trash2 className='size-4 mr-2 flex-shrink-0' />
@@ -426,7 +439,47 @@ const SecurityPrivacyPage = () => {
 				</Card>
 			</div>
 
-			{/* Dialog de confirmation de suppression */}
+			{/* Dernière présentation des bénéfices */}
+			<AlertDialog open={deleteBenefitsOpen} onOpenChange={setDeleteBenefitsOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Avant de partir…</AlertDialogTitle>
+						<AlertDialogDescription>
+							En conservant votre compte, InEat continue de vous aider au
+							quotidien.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<div className='grid gap-3 py-2'>
+						<div className='flex items-center gap-3 rounded-lg bg-success-50/10 p-3'>
+							<Leaf className='size-5 text-success-50' />
+							<span>Moins de gaspillage alimentaire</span>
+						</div>
+						<div className='flex items-center gap-3 rounded-lg bg-success-50/10 p-3'>
+							<BellRing className='size-5 text-success-50' />
+							<span>Des alertes avant la péremption</span>
+						</div>
+						<div className='flex items-center gap-3 rounded-lg bg-success-50/10 p-3'>
+							<PiggyBank className='size-5 text-success-50' />
+							<span>Un budget alimentaire maîtrisé</span>
+						</div>
+					</div>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Conserver mon compte</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								setDeleteBenefitsOpen(false);
+								setDeleteConfirmation('');
+								setDeleteConfirmOpen(true);
+							}}
+							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'
+						>
+							Supprimer quand même
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+
+			{/* Confirmation renforcée de suppression */}
 			<AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
@@ -434,17 +487,30 @@ const SecurityPrivacyPage = () => {
 							Êtes-vous sûr de vouloir supprimer votre compte ?
 						</AlertDialogTitle>
 						<AlertDialogDescription>
-							Cette action est irréversible. Vous perdrez toutes vos données et
-							serez déconnecté de l'application.
+							Pour confirmer, saisissez exactement la phrase suivante :
+							<strong className='mt-2 block text-neutral-300'>
+								{deleteConfirmationPhrase}
+							</strong>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
+					<Label htmlFor='delete-account-confirmation'>Phrase de confirmation</Label>
+					<Input
+						id='delete-account-confirmation'
+						value={deleteConfirmation}
+						onChange={(event) => setDeleteConfirmation(event.target.value)}
+						autoComplete='off'
+						disabled={isDeletingAccount}
+					/>
 					<AlertDialogFooter>
 						<AlertDialogCancel disabled={isDeletingAccount}>
 							Annuler
 						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDeleteAccount}
-							disabled={isDeletingAccount}
+							disabled={
+								isDeletingAccount ||
+								deleteConfirmation !== deleteConfirmationPhrase
+							}
 							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'
 						>
 							{isDeletingAccount ? (
@@ -453,7 +519,7 @@ const SecurityPrivacyPage = () => {
 									Suppression...
 								</>
 							) : (
-								'Supprimer définitivement'
+								'Supprimer définitivement mon compte'
 							)}
 						</AlertDialogAction>
 					</AlertDialogFooter>

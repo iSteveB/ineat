@@ -32,6 +32,7 @@ describe('BillingService', () => {
       },
     },
     subscriptions: {
+      cancel: jest.fn().mockResolvedValue({ id: 'sub_123', status: 'canceled' }),
       retrieve: jest.fn().mockResolvedValue({
         id: 'sub_123',
         customer: 'cus_existing',
@@ -49,6 +50,22 @@ describe('BillingService', () => {
     webhooks: {
       constructEvent: jest.fn(),
     },
+  });
+
+  it('cancels an active subscription immediately', async () => {
+    const { service, stripe } = createService(user);
+
+    await service.cancelSubscriptionImmediately('sub_123');
+
+    expect(stripe.subscriptions.cancel).toHaveBeenCalledWith('sub_123');
+  });
+
+  it('does not call Stripe when no subscription is attached', async () => {
+    const { service, stripe } = createService(user);
+
+    await service.cancelSubscriptionImmediately(null);
+
+    expect(stripe.subscriptions.cancel).not.toHaveBeenCalled();
   });
 
   const createConfigService = () =>

@@ -39,6 +39,26 @@ export class BillingService {
     @Optional() private readonly email?: EmailService,
   ) {}
 
+  async cancelSubscriptionImmediately(subscriptionId?: string | null) {
+    if (!subscriptionId) return;
+
+    const stripe = this.stripeClientFactory.getClient();
+
+    try {
+      await stripe.subscriptions.cancel(subscriptionId);
+    } catch (error) {
+      if (error instanceof Stripe.errors.StripeInvalidRequestError) {
+        const message = error.message.toLowerCase();
+        if (message.includes('no such subscription')) return;
+      }
+      throw new InternalServerErrorException({
+        code: 'SUBSCRIPTION_CANCELLATION_FAILED',
+        message:
+          "Impossible de résilier l'abonnement. Le compte n'a pas été supprimé.",
+      });
+    }
+  }
+
   async createCheckoutSession(user: CheckoutUser, interval: BillingInterval) {
     const stripe = this.stripeClientFactory.getClient();
     const customerId = await this.getOrCreateStripeCustomer(stripe, user);

@@ -172,18 +172,39 @@ export class CloudinaryService {
     }
   }
 
+  async deleteResourceFromUrl(
+    url: string | null | undefined,
+    resourceType: 'image' | 'raw' = 'image',
+  ): Promise<void> {
+    if (!url || !url.includes('cloudinary.com')) return;
+
+    const publicId = this.extractPublicId(url, resourceType === 'raw');
+    try {
+      await this.cloudinary.uploader.destroy(publicId, {
+        resource_type: resourceType,
+      });
+    } catch (error) {
+      throw new BadRequestException(
+        `Erreur lors de la suppression de la ressource: ${error instanceof Error ? error.message : 'erreur inconnue'}`,
+      );
+    }
+  }
+
   /**
    * Extrait le public_id d'une URL Cloudinary
    * @param url - URL complète de l'image Cloudinary
    * @returns Public ID (ex: 'avatars/user_123')
    */
-  extractPublicId(url: string): string {
+  extractPublicId(url: string, preserveExtension = false): string {
     // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/v{version}/{public_id}.{format}
     const matches = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/);
     if (!matches || !matches[1]) {
       throw new BadRequestException('URL Cloudinary invalide');
     }
-    return matches[1];
+    if (!preserveExtension) return matches[1];
+
+    const extension = url.match(/\.([^.?#/]+)(?:[?#].*)?$/)?.[1];
+    return extension ? `${matches[1]}.${extension}` : matches[1];
   }
 
   /**

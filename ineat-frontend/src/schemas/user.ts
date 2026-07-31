@@ -238,15 +238,9 @@ export type EmailValidationData = z.infer<typeof EmailValidationSchema>;
 // ===== SCHÉMAS DE SUPPRESSION DE COMPTE =====
 
 export const DeleteAccountSchema = z.object({
-	password: z
-		.string()
-		.min(1, 'Le mot de passe est requis pour supprimer le compte'),
-	confirmDeletion: z.literal(true, {
-		errorMap: () => ({
-			message: 'Vous devez confirmer la suppression de votre compte',
-		}),
+	confirmation: z.literal('SUPPRIMER DÉFINITIVEMENT MON COMPTE', {
+		errorMap: () => ({ message: 'La phrase de confirmation est incorrecte' }),
 	}),
-	reason: z.string().optional(),
 });
 export type DeleteAccountData = z.infer<typeof DeleteAccountSchema>;
 

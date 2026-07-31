@@ -16,6 +16,7 @@ import {
   sendSubscriptionCancelledEmail,
   sendSubscriptionChangedEmail,
   sendQuotaEmail,
+  sendAccountDeletedEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
 import type {
@@ -171,6 +172,16 @@ export class EmailService {
     return this.sendObserved(
       input.reached ? 'quota_reached' : 'quota_warning',
       (transport) => sendQuotaEmail(input, transport),
+    );
+  }
+
+  async sendAccountDeleted(input: {
+    to: string;
+    userId: string;
+    firstName?: string | null;
+  }) {
+    return this.sendObserved('account_deleted', (transport) =>
+      sendAccountDeletedEmail(input, transport),
     );
   }
 

@@ -142,17 +142,28 @@ describe('SecurityPrivacyPage password update', () => {
 		);
 		await user.click(
 			screen.getByRole('button', {
-				name: 'Supprimer définitivement',
+				name: 'Supprimer quand même',
 			})
 		);
+		const confirmationButton = screen.getByRole('button', {
+			name: 'Supprimer définitivement mon compte',
+		});
+		expect(confirmationButton).toBeDisabled();
+		await user.type(
+			screen.getByLabelText('Phrase de confirmation'),
+			'SUPPRIMER DÉFINITIVEMENT MON COMPTE'
+		);
+		await user.click(confirmationButton);
 
 		await waitFor(() => {
-			expect(userService.deleteAccount).toHaveBeenCalledTimes(1);
+			expect(userService.deleteAccount).toHaveBeenCalledWith(
+				'SUPPRIMER DÉFINITIVEMENT MON COMPTE'
+			);
 		});
 		expect(toast.success).toHaveBeenCalledWith('Compte supprimé avec succès');
 		expect(clearUserMock).toHaveBeenCalledTimes(1);
 		expect(navigateMock).toHaveBeenCalledWith({
-			to: '/login',
+			to: '/',
 			replace: true,
 		});
 	});
@@ -171,7 +182,16 @@ describe('SecurityPrivacyPage password update', () => {
 		);
 		await user.click(
 			screen.getByRole('button', {
-				name: 'Supprimer définitivement',
+				name: 'Supprimer quand même',
+			})
+		);
+		await user.type(
+			screen.getByLabelText('Phrase de confirmation'),
+			'SUPPRIMER DÉFINITIVEMENT MON COMPTE'
+		);
+		await user.click(
+			screen.getByRole('button', {
+				name: 'Supprimer définitivement mon compte',
 			})
 		);
 

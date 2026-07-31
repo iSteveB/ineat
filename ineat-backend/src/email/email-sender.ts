@@ -19,6 +19,8 @@ import {
   createSubscriptionChangedEmail,
   createQuotaEmail,
   type QuotaEmailInput,
+  createAccountDeletedEmail,
+  type AccountDeletedEmailInput,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
 import { EmailSendResult, EmailTransport } from './email.types';
@@ -318,5 +320,21 @@ export const sendQuotaEmail = (
     type,
     recipientReference: createRecipientReference(input.to),
     idempotencyKey: `quota/${input.quotaId}/${type}`,
+  });
+};
+
+export const sendAccountDeletedEmail = (
+  input: AccountDeletedEmailInput & { to: string; userId: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+) => {
+  const template = createAccountDeletedEmail(input);
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'account_deleted',
+    recipientReference: createRecipientReference(input.to),
+    idempotencyKey: `account-deleted/${input.userId}`,
   });
 };

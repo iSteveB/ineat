@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PrimaryGoal, Prisma } from '../../../prisma/generated/prisma/client';
@@ -14,6 +15,13 @@ import { AccessPolicyService } from '../../auth/services/access-policy.service';
 import { UsageQuotaService } from '../../auth/services/usage-quota.service';
 import { hashPassword, verifyPassword } from '../../lib/password';
 import { UpdatePasswordDto } from '../dto/update-password.dto';
+import { BillingService } from '../../billing/billing.service';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { EmailService } from '../../email/email.service';
+import {
+  DELETE_ACCOUNT_CONFIRMATION,
+  DeleteAccountDto,
+} from '../dto/delete-account.dto';
 
 interface UpdatePersonalInfoDto {
   firstName?: string;
@@ -28,10 +36,15 @@ const PRIMARY_GOALS = new Set<string>(Object.values(PrimaryGoal));
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
+
   constructor(
     private prisma: PrismaService,
     private accessPolicyService: AccessPolicyService,
     private usageQuotaService: UsageQuotaService,
+    private billingService: BillingService,
+    private cloudinaryService: CloudinaryService,
+    private emailService: EmailService,
   ) {}
 
   /**
@@ -266,15 +279,49 @@ export class UserService {
     };
   }
 
-  async deleteAccount(userId: string) {
+  async deleteAccount(userId: string, dto: DeleteAccountDto) {
+    if (dto.confirmation !== DELETE_ACCOUNT_CONFIRMATION) {
+      throw new BadRequestException('La phrase de confirmation est incorrecte');
+    }
+
     const existingUser = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        avatarUrl: true,
+        stripeSubscriptionId: true,
+        Invoice: { select: { pdfUrl: true } },
+        Receipt: { select: { imageUrl: true, pdfUrl: true } },
+        Recipe: { select: { imageUrl: true } },
+      },
     });
 
     if (!existingUser) {
       throw new NotFoundException('Utilisateur non trouvé');
     }
+
+    await this.billingService.cancelSubscriptionImmediately(
+      existingUser.stripeSubscriptionId,
+    );
+
+    await Promise.all([
+      this.cloudinaryService.deleteResourceFromUrl(
+        existingUser.avatarUrl,
+        'image',
+      ),
+      ...existingUser.Invoice.map((invoice) =>
+        this.cloudinaryService.deleteResourceFromUrl(invoice.pdfUrl, 'raw'),
+      ),
+      ...existingUser.Receipt.flatMap((receipt) => [
+        this.cloudinaryService.deleteResourceFromUrl(receipt.imageUrl, 'image'),
+        this.cloudinaryService.deleteResourceFromUrl(receipt.pdfUrl, 'raw'),
+      ]),
+      ...existingUser.Recipe.map((recipe) =>
+        this.cloudinaryService.deleteResourceFromUrl(recipe.imageUrl, 'image'),
+      ),
+    ]);
 
     await this.prisma.$transaction([
       this.prisma.expense.deleteMany({ where: { userId } }),
@@ -283,6 +330,18 @@ export class UserService {
       this.prisma.notification.deleteMany({ where: { userId } }),
       this.prisma.user.delete({ where: { id: userId } }),
     ]);
+
+    try {
+      await this.emailService.sendAccountDeleted({
+        to: existingUser.email,
+        userId: existingUser.id,
+        firstName: existingUser.firstName,
+      });
+    } catch (error) {
+      this.logger.warn(
+        `Account deletion email failed for ${userId}: ${error instanceof Error ? error.message : 'unknown error'}`,
+      );
+    }
 
     return {
       success: true,

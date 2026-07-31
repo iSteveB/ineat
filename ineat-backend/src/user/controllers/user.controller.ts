@@ -21,6 +21,7 @@ import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { PrimaryGoal } from '../../../prisma/generated/prisma/client';
 import { UpdateDietaryRestrictionsDto } from '../dto/update-dietary-restrictions.dto';
 import { UpdatePasswordDto } from '../dto/update-password.dto';
+import { DeleteAccountDto } from '../dto/delete-account.dto';
 
 interface RequestWithUser extends Request {
   user: {
@@ -300,7 +301,11 @@ export class UserController {
     status: 404,
     description: 'Utilisateur non trouvé',
   })
-  async deleteCurrentUser(@Request() req: RequestWithUser) {
-    return this.userService.deleteAccount(req.user.id);
+  @ApiBody({ type: DeleteAccountDto })
+  async deleteCurrentUser(
+    @Request() req: RequestWithUser,
+    @Body() dto: DeleteAccountDto,
+  ) {
+    return this.userService.deleteAccount(req.user.id, dto);
   }
 }

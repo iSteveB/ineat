@@ -83,4 +83,37 @@ describe('EmailService', () => {
       'token=secret',
     );
   });
+
+  it('sends and observes the account deletion confirmation', async () => {
+    jest
+      .spyOn(emailSender, 'getDefaultEmailTransport')
+      .mockReturnValue({ send: jest.fn() });
+    const send = jest
+      .spyOn(emailSender, 'sendAccountDeletedEmail')
+      .mockResolvedValue({ messageId: 'email-deleted' });
+    const module = await Test.createTestingModule({
+      providers: [
+        EmailService,
+        { provide: ObservabilityService, useValue: observability },
+      ],
+    }).compile();
+
+    await module.get(EmailService).sendAccountDeleted({
+      to: 'private@example.com',
+      userId: 'user-1',
+      firstName: 'Jane',
+    });
+
+    expect(send).toHaveBeenCalledWith(
+      {
+        to: 'private@example.com',
+        userId: 'user-1',
+        firstName: 'Jane',
+      },
+      expect.anything(),
+    );
+    expect(observability.increment).toHaveBeenCalledWith(
+      'email.account_deleted.sent',
+    );
+  });
 });

@@ -14,7 +14,8 @@ export type TransactionalEmailType =
   | 'subscription_expired'
   | 'subscription_changed'
   | 'quota_warning'
-  | 'quota_reached';
+  | 'quota_reached'
+  | 'account_deleted';
 
 export interface TransactionalEmailMessage {
   to: string;

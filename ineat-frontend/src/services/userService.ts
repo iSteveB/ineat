@@ -105,7 +105,9 @@ export const userService = {
 	/**
 	 * Supprime définitivement le compte de l'utilisateur connecté
 	 */
-	deleteAccount: async (): Promise<ApiMessageResponse> => {
-		return apiClient.delete<ApiMessageResponse>('/user/me');
+	deleteAccount: async (confirmation: string): Promise<ApiMessageResponse> => {
+		return apiClient.delete<ApiMessageResponse>('/user/me', {
+			body: JSON.stringify({ confirmation }),
+		});
 	},
 };

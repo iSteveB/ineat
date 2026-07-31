@@ -51,10 +51,22 @@ describe('UserService.updatePassword', () => {
   const usageQuotaService = {
     getUsageState: jest.fn().mockResolvedValue({ remaining: 0 }),
   };
+  const billingService = {
+    cancelSubscriptionImmediately: jest.fn().mockResolvedValue(undefined),
+  };
+  const cloudinaryService = {
+    deleteResourceFromUrl: jest.fn().mockResolvedValue(undefined),
+  };
+  const emailService = {
+    sendAccountDeleted: jest.fn().mockResolvedValue({ messageId: 'email-1' }),
+  };
   const service = new UserService(
     prisma as any,
     accessPolicyService as any,
     usageQuotaService as any,
+    billingService as any,
+    cloudinaryService as any,
+    emailService as any,
   );
 
   beforeEach(() => {
@@ -247,7 +259,21 @@ describe('UserService.updatePassword', () => {
   });
 
   it('supprime le compte et les données utilisateur non-cascade dans une transaction', async () => {
-    prisma.user.findUnique.mockResolvedValue({ id: 'user-id' });
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      email: 'jane@example.com',
+      firstName: 'Jane',
+      avatarUrl: 'https://res.cloudinary.com/demo/image/upload/avatars/user-id.jpg',
+      stripeSubscriptionId: 'sub_123',
+      Invoice: [
+        {
+          pdfUrl:
+            'https://res.cloudinary.com/demo/raw/upload/invoices/user-id/file.pdf',
+        },
+      ],
+      Receipt: [],
+      Recipe: [],
+    });
     prisma.expense.deleteMany.mockReturnValue('delete-expenses');
     prisma.budget.deleteMany.mockReturnValue('delete-budgets');
     prisma.inventoryItem.deleteMany.mockReturnValue('delete-inventory');
@@ -255,15 +281,31 @@ describe('UserService.updatePassword', () => {
     prisma.user.delete.mockReturnValue('delete-user');
     prisma.$transaction.mockResolvedValue([]);
 
-    await expect(service.deleteAccount('user-id')).resolves.toEqual({
+    await expect(
+      service.deleteAccount('user-id', {
+        confirmation: 'SUPPRIMER DÉFINITIVEMENT MON COMPTE',
+      }),
+    ).resolves.toEqual({
       success: true,
       message: 'Compte supprimé avec succès',
     });
 
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { id: 'user-id' },
-      select: { id: true },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        avatarUrl: true,
+        stripeSubscriptionId: true,
+        Invoice: { select: { pdfUrl: true } },
+        Receipt: { select: { imageUrl: true, pdfUrl: true } },
+        Recipe: { select: { imageUrl: true } },
+      },
     });
+    expect(billingService.cancelSubscriptionImmediately).toHaveBeenCalledWith(
+      'sub_123',
+    );
     expect(prisma.expense.deleteMany).toHaveBeenCalledWith({
       where: { userId: 'user-id' },
     });
@@ -286,16 +328,31 @@ describe('UserService.updatePassword', () => {
       'delete-notifications',
       'delete-user',
     ]);
+    expect(emailService.sendAccountDeleted).toHaveBeenCalledWith({
+      to: 'jane@example.com',
+      userId: 'user-id',
+      firstName: 'Jane',
+    });
   });
 
   it("rejette la suppression si l'utilisateur n'existe pas", async () => {
     prisma.user.findUnique.mockResolvedValue(null);
 
-    await expect(service.deleteAccount('missing-user')).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      service.deleteAccount('missing-user', {
+        confirmation: 'SUPPRIMER DÉFINITIVEMENT MON COMPTE',
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
 
     expect(prisma.$transaction).not.toHaveBeenCalled();
     expect(prisma.user.delete).not.toHaveBeenCalled();
+  });
+
+  it('rejette une phrase de confirmation incorrecte', async () => {
+    await expect(
+      service.deleteAccount('user-id', { confirmation: 'SUPPRIMER' as any }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 });
