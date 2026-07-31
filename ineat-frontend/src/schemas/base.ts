@@ -2,9 +2,13 @@ import { z } from 'zod';
 
 // ===== ENUMS DE BASE =====
 
-// Types de profil utilisateur
-export const ProfileTypeSchema = z.enum(['FAMILY', 'STUDENT', 'SINGLE']);
-export type ProfileType = z.infer<typeof ProfileTypeSchema>;
+export const PrimaryGoalSchema = z.enum([
+	'REDUCE_WASTE',
+	'SAVE_MONEY',
+	'EAT_BETTER',
+	'FIND_MEAL_IDEAS',
+]);
+export type PrimaryGoal = z.infer<typeof PrimaryGoalSchema>;
 
 // Types d'abonnement legacy exposés temporairement par le backend
 export const SubscriptionSchema = z.enum(['FREE', 'TRIAL', 'PREMIUM', 'ADMIN']);

@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ProfileType, Prisma } from '../../../prisma/generated/prisma/client';
+import { PrimaryGoal, Prisma } from '../../../prisma/generated/prisma/client';
 import {
   UpdateDietaryRestrictionsDto,
   DietaryPreferences,
@@ -19,8 +19,11 @@ interface UpdatePersonalInfoDto {
   firstName?: string;
   lastName?: string;
   email?: string;
-  profileType?: ProfileType;
+  defaultServings?: number;
+  primaryGoal?: PrimaryGoal | null;
 }
+
+const PRIMARY_GOALS = new Set<string>(Object.values(PrimaryGoal));
 
 @Injectable()
 export class UserService {
@@ -34,6 +37,23 @@ export class UserService {
    * Met à jour les informations personnelles d'un utilisateur
    */
   async updatePersonalInfo(userId: string, updateData: UpdatePersonalInfoDto) {
+    if (
+      updateData.defaultServings !== undefined &&
+      (!Number.isInteger(updateData.defaultServings) ||
+        updateData.defaultServings < 1 ||
+        updateData.defaultServings > 20)
+    ) {
+      throw new BadRequestException(
+        'Le nombre de couverts doit être un entier compris entre 1 et 20',
+      );
+    }
+    if (
+      updateData.primaryGoal !== undefined &&
+      updateData.primaryGoal !== null &&
+      !PRIMARY_GOALS.has(updateData.primaryGoal)
+    ) {
+      throw new BadRequestException('Objectif principal invalide');
+    }
     // Vérifier que l'utilisateur existe
     const existingUser = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -61,7 +81,12 @@ export class UserService {
         ...(updateData.firstName && { firstName: updateData.firstName }),
         ...(updateData.lastName && { lastName: updateData.lastName }),
         ...(updateData.email && { email: updateData.email }),
-        ...(updateData.profileType && { profileType: updateData.profileType }),
+        ...(updateData.defaultServings !== undefined && {
+          defaultServings: updateData.defaultServings,
+        }),
+        ...(updateData.primaryGoal !== undefined && {
+          primaryGoal: updateData.primaryGoal,
+        }),
       },
     });
 
@@ -127,38 +152,33 @@ export class UserService {
 
     // Récupérer les préférences existantes avec le bon typage
     const currentPreferences =
-      (existingUser.preferences as unknown as DietaryPreferences) || {
-        allergens: [],
-        diets: [],
-      };
+      existingUser.preferences && typeof existingUser.preferences === 'object'
+        ? (existingUser.preferences as Record<string, unknown> &
+            DietaryPreferences)
+        : ({ allergens: [], diets: [] } as Record<string, unknown> &
+            DietaryPreferences);
 
     // Fusionner les nouvelles données avec les préférences existantes
-    const updatedPreferences: DietaryPreferences = {
+    const updatedPreferences = {
+      ...currentPreferences,
       allergens: updateData.allergens ?? currentPreferences.allergens ?? [],
       diets: updateData.diets ?? currentPreferences.diets ?? [],
     };
 
     // Mettre à jour l'utilisateur avec les nouvelles préférences
-    const updatedUser = await this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id: userId },
       data: {
         preferences: updatedPreferences as unknown as Prisma.InputJsonValue,
       },
     });
 
-    // Retourner l'utilisateur sans le mot de passe
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...userWithoutPassword } = updatedUser;
-
     return {
       success: true,
       message: 'Restrictions alimentaires mises à jour avec succès',
       data: {
-        ...(await toSafeUserResponseWithUsage(
-          userWithoutPassword as any,
-          this.accessPolicyService,
-          this.usageQuotaService,
-        )),
+        allergens: updatedPreferences.allergens,
+        diets: updatedPreferences.diets,
       },
     };
   }

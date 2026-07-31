@@ -647,11 +647,11 @@ export type EnumRecipeIngredientSourceWithAggregatesFilter<$PrismaModel = never>
   _max?: Prisma.NestedEnumRecipeIngredientSourceFilter<$PrismaModel>
 }
 
-export type EnumProfileTypeFilter<$PrismaModel = never> = {
-  equals?: $Enums.ProfileType | Prisma.EnumProfileTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel> | $Enums.ProfileType
+export type EnumPrimaryGoalNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.PrimaryGoal | Prisma.EnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPrimaryGoalNullableFilter<$PrismaModel> | $Enums.PrimaryGoal | null
 }
 
 export type EnumUserRoleFilter<$PrismaModel = never> = {
@@ -682,14 +682,14 @@ export type EnumBillingIntervalNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumBillingIntervalNullableFilter<$PrismaModel> | $Enums.BillingInterval | null
 }
 
-export type EnumProfileTypeWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.ProfileType | Prisma.EnumProfileTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumProfileTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProfileType
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel>
+export type EnumPrimaryGoalNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PrimaryGoal | Prisma.EnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPrimaryGoalNullableWithAggregatesFilter<$PrismaModel> | $Enums.PrimaryGoal | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPrimaryGoalNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPrimaryGoalNullableFilter<$PrismaModel>
 }
 
 export type EnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -1319,11 +1319,11 @@ export type NestedEnumRecipeIngredientSourceWithAggregatesFilter<$PrismaModel = 
   _max?: Prisma.NestedEnumRecipeIngredientSourceFilter<$PrismaModel>
 }
 
-export type NestedEnumProfileTypeFilter<$PrismaModel = never> = {
-  equals?: $Enums.ProfileType | Prisma.EnumProfileTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel> | $Enums.ProfileType
+export type NestedEnumPrimaryGoalNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.PrimaryGoal | Prisma.EnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPrimaryGoalNullableFilter<$PrismaModel> | $Enums.PrimaryGoal | null
 }
 
 export type NestedEnumUserRoleFilter<$PrismaModel = never> = {
@@ -1354,14 +1354,14 @@ export type NestedEnumBillingIntervalNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumBillingIntervalNullableFilter<$PrismaModel> | $Enums.BillingInterval | null
 }
 
-export type NestedEnumProfileTypeWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.ProfileType | Prisma.EnumProfileTypeFieldRefInput<$PrismaModel>
-  in?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  notIn?: $Enums.ProfileType[] | Prisma.ListEnumProfileTypeFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumProfileTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProfileType
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumProfileTypeFilter<$PrismaModel>
+export type NestedEnumPrimaryGoalNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PrimaryGoal | Prisma.EnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PrimaryGoal[] | Prisma.ListEnumPrimaryGoalFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPrimaryGoalNullableWithAggregatesFilter<$PrismaModel> | $Enums.PrimaryGoal | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPrimaryGoalNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPrimaryGoalNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumUserRoleWithAggregatesFilter<$PrismaModel = never> = {

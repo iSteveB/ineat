@@ -18,7 +18,7 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from '../services/user.service';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
-import { ProfileType } from '../../../prisma/generated/prisma/client';
+import { PrimaryGoal } from '../../../prisma/generated/prisma/client';
 import { UpdateDietaryRestrictionsDto } from '../dto/update-dietary-restrictions.dto';
 import { UpdatePasswordDto } from '../dto/update-password.dto';
 
@@ -35,7 +35,8 @@ interface UpdatePersonalInfoDto {
   firstName?: string;
   lastName?: string;
   email?: string;
-  profileType?: ProfileType;
+  defaultServings?: number;
+  primaryGoal?: PrimaryGoal | null;
 }
 
 @ApiTags('User')
@@ -74,7 +75,7 @@ export class UserController {
   @ApiOperation({
     summary: 'Mettre à jour les informations personnelles',
     description:
-      'Permet à un utilisateur de modifier son prénom, nom, email et type de profil',
+      'Permet à un utilisateur de modifier son identité et ses préférences principales',
   })
   @ApiBody({
     description: 'Champs à mettre à jour (tous optionnels)',
@@ -97,11 +98,18 @@ export class UserController {
           description: "Adresse email de l'utilisateur",
           example: 'jean.dupont@example.com',
         },
-        profileType: {
+        defaultServings: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 20,
+          description: 'Nombre habituel de couverts',
+          example: 4,
+        },
+        primaryGoal: {
           type: 'string',
-          enum: ['SINGLE', 'STUDENT', 'FAMILY'],
-          description: 'Type de profil utilisateur',
-          example: 'SINGLE',
+          nullable: true,
+          enum: ['REDUCE_WASTE', 'SAVE_MONEY', 'EAT_BETTER', 'FIND_MEAL_IDEAS'],
+          description: "Objectif principal de l'utilisateur",
         },
       },
     },
@@ -272,7 +280,7 @@ export class UserController {
   @ApiOperation({
     summary: 'Supprimer le compte utilisateur',
     description:
-      "Supprime définitivement le compte authentifié et les données utilisateur associées.",
+      'Supprime définitivement le compte authentifié et les données utilisateur associées.',
   })
   @ApiResponse({
     status: 200,

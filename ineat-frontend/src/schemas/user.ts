@@ -4,7 +4,7 @@ import {
 	EmailSchema,
 	PasswordSchema,
 	ShortTextSchema,
-	ProfileTypeSchema,
+	PrimaryGoalSchema,
 	SubscriptionSchema,
 	UserRoleSchema,
 	SubscriptionPlanSchema,
@@ -53,7 +53,15 @@ export const UserSchema = z
 		firstName: ShortTextSchema,
 		lastName: ShortTextSchema,
 		avatarUrl: z.string().url("URL d'avatar invalide").optional(),
-		profileType: ProfileTypeSchema,
+		defaultServings: z.number().int().min(1).max(20).default(4),
+		primaryGoal: PrimaryGoalSchema.nullable().default(null),
+		preferences: z
+			.object({
+				allergens: z.array(z.string()).default([]),
+				diets: z.array(z.string()).default([]),
+			})
+			.passthrough()
+			.optional(),
 		subscription: SubscriptionSchema,
 		role: UserRoleSchema.default('USER'),
 		subscriptionPlan: SubscriptionPlanSchema.default('FREE'),
@@ -98,7 +106,6 @@ export const RegisterDataSchema = z.object({
 	password: PasswordSchema,
 	firstName: ShortTextSchema,
 	lastName: ShortTextSchema,
-	profileType: ProfileTypeSchema,
 	dietaryPreferences: DietaryPreferencesSchema.optional(),
 });
 export type RegisterData = z.infer<typeof RegisterDataSchema>;
@@ -163,7 +170,8 @@ export const UpdateProfileSchema = z.object({
 	firstName: ShortTextSchema.optional(),
 	lastName: ShortTextSchema.optional(),
 	avatarUrl: z.string().url("URL d'avatar invalide").optional(),
-	profileType: ProfileTypeSchema.optional(),
+	defaultServings: z.number().int().min(1).max(20).optional(),
+	primaryGoal: PrimaryGoalSchema.nullable().optional(),
 });
 export type UpdateProfileData = z.infer<typeof UpdateProfileSchema>;
 
@@ -288,7 +296,6 @@ export const hasCompleteProfile = (user: User): boolean => {
 		user.firstName &&
 		user.lastName &&
 		user.email &&
-		user.profileType &&
-		user.dietaryPreferences
+		user.defaultServings
 	);
 };

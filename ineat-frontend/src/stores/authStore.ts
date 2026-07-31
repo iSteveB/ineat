@@ -7,7 +7,7 @@ import {
 	LoginCredentials,
 	RegisterData,
 	AuthResponse,
-	ProfileType,
+	PrimaryGoal,
 	isAdminUser,
 	isPremiumUser,
 } from '@/schemas';
@@ -44,7 +44,8 @@ interface AuthState {
 		firstName: string;
 		lastName: string;
 		email: string;
-		profileType: ProfileType;
+		defaultServings?: number;
+		primaryGoal?: PrimaryGoal | null;
 	}) => Promise<void>;
 
 	// ===== UTILITAIRES =====
@@ -262,7 +263,8 @@ export const useAuthStore = create<AuthState>()(
 				firstName: string;
 				lastName: string;
 				email: string;
-				profileType: ProfileType;
+				defaultServings?: number;
+				primaryGoal?: PrimaryGoal | null;
 			}) => {
 				try {
 					set({ isLoading: true, error: null });

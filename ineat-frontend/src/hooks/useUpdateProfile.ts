@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
-import { ProfileType } from '@/schemas';
+import { PrimaryGoal } from '@/schemas';
 
 interface UpdateProfileData {
   firstName: string;
   lastName: string;
   email: string;
-  profileType: ProfileType;
+  defaultServings?: number;
+  primaryGoal?: PrimaryGoal | null;
 }
 
 interface UseUpdateProfileReturn {
@@ -29,7 +30,7 @@ interface UseUpdateProfileReturn {
  *       firstName: 'John',
  *       lastName: 'Doe',
  *       email: 'john@example.com',
- *       profileType: 'SINGLE'
+ *       defaultServings: 4
  *     });
  *     // Success!
  *   } catch (err) {

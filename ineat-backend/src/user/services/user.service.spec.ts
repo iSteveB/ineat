@@ -29,13 +29,91 @@ describe('UserService.updatePassword', () => {
     user: {
       delete: jest.fn(),
       findUnique: jest.fn(),
+      update: jest.fn(),
     },
   };
 
-  const service = new UserService(prisma as any, {} as any, {} as any);
+  const accessPolicyService = {
+    getPolicy: jest.fn().mockReturnValue({
+      effectivePlan: 'FREE',
+      capabilities: {
+        inventoryLimit: 50,
+        canUseRecipes: false,
+        canGenerateAiRecipes: false,
+        aiRecipeGenerationRemaining: 0,
+        canImportDrive: false,
+        driveImportsRemaining: 0,
+        canUseAutomaticBudgetSync: false,
+        canAccessAdmin: false,
+      },
+    }),
+  };
+  const usageQuotaService = {
+    getUsageState: jest.fn().mockResolvedValue({ remaining: 0 }),
+  };
+  const service = new UserService(
+    prisma as any,
+    accessPolicyService as any,
+    usageQuotaService as any,
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('met à jour les couverts et l’objectif principal', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      id: 'user-id',
+      email: 'jane@example.com',
+    });
+    prisma.user.update.mockResolvedValue({
+      id: 'user-id',
+      email: 'jane@example.com',
+      firstName: 'Jane',
+      lastName: 'Doe',
+      defaultServings: 6,
+      primaryGoal: 'REDUCE_WASTE',
+      role: 'USER',
+      subscriptionPlan: 'FREE',
+      subscriptionStatus: 'ACTIVE',
+      preferences: {},
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    });
+
+    await service.updatePersonalInfo('user-id', {
+      defaultServings: 6,
+      primaryGoal: 'REDUCE_WASTE',
+    });
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: 'user-id' },
+      data: {
+        defaultServings: 6,
+        primaryGoal: 'REDUCE_WASTE',
+      },
+    });
+  });
+
+  it.each([0, 21, 2.5])(
+    'rejette un nombre de couverts invalide : %s',
+    async (value) => {
+      await expect(
+        service.updatePersonalInfo('user-id', { defaultServings: value }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(prisma.user.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejette un objectif principal inconnu', async () => {
+    await expect(
+      service.updatePersonalInfo('user-id', {
+        primaryGoal: 'UNKNOWN' as never,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('met à jour le credential Better Auth quand le mot de passe actuel est valide', async () => {

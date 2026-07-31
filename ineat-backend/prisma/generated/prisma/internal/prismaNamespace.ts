@@ -2624,7 +2624,8 @@ export const UserScalarFieldEnum = {
   passwordHash: 'passwordHash',
   firstName: 'firstName',
   lastName: 'lastName',
-  profileType: 'profileType',
+  defaultServings: 'defaultServings',
+  primaryGoal: 'primaryGoal',
   preferences: 'preferences',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -3147,16 +3148,16 @@ export type ListEnumRecipeIngredientSourceFieldRefInput<$PrismaModel> = FieldRef
 
 
 /**
- * Reference to a field of type 'ProfileType'
+ * Reference to a field of type 'PrimaryGoal'
  */
-export type EnumProfileTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProfileType'>
+export type EnumPrimaryGoalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrimaryGoal'>
     
 
 
 /**
- * Reference to a field of type 'ProfileType[]'
+ * Reference to a field of type 'PrimaryGoal[]'
  */
-export type ListEnumProfileTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProfileType[]'>
+export type ListEnumPrimaryGoalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrimaryGoal[]'>
     
 
 

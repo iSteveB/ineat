@@ -1,9 +1,4 @@
-import {
-  Controller,
-  UseGuards,
-  Get,
-  Request,
-} from '@nestjs/common';
+import { Controller, UseGuards, Get, Request } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { SessionAuthGuard } from '../guards/session-auth.guard';
 import { Request as ExpressRequest } from 'express';
@@ -17,7 +12,8 @@ interface RequestWithUser extends ExpressRequest {
     email: string;
     firstName: string;
     lastName: string;
-    profileType: string;
+    defaultServings: number;
+    primaryGoal?: string | null;
     role?: string;
     subscriptionPlan?: string;
     subscriptionStatus?: string;
@@ -64,5 +60,4 @@ export class AuthController {
       },
     };
   }
-
 }

@@ -5,7 +5,7 @@ import { z } from 'zod';
 // ===== BASE - Enums et types fondamentaux =====
 export {
 	// Enums
-	ProfileTypeSchema,
+	PrimaryGoalSchema,
 	SubscriptionSchema,
 	UserRoleSchema,
 	SubscriptionPlanSchema,
@@ -21,7 +21,7 @@ export {
 	DietTypeSchema,
 
 	// Types
-	type ProfileType,
+	type PrimaryGoal,
 	type Subscription,
 	type UserRole,
 	type SubscriptionPlan,

@@ -113,13 +113,14 @@ export const NutriScore = {
 export type NutriScore = (typeof NutriScore)[keyof typeof NutriScore]
 
 
-export const ProfileType = {
-  FAMILY: 'FAMILY',
-  STUDENT: 'STUDENT',
-  SINGLE: 'SINGLE'
+export const PrimaryGoal = {
+  REDUCE_WASTE: 'REDUCE_WASTE',
+  SAVE_MONEY: 'SAVE_MONEY',
+  EAT_BETTER: 'EAT_BETTER',
+  FIND_MEAL_IDEAS: 'FIND_MEAL_IDEAS'
 } as const
 
-export type ProfileType = (typeof ProfileType)[keyof typeof ProfileType]
+export type PrimaryGoal = (typeof PrimaryGoal)[keyof typeof PrimaryGoal]
 
 
 export const ReceiptStatus = {

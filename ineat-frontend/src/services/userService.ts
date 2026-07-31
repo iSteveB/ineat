@@ -1,12 +1,13 @@
 import { apiClient } from '@/lib/api-client';
-import { ProfileType } from '@/schemas';
+import { PrimaryGoal } from '@/schemas';
 
 // Types pour les requêtes
 interface UpdatePersonalInfoRequest {
 	firstName: string;
 	lastName: string;
 	email: string;
-	profileType: ProfileType;
+	defaultServings?: number;
+	primaryGoal?: PrimaryGoal | null;
 }
 
 interface UpdateDietaryRestrictionsRequest {
@@ -25,7 +26,8 @@ interface UserResponse {
 	firstName: string;
 	lastName: string;
 	email: string;
-	profileType: ProfileType;
+	defaultServings: number;
+	primaryGoal: PrimaryGoal | null;
 	avatarUrl?: string;
 	createdAt: string;
 	updatedAt: string;

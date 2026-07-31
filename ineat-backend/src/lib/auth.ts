@@ -62,9 +62,13 @@ export const auth = betterAuth({
         type: 'string',
         defaultValue: '',
       },
-      profileType: {
+      defaultServings: {
+        type: 'number',
+        defaultValue: 4,
+      },
+      primaryGoal: {
         type: 'string',
-        defaultValue: 'SINGLE',
+        required: false,
       },
       preferences: {
         type: 'json',
