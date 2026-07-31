@@ -1,259 +1,327 @@
-import type { FC } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
-import {
-	ArrowRight,
-	PackagePlus,
-	ScanLine,
-	TriangleAlert,
-} from 'lucide-react';
+import type { FC, ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, PackagePlus, ScanLine, TriangleAlert } from "lucide-react";
 
-import { InventoryWidget } from '@/features/inventory/InventoryWidget';
-import ScoreWidget from '@/features/score/ScoreWidget';
-import { BudgetWidget } from '@/features/budget/BudgetWidget';
-import { RecentProductsWidget } from '@/features/product/RecentProductsWidget';
-import { ExpiringProductsWidget } from '@/features/product/ExpiringProductsWidget';
-import { Button } from '@/components/ui/button';
+import { InventoryWidget } from "@/features/inventory/InventoryWidget";
+import ScoreWidget from "@/features/score/ScoreWidget";
+import { BudgetWidget } from "@/features/budget/BudgetWidget";
+import { RecentProductsWidget } from "@/features/product/RecentProductsWidget";
+import { ExpiringProductsWidget } from "@/features/product/ExpiringProductsWidget";
+import { Button } from "@/components/ui/button";
 
-import { inventoryService } from '@/services/inventoryService';
-import { useAuthStore } from '@/stores/authStore';
+import { inventoryService } from "@/services/inventoryService";
+import { useAuthStore } from "@/stores/authStore";
+import { PrimaryGoal } from "@/schemas";
 
 type DashboardAction = {
-	title: string;
-	description: string;
-	to: '/app/inventory' | '/app/inventory/add';
-	tone: 'danger' | 'warning' | 'empty' | 'normal';
+  title: string;
+  description: string;
+  to:
+    | "/app/inventory"
+    | "/app/inventory/add"
+    | "/app/budget"
+    | "/app/recipes/suggestions";
+  tone: "danger" | "warning" | "empty" | "normal";
+};
+
+const goalActions: Record<PrimaryGoal, DashboardAction> = {
+  REDUCE_WASTE: {
+    title: "Priorité anti-gaspillage",
+    description:
+      "Commencez par les produits qui expirent bientôt et transformez-les en repas.",
+    to: "/app/inventory",
+    tone: "warning",
+  },
+  SAVE_MONEY: {
+    title: "Gardez votre budget sous contrôle",
+    description:
+      "Consultez vos dépenses alimentaires et ajustez le reste du mois.",
+    to: "/app/budget",
+    tone: "normal",
+  },
+  EAT_BETTER: {
+    title: "Mieux manger au quotidien",
+    description:
+      "Consultez la qualité nutritionnelle des produits réellement présents chez vous.",
+    to: "/app/inventory",
+    tone: "normal",
+  },
+  FIND_MEAL_IDEAS: {
+    title: "Que cuisiner aujourd’hui ?",
+    description:
+      "Générez des idées de repas à partir des produits de votre inventaire.",
+    to: "/app/recipes/suggestions",
+    tone: "normal",
+  },
 };
 
 const Dashboard: FC = () => {
-	const { user } = useAuthStore();
+  const { user } = useAuthStore();
 
-	// ===== RÉCUPÉRATION DES DONNÉES =====
+  // ===== RÉCUPÉRATION DES DONNÉES =====
 
-	// Récupération de l'inventaire complet pour le ScoreWidget
-	const {
-		data: scoreInventory = [],
-		isLoading: isLoadingInventory,
-		error: inventoryError,
-	} = useQuery({
-		queryKey: ['dashboardScoreInventory'],
-		queryFn: () => inventoryService.getInventory({ limit: 100 }),
-		staleTime: 5 * 60 * 1000,
-	});
+  // Récupération de l'inventaire complet pour le ScoreWidget
+  const {
+    data: scoreInventory = [],
+    isLoading: isLoadingInventory,
+    error: inventoryError,
+  } = useQuery({
+    queryKey: ["dashboardScoreInventory"],
+    queryFn: () => inventoryService.getInventory({ limit: 100 }),
+    staleTime: 5 * 60 * 1000,
+  });
 
-	const {
-		data: inventoryStats,
-		isLoading: isLoadingStats,
-		error: statsError,
-	} = useQuery({
-		queryKey: ['inventoryStats'],
-		queryFn: () => inventoryService.getInventoryStats(),
-		staleTime: 2 * 60 * 1000,
-	});
+  const {
+    data: inventoryStats,
+    isLoading: isLoadingStats,
+    error: statsError,
+  } = useQuery({
+    queryKey: ["inventoryStats"],
+    queryFn: () => inventoryService.getInventoryStats(),
+    staleTime: 2 * 60 * 1000,
+  });
 
-	// Récupération des produits récents (5 derniers)
-	const {
-		data: recentProducts = [],
-		isLoading: isLoadingRecent,
-		error: recentError,
-	} = useQuery({
-		queryKey: ['recentProducts'],
-		queryFn: () => inventoryService.getRecentProducts(5),
-		staleTime: 60 * 1000,
-	});
+  // Récupération des produits récents (5 derniers)
+  const {
+    data: recentProducts = [],
+    isLoading: isLoadingRecent,
+    error: recentError,
+  } = useQuery({
+    queryKey: ["recentProducts"],
+    queryFn: () => inventoryService.getRecentProducts(5),
+    staleTime: 60 * 1000,
+  });
 
-	// Récupération des produits qui expirent dans les 7 prochains jours
-	const {
-		data: expiringProducts = [],
-		isLoading: isLoadingExpiring,
-		error: expiringError,
-	} = useQuery({
-		queryKey: ['expiringProducts'],
-		queryFn: () =>
-			inventoryService.getInventory({ expiringWithinDays: 7, limit: 20 }),
-		staleTime: 60 * 1000,
-	});
+  // Récupération des produits qui expirent dans les 7 prochains jours
+  const {
+    data: expiringProducts = [],
+    isLoading: isLoadingExpiring,
+    error: expiringError,
+  } = useQuery({
+    queryKey: ["expiringProducts"],
+    queryFn: () =>
+      inventoryService.getInventory({ expiringWithinDays: 7, limit: 20 }),
+    staleTime: 60 * 1000,
+  });
 
-	// ===== CALCULS DÉRIVÉS =====
+  // ===== CALCULS DÉRIVÉS =====
 
-	// État de chargement global
-	const isLoading =
-		isLoadingInventory || isLoadingStats || isLoadingRecent || isLoadingExpiring;
+  // État de chargement global
+  const isLoading =
+    isLoadingInventory ||
+    isLoadingStats ||
+    isLoadingRecent ||
+    isLoadingExpiring;
 
-	// Gestion des erreurs
-	const error = inventoryError || statsError || recentError || expiringError;
-	const totalInventoryItems =
-		inventoryStats?.totalQuantity ??
-		scoreInventory.reduce((total, item) => total + (item.quantity ?? 0), 0);
+  // Gestion des erreurs
+  const error = inventoryError || statsError || recentError || expiringError;
+  const totalInventoryItems =
+    inventoryStats?.totalQuantity ??
+    scoreInventory.reduce((total, item) => total + (item.quantity ?? 0), 0);
 
-	const priorityAction: DashboardAction =
-		expiringProducts.length > 0
-			? {
-					title: `${expiringProducts.length} produit${expiringProducts.length > 1 ? 's' : ''} à traiter`,
-					description:
-						'Commencez par consommer, déplacer ou retirer les produits qui expirent bientôt.',
-					to: '/app/inventory',
-					tone: 'warning',
-				}
-			: totalInventoryItems === 0
-				? {
-						title: 'Inventaire vide',
-						description:
-							'Ajoutez votre premier produit pour activer les alertes et le budget alimentaire.',
-						to: '/app/inventory/add',
-						tone: 'empty',
-					}
-				: {
-						title: 'Inventaire à jour',
-						description:
-							'Ajoutez vos derniers achats pour garder le stock fiable.',
-						to: '/app/inventory/add',
-						tone: 'normal',
-					};
+  const inventoryAction: DashboardAction =
+    expiringProducts.length > 0
+      ? {
+          title: `${expiringProducts.length} produit${expiringProducts.length > 1 ? "s" : ""} à traiter`,
+          description:
+            "Commencez par consommer, déplacer ou retirer les produits qui expirent bientôt.",
+          to: "/app/inventory",
+          tone: "warning",
+        }
+      : totalInventoryItems === 0
+        ? {
+            title: "Inventaire vide",
+            description:
+              "Ajoutez votre premier produit pour activer les alertes et le budget alimentaire.",
+            to: "/app/inventory/add",
+            tone: "empty",
+          }
+        : {
+            title: "Inventaire à jour",
+            description:
+              "Ajoutez vos derniers achats pour garder le stock fiable.",
+            to: "/app/inventory/add",
+            tone: "normal",
+          };
+  const priorityAction = user?.primaryGoal
+    ? goalActions[user.primaryGoal]
+    : inventoryAction;
 
-	const actionToneClasses = {
-		danger: 'border-red-200 bg-red-50 text-red-800',
-		warning: 'border-orange-200 bg-orange-50 text-orange-800',
-		empty: 'border-blue-200 bg-blue-50 text-blue-800',
-		normal: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-	}[priorityAction.tone];
+  const actionToneClasses = {
+    danger: "border-red-200 bg-red-50 text-red-800",
+    warning: "border-orange-200 bg-orange-50 text-orange-800",
+    empty: "border-blue-200 bg-blue-50 text-blue-800",
+    normal: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  }[priorityAction.tone];
 
-	// ===== GESTION DES ÉTATS =====
+  const inventoryWidget = (
+    <InventoryWidget
+      key="inventory"
+      totalProducts={inventoryStats?.totalQuantity}
+      soonExpiringCount={
+        (inventoryStats?.expiryBreakdown.critical ?? 0) +
+        (inventoryStats?.expiryBreakdown.warning ?? 0)
+      }
+      criticalCount={inventoryStats?.expiryBreakdown.critical}
+      expiredCount={inventoryStats?.expiryBreakdown.expired}
+    />
+  );
+  const scoreWidget = <ScoreWidget key="score" inventory={scoreInventory} />;
+  const budgetWidget = <BudgetWidget key="budget" />;
+  const recentWidget = (
+    <RecentProductsWidget key="recent" products={recentProducts} />
+  );
+  const expiringWidget = (
+    <ExpiringProductsWidget key="expiring" products={expiringProducts} />
+  );
 
-	if (isLoading) {
-		return (
-			<div className='flex justify-center items-center h-screen'>
-				<div className='animate-spin rounded-full size-12 border-t-4 border-b-4 border-info-500'></div>
-			</div>
-		);
-	}
+  const widgetsByGoal: Record<PrimaryGoal, ReactNode[]> = {
+    REDUCE_WASTE: [
+      expiringWidget,
+      inventoryWidget,
+      recentWidget,
+      scoreWidget,
+      budgetWidget,
+    ],
+    SAVE_MONEY: [
+      budgetWidget,
+      inventoryWidget,
+      expiringWidget,
+      recentWidget,
+      scoreWidget,
+    ],
+    EAT_BETTER: [
+      scoreWidget,
+      inventoryWidget,
+      expiringWidget,
+      recentWidget,
+      budgetWidget,
+    ],
+    FIND_MEAL_IDEAS: [
+      inventoryWidget,
+      expiringWidget,
+      recentWidget,
+      scoreWidget,
+      budgetWidget,
+    ],
+  };
+  const dashboardWidgets = user?.primaryGoal
+    ? widgetsByGoal[user.primaryGoal]
+    : [
+        inventoryWidget,
+        scoreWidget,
+        budgetWidget,
+        recentWidget,
+        expiringWidget,
+      ];
 
-	if (error) {
-		return (
-			<div className='bg-neutral-50 rounded-lg shadow-md p-6 text-center'>
-				<p className='text-error-100'>
-					Impossible de charger les données du tableau de bord.
-				</p>
-				<p className='text-error-50 text-sm mt-2'>
-					{error instanceof Error ? error.message : 'Erreur inconnue'}
-				</p>
-				<button
-					className='mt-4 px-4 py-2 bg-primary-100 text-neutral-50 rounded hover:bg-primary-100/80'
-					onClick={() => window.location.reload()}>
-					Réessayer
-				</button>
-			</div>
-		);
-	}
+  // ===== GESTION DES ÉTATS =====
 
-	// ===== RENDU DU DASHBOARD =====
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full size-12 border-t-4 border-b-4 border-info-500"></div>
+      </div>
+    );
+  }
 
-	return (
-		<div className='p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto'>
-			{/* ===== HEADER ===== */}
-			<header className='mb-8'>
-				<h1 className='text-3xl font-bold text-neutral-300'>
-					Bonjour {user?.firstName || 'Utilisateur'},
-				</h1>
-				<p className='text-neutral-300/70'>
-					Bienvenue sur votre tableau de bord InEat
-				</p>
-			</header>
+  if (error) {
+    return (
+      <div className="bg-neutral-50 rounded-lg shadow-md p-6 text-center">
+        <p className="text-error-100">
+          Impossible de charger les données du tableau de bord.
+        </p>
+        <p className="text-error-50 text-sm mt-2">
+          {error instanceof Error ? error.message : "Erreur inconnue"}
+        </p>
+        <button
+          className="mt-4 px-4 py-2 bg-primary-100 text-neutral-50 rounded hover:bg-primary-100/80"
+          onClick={() => window.location.reload()}
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
 
-			<section
-				className='mb-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm'
-				aria-labelledby='dashboard-priority-title'>
-				<div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
-					<div className='space-y-3'>
-						<div
-							className={`inline-flex items-center gap-2 rounded-md border px-3 py-1 text-sm font-medium ${actionToneClasses}`}>
-							<TriangleAlert className='size-4' />
-							<span id='dashboard-priority-title'>
-								{priorityAction.title}
-							</span>
-						</div>
-						<p className='max-w-2xl text-sm text-neutral-700'>
-							{priorityAction.description}
-						</p>
-						<div className='grid grid-cols-3 gap-2 text-sm sm:max-w-md'>
-							<div className='rounded-md bg-neutral-100 px-3 py-2'>
-								<p className='font-semibold text-neutral-900'>
-									{totalInventoryItems}
-								</p>
-								<p className='text-xs text-neutral-600'>
-									en stock
-								</p>
-							</div>
-							<div className='rounded-md bg-neutral-100 px-3 py-2'>
-								<p className='font-semibold text-neutral-900'>
-									{expiringProducts.length}
-								</p>
-								<p className='text-xs text-neutral-600'>
-									à consommer
-								</p>
-							</div>
-							<div className='rounded-md bg-neutral-100 px-3 py-2'>
-								<p className='font-semibold text-neutral-900'>
-									{recentProducts.length}
-								</p>
-								<p className='text-xs text-neutral-600'>
-									récents
-								</p>
-							</div>
-						</div>
-					</div>
+  // ===== RENDU DU DASHBOARD =====
 
-					<div className='grid grid-cols-1 gap-2 sm:grid-cols-2 lg:min-w-[320px]'>
-						<Button asChild>
-							<Link to={priorityAction.to}>
-								<ArrowRight className='size-4' />
-								Agir maintenant
-							</Link>
-						</Button>
-						<Button asChild variant='outline'>
-							<Link to='/app/inventory/add/scan'>
-								<ScanLine className='size-4' />
-								Scanner
-							</Link>
-						</Button>
-						<Button
-							asChild
-							variant='secondary'
-							className='sm:col-span-2'>
-							<Link to='/app/inventory/add'>
-								<PackagePlus className='size-4' />
-								Ajouter un produit
-							</Link>
-						</Button>
-					</div>
-				</div>
-			</section>
+  return (
+    <div className="p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto">
+      {/* ===== HEADER ===== */}
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-neutral-300">
+          Bonjour {user?.firstName || "Utilisateur"},
+        </h1>
+        <p className="text-neutral-300/70">
+          Bienvenue sur votre tableau de bord InEat
+        </p>
+      </header>
 
-			<div className='flex flex-col gap-6'>
-				<InventoryWidget
-					totalProducts={inventoryStats?.totalQuantity}
-					soonExpiringCount={
-						(inventoryStats?.expiryBreakdown.critical ?? 0) +
-						(inventoryStats?.expiryBreakdown.warning ?? 0)
-					}
-					criticalCount={inventoryStats?.expiryBreakdown.critical}
-					expiredCount={inventoryStats?.expiryBreakdown.expired}
-				/>
+      <section
+        className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm"
+        aria-labelledby="dashboard-priority-title"
+      >
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-3">
+            <div
+              className={`inline-flex items-center gap-2 rounded-md border px-3 py-1 text-sm font-medium ${actionToneClasses}`}
+            >
+              <TriangleAlert className="size-4" />
+              <span id="dashboard-priority-title">{priorityAction.title}</span>
+            </div>
+            <p className="max-w-2xl text-sm text-neutral-700">
+              {priorityAction.description}
+            </p>
+            <div className="grid grid-cols-3 gap-2 text-sm sm:max-w-md">
+              <div className="rounded-md bg-neutral-100 px-3 py-2">
+                <p className="font-semibold text-neutral-900">
+                  {totalInventoryItems}
+                </p>
+                <p className="text-xs text-neutral-600">en stock</p>
+              </div>
+              <div className="rounded-md bg-neutral-100 px-3 py-2">
+                <p className="font-semibold text-neutral-900">
+                  {expiringProducts.length}
+                </p>
+                <p className="text-xs text-neutral-600">à consommer</p>
+              </div>
+              <div className="rounded-md bg-neutral-100 px-3 py-2">
+                <p className="font-semibold text-neutral-900">
+                  {recentProducts.length}
+                </p>
+                <p className="text-xs text-neutral-600">récents</p>
+              </div>
+            </div>
+          </div>
 
-				{/* Widget Score avec données réelles */}
-				<ScoreWidget inventory={scoreInventory} />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:min-w-[320px]">
+            <Button asChild>
+              <Link to={priorityAction.to}>
+                <ArrowRight className="size-4" />
+                Agir maintenant
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/app/inventory/add/scan">
+                <ScanLine className="size-4" />
+                Scanner
+              </Link>
+            </Button>
+            <Button asChild variant="secondary" className="sm:col-span-2">
+              <Link to="/app/inventory/add">
+                <PackagePlus className="size-4" />
+                Ajouter un produit
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
-				{/* Widget Budget */}
-				<BudgetWidget />
-
-				{/* Widget Produits récents */}
-				<RecentProductsWidget products={recentProducts} />
-
-				{/* Widget Produits qui expirent */}
-				<ExpiringProductsWidget products={expiringProducts} />
-			</div>
-		</div>
-	);
+      <div className="flex flex-col gap-6">{dashboardWidgets}</div>
+    </div>
+  );
 };
 
 export default Dashboard;
