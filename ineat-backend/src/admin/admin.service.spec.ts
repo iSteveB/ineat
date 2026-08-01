@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import {
+  AccountStatus,
   SubscriptionPlan,
   UserRole,
 } from '../../prisma/generated/prisma/enums';
@@ -23,6 +24,7 @@ describe('AdminService', () => {
       findUnique: jest.Mock;
       update: jest.Mock;
     };
+    session: { deleteMany: jest.Mock };
     invoice: { count: jest.Mock };
     notificationDelivery: { count: jest.Mock };
     stripeWebhookEvent: { count: jest.Mock };
@@ -42,6 +44,12 @@ describe('AdminService', () => {
     firstName: 'Ada',
     lastName: 'Admin',
     role: UserRole.USER,
+    accountStatus: AccountStatus.ACTIVE,
+    accountStatusChangedAt: null,
+    suspendedUntil: null,
+    moderationReason: null,
+    deletionScheduledAt: null,
+    statusBeforeDeletion: null,
     subscriptionPlan: SubscriptionPlan.FREE,
     subscriptionStatus: 'ACTIVE',
     trialStartedAt: null,
@@ -62,6 +70,7 @@ describe('AdminService', () => {
   afterEach(() => jest.useRealTimers());
 
   beforeEach(async () => {
+    const session = { deleteMany: jest.fn().mockResolvedValue({ count: 1 }) };
     const user = {
       count: jest.fn(),
       findMany: jest.fn(),
@@ -70,10 +79,13 @@ describe('AdminService', () => {
     };
     prisma = {
       $transaction: jest.fn((input) =>
-        typeof input === 'function' ? input({ user }) : Promise.all(input),
+        typeof input === 'function'
+          ? input({ user, session })
+          : Promise.all(input),
       ),
       $queryRaw: jest.fn().mockResolvedValue([]),
       user,
+      session,
       invoice: { count: jest.fn() },
       notificationDelivery: { count: jest.fn() },
       stripeWebhookEvent: { count: jest.fn() },
@@ -297,5 +309,60 @@ describe('AdminService', () => {
 
     expect(prisma.user.update).not.toHaveBeenCalled();
     expect(adminAuditService.record).not.toHaveBeenCalled();
+  });
+
+  it('suspend un compte et révoque ses sessions sans toucher à Stripe', async () => {
+    prisma.user.findUnique.mockResolvedValue(baseUser);
+    prisma.user.update.mockResolvedValue({
+      ...baseUser,
+      accountStatus: AccountStatus.SUSPENDED,
+      accountStatusChangedAt: new Date('2026-07-31T12:00:00.000Z'),
+      suspendedUntil: new Date('2026-08-07T12:00:00.000Z'),
+      moderationReason: 'Vérification du compte',
+    });
+
+    const result = await service.updateAccountStatus(
+      baseUser.id,
+      'suspend',
+      {
+        reason: 'Vérification du compte',
+        suspendedUntil: '2026-08-07T12:00:00.000Z',
+      },
+      actor,
+    );
+
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          accountStatus: AccountStatus.SUSPENDED,
+        }),
+      }),
+    );
+    expect(prisma.session.deleteMany).toHaveBeenCalledWith({
+      where: { userId: baseUser.id },
+    });
+    expect(result.data.subscriptionPlan).toBe(SubscriptionPlan.FREE);
+    expect(adminAuditService.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'USER_ACCOUNT_SUSPEND' }),
+      expect.any(Object),
+    );
+  });
+
+  it('refuse à un administrateur de bannir son propre compte', async () => {
+    prisma.user.findUnique.mockResolvedValue({
+      ...baseUser,
+      id: actor.userId,
+      role: UserRole.ADMIN,
+    });
+
+    await expect(
+      service.updateAccountStatus(
+        actor.userId,
+        'ban',
+        { reason: 'Action interdite' },
+        actor,
+      ),
+    ).rejects.toThrow('propre compte');
+    expect(prisma.user.update).not.toHaveBeenCalled();
   });
 });

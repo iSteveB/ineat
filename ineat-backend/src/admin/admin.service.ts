@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import {
+  AccountStatus,
   SubscriptionPlan,
   UsageType,
   UserRole,
@@ -20,6 +21,17 @@ import {
   AdminDashboardQueryDto,
 } from './dto/admin-dashboard-query.dto';
 import { AdminQueueJobsQueryDto } from './dto/admin-operations-query.dto';
+import { AdminAccountActionDto } from './dto/admin-mutation.dto';
+
+const accountActions = {
+  suspend: AccountStatus.SUSPENDED,
+  activate: AccountStatus.ACTIVE,
+  ban: AccountStatus.BANNED,
+  rehabilitate: AccountStatus.ACTIVE,
+  'schedule-deletion': AccountStatus.PENDING_DELETION,
+} as const;
+
+type AccountAction = keyof typeof accountActions | 'cancel-deletion';
 
 const adminUserInclude = {
   UsageQuota: {
@@ -370,6 +382,7 @@ export class AdminService {
     const search = query.search?.trim();
     const where: Prisma.UserWhereInput = {
       role: query.role,
+      accountStatus: query.accountStatus,
       subscriptionPlan: query.plan,
       subscriptionStatus: query.status,
       createdAt:
@@ -504,6 +517,130 @@ export class AdminService {
     };
   }
 
+  async updateAccountStatus(
+    id: string,
+    rawAction: string,
+    input: AdminAccountActionDto,
+    actor: AdminActorContext,
+  ) {
+    if (!(rawAction in accountActions) && rawAction !== 'cancel-deletion') {
+      throw new BadRequestException('Action de compte invalide');
+    }
+    const action = rawAction as AccountAction;
+    const now = new Date();
+    const suspendedUntil = input.suspendedUntil
+      ? new Date(input.suspendedUntil)
+      : null;
+    if (
+      action === 'suspend' &&
+      suspendedUntil &&
+      suspendedUntil.getTime() <= now.getTime()
+    ) {
+      throw new BadRequestException('La fin de suspension doit être future');
+    }
+
+    const user = await this.prisma.$transaction(async (transaction) => {
+      const previous = await transaction.user.findUnique({ where: { id } });
+      if (!previous) throw new NotFoundException('Utilisateur non trouvé');
+
+      const neutralizesAccount = [
+        'suspend',
+        'ban',
+        'schedule-deletion',
+      ].includes(action);
+      if (neutralizesAccount && id === actor.userId) {
+        throw new BadRequestException(
+          'Un administrateur ne peut pas neutraliser son propre compte',
+        );
+      }
+      if (neutralizesAccount && previous.role === UserRole.ADMIN) {
+        const otherActiveAdmins = await transaction.user.count({
+          where: {
+            id: { not: id },
+            role: UserRole.ADMIN,
+            accountStatus: AccountStatus.ACTIVE,
+          },
+        });
+        if (otherActiveAdmins === 0) {
+          throw new BadRequestException(
+            'Le dernier administrateur actif ne peut pas être neutralisé',
+          );
+        }
+      }
+
+      const allowed: Record<AccountAction, AccountStatus[]> = {
+        suspend: [AccountStatus.ACTIVE, AccountStatus.SUSPENDED],
+        activate: [AccountStatus.SUSPENDED],
+        ban: [AccountStatus.ACTIVE, AccountStatus.SUSPENDED],
+        rehabilitate: [AccountStatus.BANNED],
+        'schedule-deletion': [
+          AccountStatus.ACTIVE,
+          AccountStatus.SUSPENDED,
+          AccountStatus.BANNED,
+        ],
+        'cancel-deletion': [AccountStatus.PENDING_DELETION],
+      };
+      if (!allowed[action].includes(previous.accountStatus)) {
+        throw new BadRequestException(
+          `Transition impossible depuis ${previous.accountStatus}`,
+        );
+      }
+
+      const targetStatus =
+        action === 'cancel-deletion'
+          ? previous.statusBeforeDeletion || AccountStatus.ACTIVE
+          : accountActions[action as keyof typeof accountActions];
+      const updated = await transaction.user.update({
+        where: { id },
+        data: {
+          accountStatus: targetStatus,
+          accountStatusChangedAt: now,
+          moderationReason: input.reason.trim(),
+          suspendedUntil: action === 'suspend' ? suspendedUntil : null,
+          deletionScheduledAt:
+            action === 'schedule-deletion'
+              ? new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+              : action === 'cancel-deletion'
+                ? null
+                : previous.deletionScheduledAt,
+          statusBeforeDeletion:
+            action === 'schedule-deletion'
+              ? previous.accountStatus
+              : action === 'cancel-deletion'
+                ? null
+                : previous.statusBeforeDeletion,
+        },
+        include: adminUserInclude,
+      });
+      if (neutralizesAccount) {
+        await transaction.session.deleteMany({ where: { userId: id } });
+      }
+      await this.adminAuditService.record(
+        {
+          ...actor,
+          action: `USER_ACCOUNT_${action.toUpperCase().replace(/-/g, '_')}`,
+          resourceType: 'USER',
+          resourceId: id,
+          previousValue: {
+            accountStatus: previous.accountStatus,
+            suspendedUntil: previous.suspendedUntil,
+            deletionScheduledAt: previous.deletionScheduledAt,
+          },
+          newValue: {
+            accountStatus: targetStatus,
+            suspendedUntil: updated.suspendedUntil,
+            deletionScheduledAt: updated.deletionScheduledAt,
+          },
+          reason: input.reason.trim(),
+        },
+        transaction,
+      );
+      return updated;
+    });
+
+    return { success: true, data: this.toAdminUser(user) };
+  }
+
   getObservability() {
     return {
       success: true,
@@ -569,6 +706,12 @@ export class AdminService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      accountStatus: user.accountStatus,
+      accountStatusChangedAt:
+        user.accountStatusChangedAt?.toISOString() ?? null,
+      suspendedUntil: user.suspendedUntil?.toISOString() ?? null,
+      moderationReason: user.moderationReason,
+      deletionScheduledAt: user.deletionScheduledAt?.toISOString() ?? null,
       subscriptionPlan: user.subscriptionPlan,
       subscriptionStatus: user.subscriptionStatus,
       trialStartedAt: user.trialStartedAt?.toISOString() ?? null,

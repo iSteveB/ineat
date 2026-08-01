@@ -46,6 +46,28 @@ export class BetterAuthSessionService {
         return null;
       }
 
+      if (
+        user.accountStatus === 'SUSPENDED' &&
+        user.suspendedUntil &&
+        user.suspendedUntil.getTime() <= Date.now()
+      ) {
+        const reactivated = await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            accountStatus: 'ACTIVE',
+            accountStatusChangedAt: new Date(),
+            suspendedUntil: null,
+            moderationReason: null,
+          },
+          select: authUserSelect,
+        });
+        Object.assign(user, reactivated);
+      }
+
+      if (user.accountStatus !== 'ACTIVE') {
+        return null;
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { passwordHash, ...safeUser } = user;
       return {

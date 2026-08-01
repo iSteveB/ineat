@@ -128,13 +128,13 @@ export default function AdminUsersPage() {
 	const users = pageData?.items ?? [];
 	const pagination = pageData?.pagination;
 	return (
-		<div className='space-y-6'>
+		<div className="space-y-6">
 			<header>
-				<p className='text-sm font-medium text-primary'>Administration</p>
-				<h1 className='text-2xl font-semibold text-neutral-900'>
+				<p className="text-sm font-medium text-primary">Administration</p>
+				<h1 className="text-2xl font-semibold text-neutral-900">
 					Utilisateurs
 				</h1>
-				<p className='mt-1 text-sm text-neutral-600'>
+				<p className="mt-1 text-sm text-neutral-600">
 					{pagination?.totalItems ?? 0} compte(s) correspondant aux critères.
 				</p>
 			</header>
@@ -143,9 +143,9 @@ export default function AdminUsersPage() {
 				<CardHeader>
 					<CardTitle>Recherche et filtres</CardTitle>
 				</CardHeader>
-				<CardContent className='grid gap-3 md:grid-cols-2 xl:grid-cols-5'>
+				<CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
 					{(search.activeFrom || search.createdFrom) && (
-						<div className='flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm md:col-span-2 xl:col-span-5'>
+						<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm md:col-span-2 xl:col-span-5">
 							<p>
 								<strong>
 									{search.activeFrom
@@ -156,8 +156,8 @@ export default function AdminUsersPage() {
 								{formatRange(search.activeTo ?? search.createdTo)}
 							</p>
 							<Button
-								variant='outline'
-								size='sm'
+								variant="outline"
+								size="sm"
 								onClick={() =>
 									updateSearch({
 										page: 1,
@@ -172,18 +172,18 @@ export default function AdminUsersPage() {
 							</Button>
 						</div>
 					)}
-					<label className='relative xl:col-span-2'>
-						<span className='sr-only'>Rechercher un utilisateur</span>
-						<Search className='pointer-events-none absolute left-3 top-3 size-4 text-neutral-400' />
+					<label className="relative xl:col-span-2">
+						<span className="sr-only">Rechercher un utilisateur</span>
+						<Search className="pointer-events-none absolute left-3 top-3 size-4 text-neutral-400" />
 						<Input
 							value={searchValue}
 							onChange={(event) => setSearchValue(event.target.value)}
-							placeholder='Nom ou e-mail'
-							className='pl-9'
+							placeholder="Nom ou e-mail"
+							className="pl-9"
 						/>
 					</label>
 					<FilterSelect
-						label='Rôle'
+						label="Rôle"
 						value={search.role ?? ''}
 						onChange={(role) =>
 							updateSearch({ page: 1, role: (role || undefined) as UserRole })
@@ -191,7 +191,7 @@ export default function AdminUsersPage() {
 						options={['USER', 'ADMIN']}
 					/>
 					<FilterSelect
-						label='Plan'
+						label="Plan"
 						value={search.plan ?? ''}
 						onChange={(plan) =>
 							updateSearch({
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
 						options={['FREE', 'TRIAL', 'PREMIUM']}
 					/>
 					<FilterSelect
-						label='Statut'
+						label="Statut abonnement"
 						value={search.status ?? ''}
 						onChange={(status) =>
 							updateSearch({
@@ -213,7 +213,25 @@ export default function AdminUsersPage() {
 						options={['ACTIVE', 'EXPIRED', 'CANCELLED']}
 					/>
 					<FilterSelect
-						label='Trier par'
+						label="Accès au compte"
+						value={search.accountStatus ?? ''}
+						onChange={(accountStatus) =>
+							updateSearch({
+								page: 1,
+								accountStatus: (accountStatus ||
+									undefined) as typeof search.accountStatus,
+							})
+						}
+						options={[
+							'ACTIVE',
+							'SUSPENDED',
+							'BANNED',
+							'PENDING_DELETION',
+							'ANONYMIZED',
+						]}
+					/>
+					<FilterSelect
+						label="Trier par"
 						value={search.sort}
 						onChange={(sort) =>
 							updateSearch({
@@ -225,7 +243,7 @@ export default function AdminUsersPage() {
 						allowAll={false}
 					/>
 					<FilterSelect
-						label='Ordre'
+						label="Ordre"
 						value={search.order}
 						onChange={(order) =>
 							updateSearch({
@@ -237,7 +255,7 @@ export default function AdminUsersPage() {
 						allowAll={false}
 					/>
 					<FilterSelect
-						label='Résultats par page'
+						label="Résultats par page"
 						value={String(search.pageSize)}
 						onChange={(pageSize) =>
 							updateSearch({
@@ -252,19 +270,19 @@ export default function AdminUsersPage() {
 			</Card>
 
 			<Card>
-				<CardContent className='p-0'>
+				<CardContent className="p-0">
 					{usersQuery.isLoading && (
-						<p className='p-6 text-sm text-neutral-600'>Chargement…</p>
+						<p className="p-6 text-sm text-neutral-600">Chargement…</p>
 					)}
 					{usersQuery.isError && (
-						<p className='p-6 text-sm text-error-600'>
+						<p className="p-6 text-sm text-error-600">
 							Impossible de charger les utilisateurs.
 						</p>
 					)}
 					{!usersQuery.isLoading &&
 						!usersQuery.isError &&
 						users.length === 0 && (
-							<p className='p-6 text-sm text-neutral-600'>Aucun utilisateur.</p>
+							<p className="p-6 text-sm text-neutral-600">Aucun utilisateur.</p>
 						)}
 					{users.length > 0 && (
 						<Table>
@@ -272,6 +290,7 @@ export default function AdminUsersPage() {
 								<TableRow>
 									<TableHead>Utilisateur</TableHead>
 									<TableHead>Plan effectif</TableHead>
+									<TableHead>Accès</TableHead>
 									<TableHead>Activité</TableHead>
 									<TableHead>Usage</TableHead>
 									<TableHead>Rôle</TableHead>
@@ -283,29 +302,40 @@ export default function AdminUsersPage() {
 									<TableRow key={adminUser.id}>
 										<TableCell>
 											<Link
-												to='/app/admin/users/$userId'
+												to="/app/admin/users/$userId"
 												params={{ userId: adminUser.id }}
 												search={search}
-												className='font-medium text-neutral-900 hover:underline'
+												className="font-medium text-neutral-900 hover:underline"
 											>
 												{adminUser.firstName} {adminUser.lastName}
 											</Link>
-											<p className='text-xs text-neutral-500'>
+											<p className="text-xs text-neutral-500">
 												{adminUser.email}
 											</p>
 										</TableCell>
 										<TableCell>
-											<Badge variant='secondary'>
+											<Badge variant="secondary">
 												{adminUser.effectivePlan}
 											</Badge>
-											<p className='mt-1 text-xs text-neutral-500'>
+											<p className="mt-1 text-xs text-neutral-500">
 												{adminUser.subscriptionStatus}
 											</p>
+										</TableCell>
+										<TableCell>
+											<Badge
+												variant={
+													adminUser.accountStatus === 'ACTIVE'
+														? 'outline'
+														: 'error'
+												}
+											>
+												{adminUser.accountStatus}
+											</Badge>
 										</TableCell>
 										<TableCell>{formatDate(adminUser.lastActiveAt)}</TableCell>
 										<TableCell>
 											{adminUser.counts.inventoryItems} article(s)
-											<p className='text-xs text-neutral-500'>
+											<p className="text-xs text-neutral-500">
 												{adminUser.counts.invoices} facture(s)
 											</p>
 										</TableCell>
@@ -327,10 +357,10 @@ export default function AdminUsersPage() {
 											/>
 										</TableCell>
 										<TableCell>
-											<Badge variant='outline'>
+											<Badge variant="outline">
 												{adminUser.subscriptionPlan}
 											</Badge>
-											<p className='mt-1 text-xs text-neutral-500'>
+											<p className="mt-1 text-xs text-neutral-500">
 												Lecture seule · synchronisé par Stripe
 											</p>
 										</TableCell>
@@ -343,26 +373,26 @@ export default function AdminUsersPage() {
 			</Card>
 
 			{pagination && (
-				<div className='flex flex-wrap items-center justify-between gap-3'>
-					<p className='text-sm text-neutral-600'>
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<p className="text-sm text-neutral-600">
 						Page {pagination.page} sur {pagination.totalPages}
 					</p>
-					<div className='flex gap-2'>
+					<div className="flex gap-2">
 						<Button
-							variant='outline'
-							size='sm'
+							variant="outline"
+							size="sm"
 							disabled={pagination.page <= 1}
 							onClick={() => updateSearch({ page: pagination.page - 1 })}
 						>
-							<ChevronLeft className='size-4' /> Précédent
+							<ChevronLeft className="size-4" /> Précédent
 						</Button>
 						<Button
-							variant='outline'
-							size='sm'
+							variant="outline"
+							size="sm"
 							disabled={pagination.page >= pagination.totalPages}
 							onClick={() => updateSearch({ page: pagination.page + 1 })}
 						>
-							Suivant <ChevronRight className='size-4' />
+							Suivant <ChevronRight className="size-4" />
 						</Button>
 					</div>
 				</div>
@@ -402,15 +432,15 @@ function FilterSelect({
 	allowAll?: boolean;
 }) {
 	return (
-		<label className='text-sm font-medium text-neutral-700'>
-			<span className='sr-only'>{label}</span>
+		<label className="text-sm font-medium text-neutral-700">
+			<span className="sr-only">{label}</span>
 			<select
 				aria-label={label}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm'
+				className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm"
 			>
-				{allowAll && <option value=''>Tous · {label}</option>}
+				{allowAll && <option value="">Tous · {label}</option>}
 				{options.map((option) => (
 					<option key={option}>{option}</option>
 				))}
@@ -438,7 +468,7 @@ function InlineSelect({
 			value={value}
 			disabled={disabled}
 			onChange={(event) => onChange(event.target.value)}
-			className='rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm disabled:opacity-60'
+			className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm disabled:opacity-60"
 		>
 			{options.map((option) => (
 				<option key={option}>{option}</option>
@@ -469,22 +499,22 @@ function ChangeConfirmationDialog({
 		>
 			<AlertDialogContent>
 				<AlertDialogHeader>
-					<AlertDialogTitle className='text-neutral-900'>
+					<AlertDialogTitle className="text-neutral-900">
 						Confirmer la modification
 					</AlertDialogTitle>
-					<AlertDialogDescription className='text-neutral-600'>
+					<AlertDialogDescription className="text-neutral-600">
 						{change
 							? `${change.user.firstName} ${change.user.lastName} : ${change.previousValue} → ${change.newValue}`
 							: ''}
 					</AlertDialogDescription>
 				</AlertDialogHeader>
-				<div className='space-y-2'>
-					<Label htmlFor='admin-change-reason'>Justification</Label>
+				<div className="space-y-2">
+					<Label htmlFor="admin-change-reason">Justification</Label>
 					<Textarea
-						id='admin-change-reason'
+						id="admin-change-reason"
 						value={reason}
 						onChange={(event) => onReasonChange(event.target.value)}
-						placeholder='Pourquoi cette modification est-elle nécessaire ?'
+						placeholder="Pourquoi cette modification est-elle nécessaire ?"
 						maxLength={500}
 						disabled={pending}
 					/>

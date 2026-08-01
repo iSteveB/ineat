@@ -10,6 +10,7 @@ import {
   Min,
 } from 'class-validator';
 import {
+  AccountStatus,
   SubscriptionPlan,
   SubscriptionStatus,
   UserRole,
@@ -47,6 +48,10 @@ export class AdminUsersQueryDto {
   @IsOptional()
   @IsEnum(SubscriptionStatus)
   status?: SubscriptionStatus;
+
+  @IsOptional()
+  @IsEnum(AccountStatus)
+  accountStatus?: AccountStatus;
 
   @IsOptional()
   @IsDateString()

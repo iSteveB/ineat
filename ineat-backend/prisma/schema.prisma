@@ -396,6 +396,12 @@ model User {
   createdAt                    DateTime                 @default(now())
   updatedAt                    DateTime
   role                         UserRole                 @default(USER)
+  accountStatus                AccountStatus            @default(ACTIVE)
+  accountStatusChangedAt       DateTime?
+  suspendedUntil               DateTime?
+  moderationReason             String?
+  deletionScheduledAt          DateTime?
+  statusBeforeDeletion         AccountStatus?
   subscriptionPlan             SubscriptionPlan         @default(FREE)
   subscriptionStatus           SubscriptionStatus       @default(ACTIVE)
   trialStartedAt               DateTime?
@@ -430,6 +436,8 @@ model User {
   AdminAuditLog                AdminAuditLog[]          @relation("AdminAuditActor")
 
   @@map("User")
+  @@index([accountStatus])
+  @@index([deletionScheduledAt])
 }
 
 model AdminAuditLog {
@@ -684,6 +692,14 @@ enum UnitType {
 enum UserRole {
   USER
   ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING_DELETION
+  ANONYMIZED
 }
 
 enum UsageType {

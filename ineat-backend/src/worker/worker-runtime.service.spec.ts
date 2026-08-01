@@ -24,7 +24,10 @@ describe('WorkerRuntimeService', () => {
     upsertScheduler: jest.fn().mockResolvedValue({}),
   };
   const prisma = {
-    user: { findMany: jest.fn() },
+    $transaction: jest.fn((operations) => Promise.all(operations)),
+    user: { findMany: jest.fn(), update: jest.fn() },
+    session: { deleteMany: jest.fn() },
+    account: { deleteMany: jest.fn() },
     adminAuditLog: { deleteMany: jest.fn().mockResolvedValue({ count: 0 }) },
   };
   const notifications = {
@@ -62,12 +65,18 @@ describe('WorkerRuntimeService', () => {
     await service.onModuleInit();
 
     expect(Worker).toHaveBeenCalledTimes(6);
-    expect(queues.upsertScheduler).toHaveBeenCalledTimes(6);
+    expect(queues.upsertScheduler).toHaveBeenCalledTimes(7);
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.system,
       'admin-audit-retention-daily',
       { pattern: '30 3 * * *' },
       { name: 'purge-admin-audit', data: {} },
+    );
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.system,
+      'account-anonymization-daily',
+      { pattern: '0 4 * * *' },
+      { name: 'anonymize-scheduled-accounts', data: {} },
     );
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.notificationsSync,
@@ -87,7 +96,7 @@ describe('WorkerRuntimeService', () => {
     await service.onModuleInit();
 
     expect(Worker).toHaveBeenCalledTimes(1);
-    expect(queues.upsertScheduler).toHaveBeenCalledTimes(1);
+    expect(queues.upsertScheduler).toHaveBeenCalledTimes(2);
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.system,
       'admin-audit-retention-daily',
@@ -147,5 +156,35 @@ describe('WorkerRuntimeService', () => {
       deletedCount: 4,
       cutoff: '2025-07-31T00:00:00.000Z',
     });
+  });
+
+  it('anonymise les comptes dont le délai de suppression est échu', async () => {
+    prisma.user.findMany.mockResolvedValue([{ id: 'user-to-delete' }]);
+    prisma.session.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.account.deleteMany.mockResolvedValue({ count: 1 });
+    prisma.user.update.mockResolvedValue({});
+    const service = createService();
+
+    const result = await (service as any).anonymizeScheduledAccounts(
+      new Date('2026-08-31T00:00:00.000Z'),
+    );
+
+    expect(prisma.user.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          accountStatus: 'PENDING_DELETION',
+          deletionScheduledAt: { lte: new Date('2026-08-31T00:00:00.000Z') },
+        },
+      }),
+    );
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          accountStatus: 'ANONYMIZED',
+          email: 'deleted+user-to-delete@anonymized.invalid',
+        }),
+      }),
+    );
+    expect(result).toEqual({ anonymizedCount: 1 });
   });
 });

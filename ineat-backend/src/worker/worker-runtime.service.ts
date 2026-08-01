@@ -149,6 +149,9 @@ export class WorkerRuntimeService
     if (job.name === 'purge-admin-audit') {
       return this.purgeExpiredAdminAuditLogs();
     }
+    if (job.name === 'anonymize-scheduled-accounts') {
+      return this.anonymizeScheduledAccounts();
+    }
     throw new Error(`Unsupported system job: ${job.name}`);
   }
 
@@ -174,6 +177,55 @@ export class WorkerRuntimeService
       { pattern: '30 3 * * *' },
       { name: 'purge-admin-audit', data: {} },
     );
+    await this.queues.upsertScheduler(
+      QUEUE_NAMES.system,
+      'account-anonymization-daily',
+      { pattern: '0 4 * * *' },
+      { name: 'anonymize-scheduled-accounts', data: {} },
+    );
+  }
+
+  private async anonymizeScheduledAccounts(now = new Date()) {
+    const users = await this.prisma.user.findMany({
+      where: {
+        accountStatus: 'PENDING_DELETION',
+        deletionScheduledAt: { lte: now },
+      },
+      select: { id: true },
+      take: USER_BATCH_SIZE,
+    });
+
+    for (const { id } of users) {
+      await this.prisma.$transaction([
+        this.prisma.session.deleteMany({ where: { userId: id } }),
+        this.prisma.account.deleteMany({ where: { userId: id } }),
+        this.prisma.user.update({
+          where: { id },
+          data: {
+            email: `deleted+${id}@anonymized.invalid`,
+            name: 'Compte supprimé',
+            firstName: '',
+            lastName: '',
+            passwordHash: '',
+            emailVerified: false,
+            avatarUrl: null,
+            preferences: {},
+            role: 'USER',
+            accountStatus: 'ANONYMIZED',
+            accountStatusChangedAt: now,
+            suspendedUntil: null,
+            moderationReason: null,
+            deletionScheduledAt: null,
+            statusBeforeDeletion: null,
+          },
+        }),
+      ]);
+    }
+
+    this.logger.log(
+      `Account anonymization completed: ${users.length} accounts`,
+    );
+    return { anonymizedCount: users.length };
   }
 
   private async processNotificationSyncJob(job: Job): Promise<unknown> {

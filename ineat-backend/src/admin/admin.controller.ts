@@ -16,7 +16,11 @@ import { RequiresRole } from '../auth/decorators/requires-role.decorator';
 import { SessionAuthGuard } from '../auth/guards/session-auth.guard';
 import { RoleGuard } from '../auth/guards/role.guard';
 import { AdminService } from './admin.service';
-import { RetryQueueJobDto, UpdateRoleDto } from './dto/admin-mutation.dto';
+import {
+  AdminAccountActionDto,
+  RetryQueueJobDto,
+  UpdateRoleDto,
+} from './dto/admin-mutation.dto';
 import {
   AdminAuditService,
   type AdminActorContext,
@@ -126,6 +130,21 @@ export class AdminController {
       id,
       body.role,
       body.reason,
+      this.actorContext(request),
+    );
+  }
+
+  @Post('users/:id/account/:action')
+  updateAccountStatus(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('action') action: string,
+    @Body() body: AdminAccountActionDto,
+    @Req() request: AdminRequest,
+  ) {
+    return this.adminService.updateAccountStatus(
+      id,
+      action,
+      body,
       this.actorContext(request),
     );
   }

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { betterAuth } from 'better-auth';
-import { createAuthMiddleware } from 'better-auth/api';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../prisma/generated/prisma/client';
@@ -159,12 +159,39 @@ export const auth = betterAuth({
         return;
       }
 
+      const email = ctx.body.email.trim().toLowerCase();
+      if (ctx.path === '/sign-in/email') {
+        const account = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true, accountStatus: true, suspendedUntil: true },
+        });
+        if (
+          account?.accountStatus === 'SUSPENDED' &&
+          account.suspendedUntil &&
+          account.suspendedUntil.getTime() <= Date.now()
+        ) {
+          await prisma.user.update({
+            where: { id: account.id },
+            data: {
+              accountStatus: 'ACTIVE',
+              accountStatusChangedAt: new Date(),
+              suspendedUntil: null,
+              moderationReason: null,
+            },
+          });
+        } else if (account && account.accountStatus !== 'ACTIVE') {
+          throw new APIError('FORBIDDEN', {
+            message: "Ce compte n'est pas accessible.",
+          });
+        }
+      }
+
       return {
         context: {
           ...ctx,
           body: {
             ...ctx.body,
-            email: ctx.body.email.trim().toLowerCase(),
+            email,
           },
         },
       };

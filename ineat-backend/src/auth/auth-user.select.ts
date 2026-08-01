@@ -13,6 +13,8 @@ export const authUserSelect = {
   createdAt: true,
   updatedAt: true,
   role: true,
+  accountStatus: true,
+  suspendedUntil: true,
   subscriptionPlan: true,
   subscriptionStatus: true,
   trialStartedAt: true,

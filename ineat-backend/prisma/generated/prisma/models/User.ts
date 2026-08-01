@@ -49,6 +49,12 @@ export type UserMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   role: $Enums.UserRole | null
+  accountStatus: $Enums.AccountStatus | null
+  accountStatusChangedAt: Date | null
+  suspendedUntil: Date | null
+  moderationReason: string | null
+  deletionScheduledAt: Date | null
+  statusBeforeDeletion: $Enums.AccountStatus | null
   subscriptionPlan: $Enums.SubscriptionPlan | null
   subscriptionStatus: $Enums.SubscriptionStatus | null
   trialStartedAt: Date | null
@@ -84,6 +90,12 @@ export type UserMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   role: $Enums.UserRole | null
+  accountStatus: $Enums.AccountStatus | null
+  accountStatusChangedAt: Date | null
+  suspendedUntil: Date | null
+  moderationReason: string | null
+  deletionScheduledAt: Date | null
+  statusBeforeDeletion: $Enums.AccountStatus | null
   subscriptionPlan: $Enums.SubscriptionPlan | null
   subscriptionStatus: $Enums.SubscriptionStatus | null
   trialStartedAt: Date | null
@@ -120,6 +132,12 @@ export type UserCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   role: number
+  accountStatus: number
+  accountStatusChangedAt: number
+  suspendedUntil: number
+  moderationReason: number
+  deletionScheduledAt: number
+  statusBeforeDeletion: number
   subscriptionPlan: number
   subscriptionStatus: number
   trialStartedAt: number
@@ -165,6 +183,12 @@ export type UserMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   role?: true
+  accountStatus?: true
+  accountStatusChangedAt?: true
+  suspendedUntil?: true
+  moderationReason?: true
+  deletionScheduledAt?: true
+  statusBeforeDeletion?: true
   subscriptionPlan?: true
   subscriptionStatus?: true
   trialStartedAt?: true
@@ -200,6 +224,12 @@ export type UserMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   role?: true
+  accountStatus?: true
+  accountStatusChangedAt?: true
+  suspendedUntil?: true
+  moderationReason?: true
+  deletionScheduledAt?: true
+  statusBeforeDeletion?: true
   subscriptionPlan?: true
   subscriptionStatus?: true
   trialStartedAt?: true
@@ -236,6 +266,12 @@ export type UserCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   role?: true
+  accountStatus?: true
+  accountStatusChangedAt?: true
+  suspendedUntil?: true
+  moderationReason?: true
+  deletionScheduledAt?: true
+  statusBeforeDeletion?: true
   subscriptionPlan?: true
   subscriptionStatus?: true
   trialStartedAt?: true
@@ -359,6 +395,12 @@ export type UserGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   role: $Enums.UserRole
+  accountStatus: $Enums.AccountStatus
+  accountStatusChangedAt: Date | null
+  suspendedUntil: Date | null
+  moderationReason: string | null
+  deletionScheduledAt: Date | null
+  statusBeforeDeletion: $Enums.AccountStatus | null
   subscriptionPlan: $Enums.SubscriptionPlan
   subscriptionStatus: $Enums.SubscriptionStatus
   trialStartedAt: Date | null
@@ -418,6 +460,12 @@ export type UserWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFilter<"User"> | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  suspendedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  moderationReason?: Prisma.StringNullableFilter<"User"> | string | null
+  deletionScheduledAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  statusBeforeDeletion?: Prisma.EnumAccountStatusNullableFilter<"User"> | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFilter<"User"> | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFilter<"User"> | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -468,6 +516,12 @@ export type UserOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  accountStatus?: Prisma.SortOrder
+  accountStatusChangedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suspendedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
+  moderationReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletionScheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  statusBeforeDeletion?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionPlan?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
   trialStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -523,6 +577,12 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   role?: Prisma.EnumUserRoleFilter<"User"> | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFilter<"User"> | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  suspendedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  moderationReason?: Prisma.StringNullableFilter<"User"> | string | null
+  deletionScheduledAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  statusBeforeDeletion?: Prisma.EnumAccountStatusNullableFilter<"User"> | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFilter<"User"> | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFilter<"User"> | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
@@ -571,6 +631,12 @@ export type UserOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  accountStatus?: Prisma.SortOrder
+  accountStatusChangedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  suspendedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
+  moderationReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  deletionScheduledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  statusBeforeDeletion?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionPlan?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
   trialStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -615,6 +681,12 @@ export type UserScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
   role?: Prisma.EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusWithAggregatesFilter<"User"> | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  suspendedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  moderationReason?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  deletionScheduledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  statusBeforeDeletion?: Prisma.EnumAccountStatusNullableWithAggregatesFilter<"User"> | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanWithAggregatesFilter<"User"> | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusWithAggregatesFilter<"User"> | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
@@ -651,6 +723,12 @@ export type UserCreateInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -701,6 +779,12 @@ export type UserUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -751,6 +835,12 @@ export type UserUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -801,6 +891,12 @@ export type UserUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -851,6 +947,12 @@ export type UserCreateManyInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -887,6 +989,12 @@ export type UserUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -923,6 +1031,12 @@ export type UserUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -969,6 +1083,12 @@ export type UserCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  accountStatus?: Prisma.SortOrder
+  accountStatusChangedAt?: Prisma.SortOrder
+  suspendedUntil?: Prisma.SortOrder
+  moderationReason?: Prisma.SortOrder
+  deletionScheduledAt?: Prisma.SortOrder
+  statusBeforeDeletion?: Prisma.SortOrder
   subscriptionPlan?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
   trialStartedAt?: Prisma.SortOrder
@@ -1008,6 +1128,12 @@ export type UserMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  accountStatus?: Prisma.SortOrder
+  accountStatusChangedAt?: Prisma.SortOrder
+  suspendedUntil?: Prisma.SortOrder
+  moderationReason?: Prisma.SortOrder
+  deletionScheduledAt?: Prisma.SortOrder
+  statusBeforeDeletion?: Prisma.SortOrder
   subscriptionPlan?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
   trialStartedAt?: Prisma.SortOrder
@@ -1043,6 +1169,12 @@ export type UserMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  accountStatus?: Prisma.SortOrder
+  accountStatusChangedAt?: Prisma.SortOrder
+  suspendedUntil?: Prisma.SortOrder
+  moderationReason?: Prisma.SortOrder
+  deletionScheduledAt?: Prisma.SortOrder
+  statusBeforeDeletion?: Prisma.SortOrder
   subscriptionPlan?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
   trialStartedAt?: Prisma.SortOrder
@@ -1203,6 +1335,14 @@ export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole
 }
 
+export type EnumAccountStatusFieldUpdateOperationsInput = {
+  set?: $Enums.AccountStatus
+}
+
+export type NullableEnumAccountStatusFieldUpdateOperationsInput = {
+  set?: $Enums.AccountStatus | null
+}
+
 export type EnumSubscriptionPlanFieldUpdateOperationsInput = {
   set?: $Enums.SubscriptionPlan
 }
@@ -1301,6 +1441,12 @@ export type UserCreateWithoutBudgetInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1350,6 +1496,12 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1415,6 +1567,12 @@ export type UserUpdateWithoutBudgetInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1464,6 +1622,12 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1513,6 +1677,12 @@ export type UserCreateWithoutExpenseInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1562,6 +1732,12 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1627,6 +1803,12 @@ export type UserUpdateWithoutExpenseInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1676,6 +1858,12 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1725,6 +1913,12 @@ export type UserCreateWithoutInventoryItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1774,6 +1968,12 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1839,6 +2039,12 @@ export type UserUpdateWithoutInventoryItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1888,6 +2094,12 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1937,6 +2149,12 @@ export type UserCreateWithoutNotificationInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -1986,6 +2204,12 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2051,6 +2275,12 @@ export type UserUpdateWithoutNotificationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2100,6 +2330,12 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2149,6 +2385,12 @@ export type UserCreateWithoutNotificationPreferencesInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2198,6 +2440,12 @@ export type UserUncheckedCreateWithoutNotificationPreferencesInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2263,6 +2511,12 @@ export type UserUpdateWithoutNotificationPreferencesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2312,6 +2566,12 @@ export type UserUncheckedUpdateWithoutNotificationPreferencesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2361,6 +2621,12 @@ export type UserCreateWithoutEmailDigestDeliveryInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2410,6 +2676,12 @@ export type UserUncheckedCreateWithoutEmailDigestDeliveryInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2475,6 +2747,12 @@ export type UserUpdateWithoutEmailDigestDeliveryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2524,6 +2802,12 @@ export type UserUncheckedUpdateWithoutEmailDigestDeliveryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2573,6 +2857,12 @@ export type UserCreateWithoutInvoiceInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2622,6 +2912,12 @@ export type UserUncheckedCreateWithoutInvoiceInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2687,6 +2983,12 @@ export type UserUpdateWithoutInvoiceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2736,6 +3038,12 @@ export type UserUncheckedUpdateWithoutInvoiceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2785,6 +3093,12 @@ export type UserCreateWithoutReceiptInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2834,6 +3148,12 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -2899,6 +3219,12 @@ export type UserUpdateWithoutReceiptInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2948,6 +3274,12 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -2997,6 +3329,12 @@ export type UserCreateWithoutRecipeInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3046,6 +3384,12 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3111,6 +3455,12 @@ export type UserUpdateWithoutRecipeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3160,6 +3510,12 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3209,6 +3565,12 @@ export type UserCreateWithoutAdminAuditLogInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3258,6 +3620,12 @@ export type UserUncheckedCreateWithoutAdminAuditLogInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3323,6 +3691,12 @@ export type UserUpdateWithoutAdminAuditLogInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3372,6 +3746,12 @@ export type UserUncheckedUpdateWithoutAdminAuditLogInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3421,6 +3801,12 @@ export type UserCreateWithoutUsageQuotaInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3470,6 +3856,12 @@ export type UserUncheckedCreateWithoutUsageQuotaInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3535,6 +3927,12 @@ export type UserUpdateWithoutUsageQuotaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3584,6 +3982,12 @@ export type UserUncheckedUpdateWithoutUsageQuotaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3633,6 +4037,12 @@ export type UserCreateWithoutUsageEventInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3682,6 +4092,12 @@ export type UserUncheckedCreateWithoutUsageEventInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3747,6 +4163,12 @@ export type UserUpdateWithoutUsageEventInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3796,6 +4218,12 @@ export type UserUncheckedUpdateWithoutUsageEventInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -3845,6 +4273,12 @@ export type UserCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3894,6 +4328,12 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -3959,6 +4399,12 @@ export type UserUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4008,6 +4454,12 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4057,6 +4509,12 @@ export type UserCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -4106,6 +4564,12 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
   subscriptionPlan?: $Enums.SubscriptionPlan
   subscriptionStatus?: $Enums.SubscriptionStatus
   trialStartedAt?: Date | string | null
@@ -4171,6 +4635,12 @@ export type UserUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4220,6 +4690,12 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
   subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
   subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
   trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -4408,6 +4884,12 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean
+  accountStatus?: boolean
+  accountStatusChangedAt?: boolean
+  suspendedUntil?: boolean
+  moderationReason?: boolean
+  deletionScheduledAt?: boolean
+  statusBeforeDeletion?: boolean
   subscriptionPlan?: boolean
   subscriptionStatus?: boolean
   trialStartedAt?: boolean
@@ -4459,6 +4941,12 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean
+  accountStatus?: boolean
+  accountStatusChangedAt?: boolean
+  suspendedUntil?: boolean
+  moderationReason?: boolean
+  deletionScheduledAt?: boolean
+  statusBeforeDeletion?: boolean
   subscriptionPlan?: boolean
   subscriptionStatus?: boolean
   trialStartedAt?: boolean
@@ -4495,6 +4983,12 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean
+  accountStatus?: boolean
+  accountStatusChangedAt?: boolean
+  suspendedUntil?: boolean
+  moderationReason?: boolean
+  deletionScheduledAt?: boolean
+  statusBeforeDeletion?: boolean
   subscriptionPlan?: boolean
   subscriptionStatus?: boolean
   trialStartedAt?: boolean
@@ -4531,6 +5025,12 @@ export type UserSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   role?: boolean
+  accountStatus?: boolean
+  accountStatusChangedAt?: boolean
+  suspendedUntil?: boolean
+  moderationReason?: boolean
+  deletionScheduledAt?: boolean
+  statusBeforeDeletion?: boolean
   subscriptionPlan?: boolean
   subscriptionStatus?: boolean
   trialStartedAt?: boolean
@@ -4551,7 +5051,7 @@ export type UserSelectScalar = {
   avatarUrl?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "defaultServings" | "primaryGoal" | "profileOnboardingCompletedAt" | "preferences" | "createdAt" | "updatedAt" | "role" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "defaultServings" | "primaryGoal" | "profileOnboardingCompletedAt" | "preferences" | "createdAt" | "updatedAt" | "role" | "accountStatus" | "accountStatusChangedAt" | "suspendedUntil" | "moderationReason" | "deletionScheduledAt" | "statusBeforeDeletion" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Budget?: boolean | Prisma.User$BudgetArgs<ExtArgs>
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
@@ -4606,6 +5106,12 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     createdAt: Date
     updatedAt: Date
     role: $Enums.UserRole
+    accountStatus: $Enums.AccountStatus
+    accountStatusChangedAt: Date | null
+    suspendedUntil: Date | null
+    moderationReason: string | null
+    deletionScheduledAt: Date | null
+    statusBeforeDeletion: $Enums.AccountStatus | null
     subscriptionPlan: $Enums.SubscriptionPlan
     subscriptionStatus: $Enums.SubscriptionStatus
     trialStartedAt: Date | null
@@ -5076,6 +5582,12 @@ export interface UserFieldRefs {
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly role: Prisma.FieldRef<"User", 'UserRole'>
+  readonly accountStatus: Prisma.FieldRef<"User", 'AccountStatus'>
+  readonly accountStatusChangedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly suspendedUntil: Prisma.FieldRef<"User", 'DateTime'>
+  readonly moderationReason: Prisma.FieldRef<"User", 'String'>
+  readonly deletionScheduledAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly statusBeforeDeletion: Prisma.FieldRef<"User", 'AccountStatus'>
   readonly subscriptionPlan: Prisma.FieldRef<"User", 'SubscriptionPlan'>
   readonly subscriptionStatus: Prisma.FieldRef<"User", 'SubscriptionStatus'>
   readonly trialStartedAt: Prisma.FieldRef<"User", 'DateTime'>

@@ -213,6 +213,17 @@ export const UserRole = {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 
+export const AccountStatus = {
+  ACTIVE: 'ACTIVE',
+  SUSPENDED: 'SUSPENDED',
+  BANNED: 'BANNED',
+  PENDING_DELETION: 'PENDING_DELETION',
+  ANONYMIZED: 'ANONYMIZED'
+} as const
+
+export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus]
+
+
 export const UsageType = {
   AI_RECIPE_GENERATION: 'AI_RECIPE_GENERATION',
   DRIVE_IMPORT: 'DRIVE_IMPORT'

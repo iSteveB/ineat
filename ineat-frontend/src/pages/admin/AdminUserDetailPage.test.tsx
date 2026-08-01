@@ -15,7 +15,11 @@ vi.mock('@tanstack/react-router', () => ({
 }));
 
 vi.mock('@/services/adminService', () => ({
-	adminService: { getUser: vi.fn() },
+	adminService: {
+		getUser: vi.fn(),
+		updateAccountStatus: vi.fn(),
+		setSubscriptionCancellation: vi.fn(),
+	},
 }));
 
 const renderPage = () => {
@@ -39,6 +43,11 @@ describe('AdminUserDetailPage', () => {
 			firstName: 'Ada',
 			lastName: 'Lovelace',
 			role: 'ADMIN',
+			accountStatus: 'ACTIVE',
+			accountStatusChangedAt: null,
+			suspendedUntil: null,
+			moderationReason: null,
+			deletionScheduledAt: null,
 			subscriptionPlan: 'TRIAL',
 			subscriptionStatus: 'ACTIVE',
 			effectivePlan: 'PREMIUM',
@@ -46,6 +55,10 @@ describe('AdminUserDetailPage', () => {
 			trialEndsAt: '2026-08-01T00:00:00.000Z',
 			currentPeriodStartedAt: null,
 			currentPeriodEndsAt: null,
+			stripeCustomerId: null,
+			stripeSubscriptionId: null,
+			billingInterval: null,
+			cancelAtPeriodEnd: false,
 			createdAt: '2026-07-29T00:00:00.000Z',
 			updatedAt: '2026-07-30T00:00:00.000Z',
 			lastActiveAt: '2026-07-30T00:00:00.000Z',

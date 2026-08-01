@@ -1,5 +1,12 @@
 import { UserRole } from '../../../prisma/generated/prisma/enums';
-import { IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class UpdateRoleDto {
   @IsEnum(UserRole)
@@ -16,4 +23,15 @@ export class RetryQueueJobDto {
   @MinLength(3)
   @MaxLength(500)
   reason!: string;
+}
+
+export class AdminAccountActionDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(500)
+  reason!: string;
+
+  @IsOptional()
+  @IsDateString()
+  suspendedUntil?: string;
 }

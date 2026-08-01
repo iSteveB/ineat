@@ -10,6 +10,9 @@ export const adminUserSearchSchema = z.object({
 	role: z.enum(['USER', 'ADMIN']).optional(),
 	plan: z.enum(['FREE', 'TRIAL', 'PREMIUM']).optional(),
 	status: z.enum(['ACTIVE', 'EXPIRED', 'CANCELLED']).optional(),
+	accountStatus: z
+		.enum(['ACTIVE', 'SUSPENDED', 'BANNED', 'PENDING_DELETION', 'ANONYMIZED'])
+		.optional(),
 	activeFrom: z.string().datetime().optional(),
 	activeTo: z.string().datetime().optional(),
 	createdFrom: z.string().datetime().optional(),

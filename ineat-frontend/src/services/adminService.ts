@@ -22,6 +22,16 @@ export type AdminUser = {
 	firstName: string;
 	lastName: string;
 	role: UserRole;
+	accountStatus:
+		| 'ACTIVE'
+		| 'SUSPENDED'
+		| 'BANNED'
+		| 'PENDING_DELETION'
+		| 'ANONYMIZED';
+	accountStatusChangedAt: string | null;
+	suspendedUntil: string | null;
+	moderationReason: string | null;
+	deletionScheduledAt: string | null;
 	subscriptionPlan: SubscriptionPlan;
 	subscriptionStatus: 'ACTIVE' | 'EXPIRED' | 'CANCELLED';
 	trialStartedAt: string | null;
@@ -51,6 +61,7 @@ export type AdminUsersQuery = {
 	role?: UserRole;
 	plan?: SubscriptionPlan;
 	status?: AdminUser['subscriptionStatus'];
+	accountStatus?: AdminUser['accountStatus'];
 	activeFrom?: string;
 	activeTo?: string;
 	createdFrom?: string;
@@ -317,6 +328,24 @@ export const adminService = {
 		const response = await apiClient.patch<ApiSuccessResponse<AdminUser>>(
 			`/admin/users/${userId}/role`,
 			{ role, reason }
+		);
+		return response.data;
+	},
+
+	async updateAccountStatus(
+		userId: string,
+		action:
+			| 'suspend'
+			| 'activate'
+			| 'ban'
+			| 'rehabilitate'
+			| 'schedule-deletion'
+			| 'cancel-deletion',
+		input: { reason: string; suspendedUntil?: string }
+	) {
+		const response = await apiClient.post<ApiSuccessResponse<AdminUser>>(
+			`/admin/users/${userId}/account/${action}`,
+			input
 		);
 		return response.data;
 	},
