@@ -5,6 +5,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../prisma/generated/prisma/client';
 import { hashPassword, verifyPassword } from './password';
+import { withEmailVerificationCallback } from './email-verification-url';
 import { getAllowedOrigins } from '../config/origins';
 import {
   createRecipientReference,
@@ -86,7 +87,10 @@ export const auth = betterAuth({
       await sendEmailVerificationEmail({
         to: user.email,
         name: user.name,
-        verificationUrl: url,
+        verificationUrl: withEmailVerificationCallback(
+          url,
+          process.env.FRONTEND_URL,
+        ),
       });
     },
     afterEmailVerification: async (verifiedUser) => {

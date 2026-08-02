@@ -35,7 +35,7 @@ export interface RegistrationResult {
 	email: string;
 }
 
-const getEmailVerificationCallbackUrl = () =>
+export const getEmailVerificationCallbackUrl = () =>
 	`${window.location.origin}/verify-email`;
 
 const toAuthResponse = (user: User): AuthResponse => ({
@@ -70,6 +70,7 @@ export const authService: AuthServiceMethods = {
 				email: normalizeAuthEmail(credentials.email),
 				password: credentials.password,
 				rememberMe: true,
+				callbackURL: getEmailVerificationCallbackUrl(),
 			});
 
 			if (error) {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	getBetterAuthErrorMessage,
+	getEmailVerificationCallbackUrl,
 	isValidUser,
 	normalizeAuthEmail,
 } from './authService';
@@ -40,6 +41,14 @@ describe('normalizeAuthEmail', () => {
 	it("normalise la casse et les espaces avant l'authentification", () => {
 		expect(normalizeAuthEmail('  UsER@Example.COM ')).toBe(
 			'user@example.com'
+		);
+	});
+});
+
+describe('getEmailVerificationCallbackUrl', () => {
+	it('redirige la vérification vers le frontend courant', () => {
+		expect(getEmailVerificationCallbackUrl()).toBe(
+			`${window.location.origin}/verify-email`
 		);
 	});
 });
