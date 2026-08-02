@@ -16,6 +16,7 @@ import {
 
 // ===== IMPORTS UTILITAIRES =====
 import { apiClient } from '../lib/api-client';
+import { ApiRequestError } from '../lib/api-client';
 import { authClient } from '../lib/auth-client';
 
 // ===== INTERFACE DU SERVICE D'AUTHENTIFICATION =====
@@ -27,6 +28,7 @@ interface AuthServiceMethods {
 	logout(): Promise<{ success: boolean; message: string }>;
 	verifyAuthentication(): Promise<boolean>;
 	checkAuthentication(): Promise<AuthCheckResponse>;
+	getCurrentSessionEmail(): Promise<string | null>;
 }
 
 export interface RegistrationResult {
@@ -43,8 +45,7 @@ const toAuthResponse = (user: User): AuthResponse => ({
 	},
 });
 
-export const normalizeAuthEmail = (email: string) =>
-	email.trim().toLowerCase();
+export const normalizeAuthEmail = (email: string) => email.trim().toLowerCase();
 
 export const getBetterAuthErrorMessage = (
 	error: { message?: string; code?: string } | null | undefined,
@@ -61,9 +62,7 @@ export const authService: AuthServiceMethods = {
 		// Validation des données d'entrée
 		const validation = validateSchema(LoginCredentialsSchema, credentials);
 		if (!validation.success) {
-			throw new Error(
-				`Données de connexion invalides: ${validation.error}`
-			);
+			throw new Error(`Données de connexion invalides: ${validation.error}`);
 		}
 
 		try {
@@ -79,8 +78,7 @@ export const authService: AuthServiceMethods = {
 						error,
 						'Connexion impossible. Veuillez réessayer.',
 						{
-							INVALID_EMAIL_OR_PASSWORD:
-								'Identifiants incorrects',
+							INVALID_EMAIL_OR_PASSWORD: 'Identifiants incorrects',
 						}
 					)
 				);
@@ -88,10 +86,7 @@ export const authService: AuthServiceMethods = {
 
 			const user = await authService.getProfile();
 			const response = toAuthResponse(user);
-			const responseValidation = validateSchema(
-				AuthResponseSchema,
-				response
-			);
+			const responseValidation = validateSchema(AuthResponseSchema, response);
 
 			if (!responseValidation.success) {
 				console.warn(
@@ -114,9 +109,7 @@ export const authService: AuthServiceMethods = {
 		// Validation des données d'entrée
 		const validation = validateSchema(RegisterDataSchema, data);
 		if (!validation.success) {
-			throw new Error(
-				`Données d'inscription invalides: ${validation.error}`
-			);
+			throw new Error(`Données d'inscription invalides: ${validation.error}`);
 		}
 
 		try {
@@ -134,10 +127,7 @@ export const authService: AuthServiceMethods = {
 			);
 
 			if (error) {
-				if (
-					error.code ===
-					'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
-				) {
+				if (error.code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL') {
 					return { email };
 				}
 
@@ -169,23 +159,25 @@ export const authService: AuthServiceMethods = {
 		}
 	},
 
+	async getCurrentSessionEmail(): Promise<string | null> {
+		const { data, error } = await authClient.getSession();
+		if (error || !data?.user?.email) return null;
+		return normalizeAuthEmail(data.user.email);
+	},
+
 	/**
 	 * Récupération du profil utilisateur
 	 */
 	async getProfile(): Promise<User> {
 		try {
 			// Le backend retourne maintenant une structure { success: true, data: User }
-			const response = await apiClient.get<ApiSuccessResponse<User>>(
-				'/auth/profile'
-			);
+			const response =
+				await apiClient.get<ApiSuccessResponse<User>>('/auth/profile');
 
 			// Validation de la réponse
 			const validation = validateSchema(UserSchema, response.data);
 			if (!validation.success) {
-				console.warn(
-					'Données utilisateur invalides:',
-					validation.error
-				);
+				console.warn('Données utilisateur invalides:', validation.error);
 				console.warn('Données reçues:', response.data);
 			}
 
@@ -230,15 +222,10 @@ export const authService: AuthServiceMethods = {
 	 */
 	async checkAuthentication(): Promise<AuthCheckResponse> {
 		try {
-			const response = await apiClient.get<AuthCheckResponse>(
-				'/auth/check'
-			);
+			const response = await apiClient.get<AuthCheckResponse>('/auth/check');
 
 			// Validation de la réponse
-			const validation = validateSchema(
-				AuthCheckResponseSchema,
-				response
-			);
+			const validation = validateSchema(AuthCheckResponseSchema, response);
 			if (!validation.success) {
 				console.warn(
 					"Réponse de vérification d'authentification invalide:",
@@ -257,6 +244,12 @@ export const authService: AuthServiceMethods = {
 
 			return response;
 		} catch (error) {
+			if (
+				error instanceof ApiRequestError &&
+				error.code === 'EMAIL_NOT_VERIFIED'
+			) {
+				throw error;
+			}
 			console.error(
 				"Erreur lors de la vérification d'authentification:",
 				error
@@ -272,7 +265,6 @@ export const authService: AuthServiceMethods = {
 			};
 		}
 	},
-
 };
 
 // ===== UTILITAIRES D'AUTHENTIFICATION =====

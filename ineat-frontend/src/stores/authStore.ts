@@ -19,6 +19,7 @@ import {
 	extractUserFromAuthResponse,
 } from '../services/authService';
 import { userService } from '../services/userService';
+import { ApiRequestError } from '../lib/api-client';
 
 // ===== INTERFACE DU STORE D'AUTHENTIFICATION =====
 interface AuthState {
@@ -72,9 +73,7 @@ export const useAuthStore = create<AuthState>()(
 				try {
 					set({ isLoading: true, error: null });
 
-					const response: AuthResponse = await authService.login(
-						credentials
-					);
+					const response: AuthResponse = await authService.login(credentials);
 
 					// Extraction et validation de l'utilisateur
 					const user = extractUserFromAuthResponse(response);
@@ -198,6 +197,13 @@ export const useAuthStore = create<AuthState>()(
 				try {
 					return await get().checkAuthentication();
 				} catch (error) {
+					if (
+						error instanceof ApiRequestError &&
+						error.code === 'EMAIL_NOT_VERIFIED'
+					) {
+						set({ user: null, isAuthenticated: false });
+						throw error;
+					}
 					// En cas d'erreur, considérer l'utilisateur comme non authentifié
 					set({
 						user: null,
@@ -241,6 +247,13 @@ export const useAuthStore = create<AuthState>()(
 					});
 					return false;
 				} catch (error) {
+					if (
+						error instanceof ApiRequestError &&
+						error.code === 'EMAIL_NOT_VERIFIED'
+					) {
+						set({ user: null, isAuthenticated: false, error: null });
+						throw error;
+					}
 					// En cas d'erreur, considérer l'utilisateur comme non authentifié
 					set({
 						user: null,
@@ -270,15 +283,11 @@ export const useAuthStore = create<AuthState>()(
 					set({ isLoading: true, error: null });
 
 					// Appel au service pour mettre à jour les informations
-					const updatedUser = await userService.updatePersonalInfo(
-						data
-					);
+					const updatedUser = await userService.updatePersonalInfo(data);
 
 					// Validation de l'utilisateur mis à jour
 					if (!isValidUser(updatedUser)) {
-						throw new Error(
-							'Données utilisateur mises à jour invalides'
-						);
+						throw new Error('Données utilisateur mises à jour invalides');
 					}
 
 					// Mise à jour du state avec les nouvelles informations
@@ -319,9 +328,7 @@ export const useAuthStore = create<AuthState>()(
 						error: null,
 					});
 				} else {
-					console.error(
-						"Tentative de définition d'un utilisateur invalide"
-					);
+					console.error("Tentative de définition d'un utilisateur invalide");
 					set({
 						error: 'Données utilisateur invalides',
 					});
@@ -365,17 +372,12 @@ export const useAuthStore = create<AuthState>()(
 
 			// Fonction de migration pour gérer les changements de schéma
 			migrate: (persistedState: unknown) => {
-				if (
-					typeof persistedState === 'object' &&
-					persistedState !== null
-				) {
+				if (typeof persistedState === 'object' && persistedState !== null) {
 					const state = persistedState as Record<string, unknown>;
 
 					// Valider l'utilisateur persisté
 					if (state.user && !isValidUser(state.user)) {
-						console.warn(
-							'Utilisateur persisté invalide, suppression...'
-						);
+						console.warn('Utilisateur persisté invalide, suppression...');
 						return {
 							user: null,
 						};

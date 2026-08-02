@@ -3,6 +3,7 @@ import { Prisma } from '../../prisma/generated/prisma/client';
 export const authUserSelect = {
   id: true,
   email: true,
+  emailVerified: true,
   passwordHash: true,
   firstName: true,
   lastName: true,

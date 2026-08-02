@@ -3,6 +3,8 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import AuthGuard from './AuthGuard';
 import { useAuthStore } from '@/stores/authStore';
 import { useLocation, useNavigate } from '@tanstack/react-router';
+import { ApiRequestError } from '@/lib/api-client';
+import { authService } from '@/services/authService';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
@@ -15,6 +17,12 @@ vi.mock('@tanstack/react-router', () => ({
 
 vi.mock('@/stores/authStore', () => ({
 	useAuthStore: vi.fn(),
+}));
+
+vi.mock('@/services/authService', () => ({
+	authService: {
+		getCurrentSessionEmail: vi.fn(),
+	},
 }));
 
 vi.mock('../ui/spinner', () => ({
@@ -127,6 +135,35 @@ describe('AuthGuard', () => {
 				replace: true,
 			});
 		});
+	});
+
+	it("redirige une session non vérifiée vers l'écran de validation", async () => {
+		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+			checkAuthentication: vi
+				.fn()
+				.mockRejectedValue(
+					new ApiRequestError(
+						'Votre adresse email doit être vérifiée avant de continuer.',
+						403,
+						{ code: 'EMAIL_NOT_VERIFIED' }
+					)
+				),
+		});
+		vi.mocked(authService.getCurrentSessionEmail).mockResolvedValue(
+			'jane@example.com'
+		);
+
+		render(<AuthGuard />);
+
+		await waitFor(() => {
+			expect(navigateMock).toHaveBeenCalledWith({
+				to: '/verify-email-pending',
+				search: { email: 'jane@example.com' },
+				replace: true,
+			});
+		});
+		expect(authService.getCurrentSessionEmail).toHaveBeenCalledTimes(1);
+		expect(screen.queryByTestId('outlet-content')).not.toBeInTheDocument();
 	});
 
 	it("rend les composants enfants si l'authentification réussit", async () => {

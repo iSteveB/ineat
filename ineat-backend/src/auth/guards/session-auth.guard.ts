@@ -1,5 +1,6 @@
 import {
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -29,6 +30,13 @@ export class SessionAuthGuard {
 
     if (!user) {
       throw new UnauthorizedException('Authentification requise');
+    }
+
+    if (!user.emailVerified) {
+      throw new ForbiddenException({
+        code: 'EMAIL_NOT_VERIFIED',
+        message: 'Votre adresse email doit être vérifiée avant de continuer.',
+      });
     }
 
     request.user = user;
