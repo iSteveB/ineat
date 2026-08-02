@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { UserSchema } from '@/schemas';
 import {
 	getBetterAuthErrorMessage,
 	getEmailVerificationCallbackUrl,
@@ -82,5 +83,32 @@ describe('isValidUser', () => {
 				updatedAt: '2026-06-02T08:23:54.116Z',
 			})
 		).toBe(true);
+	});
+
+	it('accepte et normalise un ancien profil incomplet', () => {
+		const legacyProfile = {
+			id: 'BXmlY6a3OKsOF5XhKoDk6duOngptUIVJ',
+			email: 'legacy@example.com',
+			firstName: '',
+			lastName: '',
+			defaultServings: '4',
+			primaryGoal: null,
+			preferences: null,
+			subscription: 'FREE',
+			createdAt: '2026-06-02T08:23:54.116Z',
+			updatedAt: '2026-06-02T08:23:54.116Z',
+		};
+
+		expect(isValidUser(legacyProfile)).toBe(true);
+		expect(UserSchema.parse(legacyProfile)).toMatchObject({
+			firstName: '',
+			lastName: '',
+			defaultServings: 4,
+			profileOnboardingCompletedAt: null,
+			preferences: {
+				allergens: [],
+				diets: [],
+			},
+		});
 	});
 });

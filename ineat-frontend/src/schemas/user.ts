@@ -13,10 +13,10 @@ import {
 	EffectivePlanSchema,
 } from './base';
 import {
-  DietaryPreferencesSchema,
+	DietaryPreferencesSchema,
 	UiPreferencesSchema,
 	ApiSuccessResponseSchema,
-  TimestampsSchema,
+	TimestampsSchema,
 } from './common';
 
 // ===== SCHÉMA UTILISATEUR PRINCIPAL =====
@@ -50,19 +50,21 @@ export const UserSchema = z
 	.object({
 		id: UserIdSchema,
 		email: EmailSchema,
-		firstName: ShortTextSchema,
-		lastName: ShortTextSchema,
-		avatarUrl: z.string().url("URL d'avatar invalide").optional(),
-		defaultServings: z.number().int().min(1).max(20).default(4),
+		firstName: z.string().max(100).default(''),
+		lastName: z.string().max(100).default(''),
+		avatarUrl: z.string().url("URL d'avatar invalide").nullish(),
+		defaultServings: z.coerce.number().int().min(1).max(20).default(4),
 		primaryGoal: PrimaryGoalSchema.nullable().default(null),
 		profileOnboardingCompletedAt: z.string().datetime().nullable().default(null),
-		preferences: z
-			.object({
-				allergens: z.array(z.string()).default([]),
-				diets: z.array(z.string()).default([]),
-			})
-			.passthrough()
-			.optional(),
+		preferences: z.preprocess(
+			(value) => value ?? {},
+			z
+				.object({
+					allergens: z.array(z.string()).default([]),
+					diets: z.array(z.string()).default([]),
+				})
+				.passthrough(),
+		),
 		subscription: SubscriptionSchema,
 		role: UserRoleSchema.default('USER'),
 		subscriptionPlan: SubscriptionPlanSchema.default('FREE'),

@@ -176,13 +176,17 @@ export const authService: AuthServiceMethods = {
 				await apiClient.get<ApiSuccessResponse<User>>('/auth/profile');
 
 			// Validation de la réponse
-			const validation = validateSchema(UserSchema, response.data);
+			const validation = UserSchema.safeParse(response.data);
 			if (!validation.success) {
-				console.warn('Données utilisateur invalides:', validation.error);
+				console.warn(
+					'Données utilisateur invalides:',
+					validation.error.issues.map((issue) => issue.message).join(', ')
+				);
 				console.warn('Données reçues:', response.data);
+				throw new Error('Profil utilisateur invalide');
 			}
 
-			return response.data;
+			return validation.data;
 		} catch (error) {
 			console.error('Erreur lors de la récupération du profil:', error);
 			throw error;
