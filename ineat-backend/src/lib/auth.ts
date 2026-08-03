@@ -5,6 +5,11 @@ import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../prisma/generated/prisma/client';
 import { hashPassword, verifyPassword } from './password';
+import {
+  isEmailAuthPath,
+  isSignUpEmailPath,
+  normalizeAuthEmail,
+} from './auth-email';
 import { withEmailVerificationCallback } from './email-verification-url';
 import { getAllowedOrigins } from '../config/origins';
 import {
@@ -30,7 +35,6 @@ const emailEnabled =
     ? process.env.EMAIL_ENABLED !== 'false'
     : process.env.EMAIL_ENABLED === 'true';
 
-const emailAuthPaths = new Set(['/sign-in/email', '/sign-up/email']);
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null;
 
@@ -156,15 +160,31 @@ export const auth = betterAuth({
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (
-        !emailAuthPaths.has(ctx.path) ||
+        !isEmailAuthPath(ctx.path) ||
         !isRecord(ctx.body) ||
         typeof ctx.body.email !== 'string'
       ) {
         return;
       }
 
-      const email = ctx.body.email.trim().toLowerCase();
-      if (ctx.path === '/sign-in/email') {
+      const email = normalizeAuthEmail(ctx.body.email);
+      if (isSignUpEmailPath(ctx.path)) {
+        const existingUser = await prisma.$queryRaw<Array<{ id: string }>>`
+          SELECT id
+          FROM "User"
+          WHERE LOWER(BTRIM(email)) = ${email}
+          LIMIT 1
+        `;
+
+        if (existingUser.length > 0) {
+          throw new APIError('UNPROCESSABLE_ENTITY', {
+            code: 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL',
+            message: 'User already exists. Use another email.',
+          });
+        }
+      }
+
+      if (ctx.path.endsWith('/sign-in/email')) {
         const account = await prisma.user.findUnique({
           where: { email },
           select: { id: true, accountStatus: true, suspendedUntil: true },
