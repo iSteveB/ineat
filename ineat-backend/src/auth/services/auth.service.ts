@@ -32,14 +32,11 @@ export class AuthService {
       throw new UnauthorizedException('Utilisateur non trouvé');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...result } = user;
-
     return {
       success: true,
       data: {
         ...(await toSafeUserResponseWithUsage(
-          result as SafeUserDto,
+          user as SafeUserDto,
           this.accessPolicyService,
           this.usageQuotaService,
         )),

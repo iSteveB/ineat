@@ -206,7 +206,6 @@ export class WorkerRuntimeService
             name: 'Compte supprimé',
             firstName: '',
             lastName: '',
-            passwordHash: '',
             emailVerified: false,
             avatarUrl: null,
             preferences: {},

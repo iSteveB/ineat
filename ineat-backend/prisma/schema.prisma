@@ -386,7 +386,6 @@ model User {
   name                         String
   emailVerified                Boolean                  @default(false)
   welcomeEmailSentAt           DateTime?
-  passwordHash                 String                   @default("")
   firstName                    String                   @default("")
   lastName                     String                   @default("")
   defaultServings              Int                      @default(4)

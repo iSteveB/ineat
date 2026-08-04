@@ -107,15 +107,11 @@ export class UserService {
       },
     });
 
-    // Retourner l'utilisateur sans le mot de passe
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...userWithoutPassword } = updatedUser;
-
     return {
       success: true,
       data: {
         ...(await toSafeUserResponseWithUsage(
-          userWithoutPassword as any,
+          updatedUser as any,
           this.accessPolicyService,
           this.usageQuotaService,
         )),
@@ -135,15 +131,11 @@ export class UserService {
       throw new NotFoundException('Utilisateur non trouvé');
     }
 
-    // Retourner l'utilisateur sans le mot de passe
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash, ...userWithoutPassword } = user;
-
     return {
       success: true,
       data: {
         ...(await toSafeUserResponseWithUsage(
-          userWithoutPassword as any,
+          user as any,
           this.accessPolicyService,
           this.usageQuotaService,
         )),

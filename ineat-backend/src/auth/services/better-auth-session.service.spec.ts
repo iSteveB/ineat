@@ -10,7 +10,6 @@ describe('BetterAuthSessionService', () => {
   const activeUser = {
     id: 'user-id',
     email: 'user@example.com',
-    passwordHash: '',
     accountStatus: 'ACTIVE',
     suspendedUntil: null,
   };

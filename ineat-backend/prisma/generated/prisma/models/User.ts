@@ -40,7 +40,6 @@ export type UserMinAggregateOutputType = {
   name: string | null
   emailVerified: boolean | null
   welcomeEmailSentAt: Date | null
-  passwordHash: string | null
   firstName: string | null
   lastName: string | null
   defaultServings: number | null
@@ -81,7 +80,6 @@ export type UserMaxAggregateOutputType = {
   name: string | null
   emailVerified: boolean | null
   welcomeEmailSentAt: Date | null
-  passwordHash: string | null
   firstName: string | null
   lastName: string | null
   defaultServings: number | null
@@ -122,7 +120,6 @@ export type UserCountAggregateOutputType = {
   name: number
   emailVerified: number
   welcomeEmailSentAt: number
-  passwordHash: number
   firstName: number
   lastName: number
   defaultServings: number
@@ -174,7 +171,6 @@ export type UserMinAggregateInputType = {
   name?: true
   emailVerified?: true
   welcomeEmailSentAt?: true
-  passwordHash?: true
   firstName?: true
   lastName?: true
   defaultServings?: true
@@ -215,7 +211,6 @@ export type UserMaxAggregateInputType = {
   name?: true
   emailVerified?: true
   welcomeEmailSentAt?: true
-  passwordHash?: true
   firstName?: true
   lastName?: true
   defaultServings?: true
@@ -256,7 +251,6 @@ export type UserCountAggregateInputType = {
   name?: true
   emailVerified?: true
   welcomeEmailSentAt?: true
-  passwordHash?: true
   firstName?: true
   lastName?: true
   defaultServings?: true
@@ -385,7 +379,6 @@ export type UserGroupByOutputType = {
   name: string
   emailVerified: boolean
   welcomeEmailSentAt: Date | null
-  passwordHash: string
   firstName: string
   lastName: string
   defaultServings: number
@@ -450,7 +443,6 @@ export type UserWhereInput = {
   name?: Prisma.StringFilter<"User"> | string
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   welcomeEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
-  passwordHash?: Prisma.StringFilter<"User"> | string
   firstName?: Prisma.StringFilter<"User"> | string
   lastName?: Prisma.StringFilter<"User"> | string
   defaultServings?: Prisma.IntFilter<"User"> | number
@@ -506,7 +498,6 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   welcomeEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
@@ -567,7 +558,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"User"> | string
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   welcomeEmailSentAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
-  passwordHash?: Prisma.StringFilter<"User"> | string
   firstName?: Prisma.StringFilter<"User"> | string
   lastName?: Prisma.StringFilter<"User"> | string
   defaultServings?: Prisma.IntFilter<"User"> | number
@@ -621,7 +611,6 @@ export type UserOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   welcomeEmailSentAt?: Prisma.SortOrderInput | Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
@@ -671,7 +660,6 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   welcomeEmailSentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
-  passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
   firstName?: Prisma.StringWithAggregatesFilter<"User"> | string
   lastName?: Prisma.StringWithAggregatesFilter<"User"> | string
   defaultServings?: Prisma.IntWithAggregatesFilter<"User"> | number
@@ -713,7 +701,6 @@ export type UserCreateInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -769,7 +756,6 @@ export type UserUncheckedCreateInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -825,7 +811,6 @@ export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -881,7 +866,6 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -937,7 +921,6 @@ export type UserCreateManyInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -979,7 +962,6 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1021,7 +1003,6 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1073,7 +1054,6 @@ export type UserCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   welcomeEmailSentAt?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
@@ -1119,7 +1099,6 @@ export type UserMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   welcomeEmailSentAt?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
@@ -1160,7 +1139,6 @@ export type UserMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   welcomeEmailSentAt?: Prisma.SortOrder
-  passwordHash?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
   defaultServings?: Prisma.SortOrder
@@ -1431,7 +1409,6 @@ export type UserCreateWithoutBudgetInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -1486,7 +1463,6 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -1557,7 +1533,6 @@ export type UserUpdateWithoutBudgetInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1612,7 +1587,6 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1667,7 +1641,6 @@ export type UserCreateWithoutExpenseInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -1722,7 +1695,6 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -1793,7 +1765,6 @@ export type UserUpdateWithoutExpenseInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1848,7 +1819,6 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1903,7 +1873,6 @@ export type UserCreateWithoutInventoryItemInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -1958,7 +1927,6 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2029,7 +1997,6 @@ export type UserUpdateWithoutInventoryItemInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2084,7 +2051,6 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2139,7 +2105,6 @@ export type UserCreateWithoutNotificationInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2194,7 +2159,6 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2265,7 +2229,6 @@ export type UserUpdateWithoutNotificationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2320,7 +2283,6 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2375,7 +2337,6 @@ export type UserCreateWithoutNotificationPreferencesInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2430,7 +2391,6 @@ export type UserUncheckedCreateWithoutNotificationPreferencesInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2501,7 +2461,6 @@ export type UserUpdateWithoutNotificationPreferencesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2556,7 +2515,6 @@ export type UserUncheckedUpdateWithoutNotificationPreferencesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2611,7 +2569,6 @@ export type UserCreateWithoutEmailDigestDeliveryInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2666,7 +2623,6 @@ export type UserUncheckedCreateWithoutEmailDigestDeliveryInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2737,7 +2693,6 @@ export type UserUpdateWithoutEmailDigestDeliveryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2792,7 +2747,6 @@ export type UserUncheckedUpdateWithoutEmailDigestDeliveryInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -2847,7 +2801,6 @@ export type UserCreateWithoutInvoiceInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2902,7 +2855,6 @@ export type UserUncheckedCreateWithoutInvoiceInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -2973,7 +2925,6 @@ export type UserUpdateWithoutInvoiceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3028,7 +2979,6 @@ export type UserUncheckedUpdateWithoutInvoiceInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3083,7 +3033,6 @@ export type UserCreateWithoutReceiptInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3138,7 +3087,6 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3209,7 +3157,6 @@ export type UserUpdateWithoutReceiptInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3264,7 +3211,6 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3319,7 +3265,6 @@ export type UserCreateWithoutRecipeInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3374,7 +3319,6 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3445,7 +3389,6 @@ export type UserUpdateWithoutRecipeInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3500,7 +3443,6 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3555,7 +3497,6 @@ export type UserCreateWithoutAdminAuditLogInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3610,7 +3551,6 @@ export type UserUncheckedCreateWithoutAdminAuditLogInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3681,7 +3621,6 @@ export type UserUpdateWithoutAdminAuditLogInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3736,7 +3675,6 @@ export type UserUncheckedUpdateWithoutAdminAuditLogInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3791,7 +3729,6 @@ export type UserCreateWithoutUsageQuotaInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3846,7 +3783,6 @@ export type UserUncheckedCreateWithoutUsageQuotaInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -3917,7 +3853,6 @@ export type UserUpdateWithoutUsageQuotaInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -3972,7 +3907,6 @@ export type UserUncheckedUpdateWithoutUsageQuotaInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4027,7 +3961,6 @@ export type UserCreateWithoutUsageEventInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -4082,7 +4015,6 @@ export type UserUncheckedCreateWithoutUsageEventInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -4153,7 +4085,6 @@ export type UserUpdateWithoutUsageEventInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4208,7 +4139,6 @@ export type UserUncheckedUpdateWithoutUsageEventInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4263,7 +4193,6 @@ export type UserCreateWithoutSessionsInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -4318,7 +4247,6 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -4389,7 +4317,6 @@ export type UserUpdateWithoutSessionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4444,7 +4371,6 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4499,7 +4425,6 @@ export type UserCreateWithoutAccountsInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -4554,7 +4479,6 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   name: string
   emailVerified?: boolean
   welcomeEmailSentAt?: Date | string | null
-  passwordHash?: string
   firstName?: string
   lastName?: string
   defaultServings?: number
@@ -4625,7 +4549,6 @@ export type UserUpdateWithoutAccountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4680,7 +4603,6 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
@@ -4874,7 +4796,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name?: boolean
   emailVerified?: boolean
   welcomeEmailSentAt?: boolean
-  passwordHash?: boolean
   firstName?: boolean
   lastName?: boolean
   defaultServings?: boolean
@@ -4931,7 +4852,6 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   emailVerified?: boolean
   welcomeEmailSentAt?: boolean
-  passwordHash?: boolean
   firstName?: boolean
   lastName?: boolean
   defaultServings?: boolean
@@ -4973,7 +4893,6 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   name?: boolean
   emailVerified?: boolean
   welcomeEmailSentAt?: boolean
-  passwordHash?: boolean
   firstName?: boolean
   lastName?: boolean
   defaultServings?: boolean
@@ -5015,7 +4934,6 @@ export type UserSelectScalar = {
   name?: boolean
   emailVerified?: boolean
   welcomeEmailSentAt?: boolean
-  passwordHash?: boolean
   firstName?: boolean
   lastName?: boolean
   defaultServings?: boolean
@@ -5051,7 +4969,7 @@ export type UserSelectScalar = {
   avatarUrl?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "passwordHash" | "firstName" | "lastName" | "defaultServings" | "primaryGoal" | "profileOnboardingCompletedAt" | "preferences" | "createdAt" | "updatedAt" | "role" | "accountStatus" | "accountStatusChangedAt" | "suspendedUntil" | "moderationReason" | "deletionScheduledAt" | "statusBeforeDeletion" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "emailVerified" | "welcomeEmailSentAt" | "firstName" | "lastName" | "defaultServings" | "primaryGoal" | "profileOnboardingCompletedAt" | "preferences" | "createdAt" | "updatedAt" | "role" | "accountStatus" | "accountStatusChangedAt" | "suspendedUntil" | "moderationReason" | "deletionScheduledAt" | "statusBeforeDeletion" | "subscriptionPlan" | "subscriptionStatus" | "trialStartedAt" | "trialEndsAt" | "trialUsedAt" | "trialStartedEmailSentAt" | "trialReminderEmailSentAt" | "trialExpiredEmailSentAt" | "currentPeriodStartedAt" | "currentPeriodEndsAt" | "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId" | "billingInterval" | "cancelAtPeriodEnd" | "subscriptionCancelledAt" | "lastStripeEventAt" | "avatarUrl", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Budget?: boolean | Prisma.User$BudgetArgs<ExtArgs>
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
@@ -5096,7 +5014,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string
     emailVerified: boolean
     welcomeEmailSentAt: Date | null
-    passwordHash: string
     firstName: string
     lastName: string
     defaultServings: number
@@ -5572,7 +5489,6 @@ export interface UserFieldRefs {
   readonly name: Prisma.FieldRef<"User", 'String'>
   readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly welcomeEmailSentAt: Prisma.FieldRef<"User", 'DateTime'>
-  readonly passwordHash: Prisma.FieldRef<"User", 'String'>
   readonly firstName: Prisma.FieldRef<"User", 'String'>
   readonly lastName: Prisma.FieldRef<"User", 'String'>
   readonly defaultServings: Prisma.FieldRef<"User", 'Int'>

@@ -4,7 +4,6 @@ export const authUserSelect = {
   id: true,
   email: true,
   emailVerified: true,
-  passwordHash: true,
   firstName: true,
   lastName: true,
   defaultServings: true,

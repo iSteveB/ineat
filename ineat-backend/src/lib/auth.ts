@@ -53,12 +53,6 @@ export const auth = betterAuth({
       image: 'avatarUrl',
     },
     additionalFields: {
-      passwordHash: {
-        type: 'string',
-        defaultValue: '',
-        input: false,
-        returned: false,
-      },
       firstName: {
         type: 'string',
         defaultValue: '',
