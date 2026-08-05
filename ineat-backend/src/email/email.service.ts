@@ -17,6 +17,7 @@ import {
   sendSubscriptionChangedEmail,
   sendQuotaEmail,
   sendAccountDeletedEmail,
+  sendSupportRequestEmail,
 } from './email-sender';
 import { EmailTransport } from './email.types';
 import type {
@@ -25,6 +26,7 @@ import type {
   BillingEmailInput,
   QuotaEmailInput,
   WeeklyProductDigestInput,
+  SupportRequestEmailInput,
 } from './email.templates';
 
 @Injectable()
@@ -182,6 +184,12 @@ export class EmailService {
   }) {
     return this.sendObserved('account_deleted', (transport) =>
       sendAccountDeletedEmail(input, transport),
+    );
+  }
+
+  async sendSupportRequest(input: SupportRequestEmailInput & { to: string }) {
+    return this.sendObserved('support_request', (transport) =>
+      sendSupportRequestEmail(input, transport),
     );
   }
 

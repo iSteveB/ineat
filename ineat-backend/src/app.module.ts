@@ -24,6 +24,7 @@ import { validateEnvironment } from './config/env.validation';
 import { EmailModule } from './email/email.module';
 import { RedisModule } from './redis/redis.module';
 import { JobsModule } from './jobs/jobs.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { JobsModule } from './jobs/jobs.module';
     InvoiceModule,
     RecipeModule,
     BillingModule,
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [

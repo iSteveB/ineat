@@ -25,6 +25,8 @@ export function Header() {
 				return 'Paramètres';
 			case path.startsWith('/app/profile'):
 				return 'Profil';
+			case path.startsWith('/app/help'):
+				return 'Aide & FAQ';
 			default:
 				return 'InEat';
 		}

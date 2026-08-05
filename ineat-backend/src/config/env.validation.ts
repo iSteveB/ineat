@@ -55,6 +55,10 @@ const baseEnvironmentSchema = z
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,
     EMAIL_REPLY_TO: optionalString,
+    SUPPORT_EMAIL: z.preprocess(
+      emptyToUndefined,
+      z.string().trim().email().default('support@ineat.store'),
+    ),
     RESEND_WEBHOOK_SECRET: optionalString,
     STRIPE_ENABLED: optionalBoolean,
     STRIPE_SECRET_KEY: optionalString,

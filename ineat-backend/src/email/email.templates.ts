@@ -68,6 +68,54 @@ export type AccountDeletedEmailInput = {
   firstName?: string | null;
 };
 
+export type SupportRequestEmailInput = {
+  categoryLabel: string;
+  message: string;
+  user: {
+    id: string;
+    email: string;
+    firstName?: string | null;
+    lastName?: string | null;
+  };
+};
+
+export function createSupportRequestEmail(input: SupportRequestEmailInput) {
+  const fullName = [input.user.firstName, input.user.lastName]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(' ') || 'Utilisateur InEat';
+  const subject = `[Support InEat] ${input.categoryLabel} — ${fullName}`;
+  const text = [
+    `Catégorie : ${input.categoryLabel}`,
+    `Utilisateur : ${fullName}`,
+    `E-mail : ${input.user.email}`,
+    `Identifiant : ${input.user.id}`,
+    '',
+    'Message :',
+    input.message,
+  ].join('\n');
+  const messageHtml = escapeHtml(input.message).replace(/\n/g, '<br>');
+
+  return {
+    subject,
+    text,
+    html: `<!doctype html>
+<html lang="fr"><body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px"><tr><td align="center">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;padding:32px"><tr><td>
+      <h1 style="margin:0 0 24px;font-size:24px">Nouvelle demande de support</h1>
+      <p><strong>Catégorie :</strong> ${escapeHtml(input.categoryLabel)}</p>
+      <p><strong>Utilisateur :</strong> ${escapeHtml(fullName)}</p>
+      <p><strong>E-mail :</strong> ${escapeHtml(input.user.email)}</p>
+      <p><strong>Identifiant :</strong> ${escapeHtml(input.user.id)}</p>
+      <hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0">
+      <p style="line-height:1.6">${messageHtml}</p>
+    </td></tr></table>
+  </td></tr></table>
+</body></html>`,
+  };
+}
+
 const formatFrenchDate = (value: Date) =>
   new Intl.DateTimeFormat('fr-FR', {
     dateStyle: 'long',

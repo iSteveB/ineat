@@ -26,7 +26,7 @@ export class ResendEmailTransport implements EmailTransport {
         subject: message.subject,
         html: message.html,
         text: message.text,
-        replyTo: this.replyTo,
+        replyTo: message.replyTo ?? this.replyTo,
         tags: [
           { name: 'email_type', value: message.type },
           { name: 'recipient_ref', value: message.recipientReference },

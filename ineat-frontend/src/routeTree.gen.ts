@@ -27,6 +27,7 @@ import { Route as AppRecipesIndexRouteImport } from './routes/app/recipes/index'
 import { Route as AppProfileIndexRouteImport } from './routes/app/profile/index'
 import { Route as AppNotificationsIndexRouteImport } from './routes/app/notifications/index'
 import { Route as AppInventoryIndexRouteImport } from './routes/app/inventory/index'
+import { Route as AppHelpIndexRouteImport } from './routes/app/help/index'
 import { Route as AppBudgetIndexRouteImport } from './routes/app/budget/index'
 import { Route as AppAdminIndexRouteImport } from './routes/app/admin/index'
 import { Route as AppSubscriptionSuccessRouteImport } from './routes/app/subscription/success'
@@ -136,6 +137,11 @@ const AppNotificationsIndexRoute = AppNotificationsIndexRouteImport.update({
 const AppInventoryIndexRoute = AppInventoryIndexRouteImport.update({
   id: '/inventory/',
   path: '/inventory/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppHelpIndexRoute = AppHelpIndexRouteImport.update({
+  id: '/help/',
+  path: '/help/',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppBudgetIndexRoute = AppBudgetIndexRouteImport.update({
@@ -268,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/app/subscription/success': typeof AppSubscriptionSuccessRoute
   '/app/admin/': typeof AppAdminIndexRoute
   '/app/budget': typeof AppBudgetIndexRoute
+  '/app/help': typeof AppHelpIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
   '/app/notifications': typeof AppNotificationsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
@@ -306,6 +313,7 @@ export interface FileRoutesByTo {
   '/app/subscription/success': typeof AppSubscriptionSuccessRoute
   '/app/admin': typeof AppAdminIndexRoute
   '/app/budget': typeof AppBudgetIndexRoute
+  '/app/help': typeof AppHelpIndexRoute
   '/app/inventory': typeof AppInventoryIndexRoute
   '/app/notifications': typeof AppNotificationsIndexRoute
   '/app/profile': typeof AppProfileIndexRoute
@@ -348,6 +356,7 @@ export interface FileRoutesById {
   '/app/subscription/success': typeof AppSubscriptionSuccessRoute
   '/app/admin/': typeof AppAdminIndexRoute
   '/app/budget/': typeof AppBudgetIndexRoute
+  '/app/help/': typeof AppHelpIndexRoute
   '/app/inventory/': typeof AppInventoryIndexRoute
   '/app/notifications/': typeof AppNotificationsIndexRoute
   '/app/profile/': typeof AppProfileIndexRoute
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/app/subscription/success'
     | '/app/admin/'
     | '/app/budget'
+    | '/app/help'
     | '/app/inventory'
     | '/app/notifications'
     | '/app/profile'
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/app/subscription/success'
     | '/app/admin'
     | '/app/budget'
+    | '/app/help'
     | '/app/inventory'
     | '/app/notifications'
     | '/app/profile'
@@ -469,6 +480,7 @@ export interface FileRouteTypes {
     | '/app/subscription/success'
     | '/app/admin/'
     | '/app/budget/'
+    | '/app/help/'
     | '/app/inventory/'
     | '/app/notifications/'
     | '/app/profile/'
@@ -623,6 +635,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/app/inventory'
       preLoaderRoute: typeof AppInventoryIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/help/': {
+      id: '/app/help/'
+      path: '/help'
+      fullPath: '/app/help'
+      preLoaderRoute: typeof AppHelpIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/app/budget/': {
@@ -829,6 +848,7 @@ interface AppRouteRouteChildren {
   AppSettingsSubscriptionRoute: typeof AppSettingsSubscriptionRoute
   AppSubscriptionSuccessRoute: typeof AppSubscriptionSuccessRoute
   AppBudgetIndexRoute: typeof AppBudgetIndexRoute
+  AppHelpIndexRoute: typeof AppHelpIndexRoute
   AppInventoryIndexRoute: typeof AppInventoryIndexRoute
   AppNotificationsIndexRoute: typeof AppNotificationsIndexRoute
   AppProfileIndexRoute: typeof AppProfileIndexRoute
@@ -856,6 +876,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSettingsSubscriptionRoute: AppSettingsSubscriptionRoute,
   AppSubscriptionSuccessRoute: AppSubscriptionSuccessRoute,
   AppBudgetIndexRoute: AppBudgetIndexRoute,
+  AppHelpIndexRoute: AppHelpIndexRoute,
   AppInventoryIndexRoute: AppInventoryIndexRoute,
   AppNotificationsIndexRoute: AppNotificationsIndexRoute,
   AppProfileIndexRoute: AppProfileIndexRoute,

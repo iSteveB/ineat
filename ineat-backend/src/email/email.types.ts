@@ -15,7 +15,8 @@ export type TransactionalEmailType =
   | 'subscription_changed'
   | 'quota_warning'
   | 'quota_reached'
-  | 'account_deleted';
+  | 'account_deleted'
+  | 'support_request';
 
 export interface TransactionalEmailMessage {
   to: string;
@@ -25,6 +26,7 @@ export interface TransactionalEmailMessage {
   type: TransactionalEmailType;
   recipientReference: string;
   idempotencyKey?: string;
+  replyTo?: string;
 }
 
 export interface EmailSendResult {

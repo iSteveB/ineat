@@ -21,6 +21,8 @@ import {
   type QuotaEmailInput,
   createAccountDeletedEmail,
   type AccountDeletedEmailInput,
+  createSupportRequestEmail,
+  type SupportRequestEmailInput,
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
 import { EmailSendResult, EmailTransport } from './email.types';
@@ -71,6 +73,23 @@ export async function sendPasswordResetEmail(
     type: 'password_reset',
     recipientReference: createRecipientReference(input.to),
     idempotencyKey: `password-reset/${resetFingerprint}`,
+  });
+}
+
+export async function sendSupportRequestEmail(
+  input: SupportRequestEmailInput & { to: string },
+  transport: EmailTransport = getDefaultEmailTransport(),
+): Promise<EmailSendResult> {
+  const template = createSupportRequestEmail(input);
+
+  return transport.send({
+    to: input.to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    type: 'support_request',
+    recipientReference: createRecipientReference(input.to),
+    replyTo: input.user.email,
   });
 }
 

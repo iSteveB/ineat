@@ -11,7 +11,7 @@ import {
 } from '../ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
-import { LogOut, Settings, User } from 'lucide-react';
+import { CircleHelp, LogOut, Settings, User } from 'lucide-react';
 
 export function UserMenu() {
   const { user, logout } = useAuthStore();
@@ -65,6 +65,10 @@ export function UserMenu() {
     navigate({ to: '/app/settings' });
   };
 
+  const handleHelpClick = () => {
+    navigate({ to: '/app/help' });
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -93,6 +97,10 @@ export function UserMenu() {
         <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer" data-testid="settings-menu-item">
           <Settings className="mr-2 size-4" />
           <span>Paramètres</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleHelpClick} className="cursor-pointer" data-testid="help-menu-item">
+          <CircleHelp className="mr-2 size-4" />
+          <span>Aide & FAQ</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem 

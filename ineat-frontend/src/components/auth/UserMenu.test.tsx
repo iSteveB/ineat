@@ -16,6 +16,7 @@ vi.mock('@tanstack/react-router', () => ({
 // Mocks pour les icônes
 vi.mock('lucide-react', () => ({
 	LogOut: () => <div data-testid='logout-icon' />,
+	CircleHelp: () => <div data-testid='help-icon' />,
 	Settings: () => <div data-testid='settings-icon' />,
 	User: () => <div data-testid='user-icon' />,
 }));
