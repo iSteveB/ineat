@@ -312,12 +312,13 @@ describe('AdminService', () => {
   });
 
   it('suspend un compte et révoque ses sessions sans toucher à Stripe', async () => {
+    const suspendedUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     prisma.user.findUnique.mockResolvedValue(baseUser);
     prisma.user.update.mockResolvedValue({
       ...baseUser,
       accountStatus: AccountStatus.SUSPENDED,
       accountStatusChangedAt: new Date('2026-07-31T12:00:00.000Z'),
-      suspendedUntil: new Date('2026-08-07T12:00:00.000Z'),
+      suspendedUntil,
       moderationReason: 'Vérification du compte',
     });
 
@@ -326,7 +327,7 @@ describe('AdminService', () => {
       'suspend',
       {
         reason: 'Vérification du compte',
-        suspendedUntil: '2026-08-07T12:00:00.000Z',
+        suspendedUntil: suspendedUntil.toISOString(),
       },
       actor,
     );

@@ -70,6 +70,9 @@ const baseEnvironmentSchema = z
     STRIPE_CUSTOMER_PORTAL_RETURN_URL: optionalString,
     REDIS_URL: optionalString,
     REDIS_KEY_PREFIX: optionalString,
+    CLOUDFLARE_ACCESS_ENABLED: optionalBoolean,
+    CLOUDFLARE_ACCESS_TEAM_DOMAIN: optionalString,
+    CLOUDFLARE_ACCESS_AUD: optionalString,
     NOTIFICATION_SCHEDULER_MODE: optionalSchedulerMode,
     NOTIFICATION_DELIVERY_MODE: optionalDeliveryMode,
   })
@@ -122,6 +125,16 @@ const productionEnvironmentSchema = baseEnvironmentSchema.extend({
   REDIS_URL: z.string().trim().url(),
 });
 
+const cloudflareAccessEnvironmentSchema = baseEnvironmentSchema.extend({
+  CLOUDFLARE_ACCESS_TEAM_DOMAIN: z
+    .string()
+    .trim()
+    .regex(/^[a-z0-9-]+\.cloudflareaccess\.com$/i, {
+      message: 'must be a cloudflareaccess.com hostname without a protocol',
+    }),
+  CLOUDFLARE_ACCESS_AUD: z.string().trim().min(1),
+});
+
 const formatZodError = (error: z.ZodError) =>
   error.issues
     .map((issue) => `${issue.path.join('.') || 'ENV'}: ${issue.message}`)
@@ -151,6 +164,16 @@ export function validateEnvironment(
   }
 
   const environment = baseResult.data;
+  if (environment.CLOUDFLARE_ACCESS_ENABLED) {
+    const cloudflareAccessResult =
+      cloudflareAccessEnvironmentSchema.safeParse(environment);
+    if (!cloudflareAccessResult.success) {
+      throw new Error(
+        `Invalid Cloudflare Access configuration: ${formatZodError(cloudflareAccessResult.error)}`,
+      );
+    }
+  }
+
   if (environment.NODE_ENV === 'production') {
     const productionResult = productionEnvironmentSchema.safeParse(environment);
     if (!productionResult.success) {

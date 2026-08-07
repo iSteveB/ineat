@@ -19,6 +19,7 @@ import {
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from './lib/auth';
 import { getAllowedOrigins } from './config/origins';
+import { createCloudflareAccessMiddleware } from './security/cloudflare-access.middleware';
 
 const legacyAuthPaths = new Set(['/auth/profile', '/auth/check']);
 
@@ -53,6 +54,23 @@ async function bootstrap() {
   });
   app.enableShutdownHooks();
   const configServiceInstance = app.get(ConfigService);
+
+  const cloudflareAccessEnabled = configServiceInstance.get<boolean>(
+    'CLOUDFLARE_ACCESS_ENABLED',
+    false,
+  );
+  app.use(
+    createCloudflareAccessMiddleware({
+      enabled: cloudflareAccessEnabled,
+      teamDomain: configServiceInstance.get<string>(
+        'CLOUDFLARE_ACCESS_TEAM_DOMAIN',
+      ),
+      audience: configServiceInstance.get<string>('CLOUDFLARE_ACCESS_AUD'),
+    }),
+  );
+  console.log(
+    `🔐 Cloudflare Access origin validation: ${cloudflareAccessEnabled ? 'enabled' : 'disabled'}`,
+  );
 
   // Middlewares de sécurité et performance
   app.use(

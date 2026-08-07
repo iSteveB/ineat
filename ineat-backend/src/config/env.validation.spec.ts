@@ -96,6 +96,32 @@ describe('validateEnvironment', () => {
       }),
     ).toThrow(/NOTIFICATION_DELIVERY_MODE/);
   });
+
+  it('requires complete Cloudflare Access configuration when enabled', () => {
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'development',
+        CLOUDFLARE_ACCESS_ENABLED: 'true',
+      }),
+    ).toThrow(/CLOUDFLARE_ACCESS_TEAM_DOMAIN/);
+  });
+
+  it('accepts a Cloudflare Access team domain and audience', () => {
+    expect(
+      validateEnvironment({
+        NODE_ENV: 'development',
+        CLOUDFLARE_ACCESS_ENABLED: 'true',
+        CLOUDFLARE_ACCESS_TEAM_DOMAIN:
+          'falling-term-7eee.cloudflareaccess.com',
+        CLOUDFLARE_ACCESS_AUD: 'development-audience',
+      }),
+    ).toMatchObject({
+      CLOUDFLARE_ACCESS_ENABLED: true,
+      CLOUDFLARE_ACCESS_TEAM_DOMAIN:
+        'falling-term-7eee.cloudflareaccess.com',
+      CLOUDFLARE_ACCESS_AUD: 'development-audience',
+    });
+  });
 });
 
 describe('Stripe V1 catalog', () => {
