@@ -6,7 +6,6 @@ import {
   Patch,
   Post,
   Query,
-  ParseUUIDPipe,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -38,6 +37,7 @@ import {
   AdminQueueJobsQueryDto,
 } from './dto/admin-operations-query.dto';
 import { AdminOperationsService } from './admin-operations.service';
+import { ParseUserIdPipe } from './pipes/parse-user-id.pipe';
 
 type AdminRequest = Request & {
   user: {
@@ -116,13 +116,13 @@ export class AdminController {
   }
 
   @Get('users/:id')
-  getUser(@Param('id', ParseUUIDPipe) id: string) {
+  getUser(@Param('id', ParseUserIdPipe) id: string) {
     return this.adminService.getUserById(id);
   }
 
   @Patch('users/:id/role')
   updateRole(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUserIdPipe) id: string,
     @Body() body: UpdateRoleDto,
     @Req() request: AdminRequest,
   ) {
@@ -136,7 +136,7 @@ export class AdminController {
 
   @Post('users/:id/account/:action')
   updateAccountStatus(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUserIdPipe) id: string,
     @Param('action') action: string,
     @Body() body: AdminAccountActionDto,
     @Req() request: AdminRequest,
@@ -180,7 +180,7 @@ export class AdminController {
 
   @Post('users/:id/subscription/schedule-cancellation')
   scheduleSubscriptionCancellation(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUserIdPipe) id: string,
     @Body() body: AdminReasonDto,
     @Req() request: AdminRequest,
   ) {
@@ -194,7 +194,7 @@ export class AdminController {
 
   @Post('users/:id/subscription/revoke-cancellation')
   revokeSubscriptionCancellation(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseUserIdPipe) id: string,
     @Body() body: AdminReasonDto,
     @Req() request: AdminRequest,
   ) {

@@ -20,3 +20,5 @@ export const adminUserSearchSchema = z.object({
 	sort: z.enum(['createdAt', 'email', 'lastName']).catch('createdAt'),
 	order: z.enum(['asc', 'desc']).catch('desc'),
 });
+
+export type AdminUserSearch = z.infer<typeof adminUserSearchSchema>;

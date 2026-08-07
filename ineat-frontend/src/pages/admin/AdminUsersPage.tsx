@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { adminKeys } from '@/pages/admin/adminKeys';
+import type { AdminUserSearch } from '@/pages/admin/adminUserSearch';
 import type { SubscriptionPlan, UserRole } from '@/schemas';
 import {
 	adminService,
@@ -55,7 +56,9 @@ const formatDate = (value: string | null) =>
 export default function AdminUsersPage() {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const search = useSearch({ from: '/app/admin/users/' });
+	// The list can render once during the transition to the detail route.
+	// A non-strict lookup avoids a transient route mismatch in TanStack Router.
+	const search = useSearch({ strict: false }) as AdminUserSearch;
 	const [searchValue, setSearchValue] = useState(search.search ?? '');
 	const [pendingChange, setPendingChange] = useState<PendingAdminChange | null>(
 		null
