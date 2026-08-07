@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { UserSchema } from '@/schemas';
 import {
+	createEmailSignInPayload,
 	getBetterAuthErrorMessage,
 	getEmailVerificationCallbackUrl,
 	isValidUser,
@@ -43,6 +44,22 @@ describe('normalizeAuthEmail', () => {
 		expect(normalizeAuthEmail('  UsER@Example.COM ')).toBe(
 			'user@example.com'
 		);
+	});
+});
+
+describe('createEmailSignInPayload', () => {
+	it("ne redirige pas une connexion normale vers la page de vérification", () => {
+		const payload = createEmailSignInPayload({
+			email: ' User@Example.com ',
+			password: 'password123',
+		});
+
+		expect(payload).toEqual({
+			email: 'user@example.com',
+			password: 'password123',
+			rememberMe: true,
+		});
+		expect(payload).not.toHaveProperty('callbackURL');
 	});
 });
 
