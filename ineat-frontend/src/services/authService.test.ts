@@ -110,7 +110,7 @@ describe('isValidUser', () => {
 			lastName: '',
 			defaultServings: '4',
 			primaryGoal: null,
-			preferences: null,
+			preferences: '{"allergens":["gluten"]}',
 			subscription: 'FREE',
 			createdAt: '2026-06-02T08:23:54.116Z',
 			updatedAt: '2026-06-02T08:23:54.116Z',
@@ -123,7 +123,7 @@ describe('isValidUser', () => {
 			defaultServings: 4,
 			profileOnboardingCompletedAt: null,
 			preferences: {
-				allergens: [],
+				allergens: ['gluten'],
 				diets: [],
 			},
 		});

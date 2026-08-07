@@ -41,4 +41,23 @@ describe('toSafeUserResponse', () => {
       subscription: 'TRIAL',
     });
   });
+
+  it('normalizes preferences stored as JSON strings for historical users', () => {
+    const response = toSafeUserResponse({
+      id: 'legacy-user',
+      email: 'legacy@example.com',
+      firstName: '',
+      lastName: '',
+      defaultServings: 4,
+      primaryGoal: null,
+      role: 'USER',
+      subscriptionPlan: 'FREE',
+      subscriptionStatus: 'ACTIVE',
+      preferences: '{"allergens":["gluten"]}',
+      createdAt: new Date('2026-07-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-07-01T00:00:00.000Z'),
+    });
+
+    expect(response.preferences).toEqual({ allergens: ['gluten'] });
+  });
 });

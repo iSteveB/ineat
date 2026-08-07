@@ -5,6 +5,35 @@ import {
 } from './services/access-policy.service';
 import { UsageQuotaService } from './services/usage-quota.service';
 
+type SafeUserResponseSource = Omit<SafeUserDto, 'preferences'> & {
+  preferences?: unknown;
+};
+
+const normalizePreferences = (
+  preferences: unknown,
+): Record<string, unknown> => {
+  if (
+    preferences &&
+    typeof preferences === 'object' &&
+    !Array.isArray(preferences)
+  ) {
+    return preferences as Record<string, unknown>;
+  }
+
+  if (typeof preferences === 'string') {
+    try {
+      const parsed: unknown = JSON.parse(preferences);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as Record<string, unknown>;
+      }
+    } catch {
+      // Les anciens comptes peuvent contenir une chaîne non JSON.
+    }
+  }
+
+  return {};
+};
+
 export const toLegacySubscription = (user: {
   subscriptionPlan?: string | null;
 }): 'FREE' | 'TRIAL' | 'PREMIUM' => {
@@ -15,7 +44,7 @@ export const toLegacySubscription = (user: {
 };
 
 export const toSafeUserResponse = (
-  user: SafeUserDto,
+  user: SafeUserResponseSource,
   accessPolicyService?: AccessPolicyService,
 ) => {
   const policy: AccessPolicy = accessPolicyService?.getPolicy(user) ?? {
@@ -56,7 +85,7 @@ export const toSafeUserResponse = (
     effectivePlan: policy.effectivePlan,
     capabilities: policy.capabilities,
     subscription: toLegacySubscription(user),
-    preferences: user.preferences,
+    preferences: normalizePreferences(user.preferences),
     createdAt: user.createdAt.toISOString(),
     updatedAt: user.updatedAt.toISOString(),
   };

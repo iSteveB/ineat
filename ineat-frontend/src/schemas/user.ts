@@ -57,7 +57,14 @@ export const UserSchema = z
 		primaryGoal: PrimaryGoalSchema.nullable().default(null),
 		profileOnboardingCompletedAt: z.string().datetime().nullable().default(null),
 		preferences: z.preprocess(
-			(value) => value ?? {},
+			(value) => {
+				if (typeof value !== 'string') return value ?? {};
+				try {
+					return JSON.parse(value);
+				} catch {
+					return {};
+				}
+			},
 			z
 				.object({
 					allergens: z.array(z.string()).default([]),
