@@ -122,6 +122,24 @@ describe('validateEnvironment', () => {
       CLOUDFLARE_ACCESS_AUD: 'development-audience',
     });
   });
+
+  it('validates the optional email recipient allowlist', () => {
+    expect(
+      validateEnvironment({
+        NODE_ENV: 'development',
+        EMAIL_ALLOWED_RECIPIENTS: 'steve@example.com, test@example.com',
+      }),
+    ).toMatchObject({
+      EMAIL_ALLOWED_RECIPIENTS: 'steve@example.com, test@example.com',
+    });
+
+    expect(() =>
+      validateEnvironment({
+        NODE_ENV: 'development',
+        EMAIL_ALLOWED_RECIPIENTS: 'steve@example.com, invalid-address',
+      }),
+    ).toThrow(/EMAIL_ALLOWED_RECIPIENTS/);
+  });
 });
 
 describe('Stripe V1 catalog', () => {

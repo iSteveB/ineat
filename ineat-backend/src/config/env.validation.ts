@@ -26,6 +26,22 @@ const optionalBoolean = z.preprocess((value) => {
   return false;
 }, z.boolean());
 
+const optionalEmailList = z.preprocess(
+  emptyToUndefined,
+  z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        value
+          .split(',')
+          .map((email) => email.trim())
+          .every((email) => z.string().email().safeParse(email).success),
+      { message: 'must be a comma-separated list of email addresses' },
+    )
+    .optional(),
+);
+
 const optionalSchedulerMode = z.preprocess(
   emptyToUndefined,
   z.enum(['legacy', 'bullmq', 'disabled']).default('legacy'),
@@ -55,6 +71,7 @@ const baseEnvironmentSchema = z
     RESEND_API_KEY: optionalString,
     EMAIL_FROM: optionalString,
     EMAIL_REPLY_TO: optionalString,
+    EMAIL_ALLOWED_RECIPIENTS: optionalEmailList,
     SUPPORT_EMAIL: z.preprocess(
       emptyToUndefined,
       z.string().trim().email().default('support@ineat.store'),

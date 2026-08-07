@@ -26,6 +26,10 @@ import {
 } from './email.templates';
 import { ResendEmailTransport } from './resend-email.transport';
 import { EmailSendResult, EmailTransport } from './email.types';
+import {
+  parseAllowedEmailRecipients,
+  RecipientAllowlistEmailTransport,
+} from './recipient-allowlist-email.transport';
 
 let defaultTransport: EmailTransport | undefined;
 
@@ -43,11 +47,18 @@ const createDefaultTransport = (): EmailTransport => {
     throw new Error('Transactional email is not configured');
   }
 
-  return new ResendEmailTransport(
+  const transport = new ResendEmailTransport(
     apiKey,
     from,
     process.env.EMAIL_REPLY_TO?.trim() || undefined,
   );
+  const allowedRecipients = parseAllowedEmailRecipients(
+    process.env.EMAIL_ALLOWED_RECIPIENTS,
+  );
+
+  return allowedRecipients.size > 0
+    ? new RecipientAllowlistEmailTransport(transport, allowedRecipients)
+    : transport;
 };
 
 export const getDefaultEmailTransport = (): EmailTransport => {
