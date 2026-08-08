@@ -30,6 +30,17 @@ export interface InvoiceUser {
   currentPeriodEndsAt?: Date | string | null;
 }
 
+interface InvoiceValidationContext {
+  budget: any | null;
+  categoriesBySlug: Map<string, any>;
+  expensesByItemId: Map<string, any>;
+  productsByBarcode: Map<string, any>;
+  productsById: Map<string, any>;
+  productsByIdentity: Map<string, any>;
+}
+
+const INVOICE_VALIDATION_TRANSACTION_TIMEOUT_MS = 15_000;
+
 @Injectable()
 export class InvoiceService {
   private readonly logger = new Logger(InvoiceService.name);
@@ -235,7 +246,9 @@ export class InvoiceService {
         });
 
         if (!allowedCategory) {
-          throw new BadRequestException("La catégorie sélectionnée n'est pas valide");
+          throw new BadRequestException(
+            "La catégorie sélectionnée n'est pas valide",
+          );
         }
       }
 
@@ -329,51 +342,106 @@ export class InvoiceService {
     }
 
     const purchaseDate = invoice.purchaseDate ?? invoice.createdAt;
+    const validationStartedAt = Date.now();
 
-    return this.prisma.$transaction(async (tx) => {
-      const summary = {
-        success: true,
-        invoiceId,
-        validatedItemCount: 0,
-        skippedItemCount: 0,
-        inventoryItemCount: 0,
-        expenseCount: 0,
-        totalBudgetAmount: 0,
-        message: 'Lignes de facture validées avec succès',
-      };
+    const summary = await this.prisma.$transaction(
+      async (tx) => {
+        const validationContext = await this.prepareInvoiceValidationContext(
+          tx,
+          invoice.InvoiceItem,
+          userId,
+          purchaseDate,
+        );
+        const summary = {
+          success: true,
+          invoiceId,
+          validatedItemCount: 0,
+          skippedItemCount: 0,
+          inventoryItemCount: 0,
+          expenseCount: 0,
+          totalBudgetAmount: 0,
+          message: 'Lignes de facture validées avec succès',
+        };
 
-      for (const item of invoice.InvoiceItem) {
-        if (item.validated) {
-          const existingExpense = await tx.expense.findUnique({
-            where: { invoiceItemId: item.id },
-          });
-
-          if (!existingExpense) {
-            const repairedExpense = await this.createExpenseForInvoiceItem(
-              tx,
-              userId,
-              invoiceId,
-              item,
-              purchaseDate,
+        for (const item of invoice.InvoiceItem) {
+          if (item.validated) {
+            const existingExpense = validationContext.expensesByItemId.get(
+              item.id,
             );
 
-            if (repairedExpense) {
-              summary.expenseCount += 1;
-              summary.totalBudgetAmount += repairedExpense.amount;
+            if (!existingExpense) {
+              const repairedExpense = await this.createExpenseForInvoiceItem(
+                tx,
+                userId,
+                invoiceId,
+                item,
+                purchaseDate,
+                validationContext.budget,
+              );
+
+              if (repairedExpense) {
+                summary.expenseCount += 1;
+                summary.totalBudgetAmount += repairedExpense.amount;
+              }
             }
+
+            summary.skippedItemCount += 1;
+            continue;
           }
 
-          summary.skippedItemCount += 1;
-          continue;
-        }
+          const product = await this.resolveProductForInvoiceItem(
+            tx,
+            item,
+            validationContext,
+          );
+          const now = new Date();
+          const existingExpense = validationContext.expensesByItemId.get(
+            item.id,
+          );
 
-        const product = await this.resolveProductForInvoiceItem(tx, item);
-        const now = new Date();
-        const existingExpense = await tx.expense.findUnique({
-          where: { invoiceItemId: item.id },
-        });
+          if (existingExpense) {
+            await tx.invoiceItem.update({
+              where: { id: item.id },
+              data: {
+                productId: product.id,
+                validated: true,
+                updatedAt: now,
+              },
+            });
+            summary.skippedItemCount += 1;
+            continue;
+          }
 
-        if (existingExpense) {
+          await tx.inventoryItem.create({
+            data: {
+              id: randomUUID(),
+              userId,
+              productId: product.id,
+              quantity: item.quantity,
+              purchaseDate,
+              expiryDate: item.expiryDate,
+              purchasePrice: item.totalPrice,
+              storageLocation: item.storageLocation,
+              notes: item.notes,
+              updatedAt: now,
+            },
+          });
+          summary.inventoryItemCount += 1;
+
+          const expense = await this.createExpenseForInvoiceItem(
+            tx,
+            userId,
+            invoiceId,
+            item,
+            purchaseDate,
+            validationContext.budget,
+          );
+
+          if (expense) {
+            summary.expenseCount += 1;
+            summary.totalBudgetAmount += expense.amount;
+          }
+
           await tx.invoiceItem.update({
             where: { id: item.id },
             data: {
@@ -382,75 +450,141 @@ export class InvoiceService {
               updatedAt: now,
             },
           });
-          summary.skippedItemCount += 1;
-          continue;
+          summary.validatedItemCount += 1;
         }
 
-        await tx.inventoryItem.create({
+        const [totalItemCount, totalValidatedItemCount] = await Promise.all([
+          tx.invoiceItem.count({
+            where: { invoiceId },
+          }),
+          tx.invoiceItem.count({
+            where: {
+              invoiceId,
+              validated: true,
+            },
+          }),
+        ]);
+
+        await tx.invoice.update({
+          where: { id: invoiceId },
           data: {
-            id: randomUUID(),
-            userId,
-            productId: product.id,
-            quantity: item.quantity,
-            purchaseDate,
-            expiryDate: item.expiryDate,
-            purchasePrice: item.totalPrice,
-            storageLocation: item.storageLocation,
-            notes: item.notes,
-            updatedAt: now,
+            status:
+              totalItemCount > 0 && totalItemCount === totalValidatedItemCount
+                ? InvoiceStatus.VALIDATED
+                : invoice.status,
+            updatedAt: new Date(),
           },
         });
-        summary.inventoryItemCount += 1;
 
-        const expense = await this.createExpenseForInvoiceItem(
-          tx,
-          userId,
-          invoiceId,
-          item,
-          purchaseDate,
-        );
+        return summary;
+      },
+      {
+        timeout: INVOICE_VALIDATION_TRANSACTION_TIMEOUT_MS,
+      },
+    );
 
-        if (expense) {
-          summary.expenseCount += 1;
-          summary.totalBudgetAmount += expense.amount;
-        }
-
-        await tx.invoiceItem.update({
-          where: { id: item.id },
-          data: {
-            productId: product.id,
-            validated: true,
-            updatedAt: now,
-          },
-        });
-        summary.validatedItemCount += 1;
-      }
-
-      const [totalItemCount, totalValidatedItemCount] = await Promise.all([
-        tx.invoiceItem.count({
-          where: { invoiceId },
-        }),
-        tx.invoiceItem.count({
-          where: {
-            invoiceId,
-            validated: true,
-          },
-        }),
-      ]);
-
-      await tx.invoice.update({
-        where: { id: invoiceId },
-        data: {
-          status:
-            totalItemCount > 0 && totalItemCount === totalValidatedItemCount
-              ? InvoiceStatus.VALIDATED
-              : invoice.status,
-          updatedAt: new Date(),
-        },
-      });
-
-      return summary;
+    this.logInvoiceEvent({
+      event: 'invoice_validation_completed',
+      invoiceId,
+      userId,
+      durationMs: Date.now() - validationStartedAt,
+      requestedItemCount: invoice.InvoiceItem.length,
+      validatedItemCount: summary.validatedItemCount,
+      skippedItemCount: summary.skippedItemCount,
     });
+
+    return summary;
+  }
+
+  private async prepareInvoiceValidationContext(
+    tx: any,
+    items: any[],
+    userId: string,
+    purchaseDate: Date,
+  ): Promise<InvoiceValidationContext> {
+    const itemIds = items.map((item) => item.id);
+    const categorySlugs = Array.from(
+      new Set(items.map((item) => item.category).filter(Boolean)),
+    );
+    const productIds = Array.from(
+      new Set(items.map((item) => item.productId).filter(Boolean)),
+    );
+    const barcodes = Array.from(
+      new Set(
+        items
+          .map((item) =>
+            this.getFirstValidBarcode(item.selectedEan, item.productCode),
+          )
+          .filter(Boolean),
+      ),
+    );
+    const productNames = Array.from(
+      new Set(items.map((item) => item.detectedName).filter(Boolean)),
+    );
+
+    const [categories, expenses] = await Promise.all([
+      categorySlugs.length
+        ? tx.category.findMany({
+            where: { slug: { in: categorySlugs } },
+          })
+        : [],
+      itemIds.length
+        ? tx.expense.findMany({
+            where: { invoiceItemId: { in: itemIds } },
+          })
+        : [],
+    ]);
+
+    const categoryIds = categories.map((category: any) => category.id);
+    const productFilters = [
+      productIds.length ? { id: { in: productIds } } : null,
+      barcodes.length ? { barcode: { in: barcodes } } : null,
+      productNames.length && categoryIds.length
+        ? {
+            name: { in: productNames, mode: 'insensitive' },
+            categoryId: { in: categoryIds },
+          }
+        : null,
+    ].filter(Boolean);
+    const products = productFilters.length
+      ? await tx.product.findMany({
+          where: { OR: productFilters },
+          include: { Category: true },
+        })
+      : [];
+    const expensesByItemId = new Map<string, any>(
+      expenses.map((expense: any) => [expense.invoiceItemId, expense]),
+    );
+    const needsBudget = items.some(
+      (item) => item.totalPrice > 0 && !expensesByItemId.has(item.id),
+    );
+    const budget = needsBudget
+      ? await this.findOrCreateBudgetForInvoiceExpense(tx, userId, purchaseDate)
+      : null;
+
+    return {
+      budget,
+      categoriesBySlug: new Map<string, any>(
+        categories.map((category: any) => [category.slug, category]),
+      ),
+      expensesByItemId,
+      productsByBarcode: new Map<string, any>(
+        products
+          .filter((product: any) => product.barcode)
+          .map((product: any) => [product.barcode, product]),
+      ),
+      productsById: new Map<string, any>(
+        products.map((product: any) => [product.id, product]),
+      ),
+      productsByIdentity: new Map<string, any>(
+        products
+          .filter((product: any) => !product.brand)
+          .map((product: any) => [
+            this.productIdentity(product.name, product.categoryId),
+            product,
+          ]),
+      ),
+    };
   }
 
   private async completeInvoiceAnalysis(
@@ -517,12 +651,18 @@ export class InvoiceService {
     });
   }
 
-  private async resolveProductForInvoiceItem(tx: any, item: any) {
+  private async resolveProductForInvoiceItem(
+    tx: any,
+    item: any,
+    context?: InvoiceValidationContext,
+  ) {
     if (item.productId) {
-      const product = await tx.product.findUnique({
-        where: { id: item.productId },
-        include: { Category: true },
-      });
+      const product =
+        context?.productsById.get(item.productId) ??
+        (await tx.product.findUnique({
+          where: { id: item.productId },
+          include: { Category: true },
+        }));
 
       if (!product) {
         throw new NotFoundException('Produit associé introuvable');
@@ -537,10 +677,12 @@ export class InvoiceService {
     );
 
     if (barcode) {
-      const productByBarcode = await tx.product.findUnique({
-        where: { barcode },
-        include: { Category: true },
-      });
+      const productByBarcode =
+        context?.productsByBarcode.get(barcode) ??
+        (await tx.product.findUnique({
+          where: { barcode },
+          include: { Category: true },
+        }));
 
       if (productByBarcode) {
         return this.enrichExistingProductFromInvoiceItem(
@@ -557,9 +699,11 @@ export class InvoiceService {
       );
     }
 
-    const category = await tx.category.findFirst({
-      where: { slug: item.category },
-    });
+    const category =
+      context?.categoriesBySlug.get(item.category) ??
+      (await tx.category.findFirst({
+        where: { slug: item.category },
+      }));
 
     if (!category) {
       throw new BadRequestException(
@@ -567,18 +711,24 @@ export class InvoiceService {
       );
     }
 
-    const existingProduct = await tx.product.findFirst({
-      where: {
-        name: {
-          equals: item.detectedName,
-          mode: 'insensitive',
-        },
-        brand: null,
-        categoryId: category.id,
-        ...(barcode ? { barcode: null } : {}),
-      },
-      include: { Category: true },
-    });
+    const cachedExistingProduct = context?.productsByIdentity.get(
+      this.productIdentity(item.detectedName, category.id),
+    );
+    const existingProduct =
+      cachedExistingProduct && (!barcode || !cachedExistingProduct.barcode)
+        ? cachedExistingProduct
+        : await tx.product.findFirst({
+            where: {
+              name: {
+                equals: item.detectedName,
+                mode: 'insensitive',
+              },
+              brand: null,
+              categoryId: category.id,
+              ...(barcode ? { barcode: null } : {}),
+            },
+            include: { Category: true },
+          });
 
     if (existingProduct) {
       return this.enrichExistingProductFromInvoiceItem(
@@ -592,7 +742,7 @@ export class InvoiceService {
     const productName =
       this.getNonEmptyString(externalProductData?.name) ?? item.detectedName;
 
-    return tx.product.create({
+    const product = await tx.product.create({
       data: {
         id: randomUUID(),
         name: productName,
@@ -614,6 +764,21 @@ export class InvoiceService {
       },
       include: { Category: true },
     });
+
+    context?.productsById.set(product.id, product);
+    if (product.barcode) {
+      context?.productsByBarcode.set(product.barcode, product);
+    }
+    context?.productsByIdentity.set(
+      this.productIdentity(product.name, product.categoryId),
+      product,
+    );
+
+    return product;
+  }
+
+  private productIdentity(name: string, categoryId: string): string {
+    return `${name.trim().toLocaleLowerCase('fr-FR')}::${categoryId}`;
   }
 
   private async enrichExistingProductFromInvoiceItem(
@@ -740,9 +905,7 @@ export class InvoiceService {
       name,
       brand,
       imageUrl,
-      nutriscore: this.normalizeScore(
-        data.nutriscore ?? raw.nutriscore_grade,
-      ),
+      nutriscore: this.normalizeScore(data.nutriscore ?? raw.nutriscore_grade),
       ecoscore: this.normalizeScore(data.ecoscore ?? raw.ecoscore_grade),
       novascore: this.normalizeNovaScore(data.novascore ?? raw.nova_group),
       ingredients,
@@ -838,9 +1001,13 @@ export class InvoiceService {
     return undefined;
   }
 
-  private pruneUndefined(value: Record<string, unknown>): Record<string, unknown> {
+  private pruneUndefined(
+    value: Record<string, unknown>,
+  ): Record<string, unknown> {
     return Object.fromEntries(
-      Object.entries(value).filter(([, entryValue]) => entryValue !== undefined),
+      Object.entries(value).filter(
+        ([, entryValue]) => entryValue !== undefined,
+      ),
     );
   }
 
@@ -850,16 +1017,20 @@ export class InvoiceService {
     invoiceId: string,
     item: any,
     purchaseDate: Date,
+    preparedBudget?: any | null,
   ) {
     if (!item.totalPrice || item.totalPrice <= 0) {
       return null;
     }
 
-    const budget = await this.findOrCreateBudgetForInvoiceExpense(
-      tx,
-      userId,
-      purchaseDate,
-    );
+    const budget =
+      preparedBudget === undefined
+        ? await this.findOrCreateBudgetForInvoiceExpense(
+            tx,
+            userId,
+            purchaseDate,
+          )
+        : preparedBudget;
 
     if (!budget) {
       return null;

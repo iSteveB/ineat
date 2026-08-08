@@ -20,6 +20,7 @@ describe('InvoiceService', () => {
       update: jest.fn(),
     },
     category: {
+      findMany: jest.fn(),
       findFirst: jest.fn(),
     },
     inventoryItem: {
@@ -31,6 +32,7 @@ describe('InvoiceService', () => {
       create: jest.fn(),
     },
     expense: {
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
     },
@@ -148,6 +150,7 @@ describe('InvoiceService', () => {
     );
     prisma.$transaction.mockImplementation((callback) => callback(tx));
     tx.invoiceItem.count.mockResolvedValue(1);
+    tx.category.findMany.mockResolvedValue([]);
     tx.category.findFirst.mockResolvedValue({
       id: 'category-1',
       slug: 'fruits-et-legumes',
@@ -172,6 +175,7 @@ describe('InvoiceService', () => {
       id: 'budget-created',
       amount: 300,
     });
+    tx.expense.findMany.mockResolvedValue([]);
     tx.expense.findUnique.mockResolvedValue(null);
     tx.expense.create.mockResolvedValue({
       id: 'expense-1',
@@ -596,18 +600,74 @@ describe('InvoiceService', () => {
     });
   });
 
+  it('précharge les dépendances et applique un timeout explicite pour plusieurs lignes', async () => {
+    const secondItem = {
+      ...completedInvoice.InvoiceItem[0],
+      id: 'item-2',
+      detectedName: 'Poires',
+      totalPrice: 3.5,
+    };
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...completedInvoice,
+      totalAmount: 8,
+      InvoiceItem: [completedInvoice.InvoiceItem[0], secondItem],
+    });
+    tx.category.findMany.mockResolvedValue([
+      { id: 'category-1', slug: 'fruits-et-legumes' },
+    ]);
+    tx.invoiceItem.count.mockResolvedValueOnce(2).mockResolvedValueOnce(2);
+    tx.product.create
+      .mockResolvedValueOnce({
+        id: 'product-1',
+        name: 'Pommes',
+        barcode: null,
+        categoryId: 'category-1',
+      })
+      .mockResolvedValueOnce({
+        id: 'product-2',
+        name: 'Poires',
+        barcode: null,
+        categoryId: 'category-1',
+      });
+    tx.expense.create
+      .mockResolvedValueOnce({ id: 'expense-1', amount: 4.5 })
+      .mockResolvedValueOnce({ id: 'expense-2', amount: 3.5 });
+
+    const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1', 'item-2'],
+    });
+
+    expect(tx.category.findMany).toHaveBeenCalledTimes(1);
+    expect(tx.category.findFirst).not.toHaveBeenCalled();
+    expect(tx.expense.findMany).toHaveBeenCalledWith({
+      where: { invoiceItemId: { in: ['item-1', 'item-2'] } },
+    });
+    expect(tx.expense.findUnique).not.toHaveBeenCalled();
+    expect(tx.budget.findFirst).toHaveBeenCalledTimes(1);
+    expect(prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
+      timeout: 15_000,
+    });
+    expect(result).toMatchObject({
+      validatedItemCount: 2,
+      inventoryItemCount: 2,
+      expenseCount: 2,
+      totalBudgetAmount: 8,
+    });
+    expect(loggerSpy).toHaveBeenCalledWith(
+      expect.stringContaining('"event":"invoice_validation_completed"'),
+    );
+  });
+
   it("crée un budget mensuel pour la date de facture avant d'ajouter la dépense", async () => {
     prisma.invoice.findFirst.mockResolvedValue({
       ...completedInvoice,
       purchaseDate: new Date('2024-09-17T00:00:00.000Z'),
     });
     tx.invoiceItem.count.mockResolvedValueOnce(1).mockResolvedValueOnce(1);
-    tx.budget.findFirst
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({
-        id: 'budget-current',
-        amount: 450,
-      });
+    tx.budget.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({
+      id: 'budget-current',
+      amount: 450,
+    });
     tx.budget.create.mockResolvedValue({
       id: 'budget-september-2024',
       amount: 450,
@@ -976,10 +1036,13 @@ describe('InvoiceService', () => {
   });
 
   it('ignore une ligne déjà validée pour rendre le retry idempotent', async () => {
-    tx.expense.findUnique.mockResolvedValue({
-      id: 'expense-existing',
-      amount: 4.5,
-    });
+    tx.expense.findMany.mockResolvedValue([
+      {
+        id: 'expense-existing',
+        invoiceItemId: 'item-1',
+        amount: 4.5,
+      },
+    ]);
     prisma.invoice.findFirst.mockResolvedValue({
       ...completedInvoice,
       InvoiceItem: [
@@ -1041,10 +1104,13 @@ describe('InvoiceService', () => {
   });
 
   it('ne recrée pas de dépense ni de budget si une dépense existe déjà pour la ligne', async () => {
-    tx.expense.findUnique.mockResolvedValue({
-      id: 'expense-existing',
-      amount: 4.5,
-    });
+    tx.expense.findMany.mockResolvedValue([
+      {
+        id: 'expense-existing',
+        invoiceItemId: 'item-1',
+        amount: 4.5,
+      },
+    ]);
 
     const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
       invoiceItemIds: ['item-1'],
