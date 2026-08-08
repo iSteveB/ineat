@@ -5,7 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { InvoiceStatus, Prisma } from '../../../prisma/generated/prisma/client';
+import {
+  InvoiceProcessingEventStatus,
+  InvoiceProcessingStage,
+  InvoiceStatus,
+  Prisma,
+} from '../../../prisma/generated/prisma/client';
 import { UsageQuotaService } from '../../auth/services/usage-quota.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
@@ -13,6 +18,7 @@ import {
   InvoiceAnalysisService,
 } from './invoice-analysis.service';
 import { InvoiceProductResolverService } from './invoice-product-resolver.service';
+import { InvoiceProcessingStateService } from './invoice-processing-state.service';
 import { InvoiceUploadService } from './invoice-upload.service';
 import { OpenFoodFactsInvoiceEnrichmentService } from './openfoodfacts-invoice-enrichment.service';
 import { isInvoiceStorageLocation } from './invoice-product-classification';
@@ -50,6 +56,7 @@ export class InvoiceService {
     private readonly invoiceUploadService: InvoiceUploadService,
     private readonly invoiceAnalysisService: InvoiceAnalysisService,
     private readonly invoiceProductResolverService: InvoiceProductResolverService,
+    private readonly invoiceProcessingStateService: InvoiceProcessingStateService,
     private readonly openFoodFactsInvoiceEnrichmentService: OpenFoodFactsInvoiceEnrichmentService,
     private readonly usageQuotaService: UsageQuotaService,
   ) {}
@@ -77,18 +84,36 @@ export class InvoiceService {
     }
 
     const now = new Date();
+    const invoiceId = randomUUID();
 
     const invoice = await this.prisma.invoice.create({
       data: {
-        id: randomUUID(),
+        id: invoiceId,
         userId: user.id,
         pdfUrl,
         status: InvoiceStatus.PROCESSING,
+        processingStage: InvoiceProcessingStage.UPLOADED,
+        processingProgress: 10,
+        processingAttempt: 1,
+        stageStartedAt: now,
         updatedAt: now,
+        ProcessingEvent: {
+          create: {
+            id: randomUUID(),
+            stage: InvoiceProcessingStage.UPLOADED,
+            status: InvoiceProcessingEventStatus.STARTED,
+            attempt: 1,
+            startedAt: now,
+          },
+        },
       },
     });
 
     try {
+      await this.invoiceProcessingStateService.transition(
+        invoice.id,
+        InvoiceProcessingStage.ANALYZING,
+      );
       const startedAt = Date.now();
       const analysis = await this.invoiceAnalysisService.analyzePdf(
         pdfUrl,
@@ -111,6 +136,11 @@ export class InvoiceService {
 
       return this.getInvoiceForUser(user.id, invoice.id);
     } catch (error) {
+      await this.invoiceProcessingStateService.transition(
+        invoice.id,
+        InvoiceProcessingStage.FAILED,
+        { errorCode: this.getProcessingErrorCode(error) },
+      );
       await this.prisma.invoice.update({
         where: { id: invoice.id },
         data: {
@@ -343,6 +373,7 @@ export class InvoiceService {
 
     const purchaseDate = invoice.purchaseDate ?? invoice.createdAt;
     const validationStartedAt = Date.now();
+    let finalInvoiceStatus: InvoiceStatus = invoice.status;
 
     const summary = await this.prisma.$transaction(
       async (tx) => {
@@ -465,13 +496,15 @@ export class InvoiceService {
           }),
         ]);
 
+        finalInvoiceStatus =
+          totalItemCount > 0 && totalItemCount === totalValidatedItemCount
+            ? InvoiceStatus.VALIDATED
+            : invoice.status;
+
         await tx.invoice.update({
           where: { id: invoiceId },
           data: {
-            status:
-              totalItemCount > 0 && totalItemCount === totalValidatedItemCount
-                ? InvoiceStatus.VALIDATED
-                : invoice.status,
+            status: finalInvoiceStatus,
             updatedAt: new Date(),
           },
         });
@@ -492,6 +525,13 @@ export class InvoiceService {
       validatedItemCount: summary.validatedItemCount,
       skippedItemCount: summary.skippedItemCount,
     });
+
+    if (finalInvoiceStatus === InvoiceStatus.VALIDATED) {
+      await this.invoiceProcessingStateService.transition(
+        invoiceId,
+        InvoiceProcessingStage.VALIDATED,
+      );
+    }
 
     return summary;
   }
@@ -593,6 +633,10 @@ export class InvoiceService {
     processingTime: number,
   ): Promise<void> {
     const now = new Date();
+    await this.invoiceProcessingStateService.transition(
+      invoiceId,
+      InvoiceProcessingStage.ENRICHING,
+    );
     const enrichedItems =
       await this.openFoodFactsInvoiceEnrichmentService.enrichItems(
         analysis.items,
@@ -649,6 +693,11 @@ export class InvoiceService {
         })),
       });
     });
+
+    await this.invoiceProcessingStateService.transition(
+      invoiceId,
+      InvoiceProcessingStage.READY_FOR_REVIEW,
+    );
   }
 
   private async resolveProductForInvoiceItem(
@@ -1170,6 +1219,12 @@ export class InvoiceService {
       userId: invoice.userId,
       pdfUrl: invoice.pdfUrl,
       status: invoice.status,
+      processingStage: invoice.processingStage,
+      processingProgress: invoice.processingProgress,
+      processingAttempt: invoice.processingAttempt,
+      stageStartedAt: invoice.stageStartedAt?.toISOString() ?? null,
+      stageCompletedAt: invoice.stageCompletedAt?.toISOString() ?? null,
+      processingErrorCode: invoice.processingErrorCode,
       merchantName: invoice.merchantName,
       totalAmount: invoice.totalAmount,
       purchaseDate: invoice.purchaseDate?.toISOString() ?? null,
@@ -1263,5 +1318,14 @@ export class InvoiceService {
       requestId: providerError.requestId,
       stack: error.stack,
     };
+  }
+
+  private getProcessingErrorCode(error: unknown): string {
+    if (!(error instanceof Error)) {
+      return 'UNKNOWN_ERROR';
+    }
+
+    const providerError = error as Error & { providerCode?: string };
+    return providerError.providerCode ?? error.name.toUpperCase();
   }
 }

@@ -88,6 +88,11 @@ export type Product = Prisma.ProductModel
  */
 export type Invoice = Prisma.InvoiceModel
 /**
+ * Model InvoiceProcessingEvent
+ * 
+ */
+export type InvoiceProcessingEvent = Prisma.InvoiceProcessingEventModel
+/**
  * Model InvoiceItem
  * 
  */

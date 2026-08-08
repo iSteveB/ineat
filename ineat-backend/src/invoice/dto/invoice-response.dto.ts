@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { InvoiceStatus } from '../../../prisma/generated/prisma/client';
+import {
+  InvoiceProcessingStage,
+  InvoiceStatus,
+} from '../../../prisma/generated/prisma/client';
 
 class InvoiceItemProductCategoryResponseDto {
   @ApiProperty()
@@ -120,6 +123,24 @@ export class InvoiceResponseDto {
 
   @ApiProperty({ enum: InvoiceStatus })
   status: InvoiceStatus;
+
+  @ApiProperty({ enum: InvoiceProcessingStage })
+  processingStage: InvoiceProcessingStage;
+
+  @ApiProperty({ minimum: 0, maximum: 100 })
+  processingProgress: number;
+
+  @ApiProperty({ minimum: 1 })
+  processingAttempt: number;
+
+  @ApiPropertyOptional()
+  stageStartedAt?: string | null;
+
+  @ApiPropertyOptional()
+  stageCompletedAt?: string | null;
+
+  @ApiPropertyOptional()
+  processingErrorCode?: string | null;
 
   @ApiPropertyOptional()
   merchantName?: string | null;

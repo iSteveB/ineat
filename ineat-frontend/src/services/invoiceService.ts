@@ -4,6 +4,16 @@ export const INVOICE_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 export const INVOICE_IMPORT_TIMEOUT_MS = 120000;
 
 export type InvoiceStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'VALIDATED';
+export type InvoiceProcessingStage =
+	| 'UPLOADED'
+	| 'QUEUED'
+	| 'EXTRACTING'
+	| 'ANALYZING'
+	| 'NORMALIZING'
+	| 'ENRICHING'
+	| 'READY_FOR_REVIEW'
+	| 'FAILED'
+	| 'VALIDATED';
 
 export interface InvoiceItem {
 	id: string;
@@ -78,6 +88,12 @@ export interface Invoice {
 	userId: string;
 	pdfUrl: string;
 	status: InvoiceStatus;
+	processingStage?: InvoiceProcessingStage;
+	processingProgress?: number;
+	processingAttempt?: number;
+	stageStartedAt?: string | null;
+	stageCompletedAt?: string | null;
+	processingErrorCode?: string | null;
 	merchantName?: string | null;
 	totalAmount?: number | null;
 	purchaseDate?: string | null;

@@ -27,12 +27,16 @@ export type AggregateInvoice = {
 }
 
 export type InvoiceAvgAggregateOutputType = {
+  processingProgress: number | null
+  processingAttempt: number | null
   totalAmount: number | null
   analysisConfidence: number | null
   processingTime: number | null
 }
 
 export type InvoiceSumAggregateOutputType = {
+  processingProgress: number | null
+  processingAttempt: number | null
   totalAmount: number | null
   analysisConfidence: number | null
   processingTime: number | null
@@ -43,6 +47,12 @@ export type InvoiceMinAggregateOutputType = {
   userId: string | null
   pdfUrl: string | null
   status: $Enums.InvoiceStatus | null
+  processingStage: $Enums.InvoiceProcessingStage | null
+  processingProgress: number | null
+  processingAttempt: number | null
+  stageStartedAt: Date | null
+  stageCompletedAt: Date | null
+  processingErrorCode: string | null
   merchantName: string | null
   totalAmount: number | null
   purchaseDate: Date | null
@@ -61,6 +71,12 @@ export type InvoiceMaxAggregateOutputType = {
   userId: string | null
   pdfUrl: string | null
   status: $Enums.InvoiceStatus | null
+  processingStage: $Enums.InvoiceProcessingStage | null
+  processingProgress: number | null
+  processingAttempt: number | null
+  stageStartedAt: Date | null
+  stageCompletedAt: Date | null
+  processingErrorCode: string | null
   merchantName: string | null
   totalAmount: number | null
   purchaseDate: Date | null
@@ -79,6 +95,12 @@ export type InvoiceCountAggregateOutputType = {
   userId: number
   pdfUrl: number
   status: number
+  processingStage: number
+  processingProgress: number
+  processingAttempt: number
+  stageStartedAt: number
+  stageCompletedAt: number
+  processingErrorCode: number
   rawAnalysisData: number
   merchantName: number
   totalAmount: number
@@ -96,12 +118,16 @@ export type InvoiceCountAggregateOutputType = {
 
 
 export type InvoiceAvgAggregateInputType = {
+  processingProgress?: true
+  processingAttempt?: true
   totalAmount?: true
   analysisConfidence?: true
   processingTime?: true
 }
 
 export type InvoiceSumAggregateInputType = {
+  processingProgress?: true
+  processingAttempt?: true
   totalAmount?: true
   analysisConfidence?: true
   processingTime?: true
@@ -112,6 +138,12 @@ export type InvoiceMinAggregateInputType = {
   userId?: true
   pdfUrl?: true
   status?: true
+  processingStage?: true
+  processingProgress?: true
+  processingAttempt?: true
+  stageStartedAt?: true
+  stageCompletedAt?: true
+  processingErrorCode?: true
   merchantName?: true
   totalAmount?: true
   purchaseDate?: true
@@ -130,6 +162,12 @@ export type InvoiceMaxAggregateInputType = {
   userId?: true
   pdfUrl?: true
   status?: true
+  processingStage?: true
+  processingProgress?: true
+  processingAttempt?: true
+  stageStartedAt?: true
+  stageCompletedAt?: true
+  processingErrorCode?: true
   merchantName?: true
   totalAmount?: true
   purchaseDate?: true
@@ -148,6 +186,12 @@ export type InvoiceCountAggregateInputType = {
   userId?: true
   pdfUrl?: true
   status?: true
+  processingStage?: true
+  processingProgress?: true
+  processingAttempt?: true
+  stageStartedAt?: true
+  stageCompletedAt?: true
+  processingErrorCode?: true
   rawAnalysisData?: true
   merchantName?: true
   totalAmount?: true
@@ -254,6 +298,12 @@ export type InvoiceGroupByOutputType = {
   userId: string
   pdfUrl: string
   status: $Enums.InvoiceStatus
+  processingStage: $Enums.InvoiceProcessingStage
+  processingProgress: number
+  processingAttempt: number
+  stageStartedAt: Date | null
+  stageCompletedAt: Date | null
+  processingErrorCode: string | null
   rawAnalysisData: runtime.JsonValue | null
   merchantName: string | null
   totalAmount: number | null
@@ -296,6 +346,12 @@ export type InvoiceWhereInput = {
   userId?: Prisma.StringFilter<"Invoice"> | string
   pdfUrl?: Prisma.StringFilter<"Invoice"> | string
   status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFilter<"Invoice"> | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFilter<"Invoice"> | number
+  processingAttempt?: Prisma.IntFilter<"Invoice"> | number
+  stageStartedAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
+  stageCompletedAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
+  processingErrorCode?: Prisma.StringNullableFilter<"Invoice"> | string | null
   rawAnalysisData?: Prisma.JsonNullableFilter<"Invoice">
   merchantName?: Prisma.StringNullableFilter<"Invoice"> | string | null
   totalAmount?: Prisma.FloatNullableFilter<"Invoice"> | number | null
@@ -310,6 +366,7 @@ export type InvoiceWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Invoice"> | Date | string
   Expense?: Prisma.ExpenseListRelationFilter
   InvoiceItem?: Prisma.InvoiceItemListRelationFilter
+  ProcessingEvent?: Prisma.InvoiceProcessingEventListRelationFilter
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
@@ -318,6 +375,12 @@ export type InvoiceOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  processingStage?: Prisma.SortOrder
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
+  stageStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  stageCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  processingErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   rawAnalysisData?: Prisma.SortOrderInput | Prisma.SortOrder
   merchantName?: Prisma.SortOrderInput | Prisma.SortOrder
   totalAmount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -332,6 +395,7 @@ export type InvoiceOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   Expense?: Prisma.ExpenseOrderByRelationAggregateInput
   InvoiceItem?: Prisma.InvoiceItemOrderByRelationAggregateInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventOrderByRelationAggregateInput
   User?: Prisma.UserOrderByWithRelationInput
 }
 
@@ -343,6 +407,12 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringFilter<"Invoice"> | string
   pdfUrl?: Prisma.StringFilter<"Invoice"> | string
   status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFilter<"Invoice"> | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFilter<"Invoice"> | number
+  processingAttempt?: Prisma.IntFilter<"Invoice"> | number
+  stageStartedAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
+  stageCompletedAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
+  processingErrorCode?: Prisma.StringNullableFilter<"Invoice"> | string | null
   rawAnalysisData?: Prisma.JsonNullableFilter<"Invoice">
   merchantName?: Prisma.StringNullableFilter<"Invoice"> | string | null
   totalAmount?: Prisma.FloatNullableFilter<"Invoice"> | number | null
@@ -357,6 +427,7 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Invoice"> | Date | string
   Expense?: Prisma.ExpenseListRelationFilter
   InvoiceItem?: Prisma.InvoiceItemListRelationFilter
+  ProcessingEvent?: Prisma.InvoiceProcessingEventListRelationFilter
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id">
 
@@ -365,6 +436,12 @@ export type InvoiceOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  processingStage?: Prisma.SortOrder
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
+  stageStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  stageCompletedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  processingErrorCode?: Prisma.SortOrderInput | Prisma.SortOrder
   rawAnalysisData?: Prisma.SortOrderInput | Prisma.SortOrder
   merchantName?: Prisma.SortOrderInput | Prisma.SortOrder
   totalAmount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -392,6 +469,12 @@ export type InvoiceScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
   pdfUrl?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
   status?: Prisma.EnumInvoiceStatusWithAggregatesFilter<"Invoice"> | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageWithAggregatesFilter<"Invoice"> | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntWithAggregatesFilter<"Invoice"> | number
+  processingAttempt?: Prisma.IntWithAggregatesFilter<"Invoice"> | number
+  stageStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
+  stageCompletedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Invoice"> | Date | string | null
+  processingErrorCode?: Prisma.StringNullableWithAggregatesFilter<"Invoice"> | string | null
   rawAnalysisData?: Prisma.JsonNullableWithAggregatesFilter<"Invoice">
   merchantName?: Prisma.StringNullableWithAggregatesFilter<"Invoice"> | string | null
   totalAmount?: Prisma.FloatNullableWithAggregatesFilter<"Invoice"> | number | null
@@ -410,6 +493,12 @@ export type InvoiceCreateInput = {
   id: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -424,6 +513,7 @@ export type InvoiceCreateInput = {
   updatedAt: Date | string
   Expense?: Prisma.ExpenseCreateNestedManyWithoutInvoiceInput
   InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventCreateNestedManyWithoutInvoiceInput
   User: Prisma.UserCreateNestedOneWithoutInvoiceInput
 }
 
@@ -432,6 +522,12 @@ export type InvoiceUncheckedCreateInput = {
   userId: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -446,12 +542,19 @@ export type InvoiceUncheckedCreateInput = {
   updatedAt: Date | string
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutInvoiceInput
   InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
 export type InvoiceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -466,6 +569,7 @@ export type InvoiceUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   Expense?: Prisma.ExpenseUpdateManyWithoutInvoiceNestedInput
   InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUpdateManyWithoutInvoiceNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutInvoiceNestedInput
 }
 
@@ -474,6 +578,12 @@ export type InvoiceUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -488,6 +598,7 @@ export type InvoiceUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutInvoiceNestedInput
   InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceCreateManyInput = {
@@ -495,6 +606,12 @@ export type InvoiceCreateManyInput = {
   userId: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -513,6 +630,12 @@ export type InvoiceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -532,6 +655,12 @@ export type InvoiceUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -556,6 +685,12 @@ export type InvoiceCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  processingStage?: Prisma.SortOrder
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
+  stageStartedAt?: Prisma.SortOrder
+  stageCompletedAt?: Prisma.SortOrder
+  processingErrorCode?: Prisma.SortOrder
   rawAnalysisData?: Prisma.SortOrder
   merchantName?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
@@ -571,6 +706,8 @@ export type InvoiceCountOrderByAggregateInput = {
 }
 
 export type InvoiceAvgOrderByAggregateInput = {
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   analysisConfidence?: Prisma.SortOrder
   processingTime?: Prisma.SortOrder
@@ -581,6 +718,12 @@ export type InvoiceMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  processingStage?: Prisma.SortOrder
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
+  stageStartedAt?: Prisma.SortOrder
+  stageCompletedAt?: Prisma.SortOrder
+  processingErrorCode?: Prisma.SortOrder
   merchantName?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
@@ -599,6 +742,12 @@ export type InvoiceMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   pdfUrl?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  processingStage?: Prisma.SortOrder
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
+  stageStartedAt?: Prisma.SortOrder
+  stageCompletedAt?: Prisma.SortOrder
+  processingErrorCode?: Prisma.SortOrder
   merchantName?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   purchaseDate?: Prisma.SortOrder
@@ -613,6 +762,8 @@ export type InvoiceMinOrderByAggregateInput = {
 }
 
 export type InvoiceSumOrderByAggregateInput = {
+  processingProgress?: Prisma.SortOrder
+  processingAttempt?: Prisma.SortOrder
   totalAmount?: Prisma.SortOrder
   analysisConfidence?: Prisma.SortOrder
   processingTime?: Prisma.SortOrder
@@ -653,12 +804,30 @@ export type EnumInvoiceStatusFieldUpdateOperationsInput = {
   set?: $Enums.InvoiceStatus
 }
 
+export type EnumInvoiceProcessingStageFieldUpdateOperationsInput = {
+  set?: $Enums.InvoiceProcessingStage
+}
+
 export type NullableIntFieldUpdateOperationsInput = {
   set?: number | null
   increment?: number
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type InvoiceCreateNestedOneWithoutProcessingEventInput = {
+  create?: Prisma.XOR<Prisma.InvoiceCreateWithoutProcessingEventInput, Prisma.InvoiceUncheckedCreateWithoutProcessingEventInput>
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutProcessingEventInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+}
+
+export type InvoiceUpdateOneRequiredWithoutProcessingEventNestedInput = {
+  create?: Prisma.XOR<Prisma.InvoiceCreateWithoutProcessingEventInput, Prisma.InvoiceUncheckedCreateWithoutProcessingEventInput>
+  connectOrCreate?: Prisma.InvoiceCreateOrConnectWithoutProcessingEventInput
+  upsert?: Prisma.InvoiceUpsertWithoutProcessingEventInput
+  connect?: Prisma.InvoiceWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.InvoiceUpdateToOneWithWhereWithoutProcessingEventInput, Prisma.InvoiceUpdateWithoutProcessingEventInput>, Prisma.InvoiceUncheckedUpdateWithoutProcessingEventInput>
 }
 
 export type InvoiceCreateNestedOneWithoutInvoiceItemInput = {
@@ -721,6 +890,12 @@ export type InvoiceCreateWithoutExpenseInput = {
   id: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -734,6 +909,7 @@ export type InvoiceCreateWithoutExpenseInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventCreateNestedManyWithoutInvoiceInput
   User: Prisma.UserCreateNestedOneWithoutInvoiceInput
 }
 
@@ -742,6 +918,12 @@ export type InvoiceUncheckedCreateWithoutExpenseInput = {
   userId: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -755,6 +937,7 @@ export type InvoiceUncheckedCreateWithoutExpenseInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
 export type InvoiceCreateOrConnectWithoutExpenseInput = {
@@ -777,6 +960,12 @@ export type InvoiceUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -790,6 +979,7 @@ export type InvoiceUpdateWithoutExpenseInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUpdateManyWithoutInvoiceNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutInvoiceNestedInput
 }
 
@@ -798,6 +988,12 @@ export type InvoiceUncheckedUpdateWithoutExpenseInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -811,12 +1007,19 @@ export type InvoiceUncheckedUpdateWithoutExpenseInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
-export type InvoiceCreateWithoutInvoiceItemInput = {
+export type InvoiceCreateWithoutProcessingEventInput = {
   id: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -830,14 +1033,21 @@ export type InvoiceCreateWithoutInvoiceItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   Expense?: Prisma.ExpenseCreateNestedManyWithoutInvoiceInput
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutInvoiceInput
   User: Prisma.UserCreateNestedOneWithoutInvoiceInput
 }
 
-export type InvoiceUncheckedCreateWithoutInvoiceItemInput = {
+export type InvoiceUncheckedCreateWithoutProcessingEventInput = {
   id: string
   userId: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -851,6 +1061,131 @@ export type InvoiceUncheckedCreateWithoutInvoiceItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutInvoiceInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutInvoiceInput
+}
+
+export type InvoiceCreateOrConnectWithoutProcessingEventInput = {
+  where: Prisma.InvoiceWhereUniqueInput
+  create: Prisma.XOR<Prisma.InvoiceCreateWithoutProcessingEventInput, Prisma.InvoiceUncheckedCreateWithoutProcessingEventInput>
+}
+
+export type InvoiceUpsertWithoutProcessingEventInput = {
+  update: Prisma.XOR<Prisma.InvoiceUpdateWithoutProcessingEventInput, Prisma.InvoiceUncheckedUpdateWithoutProcessingEventInput>
+  create: Prisma.XOR<Prisma.InvoiceCreateWithoutProcessingEventInput, Prisma.InvoiceUncheckedCreateWithoutProcessingEventInput>
+  where?: Prisma.InvoiceWhereInput
+}
+
+export type InvoiceUpdateToOneWithWhereWithoutProcessingEventInput = {
+  where?: Prisma.InvoiceWhereInput
+  data: Prisma.XOR<Prisma.InvoiceUpdateWithoutProcessingEventInput, Prisma.InvoiceUncheckedUpdateWithoutProcessingEventInput>
+}
+
+export type InvoiceUpdateWithoutProcessingEventInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  purchaseDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invoiceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  processingTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  Expense?: Prisma.ExpenseUpdateManyWithoutInvoiceNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutInvoiceNestedInput
+  User?: Prisma.UserUpdateOneRequiredWithoutInvoiceNestedInput
+}
+
+export type InvoiceUncheckedUpdateWithoutProcessingEventInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  purchaseDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  invoiceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  orderNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisProvider?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  analysisConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  processingTime?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutInvoiceNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput
+}
+
+export type InvoiceCreateWithoutInvoiceItemInput = {
+  id: string
+  pdfUrl: string
+  status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
+  rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  merchantName?: string | null
+  totalAmount?: number | null
+  purchaseDate?: Date | string | null
+  invoiceNumber?: string | null
+  orderNumber?: string | null
+  analysisProvider?: string | null
+  analysisConfidence?: number | null
+  processingTime?: number | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  Expense?: Prisma.ExpenseCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventCreateNestedManyWithoutInvoiceInput
+  User: Prisma.UserCreateNestedOneWithoutInvoiceInput
+}
+
+export type InvoiceUncheckedCreateWithoutInvoiceItemInput = {
+  id: string
+  userId: string
+  pdfUrl: string
+  status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
+  rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  merchantName?: string | null
+  totalAmount?: number | null
+  purchaseDate?: Date | string | null
+  invoiceNumber?: string | null
+  orderNumber?: string | null
+  analysisProvider?: string | null
+  analysisConfidence?: number | null
+  processingTime?: number | null
+  errorMessage?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
 export type InvoiceCreateOrConnectWithoutInvoiceItemInput = {
@@ -873,6 +1208,12 @@ export type InvoiceUpdateWithoutInvoiceItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -886,6 +1227,7 @@ export type InvoiceUpdateWithoutInvoiceItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   Expense?: Prisma.ExpenseUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUpdateManyWithoutInvoiceNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutInvoiceNestedInput
 }
 
@@ -894,6 +1236,12 @@ export type InvoiceUncheckedUpdateWithoutInvoiceItemInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -907,12 +1255,19 @@ export type InvoiceUncheckedUpdateWithoutInvoiceItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceCreateWithoutUserInput = {
   id: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -927,12 +1282,19 @@ export type InvoiceCreateWithoutUserInput = {
   updatedAt: Date | string
   Expense?: Prisma.ExpenseCreateNestedManyWithoutInvoiceInput
   InvoiceItem?: Prisma.InvoiceItemCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventCreateNestedManyWithoutInvoiceInput
 }
 
 export type InvoiceUncheckedCreateWithoutUserInput = {
   id: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -947,6 +1309,7 @@ export type InvoiceUncheckedCreateWithoutUserInput = {
   updatedAt: Date | string
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutInvoiceInput
   InvoiceItem?: Prisma.InvoiceItemUncheckedCreateNestedManyWithoutInvoiceInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedCreateNestedManyWithoutInvoiceInput
 }
 
 export type InvoiceCreateOrConnectWithoutUserInput = {
@@ -983,6 +1346,12 @@ export type InvoiceScalarWhereInput = {
   userId?: Prisma.StringFilter<"Invoice"> | string
   pdfUrl?: Prisma.StringFilter<"Invoice"> | string
   status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFilter<"Invoice"> | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFilter<"Invoice"> | number
+  processingAttempt?: Prisma.IntFilter<"Invoice"> | number
+  stageStartedAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
+  stageCompletedAt?: Prisma.DateTimeNullableFilter<"Invoice"> | Date | string | null
+  processingErrorCode?: Prisma.StringNullableFilter<"Invoice"> | string | null
   rawAnalysisData?: Prisma.JsonNullableFilter<"Invoice">
   merchantName?: Prisma.StringNullableFilter<"Invoice"> | string | null
   totalAmount?: Prisma.FloatNullableFilter<"Invoice"> | number | null
@@ -1001,6 +1370,12 @@ export type InvoiceCreateManyUserInput = {
   id: string
   pdfUrl: string
   status?: $Enums.InvoiceStatus
+  processingStage?: $Enums.InvoiceProcessingStage
+  processingProgress?: number
+  processingAttempt?: number
+  stageStartedAt?: Date | string | null
+  stageCompletedAt?: Date | string | null
+  processingErrorCode?: string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: string | null
   totalAmount?: number | null
@@ -1019,6 +1394,12 @@ export type InvoiceUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1033,12 +1414,19 @@ export type InvoiceUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   Expense?: Prisma.ExpenseUpdateManyWithoutInvoiceNestedInput
   InvoiceItem?: Prisma.InvoiceItemUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1053,12 +1441,19 @@ export type InvoiceUncheckedUpdateWithoutUserInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutInvoiceNestedInput
   InvoiceItem?: Prisma.InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput
+  ProcessingEvent?: Prisma.InvoiceProcessingEventUncheckedUpdateManyWithoutInvoiceNestedInput
 }
 
 export type InvoiceUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
+  processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
+  processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
+  processingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  stageStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stageCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  processingErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   rawAnalysisData?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   merchantName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   totalAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1081,11 +1476,13 @@ export type InvoiceUncheckedUpdateManyWithoutUserInput = {
 export type InvoiceCountOutputType = {
   Expense: number
   InvoiceItem: number
+  ProcessingEvent: number
 }
 
 export type InvoiceCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Expense?: boolean | InvoiceCountOutputTypeCountExpenseArgs
   InvoiceItem?: boolean | InvoiceCountOutputTypeCountInvoiceItemArgs
+  ProcessingEvent?: boolean | InvoiceCountOutputTypeCountProcessingEventArgs
 }
 
 /**
@@ -1112,12 +1509,25 @@ export type InvoiceCountOutputTypeCountInvoiceItemArgs<ExtArgs extends runtime.T
   where?: Prisma.InvoiceItemWhereInput
 }
 
+/**
+ * InvoiceCountOutputType without action
+ */
+export type InvoiceCountOutputTypeCountProcessingEventArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvoiceProcessingEventWhereInput
+}
+
 
 export type InvoiceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   userId?: boolean
   pdfUrl?: boolean
   status?: boolean
+  processingStage?: boolean
+  processingProgress?: boolean
+  processingAttempt?: boolean
+  stageStartedAt?: boolean
+  stageCompletedAt?: boolean
+  processingErrorCode?: boolean
   rawAnalysisData?: boolean
   merchantName?: boolean
   totalAmount?: boolean
@@ -1132,6 +1542,7 @@ export type InvoiceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   updatedAt?: boolean
   Expense?: boolean | Prisma.Invoice$ExpenseArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Invoice$InvoiceItemArgs<ExtArgs>
+  ProcessingEvent?: boolean | Prisma.Invoice$ProcessingEventArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.InvoiceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["invoice"]>
@@ -1141,6 +1552,12 @@ export type InvoiceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   userId?: boolean
   pdfUrl?: boolean
   status?: boolean
+  processingStage?: boolean
+  processingProgress?: boolean
+  processingAttempt?: boolean
+  stageStartedAt?: boolean
+  stageCompletedAt?: boolean
+  processingErrorCode?: boolean
   rawAnalysisData?: boolean
   merchantName?: boolean
   totalAmount?: boolean
@@ -1161,6 +1578,12 @@ export type InvoiceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   userId?: boolean
   pdfUrl?: boolean
   status?: boolean
+  processingStage?: boolean
+  processingProgress?: boolean
+  processingAttempt?: boolean
+  stageStartedAt?: boolean
+  stageCompletedAt?: boolean
+  processingErrorCode?: boolean
   rawAnalysisData?: boolean
   merchantName?: boolean
   totalAmount?: boolean
@@ -1181,6 +1604,12 @@ export type InvoiceSelectScalar = {
   userId?: boolean
   pdfUrl?: boolean
   status?: boolean
+  processingStage?: boolean
+  processingProgress?: boolean
+  processingAttempt?: boolean
+  stageStartedAt?: boolean
+  stageCompletedAt?: boolean
+  processingErrorCode?: boolean
   rawAnalysisData?: boolean
   merchantName?: boolean
   totalAmount?: boolean
@@ -1195,10 +1624,11 @@ export type InvoiceSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InvoiceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "pdfUrl" | "status" | "rawAnalysisData" | "merchantName" | "totalAmount" | "purchaseDate" | "invoiceNumber" | "orderNumber" | "analysisProvider" | "analysisConfidence" | "processingTime" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
+export type InvoiceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "pdfUrl" | "status" | "processingStage" | "processingProgress" | "processingAttempt" | "stageStartedAt" | "stageCompletedAt" | "processingErrorCode" | "rawAnalysisData" | "merchantName" | "totalAmount" | "purchaseDate" | "invoiceNumber" | "orderNumber" | "analysisProvider" | "analysisConfidence" | "processingTime" | "errorMessage" | "createdAt" | "updatedAt", ExtArgs["result"]["invoice"]>
 export type InvoiceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Expense?: boolean | Prisma.Invoice$ExpenseArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Invoice$InvoiceItemArgs<ExtArgs>
+  ProcessingEvent?: boolean | Prisma.Invoice$ProcessingEventArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.InvoiceCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1214,6 +1644,7 @@ export type $InvoicePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   objects: {
     Expense: Prisma.$ExpensePayload<ExtArgs>[]
     InvoiceItem: Prisma.$InvoiceItemPayload<ExtArgs>[]
+    ProcessingEvent: Prisma.$InvoiceProcessingEventPayload<ExtArgs>[]
     User: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1221,6 +1652,12 @@ export type $InvoicePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     userId: string
     pdfUrl: string
     status: $Enums.InvoiceStatus
+    processingStage: $Enums.InvoiceProcessingStage
+    processingProgress: number
+    processingAttempt: number
+    stageStartedAt: Date | null
+    stageCompletedAt: Date | null
+    processingErrorCode: string | null
     rawAnalysisData: runtime.JsonValue | null
     merchantName: string | null
     totalAmount: number | null
@@ -1629,6 +2066,7 @@ export interface Prisma__InvoiceClient<T, Null = never, ExtArgs extends runtime.
   readonly [Symbol.toStringTag]: "PrismaPromise"
   Expense<T extends Prisma.Invoice$ExpenseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoice$ExpenseArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   InvoiceItem<T extends Prisma.Invoice$InvoiceItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoice$InvoiceItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ProcessingEvent<T extends Prisma.Invoice$ProcessingEventArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Invoice$ProcessingEventArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoiceProcessingEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1663,6 +2101,12 @@ export interface InvoiceFieldRefs {
   readonly userId: Prisma.FieldRef<"Invoice", 'String'>
   readonly pdfUrl: Prisma.FieldRef<"Invoice", 'String'>
   readonly status: Prisma.FieldRef<"Invoice", 'InvoiceStatus'>
+  readonly processingStage: Prisma.FieldRef<"Invoice", 'InvoiceProcessingStage'>
+  readonly processingProgress: Prisma.FieldRef<"Invoice", 'Int'>
+  readonly processingAttempt: Prisma.FieldRef<"Invoice", 'Int'>
+  readonly stageStartedAt: Prisma.FieldRef<"Invoice", 'DateTime'>
+  readonly stageCompletedAt: Prisma.FieldRef<"Invoice", 'DateTime'>
+  readonly processingErrorCode: Prisma.FieldRef<"Invoice", 'String'>
   readonly rawAnalysisData: Prisma.FieldRef<"Invoice", 'Json'>
   readonly merchantName: Prisma.FieldRef<"Invoice", 'String'>
   readonly totalAmount: Prisma.FieldRef<"Invoice", 'Float'>
@@ -2116,6 +2560,30 @@ export type Invoice$InvoiceItemArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.InvoiceItemScalarFieldEnum | Prisma.InvoiceItemScalarFieldEnum[]
+}
+
+/**
+ * Invoice.ProcessingEvent
+ */
+export type Invoice$ProcessingEventArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InvoiceProcessingEvent
+   */
+  select?: Prisma.InvoiceProcessingEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InvoiceProcessingEvent
+   */
+  omit?: Prisma.InvoiceProcessingEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvoiceProcessingEventInclude<ExtArgs> | null
+  where?: Prisma.InvoiceProcessingEventWhereInput
+  orderBy?: Prisma.InvoiceProcessingEventOrderByWithRelationInput | Prisma.InvoiceProcessingEventOrderByWithRelationInput[]
+  cursor?: Prisma.InvoiceProcessingEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvoiceProcessingEventScalarFieldEnum | Prisma.InvoiceProcessingEventScalarFieldEnum[]
 }
 
 /**

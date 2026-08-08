@@ -1,5 +1,8 @@
 import { BadRequestException, Logger, NotFoundException } from '@nestjs/common';
-import { InvoiceStatus } from '../../../prisma/generated/prisma/client';
+import {
+  InvoiceProcessingStage,
+  InvoiceStatus,
+} from '../../../prisma/generated/prisma/client';
 import { InvoiceService, InvoiceUser } from './invoice.service';
 
 describe('InvoiceService', () => {
@@ -65,6 +68,10 @@ describe('InvoiceService', () => {
     resolveItems: jest.fn(),
   };
 
+  const invoiceProcessingStateService = {
+    transition: jest.fn(),
+  };
+
   const openFoodFactsInvoiceEnrichmentService = {
     enrichItems: jest.fn(),
   };
@@ -96,6 +103,12 @@ describe('InvoiceService', () => {
     userId: 'user-1',
     pdfUrl: 'https://res.cloudinary.com/demo/raw/upload/invoices/user-1.pdf',
     status: InvoiceStatus.PROCESSING,
+    processingStage: InvoiceProcessingStage.UPLOADED,
+    processingProgress: 10,
+    processingAttempt: 1,
+    stageStartedAt: new Date('2026-06-05T10:00:00.000Z'),
+    stageCompletedAt: null,
+    processingErrorCode: null,
     createdAt: new Date('2026-06-05T10:00:00.000Z'),
     updatedAt: new Date('2026-06-05T10:00:00.000Z'),
   };
@@ -103,6 +116,9 @@ describe('InvoiceService', () => {
   const completedInvoice = {
     ...createdInvoice,
     status: InvoiceStatus.COMPLETED,
+    processingStage: InvoiceProcessingStage.READY_FOR_REVIEW,
+    processingProgress: 100,
+    stageCompletedAt: new Date('2026-06-05T10:00:10.000Z'),
     merchantName: 'Drive Démo',
     totalAmount: 4.5,
     purchaseDate: new Date('2026-06-05T00:00:00.000Z'),
@@ -145,6 +161,7 @@ describe('InvoiceService', () => {
       invoiceUploadService as any,
       invoiceAnalysisService as any,
       invoiceProductResolverService as any,
+      invoiceProcessingStateService as any,
       openFoodFactsInvoiceEnrichmentService as any,
       usageQuotaService as any,
     );
@@ -218,6 +235,7 @@ describe('InvoiceService', () => {
     invoiceProductResolverService.resolveItems.mockImplementation(
       async (_tx, items) => items,
     );
+    invoiceProcessingStateService.transition.mockResolvedValue({});
     openFoodFactsInvoiceEnrichmentService.enrichItems.mockImplementation(
       async (items) =>
         items.map((item: any) => ({
@@ -270,6 +288,18 @@ describe('InvoiceService', () => {
     expect(invoiceAnalysisService.analyzePdf).toHaveBeenCalledWith(
       createdInvoice.pdfUrl,
       file.buffer,
+    );
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.ANALYZING,
+    );
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.ENRICHING,
+    );
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.READY_FOR_REVIEW,
     );
     expect(invoiceProductResolverService.resolveItems).toHaveBeenCalledWith(
       tx,
@@ -327,6 +357,11 @@ describe('InvoiceService', () => {
         errorMessage: "La facture n'a pas pu être analysée",
       }),
     });
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.FAILED,
+      { errorCode: 'ERROR' },
+    );
     expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringContaining('invoice_analysis_failed'),

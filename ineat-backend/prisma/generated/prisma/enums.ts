@@ -63,6 +63,30 @@ export const InvoiceStatus = {
 export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]
 
 
+export const InvoiceProcessingStage = {
+  UPLOADED: 'UPLOADED',
+  QUEUED: 'QUEUED',
+  EXTRACTING: 'EXTRACTING',
+  ANALYZING: 'ANALYZING',
+  NORMALIZING: 'NORMALIZING',
+  ENRICHING: 'ENRICHING',
+  READY_FOR_REVIEW: 'READY_FOR_REVIEW',
+  FAILED: 'FAILED',
+  VALIDATED: 'VALIDATED'
+} as const
+
+export type InvoiceProcessingStage = (typeof InvoiceProcessingStage)[keyof typeof InvoiceProcessingStage]
+
+
+export const InvoiceProcessingEventStatus = {
+  STARTED: 'STARTED',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type InvoiceProcessingEventStatus = (typeof InvoiceProcessingEventStatus)[keyof typeof InvoiceProcessingEventStatus]
+
+
 export const NotificationType = {
   EXPIRY: 'EXPIRY',
   BUDGET: 'BUDGET',

@@ -61,6 +61,7 @@ export const ModelName = {
   EmailDigestDelivery: 'EmailDigestDelivery',
   Product: 'Product',
   Invoice: 'Invoice',
+  InvoiceProcessingEvent: 'InvoiceProcessingEvent',
   InvoiceItem: 'InvoiceItem',
   Receipt: 'Receipt',
   ReceiptItem: 'ReceiptItem',
@@ -257,6 +258,12 @@ export const InvoiceScalarFieldEnum = {
   userId: 'userId',
   pdfUrl: 'pdfUrl',
   status: 'status',
+  processingStage: 'processingStage',
+  processingProgress: 'processingProgress',
+  processingAttempt: 'processingAttempt',
+  stageStartedAt: 'stageStartedAt',
+  stageCompletedAt: 'stageCompletedAt',
+  processingErrorCode: 'processingErrorCode',
   rawAnalysisData: 'rawAnalysisData',
   merchantName: 'merchantName',
   totalAmount: 'totalAmount',
@@ -272,6 +279,22 @@ export const InvoiceScalarFieldEnum = {
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoiceProcessingEventScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  stage: 'stage',
+  status: 'status',
+  attempt: 'attempt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  durationMs: 'durationMs',
+  errorCode: 'errorCode',
+  createdAt: 'createdAt'
+} as const
+
+export type InvoiceProcessingEventScalarFieldEnum = (typeof InvoiceProcessingEventScalarFieldEnum)[keyof typeof InvoiceProcessingEventScalarFieldEnum]
 
 
 export const InvoiceItemScalarFieldEnum = {

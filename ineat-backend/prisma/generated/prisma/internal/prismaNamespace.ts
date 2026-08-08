@@ -394,6 +394,7 @@ export const ModelName = {
   EmailDigestDelivery: 'EmailDigestDelivery',
   Product: 'Product',
   Invoice: 'Invoice',
+  InvoiceProcessingEvent: 'InvoiceProcessingEvent',
   InvoiceItem: 'InvoiceItem',
   Receipt: 'Receipt',
   ReceiptItem: 'ReceiptItem',
@@ -424,7 +425,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "adminAuditLog" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "usageEvent" | "session" | "account" | "verification"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceProcessingEvent" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "adminAuditLog" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "usageEvent" | "session" | "account" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1165,6 +1166,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InvoiceCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InvoiceCountAggregateOutputType> | number
+        }
+      }
+    }
+    InvoiceProcessingEvent: {
+      payload: Prisma.$InvoiceProcessingEventPayload<ExtArgs>
+      fields: Prisma.InvoiceProcessingEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvoiceProcessingEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvoiceProcessingEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>
+        }
+        findFirst: {
+          args: Prisma.InvoiceProcessingEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvoiceProcessingEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>
+        }
+        findMany: {
+          args: Prisma.InvoiceProcessingEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>[]
+        }
+        create: {
+          args: Prisma.InvoiceProcessingEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>
+        }
+        createMany: {
+          args: Prisma.InvoiceProcessingEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvoiceProcessingEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>[]
+        }
+        delete: {
+          args: Prisma.InvoiceProcessingEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>
+        }
+        update: {
+          args: Prisma.InvoiceProcessingEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.InvoiceProcessingEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvoiceProcessingEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvoiceProcessingEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.InvoiceProcessingEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoiceProcessingEventPayload>
+        }
+        aggregate: {
+          args: Prisma.InvoiceProcessingEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvoiceProcessingEvent>
+        }
+        groupBy: {
+          args: Prisma.InvoiceProcessingEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceProcessingEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvoiceProcessingEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceProcessingEventCountAggregateOutputType> | number
         }
       }
     }
@@ -2480,6 +2555,12 @@ export const InvoiceScalarFieldEnum = {
   userId: 'userId',
   pdfUrl: 'pdfUrl',
   status: 'status',
+  processingStage: 'processingStage',
+  processingProgress: 'processingProgress',
+  processingAttempt: 'processingAttempt',
+  stageStartedAt: 'stageStartedAt',
+  stageCompletedAt: 'stageCompletedAt',
+  processingErrorCode: 'processingErrorCode',
   rawAnalysisData: 'rawAnalysisData',
   merchantName: 'merchantName',
   totalAmount: 'totalAmount',
@@ -2495,6 +2576,22 @@ export const InvoiceScalarFieldEnum = {
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const InvoiceProcessingEventScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  stage: 'stage',
+  status: 'status',
+  attempt: 'attempt',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  durationMs: 'durationMs',
+  errorCode: 'errorCode',
+  createdAt: 'createdAt'
+} as const
+
+export type InvoiceProcessingEventScalarFieldEnum = (typeof InvoiceProcessingEventScalarFieldEnum)[keyof typeof InvoiceProcessingEventScalarFieldEnum]
 
 
 export const InvoiceItemScalarFieldEnum = {
@@ -3071,6 +3168,34 @@ export type ListEnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
+ * Reference to a field of type 'InvoiceProcessingStage'
+ */
+export type EnumInvoiceProcessingStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceProcessingStage'>
+    
+
+
+/**
+ * Reference to a field of type 'InvoiceProcessingStage[]'
+ */
+export type ListEnumInvoiceProcessingStageFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceProcessingStage[]'>
+    
+
+
+/**
+ * Reference to a field of type 'InvoiceProcessingEventStatus'
+ */
+export type EnumInvoiceProcessingEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceProcessingEventStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'InvoiceProcessingEventStatus[]'
+ */
+export type ListEnumInvoiceProcessingEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceProcessingEventStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'DocumentType'
  */
 export type EnumDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentType'>
@@ -3356,6 +3481,7 @@ export type GlobalOmitConfig = {
   emailDigestDelivery?: Prisma.EmailDigestDeliveryOmit
   product?: Prisma.ProductOmit
   invoice?: Prisma.InvoiceOmit
+  invoiceProcessingEvent?: Prisma.InvoiceProcessingEventOmit
   invoiceItem?: Prisma.InvoiceItemOmit
   receipt?: Prisma.ReceiptOmit
   receiptItem?: Prisma.ReceiptItemOmit

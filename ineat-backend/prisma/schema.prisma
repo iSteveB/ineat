@@ -207,34 +207,59 @@ model Product {
 }
 
 model Invoice {
-  id                 String        @id
-  userId             String
-  pdfUrl             String
-  status             InvoiceStatus @default(PROCESSING)
-  rawAnalysisData    Json?
-  merchantName       String?
-  totalAmount        Float?
-  purchaseDate       DateTime?
-  invoiceNumber      String?
-  orderNumber        String?
-  analysisProvider   String?
-  analysisConfidence Float?
-  processingTime     Int?
-  errorMessage       String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime
-  Expense            Expense[]
-  InvoiceItem        InvoiceItem[]
-  User               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String                   @id
+  userId              String
+  pdfUrl              String
+  status              InvoiceStatus            @default(PROCESSING)
+  processingStage     InvoiceProcessingStage   @default(UPLOADED)
+  processingProgress  Int                      @default(10)
+  processingAttempt   Int                      @default(1)
+  stageStartedAt      DateTime?
+  stageCompletedAt    DateTime?
+  processingErrorCode String?
+  rawAnalysisData     Json?
+  merchantName        String?
+  totalAmount         Float?
+  purchaseDate        DateTime?
+  invoiceNumber       String?
+  orderNumber         String?
+  analysisProvider    String?
+  analysisConfidence  Float?
+  processingTime      Int?
+  errorMessage        String?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime
+  Expense             Expense[]
+  InvoiceItem         InvoiceItem[]
+  ProcessingEvent     InvoiceProcessingEvent[]
+  User                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([purchaseDate])
   @@index([status])
+  @@index([processingStage])
   @@index([userId])
   @@index([userId, createdAt])
   @@index([userId, status, createdAt])
   @@index([userId, purchaseDate])
   @@index([userId, totalAmount])
+}
+
+model InvoiceProcessingEvent {
+  id          String                       @id
+  invoiceId   String
+  stage       InvoiceProcessingStage
+  status      InvoiceProcessingEventStatus
+  attempt     Int                          @default(1)
+  startedAt   DateTime
+  completedAt DateTime?
+  durationMs  Int?
+  errorCode   String?
+  createdAt   DateTime                     @default(now())
+  Invoice     Invoice                      @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId, createdAt])
+  @@index([stage, status])
 }
 
 model InvoiceItem {
@@ -591,6 +616,24 @@ enum InvoiceStatus {
   COMPLETED
   FAILED
   VALIDATED
+}
+
+enum InvoiceProcessingStage {
+  UPLOADED
+  QUEUED
+  EXTRACTING
+  ANALYZING
+  NORMALIZING
+  ENRICHING
+  READY_FOR_REVIEW
+  FAILED
+  VALIDATED
+}
+
+enum InvoiceProcessingEventStatus {
+  STARTED
+  COMPLETED
+  FAILED
 }
 
 enum NotificationType {
