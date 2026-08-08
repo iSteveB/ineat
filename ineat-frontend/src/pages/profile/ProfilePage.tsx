@@ -162,7 +162,7 @@ const ProfilePage = () => {
 								{user?.firstName} {user?.lastName}
 							</h1>
 							<p className='mt-1 text-neutral-500'>{user?.email}</p>
-							<Badge className='mt-3'>{planLabel}</Badge>
+							<Badge className='mt-3 text-white'>{planLabel}</Badge>
 						</div>
 					</div>
 				</section>
