@@ -143,6 +143,68 @@ export class UserService {
     };
   }
 
+  async getProfileInsights(userId: string, now = new Date()) {
+    const startMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1),
+    );
+    const endMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
+
+    const [savedRecipes, completedRecipes, expenses] = await Promise.all([
+      this.prisma.recipe.count({ where: { userId } }),
+      this.prisma.recipe.count({
+        where: { userId, doneAt: { not: null } },
+      }),
+      this.prisma.expense.findMany({
+        where: {
+          userId,
+          date: { gte: startMonth, lt: endMonth },
+        },
+        select: { amount: true, date: true },
+      }),
+    ]);
+
+    const totalsByMonth = new Map<string, number>();
+    for (const expense of expenses) {
+      const key = `${expense.date.getUTCFullYear()}-${String(
+        expense.date.getUTCMonth() + 1,
+      ).padStart(2, '0')}`;
+      totalsByMonth.set(key, (totalsByMonth.get(key) ?? 0) + expense.amount);
+    }
+
+    const spendingTrend = Array.from({ length: 6 }, (_, index) => {
+      const date = new Date(
+        Date.UTC(
+          startMonth.getUTCFullYear(),
+          startMonth.getUTCMonth() + index,
+          1,
+        ),
+      );
+      const month = `${date.getUTCFullYear()}-${String(
+        date.getUTCMonth() + 1,
+      ).padStart(2, '0')}`;
+
+      return {
+        month,
+        total:
+          Math.round(((totalsByMonth.get(month) ?? 0) + Number.EPSILON) * 100) /
+          100,
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        recipes: {
+          saved: savedRecipes,
+          completed: completedRecipes,
+        },
+        spendingTrend,
+      },
+    };
+  }
+
   /**
    * Met à jour les restrictions alimentaires d'un utilisateur
    */

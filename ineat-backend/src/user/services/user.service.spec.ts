@@ -19,12 +19,16 @@ describe('UserService.updatePassword', () => {
     },
     expense: {
       deleteMany: jest.fn(),
+      findMany: jest.fn(),
     },
     inventoryItem: {
       deleteMany: jest.fn(),
     },
     notification: {
       deleteMany: jest.fn(),
+    },
+    recipe: {
+      count: jest.fn(),
     },
     user: {
       delete: jest.fn(),
@@ -71,6 +75,72 @@ describe('UserService.updatePassword', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('retourne les métriques recettes et six mois de dépenses', async () => {
+    prisma.recipe.count.mockResolvedValueOnce(7).mockResolvedValueOnce(3);
+    prisma.expense.findMany.mockResolvedValue([
+      { amount: 12.5, date: new Date('2025-12-15T12:00:00.000Z') },
+      { amount: 7.55, date: new Date('2025-12-20T12:00:00.000Z') },
+      { amount: 42, date: new Date('2026-02-01T00:00:00.000Z') },
+    ]);
+
+    await expect(
+      service.getProfileInsights(
+        'user-id',
+        new Date('2026-03-18T10:00:00.000Z'),
+      ),
+    ).resolves.toEqual({
+      success: true,
+      data: {
+        recipes: { saved: 7, completed: 3 },
+        spendingTrend: [
+          { month: '2025-10', total: 0 },
+          { month: '2025-11', total: 0 },
+          { month: '2025-12', total: 20.05 },
+          { month: '2026-01', total: 0 },
+          { month: '2026-02', total: 42 },
+          { month: '2026-03', total: 0 },
+        ],
+      },
+    });
+
+    expect(prisma.recipe.count).toHaveBeenNthCalledWith(1, {
+      where: { userId: 'user-id' },
+    });
+    expect(prisma.recipe.count).toHaveBeenNthCalledWith(2, {
+      where: { userId: 'user-id', doneAt: { not: null } },
+    });
+    expect(prisma.expense.findMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-id',
+        date: {
+          gte: new Date('2025-10-01T00:00:00.000Z'),
+          lt: new Date('2026-04-01T00:00:00.000Z'),
+        },
+      },
+      select: { amount: true, date: true },
+    });
+  });
+
+  it('retourne des compteurs et mois à zéro sans activité', async () => {
+    prisma.recipe.count.mockResolvedValue(0);
+    prisma.expense.findMany.mockResolvedValue([]);
+
+    const response = await service.getProfileInsights(
+      'new-user',
+      new Date('2026-08-08T09:00:00.000Z'),
+    );
+
+    expect(response.data.recipes).toEqual({ saved: 0, completed: 0 });
+    expect(response.data.spendingTrend).toEqual([
+      { month: '2026-03', total: 0 },
+      { month: '2026-04', total: 0 },
+      { month: '2026-05', total: 0 },
+      { month: '2026-06', total: 0 },
+      { month: '2026-07', total: 0 },
+      { month: '2026-08', total: 0 },
+    ]);
   });
 
   it('met à jour les couverts et l’objectif principal', async () => {

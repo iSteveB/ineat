@@ -56,7 +56,25 @@ interface ApiMessageResponse {
 	message?: string;
 }
 
+export interface ProfileInsights {
+	recipes: {
+		saved: number;
+		completed: number;
+	};
+	spendingTrend: Array<{
+		month: string;
+		total: number;
+	}>;
+}
+
 export const userService = {
+	getProfileInsights: async (): Promise<ProfileInsights> => {
+		const response = await apiClient.get<ApiResponse<ProfileInsights>>(
+			'/user/profile-insights',
+		);
+		return response.data;
+	},
+
 	/**
 	 * Met à jour les informations personnelles de l'utilisateur
 	 */

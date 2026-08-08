@@ -69,6 +69,20 @@ export class UserController {
     return this.userService.getUserById(req.user.id);
   }
 
+  @Get('profile-insights')
+  @ApiOperation({
+    summary: 'Récupérer les indicateurs réels de la page profil',
+    description:
+      "Retourne les compteurs de recettes et les dépenses mensuelles de l'utilisateur sur les six derniers mois UTC",
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Indicateurs du profil récupérés avec succès',
+  })
+  async getProfileInsights(@Request() req: RequestWithUser) {
+    return this.userService.getProfileInsights(req.user.id);
+  }
+
   /**
    * Met à jour les informations personnelles de l'utilisateur
    */

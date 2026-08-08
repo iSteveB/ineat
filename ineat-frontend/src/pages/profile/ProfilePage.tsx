@@ -1,295 +1,384 @@
-import { Link } from "@tanstack/react-router";
+import { useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import {
-  Settings,
-  Leaf,
-  Award,
-  Clock,
-  TrendingUp,
-  ChefHat,
-  ShoppingCart,
-} from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { getInitials } from "@/utils/ui-utils";
-import { getDietaryLabel } from "@/constants/dietary";
+	ArrowDownRight,
+	ArrowRight,
+	ArrowUpRight,
+	BookMarked,
+	CheckCircle2,
+	ChefHat,
+	CreditCard,
+	Settings,
+	Sparkles,
+	Target,
+	Utensils,
+	WandSparkles,
+} from 'lucide-react';
 
-// TODO: Données fictives pour la démo - à remplacer par de vraies données
-const mockStatistics = {
-  savedMoney: 127.5,
-  productsCount: 87,
-  daysStreak: 14,
-  wasteReduction: 75, // pourcentage
-  memberSince: "Janvier 2024",
-  topCategories: ["Produits laitiers", "Fruits & Légumes", "Céréales"],
-  nutritionalScore: "B",
-  recentProducts: [
-    {
-      id: "1",
-      name: "Yaourt Nature",
-      date: "15/05/2025",
-      expires: "22/05/2025",
-    },
-    {
-      id: "2",
-      name: "Pain complet",
-      date: "14/05/2025",
-      expires: "18/05/2025",
-    },
-    {
-      id: "3",
-      name: "Lait demi-écrémé",
-      date: "12/05/2025",
-      expires: "19/05/2025",
-    },
-  ],
-  recentRecipes: [
-    "Salade Grecque",
-    "Pâtes Carbonara",
-    "Smoothie Fraise-Banane",
-  ],
-};
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getDietaryLabel } from '@/constants/dietary';
+import { ProfileInsights, userService } from '@/services/userService';
+import { useAuthStore } from '@/stores/authStore';
+import { getInitials } from '@/utils/ui-utils';
+
+const goalLabels = {
+	REDUCE_WASTE: 'Réduire le gaspillage',
+	SAVE_MONEY: 'Économiser',
+	EAT_BETTER: 'Mieux manger',
+	FIND_MEAL_IDEAS: 'Trouver des idées de repas',
+} as const;
+
+const currencyFormatter = new Intl.NumberFormat('fr-FR', {
+	style: 'currency',
+	currency: 'EUR',
+	maximumFractionDigits: 2,
+});
+
+const formatMonth = (month: string, style: 'short' | 'long' = 'short') =>
+	new Intl.DateTimeFormat('fr-FR', {
+		month: style,
+		timeZone: 'UTC',
+	}).format(new Date(`${month}-01T00:00:00.000Z`));
+
+function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
+	const width = 600;
+	const height = 190;
+	const padding = { top: 24, right: 24, bottom: 42, left: 24 };
+	const chartWidth = width - padding.left - padding.right;
+	const chartHeight = height - padding.top - padding.bottom;
+	const maximum = Math.max(...data.map((point) => point.total), 1);
+	const points = data.map((point, index) => ({
+		...point,
+		x: padding.left + (chartWidth * index) / Math.max(data.length - 1, 1),
+		y: padding.top + chartHeight - (point.total / maximum) * chartHeight,
+	}));
+	const path = points
+		.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+		.join(' ');
+
+	return (
+		<div>
+			<svg
+				viewBox={`0 0 ${width} ${height}`}
+				className='h-auto w-full'
+				role='img'
+				aria-label='Dépenses mensuelles des six derniers mois'>
+				{[0, 1, 2, 3].map((line) => {
+					const y = padding.top + (chartHeight * line) / 3;
+					return (
+						<line
+							key={line}
+							x1={padding.left}
+							x2={width - padding.right}
+							y1={y}
+							y2={y}
+							className='stroke-neutral-200'
+							strokeWidth='1'
+						/>
+					);
+				})}
+				<path
+					d={path}
+					fill='none'
+					className='stroke-success-700'
+					strokeWidth='3'
+					strokeLinecap='round'
+					strokeLinejoin='round'
+				/>
+				{points.map((point) => (
+					<g key={point.month}>
+						<circle
+							cx={point.x}
+							cy={point.y}
+							r='5'
+							className='fill-success-700 stroke-white'
+							strokeWidth='2'>
+							<title>{`${formatMonth(point.month, 'long')} : ${currencyFormatter.format(point.total)}`}</title>
+						</circle>
+						<text
+							x={point.x}
+							y={height - 12}
+							textAnchor='middle'
+							className='fill-neutral-600 text-[13px] capitalize'>
+							{formatMonth(point.month)}
+						</text>
+					</g>
+				))}
+			</svg>
+			<ul className='sr-only'>
+				{data.map((point) => (
+					<li key={point.month}>{`${formatMonth(point.month, 'long')} : ${currencyFormatter.format(point.total)}`}</li>
+				))}
+			</ul>
+		</div>
+	);
+}
 
 const ProfilePage = () => {
-  const user = useAuthStore((state) => state.user);
-  const isPremium = user?.effectivePlan === "PREMIUM";
+	const user = useAuthStore((state) => state.user);
+	const insightsQuery = useQuery({
+		queryKey: ['profile', 'insights'],
+		queryFn: userService.getProfileInsights,
+	});
+	const insights = insightsQuery.data;
+	const restrictions = [
+		...(user?.preferences?.allergens ?? []),
+		...(user?.preferences?.diets ?? []),
+	];
+	const currentMonth = insights?.spendingTrend.at(-1);
+	const previousMonth = insights?.spendingTrend.at(-2);
+	const spendingChange =
+		currentMonth && previousMonth && previousMonth.total > 0
+			? ((currentMonth.total - previousMonth.total) / previousMonth.total) * 100
+			: null;
+	const planLabel = user?.effectivePlan === 'PREMIUM' ? 'Premium' : 'Gratuit';
+	const hasSpending = insights?.spendingTrend.some((point) => point.total > 0);
 
-  const dietaryRestrictions = [
-    ...(user?.preferences?.allergens ?? []),
-    ...(user?.preferences?.diets ?? []),
-  ];
+	return (
+		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 pb-16'>
+			<div className='mx-auto max-w-5xl space-y-6 px-4 py-8'>
+				<section className='relative rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8'>
+					<Link
+						to='/app/settings'
+						aria-label='Ouvrir les paramètres'
+						className='absolute right-4 top-4 rounded-full border border-neutral-200 p-2 text-neutral-600 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-600'>
+						<Settings className='size-5' />
+					</Link>
+					<div className='flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left'>
+						<div className='flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 text-2xl font-semibold text-white'>
+							{user?.avatarUrl ? (
+								<img
+									src={user.avatarUrl}
+									alt='Photo de profil'
+									className='size-full object-cover'
+								/>
+							) : (
+								getInitials(user?.firstName ?? '', user?.lastName ?? '')
+							)}
+						</div>
+						<div>
+							<h1 className='text-3xl font-bold text-neutral-900'>
+								{user?.firstName} {user?.lastName}
+							</h1>
+							<p className='mt-1 text-neutral-500'>{user?.email}</p>
+							<Badge className='mt-3'>{planLabel}</Badge>
+						</div>
+					</div>
+				</section>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 pb-16">
-      {/* Header */}
-      <div className="bg-neutral-50 pt-8 pb-12 relative shadow-sm border-b border-gray-200">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="size-32 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-4 border-primary-100 shadow-lg">
-            {user?.avatarUrl ? (
-              <img
-                src={user.avatarUrl || "/placeholder.svg"}
-                alt="Photo de profil"
-                className="size-full object-cover"
-              />
-            ) : (
-              <span className="text-4xl font-semibold text-neutral-50">
-                {getInitials(user?.firstName || "", user?.lastName || "")}
-              </span>
-            )}
-          </div>
+				<section aria-labelledby='recipe-stats-title'>
+					<div className='mb-3 flex items-center gap-2'>
+						<ChefHat className='size-5 text-success-700' />
+						<h2 id='recipe-stats-title' className='text-xl font-semibold'>
+							Mes recettes
+						</h2>
+					</div>
+					<div className='grid gap-4 sm:grid-cols-2'>
+						{[
+							{
+								label: 'Recettes enregistrées',
+								value: insights?.recipes.saved,
+								icon: BookMarked,
+							},
+							{
+								label: 'Recettes réalisées',
+								value: insights?.recipes.completed,
+								icon: CheckCircle2,
+							},
+						].map((stat) => (
+							<Link
+								key={stat.label}
+								to='/app/recipes'
+								className='group rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-success-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-600'>
+								<div className='flex items-center justify-between'>
+									<div className='flex items-center gap-3'>
+										<div className='rounded-lg bg-success-50/20 p-3 text-success-700'>
+											<stat.icon className='size-5' />
+										</div>
+										<div>
+											<p className='text-3xl font-bold text-neutral-900'>
+												{insightsQuery.isLoading ? '…' : (stat.value ?? 0)}
+											</p>
+											<p className='text-sm text-neutral-500'>{stat.label}</p>
+										</div>
+									</div>
+									<ArrowRight className='size-5 text-neutral-400 transition group-hover:translate-x-1 group-hover:text-success-700' />
+								</div>
+							</Link>
+						))}
+					</div>
+					{insightsQuery.isError && (
+						<p className='mt-3 text-sm text-danger-600'>
+							Les statistiques de recettes sont temporairement indisponibles.
+						</p>
+					)}
+				</section>
 
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {user?.firstName} {user?.lastName}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Membre depuis {mockStatistics.memberSince}
-            </p>
+				<div className='grid gap-6 lg:grid-cols-2'>
+					<Card>
+						<CardHeader>
+							<CardTitle className='flex items-center gap-2'>
+								<Sparkles className='size-5 text-success-700' />
+								Ma personnalisation
+							</CardTitle>
+						</CardHeader>
+						<CardContent className='divide-y divide-neutral-200 p-0'>
+							<Link
+								to='/app/settings/personal-info'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-600'>
+								<div className='flex items-center gap-3'>
+									<Utensils className='size-5 text-neutral-500' />
+									<div>
+										<p className='text-sm text-neutral-500'>Nombre de couverts</p>
+										<p className='font-medium'>{user?.defaultServings ?? 4}</p>
+									</div>
+								</div>
+								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-700' />
+							</Link>
+							<Link
+								to='/app/settings/personal-info'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-600'>
+								<div className='flex items-center gap-3'>
+									<Target className='size-5 text-neutral-500' />
+									<div>
+										<p className='text-sm text-neutral-500'>Objectif principal</p>
+										<p className='font-medium'>
+											{user?.primaryGoal
+												? goalLabels[user.primaryGoal]
+												: 'À définir'}
+										</p>
+									</div>
+								</div>
+								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-700' />
+							</Link>
+							<Link
+								to='/app/settings/diet-restrictions'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-600'>
+								<div>
+									<p className='text-sm text-neutral-500'>Allergies et régimes</p>
+									<div className='mt-1 flex flex-wrap gap-1.5'>
+										{restrictions.length > 0 ? (
+											restrictions.map((restriction) => (
+												<Badge key={restriction} variant='secondary'>
+													{getDietaryLabel(restriction)}
+												</Badge>
+											))
+										) : (
+											<span className='font-medium'>Aucune restriction</span>
+										)}
+									</div>
+								</div>
+								<ArrowRight className='size-4 shrink-0 text-neutral-400 group-hover:text-success-700' />
+							</Link>
+						</CardContent>
+					</Card>
 
-            {isPremium && (
-              <Badge
-                variant="outline"
-                className="mt-2 bg-primary-100 border-0 text-neutral-50 px-3 py-1 shadow-md"
-              >
-                Premium
-              </Badge>
-            )}
+					<Card>
+						<CardHeader>
+							<CardTitle className='flex items-center gap-2'>
+								<CreditCard className='size-5 text-success-700' />
+								Formule et quotas
+							</CardTitle>
+						</CardHeader>
+						<CardContent className='divide-y divide-neutral-200 p-0'>
+							<Link
+								to='/app/subscription'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-600'>
+								<div>
+									<p className='text-sm text-neutral-500'>Formule actuelle</p>
+									<p className='font-semibold'>{planLabel}</p>
+								</div>
+								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-700' />
+							</Link>
+							<Link
+								to='/app/recipes/suggestions'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-600'>
+								<div className='flex items-center gap-3'>
+									<WandSparkles className='size-5 text-neutral-500' />
+									<div>
+										<p className='text-sm text-neutral-500'>Générations IA restantes</p>
+										<p className='font-semibold'>
+											{user?.capabilities.aiRecipeGenerationRemaining ?? 0}
+										</p>
+									</div>
+								</div>
+								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-700' />
+							</Link>
+							<Link
+								to='/app/inventory/add/drive'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-600'>
+								<div>
+									<p className='text-sm text-neutral-500'>Imports Drive restants</p>
+									<p className='font-semibold'>
+										{user?.capabilities.driveImportsRemaining ?? 0}
+									</p>
+								</div>
+								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-700' />
+							</Link>
+						</CardContent>
+					</Card>
+				</div>
 
-            {/* Restrictions alimentaires */}
-            <div className="flex flex-wrap justify-center gap-2 mt-3">
-              {dietaryRestrictions.length === 0 ? (
-                <span className="text-sm text-gray-500">
-                  Aucune restriction alimentaire renseignée
-                </span>
-              ) : (
-                dietaryRestrictions.map((restriction) => (
-                  <Badge
-                    key={restriction}
-                    variant="secondary"
-                    className="bg-success-50/10 text-success-50 border-0"
-                  >
-                    {getDietaryLabel(restriction)}
-                  </Badge>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Bouton paramètres */}
-        <Link
-          to="/app/settings"
-          className="absolute top-4 right-4 p-2 rounded-full bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm transition-colors"
-        >
-          <Settings className="size-5 text-gray-600" />
-        </Link>
-      </div>
-
-      {/* Contenu principal */}
-      <div className="px-4 py-6 space-y-6 -mt-6">
-        {/* Carte statistiques */}
-        <Card className="shadow-xl border-0 bg-neutral-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <TrendingUp className="size-5 text-success-50" />
-              Mes statistiques
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <ShoppingCart className="size-6 text-success-50 mb-1" />
-                <span className="text-xl font-bold text-gray-900">
-                  {mockStatistics.productsCount}
-                </span>
-                <span className="text-xs text-gray-600">
-                  Produits enregistrés
-                </span>
-              </div>
-
-              <div className="flex flex-col items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                <Award className="size-6 text-success-50 mb-1" />
-                <span className="text-xl font-bold text-gray-900">
-                  {mockStatistics.daysStreak} jours
-                </span>
-                <span className="text-xs text-gray-600">
-                  Streak d'utilisation
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-700">
-                  Économies réalisées
-                </span>
-                <span className="text-sm font-bold text-success-50">
-                  {mockStatistics.savedMoney.toFixed(2)} €
-                </span>
-              </div>
-
-              <div className="space-y-1">
-                <div className="flex justify-between text-sm text-gray-700">
-                  <span>Réduction du gaspillage</span>
-                  <span>{mockStatistics.wasteReduction}%</span>
-                </div>
-                <Progress
-                  value={mockStatistics.wasteReduction}
-                  className="h-2 [&>*]:bg-success-50"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 justify-center mt-2 text-gray-700">
-              <Leaf className="size-5 text-success-50" />
-              <span className="font-medium">Impact écologique positif!</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Carte Habitudes alimentaires */}
-        <Card className="shadow-xl border-0 bg-neutral-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <ChefHat className="size-5 text-success-50" />
-              Habitudes alimentaires
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-sm font-medium text-gray-700">
-                Catégories préférées
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {mockStatistics.topCategories.map((category) => (
-                  <Badge
-                    key={category}
-                    variant="outline"
-                    className="bg-gray-50 border border-gray-100 text-gray-700"
-                  >
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-700">
-                  Nutriscore moyen
-                </span>
-                <div className="flex items-center">
-                  <Badge
-                    className={`size-6 rounded-full flex items-center justify-center font-bold ${
-                      mockStatistics.nutritionalScore === "A"
-                        ? "bg-emerald-600"
-                        : mockStatistics.nutritionalScore === "B"
-                          ? "bg-green-500"
-                          : mockStatistics.nutritionalScore === "C"
-                            ? "bg-yellow-500"
-                            : mockStatistics.nutritionalScore === "D"
-                              ? "bg-orange-500"
-                              : "bg-red-500"
-                    } text-neutral-50`}
-                  >
-                    {mockStatistics.nutritionalScore}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Carte Activités récentes */}
-        <Card className="shadow-xl border-0 bg-neutral-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-gray-900">
-              <Clock className="size-5 text-success-50" />
-              Activités récentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-700">
-                Derniers produits ajoutés
-              </h3>
-              <div className="space-y-2">
-                {mockStatistics.recentProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0 text-gray-700"
-                  >
-                    <span>{product.name}</span>
-                    <span className="text-xs text-gray-600">
-                      {product.date}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-700">
-                Recettes consultées
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {mockStatistics.recentRecipes.map((recipe) => (
-                  <Badge
-                    key={recipe}
-                    variant="outline"
-                    className="bg-gray-50 border border-gray-100 text-gray-700"
-                  >
-                    {recipe}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+				<section aria-labelledby='spending-title'>
+					<Link
+						to='/app/budget'
+						className='group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-600'>
+						<Card className='transition group-hover:border-success-300 group-hover:shadow-md'>
+							<CardHeader className='pb-2'>
+								<div className='flex items-start justify-between gap-4'>
+									<div>
+										<CardTitle id='spending-title'>Évolution des dépenses</CardTitle>
+										<p className='mt-1 text-sm text-neutral-500'>Six derniers mois</p>
+									</div>
+									<ArrowRight className='size-5 text-neutral-400 transition group-hover:translate-x-1 group-hover:text-success-700' />
+								</div>
+							</CardHeader>
+							<CardContent>
+								{insightsQuery.isLoading ? (
+									<div className='flex h-48 items-center justify-center text-neutral-500'>
+										Chargement des dépenses…
+									</div>
+								) : insightsQuery.isError ? (
+									<div className='flex h-48 items-center justify-center text-danger-600'>
+										Les dépenses sont temporairement indisponibles.
+									</div>
+								) : insights ? (
+									<>
+										<div className='mb-2 flex flex-wrap items-end gap-x-3 gap-y-1'>
+											<p className='text-2xl font-bold'>
+												{currencyFormatter.format(currentMonth?.total ?? 0)}
+											</p>
+											<p className='pb-0.5 text-sm capitalize text-neutral-500'>
+												{currentMonth && formatMonth(currentMonth.month, 'long')}
+											</p>
+											{spendingChange !== null && (
+												<span
+													className={`flex items-center gap-1 pb-0.5 text-sm font-medium ${spendingChange <= 0 ? 'text-success-700' : 'text-warning-700'}`}>
+													{spendingChange <= 0 ? (
+														<ArrowDownRight className='size-4' />
+													) : (
+														<ArrowUpRight className='size-4' />
+													)}
+													{Math.abs(spendingChange).toFixed(0)} % vs mois précédent
+												</span>
+											)}
+										</div>
+										{!hasSpending && (
+											<p className='mb-2 text-sm text-neutral-500'>
+												Aucune dépense enregistrée sur cette période.
+											</p>
+										)}
+										<SpendingChart data={insights.spendingTrend} />
+									</>
+								) : null}
+							</CardContent>
+						</Card>
+					</Link>
+				</section>
+			</div>
+		</div>
+	);
 };
 
 export default ProfilePage;
