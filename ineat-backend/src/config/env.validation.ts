@@ -52,6 +52,11 @@ const optionalDeliveryMode = z.preprocess(
   z.enum(['legacy', 'bullmq']).default('legacy'),
 );
 
+const optionalInvoiceProcessingMode = z.preprocess(
+  emptyToUndefined,
+  z.enum(['sync', 'bullmq']).default('sync'),
+);
+
 const baseEnvironmentSchema = z
   .object({
     NODE_ENV: z.string().default('development'),
@@ -92,6 +97,11 @@ const baseEnvironmentSchema = z
     CLOUDFLARE_ACCESS_AUD: optionalString,
     NOTIFICATION_SCHEDULER_MODE: optionalSchedulerMode,
     NOTIFICATION_DELIVERY_MODE: optionalDeliveryMode,
+    INVOICE_PROCESSING_MODE: optionalInvoiceProcessingMode,
+    INVOICE_WORKER_CONCURRENCY: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).max(10).default(2),
+    ),
   })
   .passthrough();
 

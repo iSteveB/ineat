@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import {
   InvoiceProcessingEventStatus,
@@ -13,6 +14,8 @@ import {
 } from '../../../prisma/generated/prisma/client';
 import { UsageQuotaService } from '../../auth/services/usage-quota.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { QueueService } from '../../jobs/queue.service';
+import { QUEUE_NAMES } from '../../redis/redis.constants';
 import {
   AnalyzedInvoice,
   InvoiceAnalysisService,
@@ -59,6 +62,8 @@ export class InvoiceService {
     private readonly invoiceProcessingStateService: InvoiceProcessingStateService,
     private readonly openFoodFactsInvoiceEnrichmentService: OpenFoodFactsInvoiceEnrichmentService,
     private readonly usageQuotaService: UsageQuotaService,
+    private readonly queues: QueueService,
+    private readonly config: ConfigService,
   ) {}
 
   async importDriveInvoice(user: InvoiceUser, file: Express.Multer.File) {
@@ -109,20 +114,96 @@ export class InvoiceService {
       },
     });
 
+    if (this.invoiceProcessingMode() === 'bullmq') {
+      await this.invoiceProcessingStateService.transition(
+        invoice.id,
+        InvoiceProcessingStage.QUEUED,
+      );
+      await this.queues.add(
+        QUEUE_NAMES.invoiceAnalysis,
+        'analyze',
+        { invoiceId: invoice.id, userId: user.id },
+        { jobId: invoice.id },
+      );
+      return this.getInvoiceForUser(user.id, invoice.id);
+    }
+
+    try {
+      await this.processInvoiceAnalysis(invoice, user, file.buffer, 1);
+      return this.getInvoiceForUser(user.id, invoice.id);
+    } catch {
+      throw new BadRequestException("La facture n'a pas pu être analysée");
+    }
+  }
+
+  async processQueuedInvoice(
+    invoiceId: string,
+    userId: string,
+    attempt: number,
+  ): Promise<void> {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id: invoiceId, userId },
+    });
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        subscriptionPlan: true,
+        subscriptionStatus: true,
+        trialStartedAt: true,
+        trialEndsAt: true,
+        currentPeriodStartedAt: true,
+        currentPeriodEndsAt: true,
+      },
+    });
+
+    if (!invoice || !user) {
+      throw new NotFoundException('Facture ou utilisateur introuvable');
+    }
+
+    if (
+      invoice.processingStage === InvoiceProcessingStage.READY_FOR_REVIEW ||
+      invoice.processingStage === InvoiceProcessingStage.VALIDATED
+    ) {
+      await this.usageQuotaService.recordSuccessfulUsage(
+        user,
+        'DRIVE_IMPORT',
+        new Date(),
+        `invoice:${invoice.id}`,
+      );
+      return;
+    }
+
+    await this.processInvoiceAnalysis(invoice, user, undefined, attempt);
+  }
+
+  private async processInvoiceAnalysis(
+    invoice: { id: string; pdfUrl: string },
+    user: InvoiceUser,
+    pdfBuffer?: Buffer,
+    attempt = 1,
+  ): Promise<void> {
     try {
       await this.invoiceProcessingStateService.transition(
         invoice.id,
         InvoiceProcessingStage.ANALYZING,
+        { attempt },
       );
       const startedAt = Date.now();
       const analysis = await this.invoiceAnalysisService.analyzePdf(
-        pdfUrl,
-        file.buffer,
+        invoice.pdfUrl,
+        pdfBuffer,
       );
       const processingTime = Date.now() - startedAt;
 
+      await this.usageQuotaService.recordSuccessfulUsage(
+        user,
+        'DRIVE_IMPORT',
+        new Date(),
+        `invoice:${invoice.id}`,
+      );
       await this.completeInvoiceAnalysis(invoice.id, analysis, processingTime);
-      await this.usageQuotaService.recordSuccessfulUsage(user, 'DRIVE_IMPORT');
 
       this.logInvoiceEvent({
         event: 'invoice_analysis_completed',
@@ -133,13 +214,11 @@ export class InvoiceService {
         status: InvoiceStatus.COMPLETED,
         itemCount: analysis.items.length,
       });
-
-      return this.getInvoiceForUser(user.id, invoice.id);
     } catch (error) {
       await this.invoiceProcessingStateService.transition(
         invoice.id,
         InvoiceProcessingStage.FAILED,
-        { errorCode: this.getProcessingErrorCode(error) },
+        { attempt, errorCode: this.getProcessingErrorCode(error) },
       );
       await this.prisma.invoice.update({
         where: { id: invoice.id },
@@ -158,8 +237,17 @@ export class InvoiceService {
         error: this.serializeError(error),
       });
 
-      throw new BadRequestException("La facture n'a pas pu être analysée");
+      throw error;
     }
+  }
+
+  private invoiceProcessingMode(): 'sync' | 'bullmq' {
+    return this.config
+      .get<string>('INVOICE_PROCESSING_MODE', 'sync')
+      .trim()
+      .toLowerCase() === 'bullmq'
+      ? 'bullmq'
+      : 'sync';
   }
 
   async getInvoiceForUser(userId: string, invoiceId: string) {
@@ -664,6 +752,13 @@ export class InvoiceService {
           processingTime,
           errorMessage: null,
           updatedAt: now,
+        },
+      });
+
+      await tx.invoiceItem.deleteMany({
+        where: {
+          invoiceId,
+          validated: false,
         },
       });
 

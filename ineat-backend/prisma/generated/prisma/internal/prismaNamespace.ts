@@ -2831,6 +2831,7 @@ export const UsageEventScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   usageType: 'usageType',
+  idempotencyKey: 'idempotencyKey',
   occurredAt: 'occurredAt'
 } as const
 

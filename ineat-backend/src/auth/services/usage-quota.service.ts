@@ -88,10 +88,31 @@ export class UsageQuotaService {
     user: AccessPolicyUser & { id: string },
     usageType: UsageType,
     now = new Date(),
+    idempotencyKey?: string,
   ): Promise<UsageQuotaState> {
+    if (idempotencyKey) {
+      const existingEvent = await this.prisma.usageEvent.findUnique({
+        where: { idempotencyKey },
+      });
+
+      if (existingEvent) {
+        return this.getUsageState(user, usageType, now);
+      }
+    }
+
     const state = await this.assertCanConsume(user, usageType, now);
 
     const persisted = await this.prisma.$transaction(async (transaction) => {
+      if (idempotencyKey) {
+        const existingEvent = await transaction.usageEvent.findUnique({
+          where: { idempotencyKey },
+        });
+
+        if (existingEvent) {
+          return null;
+        }
+      }
+
       const quota = await transaction.usageQuota.upsert({
         where: {
           userId_usageType_periodStart_periodEnd: {
@@ -124,6 +145,7 @@ export class UsageQuotaService {
           id: randomUUID(),
           userId: user.id,
           usageType,
+          idempotencyKey,
           occurredAt: now,
         },
       });

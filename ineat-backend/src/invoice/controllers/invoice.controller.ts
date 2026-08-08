@@ -56,7 +56,7 @@ export class InvoiceController {
   constructor(private readonly invoiceService: InvoiceService) {}
 
   @Post('drive-import')
-  @HttpCode(HttpStatus.CREATED)
+  @HttpCode(HttpStatus.ACCEPTED)
   @UseInterceptors(
     FileInterceptor('file', {
       limits: {
@@ -94,8 +94,8 @@ export class InvoiceController {
     },
   })
   @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Facture importée et analysée avec succès',
+    status: HttpStatus.ACCEPTED,
+    description: 'Facture acceptée et traitement démarré',
     type: DriveImportResponseDto,
   })
   @ApiResponse({
@@ -118,7 +118,7 @@ export class InvoiceController {
     return {
       success: true,
       data: invoice,
-      message: 'Facture Drive importée et analysée avec succès',
+      message: 'Facture Drive acceptée pour analyse',
     };
   }
 

@@ -12,6 +12,7 @@ describe('InvoiceService', () => {
     },
     invoiceItem: {
       createMany: jest.fn(),
+      deleteMany: jest.fn(),
       update: jest.fn(),
       count: jest.fn(),
     },
@@ -53,6 +54,9 @@ describe('InvoiceService', () => {
     category: {
       findFirst: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
 
@@ -79,6 +83,14 @@ describe('InvoiceService', () => {
   const usageQuotaService = {
     assertCanConsume: jest.fn(),
     recordSuccessfulUsage: jest.fn(),
+  };
+
+  const queues = {
+    add: jest.fn(),
+  };
+
+  const config = {
+    get: jest.fn((_key: string, fallback?: unknown) => fallback),
   };
 
   let service: InvoiceService;
@@ -164,6 +176,8 @@ describe('InvoiceService', () => {
       invoiceProcessingStateService as any,
       openFoodFactsInvoiceEnrichmentService as any,
       usageQuotaService as any,
+      queues as any,
+      config as any,
     );
     prisma.$transaction.mockImplementation((callback) => callback(tx));
     tx.invoiceItem.count.mockResolvedValue(1);
@@ -236,6 +250,10 @@ describe('InvoiceService', () => {
       async (_tx, items) => items,
     );
     invoiceProcessingStateService.transition.mockResolvedValue({});
+    queues.add.mockResolvedValue({});
+    config.get.mockImplementation(
+      (_key: string, fallback?: unknown) => fallback,
+    );
     openFoodFactsInvoiceEnrichmentService.enrichItems.mockImplementation(
       async (items) =>
         items.map((item: any) => ({
@@ -292,6 +310,7 @@ describe('InvoiceService', () => {
     expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
       'invoice-1',
       InvoiceProcessingStage.ANALYZING,
+      { attempt: 1 },
     );
     expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
       'invoice-1',
@@ -325,6 +344,8 @@ describe('InvoiceService', () => {
     expect(usageQuotaService.recordSuccessfulUsage).toHaveBeenCalledWith(
       user,
       'DRIVE_IMPORT',
+      expect.any(Date),
+      'invoice:invoice-1',
     );
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringContaining('invoice_analysis_completed'),
@@ -339,6 +360,53 @@ describe('InvoiceService', () => {
         },
       ],
     });
+  });
+
+  it('met la facture en file et répond sans appeler le provider en mode BullMQ', async () => {
+    config.get.mockImplementation((key: string, fallback?: unknown) =>
+      key === 'INVOICE_PROCESSING_MODE' ? 'bullmq' : fallback,
+    );
+
+    const result = await service.importDriveInvoice(user, file);
+
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.QUEUED,
+    );
+    expect(queues.add).toHaveBeenCalledWith(
+      'invoice-analysis',
+      'analyze',
+      { invoiceId: 'invoice-1', userId: 'user-1' },
+      { jobId: 'invoice-1' },
+    );
+    expect(invoiceAnalysisService.analyzePdf).not.toHaveBeenCalled();
+    expect(result).toMatchObject({ id: 'invoice-1' });
+  });
+
+  it('traite une facture en file sans buffer et consomme le quota de façon idempotente', async () => {
+    prisma.invoice.findFirst.mockResolvedValue({
+      ...createdInvoice,
+      processingStage: InvoiceProcessingStage.QUEUED,
+    });
+    prisma.user.findUnique.mockResolvedValue(user);
+
+    await service.processQueuedInvoice('invoice-1', 'user-1', 2);
+
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.ANALYZING,
+      { attempt: 2 },
+    );
+    expect(invoiceAnalysisService.analyzePdf).toHaveBeenCalledWith(
+      createdInvoice.pdfUrl,
+      undefined,
+    );
+    expect(usageQuotaService.recordSuccessfulUsage).toHaveBeenCalledWith(
+      user,
+      'DRIVE_IMPORT',
+      expect.any(Date),
+      'invoice:invoice-1',
+    );
   });
 
   it("ne consomme pas le quota si l'analyse échoue", async () => {
@@ -360,7 +428,7 @@ describe('InvoiceService', () => {
     expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
       'invoice-1',
       InvoiceProcessingStage.FAILED,
-      { errorCode: 'ERROR' },
+      { attempt: 1, errorCode: 'ERROR' },
     );
     expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
     expect(loggerSpy).toHaveBeenCalledWith(

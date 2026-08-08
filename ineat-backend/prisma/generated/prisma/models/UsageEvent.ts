@@ -28,6 +28,7 @@ export type UsageEventMinAggregateOutputType = {
   id: string | null
   userId: string | null
   usageType: $Enums.UsageType | null
+  idempotencyKey: string | null
   occurredAt: Date | null
 }
 
@@ -35,6 +36,7 @@ export type UsageEventMaxAggregateOutputType = {
   id: string | null
   userId: string | null
   usageType: $Enums.UsageType | null
+  idempotencyKey: string | null
   occurredAt: Date | null
 }
 
@@ -42,6 +44,7 @@ export type UsageEventCountAggregateOutputType = {
   id: number
   userId: number
   usageType: number
+  idempotencyKey: number
   occurredAt: number
   _all: number
 }
@@ -51,6 +54,7 @@ export type UsageEventMinAggregateInputType = {
   id?: true
   userId?: true
   usageType?: true
+  idempotencyKey?: true
   occurredAt?: true
 }
 
@@ -58,6 +62,7 @@ export type UsageEventMaxAggregateInputType = {
   id?: true
   userId?: true
   usageType?: true
+  idempotencyKey?: true
   occurredAt?: true
 }
 
@@ -65,6 +70,7 @@ export type UsageEventCountAggregateInputType = {
   id?: true
   userId?: true
   usageType?: true
+  idempotencyKey?: true
   occurredAt?: true
   _all?: true
 }
@@ -145,6 +151,7 @@ export type UsageEventGroupByOutputType = {
   id: string
   userId: string
   usageType: $Enums.UsageType
+  idempotencyKey: string | null
   occurredAt: Date
   _count: UsageEventCountAggregateOutputType | null
   _min: UsageEventMinAggregateOutputType | null
@@ -173,6 +180,7 @@ export type UsageEventWhereInput = {
   id?: Prisma.StringFilter<"UsageEvent"> | string
   userId?: Prisma.StringFilter<"UsageEvent"> | string
   usageType?: Prisma.EnumUsageTypeFilter<"UsageEvent"> | $Enums.UsageType
+  idempotencyKey?: Prisma.StringNullableFilter<"UsageEvent"> | string | null
   occurredAt?: Prisma.DateTimeFilter<"UsageEvent"> | Date | string
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -181,12 +189,14 @@ export type UsageEventOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   usageType?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
   User?: Prisma.UserOrderByWithRelationInput
 }
 
 export type UsageEventWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  idempotencyKey?: string
   AND?: Prisma.UsageEventWhereInput | Prisma.UsageEventWhereInput[]
   OR?: Prisma.UsageEventWhereInput[]
   NOT?: Prisma.UsageEventWhereInput | Prisma.UsageEventWhereInput[]
@@ -194,12 +204,13 @@ export type UsageEventWhereUniqueInput = Prisma.AtLeast<{
   usageType?: Prisma.EnumUsageTypeFilter<"UsageEvent"> | $Enums.UsageType
   occurredAt?: Prisma.DateTimeFilter<"UsageEvent"> | Date | string
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id">
+}, "id" | "idempotencyKey">
 
 export type UsageEventOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   usageType?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrderInput | Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
   _count?: Prisma.UsageEventCountOrderByAggregateInput
   _max?: Prisma.UsageEventMaxOrderByAggregateInput
@@ -213,12 +224,14 @@ export type UsageEventScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"UsageEvent"> | string
   userId?: Prisma.StringWithAggregatesFilter<"UsageEvent"> | string
   usageType?: Prisma.EnumUsageTypeWithAggregatesFilter<"UsageEvent"> | $Enums.UsageType
+  idempotencyKey?: Prisma.StringNullableWithAggregatesFilter<"UsageEvent"> | string | null
   occurredAt?: Prisma.DateTimeWithAggregatesFilter<"UsageEvent"> | Date | string
 }
 
 export type UsageEventCreateInput = {
   id: string
   usageType: $Enums.UsageType
+  idempotencyKey?: string | null
   occurredAt?: Date | string
   User: Prisma.UserCreateNestedOneWithoutUsageEventInput
 }
@@ -227,12 +240,14 @@ export type UsageEventUncheckedCreateInput = {
   id: string
   userId: string
   usageType: $Enums.UsageType
+  idempotencyKey?: string | null
   occurredAt?: Date | string
 }
 
 export type UsageEventUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   User?: Prisma.UserUpdateOneRequiredWithoutUsageEventNestedInput
 }
@@ -241,6 +256,7 @@ export type UsageEventUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -248,12 +264,14 @@ export type UsageEventCreateManyInput = {
   id: string
   userId: string
   usageType: $Enums.UsageType
+  idempotencyKey?: string | null
   occurredAt?: Date | string
 }
 
 export type UsageEventUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -261,6 +279,7 @@ export type UsageEventUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -278,6 +297,7 @@ export type UsageEventCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   usageType?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
 }
 
@@ -285,6 +305,7 @@ export type UsageEventMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   usageType?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
 }
 
@@ -292,6 +313,7 @@ export type UsageEventMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   usageType?: Prisma.SortOrder
+  idempotencyKey?: Prisma.SortOrder
   occurredAt?: Prisma.SortOrder
 }
 
@@ -340,12 +362,14 @@ export type UsageEventUncheckedUpdateManyWithoutUserNestedInput = {
 export type UsageEventCreateWithoutUserInput = {
   id: string
   usageType: $Enums.UsageType
+  idempotencyKey?: string | null
   occurredAt?: Date | string
 }
 
 export type UsageEventUncheckedCreateWithoutUserInput = {
   id: string
   usageType: $Enums.UsageType
+  idempotencyKey?: string | null
   occurredAt?: Date | string
 }
 
@@ -382,30 +406,35 @@ export type UsageEventScalarWhereInput = {
   id?: Prisma.StringFilter<"UsageEvent"> | string
   userId?: Prisma.StringFilter<"UsageEvent"> | string
   usageType?: Prisma.EnumUsageTypeFilter<"UsageEvent"> | $Enums.UsageType
+  idempotencyKey?: Prisma.StringNullableFilter<"UsageEvent"> | string | null
   occurredAt?: Prisma.DateTimeFilter<"UsageEvent"> | Date | string
 }
 
 export type UsageEventCreateManyUserInput = {
   id: string
   usageType: $Enums.UsageType
+  idempotencyKey?: string | null
   occurredAt?: Date | string
 }
 
 export type UsageEventUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UsageEventUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type UsageEventUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   usageType?: Prisma.EnumUsageTypeFieldUpdateOperationsInput | $Enums.UsageType
+  idempotencyKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   occurredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -415,6 +444,7 @@ export type UsageEventSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   userId?: boolean
   usageType?: boolean
+  idempotencyKey?: boolean
   occurredAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usageEvent"]>
@@ -423,6 +453,7 @@ export type UsageEventSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   userId?: boolean
   usageType?: boolean
+  idempotencyKey?: boolean
   occurredAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usageEvent"]>
@@ -431,6 +462,7 @@ export type UsageEventSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   userId?: boolean
   usageType?: boolean
+  idempotencyKey?: boolean
   occurredAt?: boolean
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usageEvent"]>
@@ -439,10 +471,11 @@ export type UsageEventSelectScalar = {
   id?: boolean
   userId?: boolean
   usageType?: boolean
+  idempotencyKey?: boolean
   occurredAt?: boolean
 }
 
-export type UsageEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "usageType" | "occurredAt", ExtArgs["result"]["usageEvent"]>
+export type UsageEventOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "usageType" | "idempotencyKey" | "occurredAt", ExtArgs["result"]["usageEvent"]>
 export type UsageEventInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -462,6 +495,7 @@ export type $UsageEventPayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: string
     userId: string
     usageType: $Enums.UsageType
+    idempotencyKey: string | null
     occurredAt: Date
   }, ExtArgs["result"]["usageEvent"]>
   composites: {}
@@ -890,6 +924,7 @@ export interface UsageEventFieldRefs {
   readonly id: Prisma.FieldRef<"UsageEvent", 'String'>
   readonly userId: Prisma.FieldRef<"UsageEvent", 'String'>
   readonly usageType: Prisma.FieldRef<"UsageEvent", 'UsageType'>
+  readonly idempotencyKey: Prisma.FieldRef<"UsageEvent", 'String'>
   readonly occurredAt: Prisma.FieldRef<"UsageEvent", 'DateTime'>
 }
     

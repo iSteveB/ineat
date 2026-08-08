@@ -12,7 +12,7 @@ describe('UsageQuotaService', () => {
       upsert: jest.Mock;
       update: jest.Mock;
     };
-    usageEvent: { create: jest.Mock };
+    usageEvent: { create: jest.Mock; findUnique: jest.Mock };
   };
   let email: { sendQuota: jest.Mock };
 
@@ -24,7 +24,10 @@ describe('UsageQuotaService', () => {
       upsert: jest.fn().mockResolvedValue({}),
       update: jest.fn().mockResolvedValue({}),
     };
-    const usageEvent = { create: jest.fn().mockResolvedValue({}) };
+    const usageEvent = {
+      create: jest.fn().mockResolvedValue({}),
+      findUnique: jest.fn().mockResolvedValue(null),
+    };
     prisma = {
       $transaction: jest.fn((callback) => callback({ usageQuota, usageEvent })),
       user: {
@@ -190,9 +193,35 @@ describe('UsageQuotaService', () => {
     expect(state.remaining).toBe(22);
   });
 
+  it('ne recompte pas une consommation portant la même clé idempotente', async () => {
+    prisma.usageEvent.findUnique.mockResolvedValue({
+      id: 'usage-event-1',
+      idempotencyKey: 'invoice:invoice-1',
+    });
+    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 1 });
+
+    const state = await service.recordSuccessfulUsage(
+      {
+        id: 'user-1',
+        role: 'USER',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'ACTIVE',
+      },
+      'DRIVE_IMPORT',
+      now,
+      'invoice:invoice-1',
+    );
+
+    expect(state.usedCount).toBe(1);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.usageEvent.create).not.toHaveBeenCalled();
+  });
+
   it("annule l'incrément si le journal d'usage ne peut pas être écrit", async () => {
     prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 2 });
-    prisma.usageEvent.create.mockRejectedValue(new Error('database unavailable'));
+    prisma.usageEvent.create.mockRejectedValue(
+      new Error('database unavailable'),
+    );
 
     await expect(
       service.recordSuccessfulUsage(

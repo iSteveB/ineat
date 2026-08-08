@@ -37,6 +37,7 @@ describe('WorkerRuntimeService', () => {
   const deliveries = { retryPendingDeliveries: jest.fn() };
   const weeklyDigests = { sendDueDigests: jest.fn() };
   const dailyDigests = { sendDueDigests: jest.fn() };
+  const invoices = { processQueuedInvoice: jest.fn() };
 
   const createService = () =>
     new WorkerRuntimeService(
@@ -48,6 +49,7 @@ describe('WorkerRuntimeService', () => {
       deliveries as any,
       weeklyDigests as any,
       dailyDigests as any,
+      invoices as any,
     );
 
   beforeEach(() => {
@@ -64,7 +66,7 @@ describe('WorkerRuntimeService', () => {
 
     await service.onModuleInit();
 
-    expect(Worker).toHaveBeenCalledTimes(6);
+    expect(Worker).toHaveBeenCalledTimes(7);
     expect(queues.upsertScheduler).toHaveBeenCalledTimes(7);
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.system,
@@ -95,13 +97,29 @@ describe('WorkerRuntimeService', () => {
 
     await service.onModuleInit();
 
-    expect(Worker).toHaveBeenCalledTimes(1);
+    expect(Worker).toHaveBeenCalledTimes(2);
     expect(queues.upsertScheduler).toHaveBeenCalledTimes(2);
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.system,
       'admin-audit-retention-daily',
       { pattern: '30 3 * * *' },
       { name: 'purge-admin-audit', data: {} },
+    );
+  });
+
+  it('traite un job de facture avec le numéro de tentative courant', async () => {
+    const service = createService();
+
+    await (service as any).processInvoiceJob({
+      name: 'analyze',
+      data: { invoiceId: 'invoice-1', userId: 'user-1' },
+      attemptsMade: 1,
+    });
+
+    expect(invoices.processQueuedInvoice).toHaveBeenCalledWith(
+      'invoice-1',
+      'user-1',
+      2,
     );
   });
 

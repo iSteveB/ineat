@@ -539,11 +539,12 @@ model UsageQuota {
 }
 
 model UsageEvent {
-  id         String    @id
-  userId     String
-  usageType  UsageType
-  occurredAt DateTime  @default(now())
-  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String    @id
+  userId         String
+  usageType      UsageType
+  idempotencyKey String?   @unique
+  occurredAt     DateTime  @default(now())
+  User           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([usageType, occurredAt])
   @@index([userId, occurredAt])

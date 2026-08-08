@@ -5,6 +5,9 @@ import { JobsModule } from '../jobs/jobs.module';
 import { RedisModule } from '../redis/redis.module';
 import { WorkerRuntimeService } from './worker-runtime.service';
 import { NotificationProcessingModule } from '../notification/notification-processing.module';
+import { AuthModule } from '../auth/auth.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { InvoiceModule } from '../invoice/invoice.module';
 
 @Module({
   imports: [
@@ -15,6 +18,9 @@ import { NotificationProcessingModule } from '../notification/notification-proce
     }),
     RedisModule,
     JobsModule,
+    AuthModule,
+    CloudinaryModule,
+    InvoiceModule,
     NotificationProcessingModule,
   ],
   providers: [WorkerRuntimeService],

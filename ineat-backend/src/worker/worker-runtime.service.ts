@@ -8,6 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { type Job, Worker } from 'bullmq';
 import { QueueService } from '../jobs/queue.service';
+import { InvoiceService } from '../invoice/services/invoice.service';
 import { DailyProductDigestService } from '../notification/daily-product-digest.service';
 import { NotificationDeliveryService } from '../notification/notification-delivery.service';
 import { NotificationService } from '../notification/notification.service';
@@ -20,6 +21,7 @@ import { ObservabilityService } from '../observability/observability.service';
 const USER_BATCH_SIZE = 100;
 
 type SynchronizeUserJob = { userId: string };
+type AnalyzeInvoiceJob = { invoiceId: string; userId: string };
 
 @Injectable()
 export class WorkerRuntimeService
@@ -37,11 +39,17 @@ export class WorkerRuntimeService
     private readonly deliveries: NotificationDeliveryService,
     private readonly weeklyDigests: WeeklyProductDigestService,
     private readonly dailyDigests: DailyProductDigestService,
+    private readonly invoices: InvoiceService,
     @Optional() private readonly observability?: ObservabilityService,
   ) {}
 
   async onModuleInit(): Promise<void> {
     this.startWorker(QUEUE_NAMES.system, this.processSystemJob.bind(this), 1);
+    this.startWorker(
+      QUEUE_NAMES.invoiceAnalysis,
+      this.processInvoiceJob.bind(this),
+      this.invoiceWorkerConcurrency(),
+    );
     await this.registerSystemSchedulers();
 
     if (this.schedulerMode() !== 'bullmq') {
@@ -153,6 +161,23 @@ export class WorkerRuntimeService
       return this.anonymizeScheduledAccounts();
     }
     throw new Error(`Unsupported system job: ${job.name}`);
+  }
+
+  private async processInvoiceJob(job: Job<AnalyzeInvoiceJob>): Promise<void> {
+    if (job.name !== 'analyze') {
+      throw new Error(`Unsupported invoice job: ${job.name}`);
+    }
+
+    await this.invoices.processQueuedInvoice(
+      job.data.invoiceId,
+      job.data.userId,
+      job.attemptsMade + 1,
+    );
+  }
+
+  private invoiceWorkerConcurrency(): number {
+    const value = this.config.get<number>('INVOICE_WORKER_CONCURRENCY', 2);
+    return Math.max(1, Math.min(10, Number(value) || 2));
   }
 
   private async purgeExpiredAdminAuditLogs(now = new Date()) {
