@@ -13,7 +13,10 @@ import {
 } from '@/services/recipeService';
 import { useAuthStore } from '@/stores/authStore';
 
+const mockSearch = vi.hoisted((): { filter: string } => ({ filter: 'all' }));
+
 vi.mock('@tanstack/react-router', () => ({
+	useSearch: () => mockSearch,
 	Link: ({
 		children,
 		to,
@@ -44,6 +47,7 @@ vi.mock('@/services/recipeService', () => ({
 		generateRecipes: vi.fn(),
 		saveGeneratedRecipe: vi.fn(),
 		listSavedRecipes: vi.fn(),
+		updateFavorite: vi.fn(),
 	},
 }));
 
@@ -110,6 +114,7 @@ const savedRecipe: SavedRecipe = {
 	missingIngredients: [],
 	steps: starterRecipe.steps,
 	doneAt: null,
+	isFavorite: false,
 	createdAt: '2026-06-23T08:00:00.000Z',
 	updatedAt: '2026-06-23T08:00:00.000Z',
 	ingredients: [],
@@ -133,6 +138,7 @@ function renderRecipeSuggestions() {
 describe('RecipeSuggestionsPage', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockSearch.filter = 'all';
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
 			(selector: (state: unknown) => unknown) =>
 				selector({
@@ -193,7 +199,9 @@ describe('RecipeSuggestionsPage', () => {
 		await user.click(screen.getAllByRole('button', { name: /drop/i })[1]);
 		expect(screen.queryByText('Mousse banane cacao')).not.toBeInTheDocument();
 
-		await user.click(screen.getByRole('button', { name: /garder/i }));
+		await user.click(
+			screen.getByRole('button', { name: /ajouter à mes recettes/i })
+		);
 
 		await waitFor(() => {
 			expect(recipeService.saveGeneratedRecipe).toHaveBeenCalledWith(
@@ -224,5 +232,74 @@ describe('RecipeSuggestionsPage', () => {
 			screen.getByText('Vous avez utilisé vos 5 générations du jour.')
 		).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /générer/i })).toBeDisabled();
+	});
+
+	it('ajoute une recette sauvegardée aux favoris', async () => {
+		const user = userEvent.setup();
+		(recipeService.listSavedRecipes as ReturnType<typeof vi.fn>).mockResolvedValue([
+			savedRecipe,
+		]);
+		(recipeService.updateFavorite as ReturnType<typeof vi.fn>).mockResolvedValue({
+			...savedRecipe,
+			isFavorite: true,
+		});
+
+		renderRecipeSuggestions();
+
+		await user.click(
+			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
+		);
+
+		await waitFor(() => {
+			expect(recipeService.updateFavorite).toHaveBeenCalledWith(
+				'recipe-1',
+				true
+			);
+		});
+		expect(
+			screen.getByRole('button', { name: 'Retirer des favoris' })
+		).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it('restaure le cœur si la mise à jour du favori échoue', async () => {
+		const user = userEvent.setup();
+		(recipeService.listSavedRecipes as ReturnType<typeof vi.fn>).mockResolvedValue([
+			savedRecipe,
+		]);
+		(recipeService.updateFavorite as ReturnType<typeof vi.fn>).mockRejectedValue(
+			new Error('network error')
+		);
+
+		renderRecipeSuggestions();
+
+		await user.click(
+			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
+		);
+
+		await waitFor(() => {
+			expect(
+				screen.getByRole('button', { name: 'Ajouter aux favoris' })
+			).toHaveAttribute('aria-pressed', 'false');
+		});
+	});
+
+	it('filtre les favoris sans afficher de compteur', async () => {
+		mockSearch.filter = 'favorites';
+		(recipeService.listSavedRecipes as ReturnType<typeof vi.fn>).mockResolvedValue([
+			savedRecipe,
+			{
+				...savedRecipe,
+				id: 'recipe-2',
+				name: 'Mousse banane cacao',
+				isFavorite: true,
+			},
+		]);
+
+		renderRecipeSuggestions();
+
+		expect(await screen.findByText('Mousse banane cacao')).toBeInTheDocument();
+		expect(screen.queryByText('Houmous citronné')).not.toBeInTheDocument();
+		expect(screen.getByRole('link', { name: 'Favoris' })).toBeInTheDocument();
+		expect(screen.queryByText(/Favoris\s+\d+/i)).not.toBeInTheDocument();
 	});
 });

@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UsageType } from '../../../prisma/generated/prisma/client';
 import {
   GeneratedRecipeTypeDto,
@@ -69,6 +69,7 @@ describe('RecipeService', () => {
   let prisma: {
     user: { findUnique: jest.Mock };
     inventoryItem: { findMany: jest.Mock };
+    recipe: { findFirst: jest.Mock; update: jest.Mock };
   };
   let usageQuotaService: {
     assertCanConsume: jest.Mock;
@@ -84,6 +85,10 @@ describe('RecipeService', () => {
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue(user) },
       inventoryItem: { findMany: jest.fn().mockResolvedValue(inventoryItems) },
+      recipe: {
+        findFirst: jest.fn(),
+        update: jest.fn(),
+      },
     };
     usageQuotaService = {
       assertCanConsume: jest.fn().mockResolvedValue({ remaining: 5 }),
@@ -186,5 +191,63 @@ describe('RecipeService', () => {
       }),
     ).rejects.toThrow(BadRequestException);
     expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
+  });
+
+  it('marque une recette appartenant à l’utilisateur comme favorite', async () => {
+    const savedRecipe = {
+      id: 'recipe-saved',
+      userId: 'user-1',
+      name: 'Velouté de pommes',
+      description: null,
+      type: 'STARTER',
+      preparationTime: 10,
+      cookingTime: 15,
+      servings: 2,
+      difficulty: 'EASY',
+      imageUrl: null,
+      source: 'AI',
+      basicIngredients: [],
+      missingIngredients: [],
+      steps: ['Cuire.'],
+      instructions: 'Cuire.',
+      doneAt: null,
+      isFavorite: false,
+      createdAt: new Date('2026-08-08T12:00:00.000Z'),
+      updatedAt: new Date('2026-08-08T12:00:00.000Z'),
+      RecipeIngredient: [],
+    };
+    prisma.recipe.findFirst.mockResolvedValue(savedRecipe);
+    prisma.recipe.update.mockResolvedValue({
+      ...savedRecipe,
+      isFavorite: true,
+    });
+
+    const result = await service.updateFavorite(
+      'user-1',
+      'recipe-saved',
+      true,
+    );
+
+    expect(prisma.recipe.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'recipe-saved', userId: 'user-1' },
+      }),
+    );
+    expect(prisma.recipe.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'recipe-saved' },
+        data: expect.objectContaining({ isFavorite: true }),
+      }),
+    );
+    expect(result.data.isFavorite).toBe(true);
+  });
+
+  it('refuse de modifier une recette inaccessible à l’utilisateur', async () => {
+    prisma.recipe.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updateFavorite('user-1', 'recipe-other-user', true),
+    ).rejects.toThrow(NotFoundException);
+    expect(prisma.recipe.update).not.toHaveBeenCalled();
   });
 });

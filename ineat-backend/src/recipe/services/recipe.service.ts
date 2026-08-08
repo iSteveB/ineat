@@ -168,6 +168,28 @@ export class RecipeService {
     };
   }
 
+  async updateFavorite(
+    userId: string,
+    recipeId: string,
+    isFavorite: boolean,
+  ) {
+    await this.findUserRecipe(userId, recipeId);
+
+    const recipe = await this.prisma.recipe.update({
+      where: { id: recipeId },
+      data: {
+        isFavorite,
+        updatedAt: new Date(),
+      },
+      include: this.recipeInclude(),
+    });
+
+    return {
+      success: true,
+      data: this.formatRecipe(recipe),
+    };
+  }
+
   async getCompletionPreview(userId: string, recipeId: string) {
     const recipe = await this.findUserRecipe(userId, recipeId);
     const removableItems = await this.getRemovableInventoryItems(userId, recipe);
@@ -432,6 +454,7 @@ export class RecipeService {
       missingIngredients: recipe.missingIngredients ?? [],
       steps,
       doneAt: recipe.doneAt?.toISOString() ?? null,
+      isFavorite: recipe.isFavorite,
       createdAt: recipe.createdAt.toISOString(),
       updatedAt: recipe.updatedAt.toISOString(),
       ingredients: recipe.RecipeIngredient.map((ingredient) => ({

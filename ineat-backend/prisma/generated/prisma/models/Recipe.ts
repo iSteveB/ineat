@@ -52,6 +52,7 @@ export type RecipeMinAggregateOutputType = {
   type: $Enums.RecipeType | null
   source: $Enums.RecipeSource | null
   doneAt: Date | null
+  isFavorite: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,6 +71,7 @@ export type RecipeMaxAggregateOutputType = {
   type: $Enums.RecipeType | null
   source: $Enums.RecipeSource | null
   doneAt: Date | null
+  isFavorite: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -91,6 +93,7 @@ export type RecipeCountAggregateOutputType = {
   missingIngredients: number
   steps: number
   doneAt: number
+  isFavorite: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -123,6 +126,7 @@ export type RecipeMinAggregateInputType = {
   type?: true
   source?: true
   doneAt?: true
+  isFavorite?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -141,6 +145,7 @@ export type RecipeMaxAggregateInputType = {
   type?: true
   source?: true
   doneAt?: true
+  isFavorite?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -162,6 +167,7 @@ export type RecipeCountAggregateInputType = {
   missingIngredients?: true
   steps?: true
   doneAt?: true
+  isFavorite?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -270,6 +276,7 @@ export type RecipeGroupByOutputType = {
   missingIngredients: runtime.JsonValue
   steps: runtime.JsonValue
   doneAt: Date | null
+  isFavorite: boolean
   createdAt: Date
   updatedAt: Date
   _count: RecipeCountAggregateOutputType | null
@@ -314,6 +321,7 @@ export type RecipeWhereInput = {
   missingIngredients?: Prisma.JsonFilter<"Recipe">
   steps?: Prisma.JsonFilter<"Recipe">
   doneAt?: Prisma.DateTimeNullableFilter<"Recipe"> | Date | string | null
+  isFavorite?: Prisma.BoolFilter<"Recipe"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientListRelationFilter
@@ -337,6 +345,7 @@ export type RecipeOrderByWithRelationInput = {
   missingIngredients?: Prisma.SortOrder
   steps?: Prisma.SortOrder
   doneAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   RecipeIngredient?: Prisma.RecipeIngredientOrderByRelationAggregateInput
@@ -363,6 +372,7 @@ export type RecipeWhereUniqueInput = Prisma.AtLeast<{
   missingIngredients?: Prisma.JsonFilter<"Recipe">
   steps?: Prisma.JsonFilter<"Recipe">
   doneAt?: Prisma.DateTimeNullableFilter<"Recipe"> | Date | string | null
+  isFavorite?: Prisma.BoolFilter<"Recipe"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientListRelationFilter
@@ -386,6 +396,7 @@ export type RecipeOrderByWithAggregationInput = {
   missingIngredients?: Prisma.SortOrder
   steps?: Prisma.SortOrder
   doneAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RecipeCountOrderByAggregateInput
@@ -415,6 +426,7 @@ export type RecipeScalarWhereWithAggregatesInput = {
   missingIngredients?: Prisma.JsonWithAggregatesFilter<"Recipe">
   steps?: Prisma.JsonWithAggregatesFilter<"Recipe">
   doneAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Recipe"> | Date | string | null
+  isFavorite?: Prisma.BoolWithAggregatesFilter<"Recipe"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Recipe"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Recipe"> | Date | string
 }
@@ -435,6 +447,7 @@ export type RecipeCreateInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
   RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutRecipeInput
@@ -458,6 +471,7 @@ export type RecipeUncheckedCreateInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutRecipeInput
@@ -479,6 +493,7 @@ export type RecipeUpdateInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutRecipeNestedInput
@@ -502,6 +517,7 @@ export type RecipeUncheckedUpdateInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutRecipeNestedInput
@@ -524,6 +540,7 @@ export type RecipeCreateManyInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
 }
@@ -544,6 +561,7 @@ export type RecipeUpdateManyMutationInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -565,6 +583,7 @@ export type RecipeUncheckedUpdateManyInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -586,6 +605,7 @@ export type RecipeCountOrderByAggregateInput = {
   missingIngredients?: Prisma.SortOrder
   steps?: Prisma.SortOrder
   doneAt?: Prisma.SortOrder
+  isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -610,6 +630,7 @@ export type RecipeMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
   doneAt?: Prisma.SortOrder
+  isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -628,6 +649,7 @@ export type RecipeMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
   doneAt?: Prisma.SortOrder
+  isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -737,6 +759,7 @@ export type RecipeCreateWithoutRecipeIngredientInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
   User?: Prisma.UserCreateNestedOneWithoutRecipeInput
@@ -759,6 +782,7 @@ export type RecipeUncheckedCreateWithoutRecipeIngredientInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
 }
@@ -795,6 +819,7 @@ export type RecipeUpdateWithoutRecipeIngredientInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   User?: Prisma.UserUpdateOneWithoutRecipeNestedInput
@@ -817,6 +842,7 @@ export type RecipeUncheckedUpdateWithoutRecipeIngredientInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -837,6 +863,7 @@ export type RecipeCreateWithoutUserInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
   RecipeIngredient?: Prisma.RecipeIngredientCreateNestedManyWithoutRecipeInput
@@ -858,6 +885,7 @@ export type RecipeUncheckedCreateWithoutUserInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedCreateNestedManyWithoutRecipeInput
@@ -909,6 +937,7 @@ export type RecipeScalarWhereInput = {
   missingIngredients?: Prisma.JsonFilter<"Recipe">
   steps?: Prisma.JsonFilter<"Recipe">
   doneAt?: Prisma.DateTimeNullableFilter<"Recipe"> | Date | string | null
+  isFavorite?: Prisma.BoolFilter<"Recipe"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
 }
@@ -929,6 +958,7 @@ export type RecipeCreateManyUserInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Date | string | null
+  isFavorite?: boolean
   createdAt?: Date | string
   updatedAt: Date | string
 }
@@ -949,6 +979,7 @@ export type RecipeUpdateWithoutUserInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientUpdateManyWithoutRecipeNestedInput
@@ -970,6 +1001,7 @@ export type RecipeUncheckedUpdateWithoutUserInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientUncheckedUpdateManyWithoutRecipeNestedInput
@@ -991,6 +1023,7 @@ export type RecipeUncheckedUpdateManyWithoutUserInput = {
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   doneAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1043,6 +1076,7 @@ export type RecipeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   missingIngredients?: boolean
   steps?: boolean
   doneAt?: boolean
+  isFavorite?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   RecipeIngredient?: boolean | Prisma.Recipe$RecipeIngredientArgs<ExtArgs>
@@ -1067,6 +1101,7 @@ export type RecipeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   missingIngredients?: boolean
   steps?: boolean
   doneAt?: boolean
+  isFavorite?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   User?: boolean | Prisma.Recipe$UserArgs<ExtArgs>
@@ -1089,6 +1124,7 @@ export type RecipeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   missingIngredients?: boolean
   steps?: boolean
   doneAt?: boolean
+  isFavorite?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   User?: boolean | Prisma.Recipe$UserArgs<ExtArgs>
@@ -1111,11 +1147,12 @@ export type RecipeSelectScalar = {
   missingIngredients?: boolean
   steps?: boolean
   doneAt?: boolean
+  isFavorite?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RecipeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "instructions" | "preparationTime" | "cookingTime" | "servings" | "difficulty" | "imageUrl" | "type" | "source" | "basicIngredients" | "missingIngredients" | "steps" | "doneAt" | "createdAt" | "updatedAt", ExtArgs["result"]["recipe"]>
+export type RecipeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "instructions" | "preparationTime" | "cookingTime" | "servings" | "difficulty" | "imageUrl" | "type" | "source" | "basicIngredients" | "missingIngredients" | "steps" | "doneAt" | "isFavorite" | "createdAt" | "updatedAt", ExtArgs["result"]["recipe"]>
 export type RecipeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   RecipeIngredient?: boolean | Prisma.Recipe$RecipeIngredientArgs<ExtArgs>
   User?: boolean | Prisma.Recipe$UserArgs<ExtArgs>
@@ -1151,6 +1188,7 @@ export type $RecipePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     missingIngredients: runtime.JsonValue
     steps: runtime.JsonValue
     doneAt: Date | null
+    isFavorite: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["recipe"]>
@@ -1594,6 +1632,7 @@ export interface RecipeFieldRefs {
   readonly missingIngredients: Prisma.FieldRef<"Recipe", 'Json'>
   readonly steps: Prisma.FieldRef<"Recipe", 'Json'>
   readonly doneAt: Prisma.FieldRef<"Recipe", 'DateTime'>
+  readonly isFavorite: Prisma.FieldRef<"Recipe", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Recipe", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Recipe", 'DateTime'>
 }

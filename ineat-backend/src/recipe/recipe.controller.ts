@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -19,6 +20,7 @@ import {
   CompleteRecipeDto,
   GenerateRecipesDto,
   SaveGeneratedRecipeDto,
+  UpdateRecipeFavoriteDto,
 } from './dto/generate-recipes.dto';
 import { RecipeService } from './services/recipe.service';
 
@@ -65,6 +67,16 @@ export class RecipeController {
   @Get(':id')
   getSavedRecipe(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.recipeService.getSavedRecipe(req.user.id, id);
+  }
+
+  @Patch(':id/favorite')
+  updateFavorite(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    dto: UpdateRecipeFavoriteDto,
+  ) {
+    return this.recipeService.updateFavorite(req.user.id, id, dto.isFavorite);
   }
 
   @Get(':id/completion-preview')

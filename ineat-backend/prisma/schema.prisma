@@ -353,6 +353,7 @@ model Recipe {
   missingIngredients Json               @default("[]")
   steps              Json               @default("[]")
   doneAt             DateTime?
+  isFavorite         Boolean            @default(false)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime
   RecipeIngredient   RecipeIngredient[]
@@ -361,6 +362,7 @@ model Recipe {
   @@index([userId])
   @@index([userId, createdAt])
   @@index([userId, type])
+  @@index([userId, isFavorite])
 }
 
 model RecipeIngredient {

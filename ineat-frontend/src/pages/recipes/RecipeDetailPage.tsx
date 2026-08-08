@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useSearch } from '@tanstack/react-router';
 import {
 	ArrowLeft,
 	CheckCircle2,
@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { FavoriteRecipeButton } from '@/components/recipes/FavoriteRecipeButton';
+import { useRecipeFavoriteMutation } from '@/hooks/useRecipeFavoriteMutation';
 import {
 	CompletionPreview,
 	recipeService,
@@ -31,6 +33,7 @@ import {
 } from '@/services/recipeService';
 import { useAuthStore } from '@/stores/authStore';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
+import { RecipeFilter } from './recipeFilters';
 
 type RecipeDetailPageProps = {
 	recipeId: string;
@@ -44,6 +47,8 @@ const difficultyLabels = {
 
 export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	const queryClient = useQueryClient();
+	const search = useSearch({ strict: false }) as { filter?: RecipeFilter };
+	const activeFilter = search.filter ?? 'all';
 	const user = useAuthStore((state) => state.user);
 	const canUseRecipes = Boolean(user?.capabilities.canUseRecipes);
 	const [completionPreview, setCompletionPreview] =
@@ -59,6 +64,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 		queryFn: () => recipeService.getSavedRecipe(recipeId),
 		enabled: canUseRecipes,
 	});
+	const favoriteMutation = useRecipeFavoriteMutation();
 
 	const previewMutation = useMutation({
 		mutationFn: recipeService.getCompletionPreview,
@@ -121,7 +127,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	if (isError || !recipe) {
 		return (
 			<div className='mx-auto max-w-3xl space-y-4 p-4'>
-				<BackButton />
+				<BackButton filter={activeFilter} />
 				<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6'>
 					<h1 className='text-lg font-semibold text-neutral-900'>
 						Recette indisponible
@@ -136,8 +142,19 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 
 	return (
 		<div className='mx-auto max-w-5xl space-y-6 p-4'>
-			<BackButton />
-			<header className='overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm'>
+			<BackButton filter={activeFilter} />
+			<header className='relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm'>
+				<FavoriteRecipeButton
+					isFavorite={recipe.isFavorite}
+					isPending={favoriteMutation.isPending}
+					onToggle={() =>
+						favoriteMutation.mutate({
+							recipeId: recipe.id,
+							isFavorite: !recipe.isFavorite,
+						})
+					}
+					className='absolute right-4 top-4 z-10 shadow-md'
+				/>
 				{recipe.imageUrl ? (
 					<img
 						src={recipe.imageUrl}
@@ -249,10 +266,10 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	);
 }
 
-function BackButton() {
+function BackButton({ filter }: { filter: RecipeFilter }) {
 	return (
 		<Button asChild variant='secondary'>
-			<Link to='/app/recipes'>
+			<Link to='/app/recipes' search={{ filter }}>
 				<ArrowLeft className='size-4' />
 				Retour
 			</Link>

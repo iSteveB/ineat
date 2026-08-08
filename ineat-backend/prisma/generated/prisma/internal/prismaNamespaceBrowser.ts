@@ -371,6 +371,7 @@ export const RecipeScalarFieldEnum = {
   missingIngredients: 'missingIngredients',
   steps: 'steps',
   doneAt: 'doneAt',
+  isFavorite: 'isFavorite',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

@@ -12,7 +12,10 @@ import {
 } from '@/services/recipeService';
 import { useAuthStore } from '@/stores/authStore';
 
+const mockSearch = vi.hoisted((): { filter: string } => ({ filter: 'all' }));
+
 vi.mock('@tanstack/react-router', () => ({
+	useSearch: () => mockSearch,
 	Link: ({
 		children,
 		to,
@@ -38,6 +41,7 @@ vi.mock('@/services/recipeService', () => ({
 		getSavedRecipe: vi.fn(),
 		getCompletionPreview: vi.fn(),
 		completeRecipe: vi.fn(),
+		updateFavorite: vi.fn(),
 	},
 }));
 
@@ -58,6 +62,7 @@ const recipe: SavedRecipe = {
 	missingIngredients: [],
 	steps: ['Cuire le riz.', 'Ajouter les petits pois.'],
 	doneAt: null,
+	isFavorite: false,
 	createdAt: '2026-06-23T08:00:00.000Z',
 	updatedAt: '2026-06-23T08:00:00.000Z',
 	ingredients: [
@@ -122,6 +127,7 @@ function renderRecipeDetail(recipeId = 'recipe-1') {
 describe('RecipeDetailPage', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockSearch.filter = 'all';
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockImplementation(
 			(selector: (state: unknown) => unknown) =>
 				selector({
@@ -209,5 +215,29 @@ describe('RecipeDetailPage', () => {
 			screen.getByText('Les recettes sont réservées Premium.')
 		).toBeInTheDocument();
 		expect(recipeService.getSavedRecipe).not.toHaveBeenCalled();
+	});
+
+	it('permet d’ajouter la recette aux favoris depuis le détail', async () => {
+		const user = userEvent.setup();
+		(recipeService.updateFavorite as ReturnType<typeof vi.fn>).mockResolvedValue({
+			...recipe,
+			isFavorite: true,
+		});
+
+		renderRecipeDetail();
+
+		await user.click(
+			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
+		);
+
+		await waitFor(() => {
+			expect(recipeService.updateFavorite).toHaveBeenCalledWith(
+				'recipe-1',
+				true
+			);
+		});
+		expect(
+			screen.getByRole('button', { name: 'Retirer des favoris' })
+		).toHaveAttribute('aria-pressed', 'true');
 	});
 });

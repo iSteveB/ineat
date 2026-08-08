@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from '@tanstack/react-router';
+import { Link, useSearch } from '@tanstack/react-router';
 import {
 	ArrowRight,
 	BookmarkPlus,
@@ -20,6 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useInventory } from '@/hooks/useInventory';
+import { FavoriteRecipeButton } from '@/components/recipes/FavoriteRecipeButton';
+import { useRecipeFavoriteMutation } from '@/hooks/useRecipeFavoriteMutation';
 import {
 	GeneratedRecipe,
 	RecipeGenerationMode,
@@ -28,6 +30,7 @@ import {
 } from '@/services/recipeService';
 import { useAuthStore } from '@/stores/authStore';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
+import { RecipeFilter } from './recipeFilters';
 
 const recipeTypes: Array<{ value: RecipeType; label: string }> = [
 	{ value: 'STARTER', label: 'Entrée' },
@@ -41,8 +44,17 @@ const difficultyLabels = {
 	HARD: 'Difficile',
 };
 
+const savedRecipeFilters: Array<{ value: RecipeFilter; label: string }> = [
+	{ value: 'all', label: 'Toutes' },
+	{ value: 'favorites', label: 'Favoris' },
+	{ value: 'pending', label: 'À faire' },
+	{ value: 'done', label: 'Déjà faites' },
+];
+
 export function RecipeSuggestionsPage() {
 	const queryClient = useQueryClient();
+	const search = useSearch({ strict: false }) as { filter?: RecipeFilter };
+	const activeFilter = search.filter ?? 'all';
 	const user = useAuthStore((state) => state.user);
 	const refreshProfile = useAuthStore((state) => state.getProfile);
 	const canUseRecipes = Boolean(user?.capabilities.canUseRecipes);
@@ -77,6 +89,19 @@ export function RecipeSuggestionsPage() {
 		queryFn: recipeService.listSavedRecipes,
 		enabled: canUseRecipes,
 	});
+	const favoriteMutation = useRecipeFavoriteMutation();
+	const filteredSavedRecipes = useMemo(() => {
+		switch (activeFilter) {
+			case 'favorites':
+				return savedRecipes.filter((recipe) => recipe.isFavorite);
+			case 'pending':
+				return savedRecipes.filter((recipe) => !recipe.doneAt);
+			case 'done':
+				return savedRecipes.filter((recipe) => Boolean(recipe.doneAt));
+			default:
+				return savedRecipes;
+		}
+	}, [activeFilter, savedRecipes]);
 
 	const generationBlockedReason = useMemo(() => {
 		if (!canGenerateAiRecipes) return 'La génération IA nécessite Premium.';
@@ -337,7 +362,7 @@ export function RecipeSuggestionsPage() {
 												saveMutation.mutate(recipe);
 											}}>
 											<BookmarkPlus className='size-4' />
-											Garder
+											Ajouter à mes recettes
 										</Button>
 										<Button
 											variant='secondary'
@@ -361,7 +386,27 @@ export function RecipeSuggestionsPage() {
 			)}
 
 			<section className='space-y-4'>
-				<h2 className='text-lg font-semibold text-neutral-900'>Mes recettes</h2>
+				<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+					<h2 className='text-lg font-semibold text-neutral-900'>Mes recettes</h2>
+					<nav
+						aria-label='Filtrer mes recettes'
+						className='flex max-w-full gap-2 overflow-x-auto pb-1'>
+						{savedRecipeFilters.map((filter) => (
+							<Button
+								key={filter.value}
+								asChild
+								size='sm'
+								variant={activeFilter === filter.value ? 'primary' : 'secondary'}>
+								<Link
+									to='/app/recipes'
+									search={{ filter: filter.value }}
+									aria-current={activeFilter === filter.value ? 'page' : undefined}>
+									{filter.label}
+								</Link>
+							</Button>
+						))}
+					</nav>
+				</div>
 				{isLoadingSavedRecipes ? (
 					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-600'>
 						Chargement des recettes...
@@ -374,12 +419,32 @@ export function RecipeSuggestionsPage() {
 					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-600'>
 						Aucune recette gardée pour l’instant.
 					</div>
+				) : filteredSavedRecipes.length === 0 ? (
+					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-600'>
+						{activeFilter === 'favorites'
+							? 'Vous n’avez pas encore de recette favorite.'
+							: 'Aucune recette ne correspond à ce filtre.'}
+					</div>
 				) : (
 					<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-						{savedRecipes.map((recipe) => (
+						{filteredSavedRecipes.map((recipe) => (
 							<article
 								key={recipe.id}
-								className='overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm'>
+								className='relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm'>
+								<FavoriteRecipeButton
+									isFavorite={recipe.isFavorite}
+									isPending={
+										favoriteMutation.isPending &&
+										favoriteMutation.variables?.recipeId === recipe.id
+									}
+									onToggle={() =>
+										favoriteMutation.mutate({
+											recipeId: recipe.id,
+											isFavorite: !recipe.isFavorite,
+										})
+									}
+									className='absolute right-3 top-3 z-10 shadow-md'
+								/>
 								{recipe.imageUrl && (
 									<img
 										src={recipe.imageUrl}
@@ -402,7 +467,8 @@ export function RecipeSuggestionsPage() {
 									<Button asChild className='mt-4 w-full'>
 										<Link
 											to='/app/recipes/$recipeId'
-											params={{ recipeId: recipe.id }}>
+											params={{ recipeId: recipe.id }}
+											search={{ filter: activeFilter }}>
 											Ouvrir
 											<ArrowRight className='size-4' />
 										</Link>

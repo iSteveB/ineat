@@ -74,3 +74,8 @@ export class CompleteRecipeDto {
   @IsBoolean()
   confirm: boolean;
 }
+
+export class UpdateRecipeFavoriteDto {
+  @IsBoolean()
+  isFavorite: boolean;
+}

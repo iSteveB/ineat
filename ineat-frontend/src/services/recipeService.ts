@@ -45,6 +45,7 @@ export type SavedRecipe = {
 	missingIngredients: string[];
 	steps: string[];
 	doneAt?: string | null;
+	isFavorite: boolean;
 	createdAt: string;
 	updatedAt: string;
 	ingredients: Array<{
@@ -116,6 +117,15 @@ export const recipeService = {
 	async getSavedRecipe(recipeId: string) {
 		const response = await apiClient.get<ApiSuccess<SavedRecipe>>(
 			`/recipes/${recipeId}`
+		);
+
+		return response.data;
+	},
+
+	async updateFavorite(recipeId: string, isFavorite: boolean) {
+		const response = await apiClient.patch<ApiSuccess<SavedRecipe>>(
+			`/recipes/${recipeId}/favorite`,
+			{ isFavorite }
 		);
 
 		return response.data;
