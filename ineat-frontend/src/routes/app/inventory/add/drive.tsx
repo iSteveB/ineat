@@ -1,6 +1,7 @@
-import { ChangeEvent, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
 import { toast } from 'sonner';
 import {
 	ArrowLeft,
@@ -11,6 +12,7 @@ import {
 	Loader2,
 	Package,
 	Save,
+	RotateCcw,
 	Upload,
 	X
 } from 'lucide-react';
@@ -41,11 +43,39 @@ import { useInventoryActions } from '@/stores/inventoryStore';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
+	validateSearch: z.object({
+		invoiceId: z.string().uuid().optional()
+	}),
 	component: DriveInvoiceImportPage
 });
 
-type FlowStep = 'upload' | 'review' | 'done';
+type FlowStep = 'upload' | 'processing' | 'review' | 'done';
 const NO_STORAGE_VALUE = '__none__';
+
+const TERMINAL_PROCESSING_STAGES = new Set([
+	'READY_FOR_REVIEW',
+	'FAILED',
+	'VALIDATED'
+]);
+
+const PROCESSING_STEPS = [
+	{ stage: 'UPLOADED', label: 'Fichier reçu' },
+	{ stage: 'EXTRACTING', label: 'Lecture' },
+	{ stage: 'ANALYZING', label: 'Analyse des articles' },
+	{ stage: 'ENRICHING', label: 'Enrichissement' },
+	{ stage: 'READY_FOR_REVIEW', label: 'Prête à vérifier' }
+] as const;
+
+const PROCESSING_STAGE_ORDER: Record<string, number> = {
+	UPLOADED: 0,
+	QUEUED: 0,
+	EXTRACTING: 1,
+	ANALYZING: 2,
+	NORMALIZING: 2,
+	ENRICHING: 3,
+	READY_FOR_REVIEW: 4,
+	VALIDATED: 4
+};
 
 type InvoiceItemDraft = Pick<
 	InvoiceItem,
@@ -162,6 +192,7 @@ const formatProductScore = (score?: string | null): string =>
 
 function DriveInvoiceImportPage() {
 	const navigate = useNavigate();
+	const { invoiceId } = Route.useSearch();
 	const queryClient = useQueryClient();
 	const { user, getProfile } = useAuthStore();
 	const { fetchInventoryItems } = useInventoryActions();
@@ -175,6 +206,60 @@ function DriveInvoiceImportPage() {
 	const [pendingInvoiceFile, setPendingInvoiceFile] = useState<File | null>(
 		null
 	);
+
+	const invoiceQuery = useQuery({
+		queryKey: ['invoice', invoiceId],
+		queryFn: () => invoiceService.getInvoice(invoiceId!),
+		enabled: Boolean(invoiceId),
+		refetchInterval: (query) => {
+			const stage = query.state.data?.processingStage;
+			return stage && TERMINAL_PROCESSING_STAGES.has(stage) ? false : 2000;
+		},
+		refetchIntervalInBackground: true,
+		retry: 3
+	});
+
+	useEffect(() => {
+		const restoredInvoice = invoiceQuery.data;
+
+		if (!restoredInvoice) {
+			if (invoiceId) {
+				setStep('processing');
+			}
+			return;
+		}
+
+		setInvoice(restoredInvoice);
+
+		if (restoredInvoice.processingStage === 'FAILED') {
+			setStep('processing');
+			return;
+		}
+
+		if (restoredInvoice.processingStage === 'VALIDATED') {
+			setStep('done');
+			return;
+		}
+
+		if (restoredInvoice.processingStage !== 'READY_FOR_REVIEW') {
+			setStep('processing');
+			return;
+		}
+
+		setDrafts(
+			Object.fromEntries(
+				restoredInvoice.items.map((item) => [item.id, createDraft(item)])
+			)
+		);
+		setSelectedIds(
+			new Set(
+				restoredInvoice.items
+					.filter((item) => !item.validated)
+					.map((item) => item.id)
+			)
+		);
+		setStep('review');
+	}, [invoiceId, invoiceQuery.data]);
 
 	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
 		queryKey: ['categories'],
@@ -198,21 +283,14 @@ function DriveInvoiceImportPage() {
 		mutationFn: invoiceService.importDriveInvoice,
 		onSuccess: (importedInvoice) => {
 			setInvoice(importedInvoice);
-			setDrafts(
-				Object.fromEntries(
-					importedInvoice.items.map((item) => [item.id, createDraft(item)])
-				)
-			);
-			setSelectedIds(
-				new Set(
-					importedInvoice.items
-						.filter((item) => !item.validated)
-						.map((item) => item.id)
-				)
-			);
 			setExpandedItemId(null);
-			setStep('review');
-			toast.success('Facture analysée');
+			setStep('processing');
+			void navigate({
+				to: '/app/inventory/add/drive',
+				search: { invoiceId: importedInvoice.id },
+				replace: true
+			});
+			toast.success('Facture reçue, analyse lancée');
 			void getProfile().catch(() => undefined);
 		},
 		onError: (error: Error) => {
@@ -276,6 +354,23 @@ function DriveInvoiceImportPage() {
 			toast.success('Produits ajoutés');
 		},
 		onError: (error: Error) => toast.error(error.message)
+	});
+
+	const retryMutation = useMutation({
+		mutationFn: () => {
+			if (!invoice) {
+				throw new Error('Facture introuvable');
+			}
+			return invoiceService.retryInvoice(invoice.id);
+		},
+		onSuccess: (retriedInvoice) => {
+			setInvoice(retriedInvoice);
+			queryClient.setQueryData(['invoice', retriedInvoice.id], retriedInvoice);
+			toast.success('Nouvelle tentative lancée');
+		},
+		onError: () => {
+			toast.error("L’analyse ne peut pas être relancée pour le moment.");
+		}
 	});
 
 	const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -453,7 +548,7 @@ function DriveInvoiceImportPage() {
 			</div>
 
 			<main className="mx-auto max-w-6xl px-4 py-6">
-				{!canImportDrive && (
+				{!canImportDrive && !invoiceId && (
 					<Card className="border-neutral-200 bg-neutral-50">
 						<CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
 							<div>
@@ -549,7 +644,18 @@ function DriveInvoiceImportPage() {
 					</Card>
 				)}
 
-				{canImportDrive && step === 'review' && invoice && (
+				{step === 'processing' && (
+					<InvoiceProcessingCard
+						invoice={invoice}
+						isLoading={invoiceQuery.isLoading}
+						isFetchError={invoiceQuery.isError}
+						onRefresh={() => void invoiceQuery.refetch()}
+						onRetry={() => retryMutation.mutate()}
+						isRetrying={retryMutation.isPending}
+					/>
+				)}
+
+				{step === 'review' && invoice && (
 					<div className="space-y-4">
 						<Card className="border-neutral-200 bg-neutral-50">
 							<CardContent className="grid gap-4 p-4 sm:grid-cols-4">
@@ -1029,7 +1135,7 @@ function DriveInvoiceImportPage() {
 					</div>
 				)}
 
-				{step === 'done' && result && (
+				{step === 'done' && (result || invoice) && (
 					<Card className="border-neutral-200 bg-neutral-50">
 						<CardHeader>
 							<CardTitle className="flex items-center gap-2 text-neutral-300">
@@ -1038,7 +1144,7 @@ function DriveInvoiceImportPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-5">
-							<div className="grid gap-3 sm:grid-cols-4">
+							{result && <div className="grid gap-3 sm:grid-cols-4">
 								<SummaryCell
 									label="Produits"
 									value={String(result.inventoryItemCount)}
@@ -1055,7 +1161,7 @@ function DriveInvoiceImportPage() {
 									label="Budget"
 									value={formatCurrency(result.totalBudgetAmount)}
 								/>
-							</div>
+							</div>}
 							<div className="flex flex-col gap-3 sm:flex-row">
 								<Button onClick={() => navigate({ to: '/app/inventory' })}>
 									Retour à l’inventaire
@@ -1063,6 +1169,11 @@ function DriveInvoiceImportPage() {
 								<Button
 									variant="outline"
 									onClick={() => {
+										void navigate({
+											to: '/app/inventory/add/drive',
+											search: {},
+											replace: true
+										});
 										setStep('upload');
 										setInvoice(null);
 										setResult(null);
@@ -1089,5 +1200,119 @@ function SummaryCell({ label, value }: { label: string; value: string }) {
 			<p className="text-xs uppercase text-neutral-200">{label}</p>
 			<p className="mt-1 text-lg font-semibold text-neutral-300">{value}</p>
 		</div>
+	);
+}
+
+function InvoiceProcessingCard({
+	invoice,
+	isLoading,
+	isFetchError,
+	onRefresh,
+	onRetry,
+	isRetrying
+}: {
+	invoice: Invoice | null;
+	isLoading: boolean;
+	isFetchError: boolean;
+	onRefresh: () => void;
+	onRetry: () => void;
+	isRetrying: boolean;
+}) {
+	const stage = invoice?.processingStage;
+	const isFailed = stage === 'FAILED';
+	const currentStageIndex = stage ? (PROCESSING_STAGE_ORDER[stage] ?? 0) : 0;
+	const progress = invoice?.processingProgress ?? 0;
+
+	return (
+		<Card className="border-neutral-200 bg-neutral-50">
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2 text-neutral-300">
+					{isFailed ? (
+						<AlertTriangle className="size-5 text-warning-50" />
+					) : (
+						<Loader2 className="size-5 animate-spin text-primary-50" />
+					)}
+					{isFailed ? 'Analyse interrompue' : 'Analyse de la facture'}
+				</CardTitle>
+			</CardHeader>
+			<CardContent className="space-y-6">
+				<div aria-live="polite" role="status">
+					<p className="font-medium text-neutral-300">
+						{isFailed
+							? "La facture n’a pas pu être analysée. Vous pouvez relancer un import."
+							: isFetchError
+								? 'La mise à jour est momentanément indisponible. Le traitement continue en arrière-plan.'
+								: isLoading
+									? 'Récupération de la progression…'
+									: 'Vous pouvez quitter cette page : le traitement continuera.'}
+					</p>
+					{!isFailed && (
+						<p className="mt-1 text-sm text-neutral-200">
+							Progression {progress} %
+						</p>
+					)}
+				</div>
+
+				<div
+					className="h-2 overflow-hidden rounded-full bg-neutral-100"
+					role="progressbar"
+					aria-label="Progression de l’analyse"
+					aria-valuemin={0}
+					aria-valuemax={100}
+					aria-valuenow={progress}
+				>
+					<div
+						className="h-full rounded-full bg-primary-50 transition-[width] duration-500"
+						style={{ width: `${progress}%` }}
+					/>
+				</div>
+
+				<ol className="grid gap-3 sm:grid-cols-5">
+					{PROCESSING_STEPS.map((processingStep, index) => {
+						const isComplete = !isFailed && index < currentStageIndex;
+						const isCurrent = !isFailed && index === currentStageIndex;
+
+						return (
+							<li
+								key={processingStep.stage}
+								className={`rounded-lg border p-3 text-sm ${
+									isCurrent
+										? 'border-primary-50 bg-white text-neutral-300'
+										: 'border-neutral-200 text-neutral-200'
+								}`}
+								aria-current={isCurrent ? 'step' : undefined}
+							>
+								<span className="mb-2 flex size-6 items-center justify-center rounded-full border border-current">
+									{isComplete ? <Check className="size-4" /> : index + 1}
+								</span>
+								{processingStep.label}
+							</li>
+						);
+					})}
+				</ol>
+
+				<div className="flex flex-col gap-3 sm:flex-row">
+					{isFetchError && !isFailed && (
+						<Button type="button" variant="outline" onClick={onRefresh}>
+							<RotateCcw className="mr-2 size-4" />
+							Actualiser
+						</Button>
+					)}
+					{isFailed && (
+						<Button type="button" onClick={onRetry} disabled={isRetrying}>
+							{isRetrying ? (
+								<Loader2 className="mr-2 size-4 animate-spin" />
+							) : (
+								<RotateCcw className="mr-2 size-4" />
+							)}
+							Relancer l’analyse
+						</Button>
+					)}
+					<Button asChild type="button" variant="outline">
+						<Link to="/app/inventory">Quitter</Link>
+					</Button>
+				</div>
+			</CardContent>
+		</Card>
 	);
 }

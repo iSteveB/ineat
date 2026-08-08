@@ -243,7 +243,7 @@ export class InvoiceService {
 
   private invoiceProcessingMode(): 'sync' | 'bullmq' {
     return this.config
-      .get<string>('INVOICE_PROCESSING_MODE', 'sync')
+      .get<string>('INVOICE_PROCESSING_MODE', 'bullmq')
       .trim()
       .toLowerCase() === 'bullmq'
       ? 'bullmq'
@@ -277,6 +277,64 @@ export class InvoiceService {
     }
 
     return this.formatInvoice(invoice);
+  }
+
+  async retryInvoiceForUser(userId: string, invoiceId: string) {
+    const invoice = await this.prisma.invoice.findFirst({
+      where: { id: invoiceId, userId },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException('Facture non trouvée');
+    }
+
+    if (invoice.processingStage !== InvoiceProcessingStage.FAILED) {
+      throw new BadRequestException(
+        'Seule une analyse interrompue peut être relancée',
+      );
+    }
+
+    const attempt = invoice.processingAttempt + 1;
+
+    await this.invoiceProcessingStateService.transition(
+      invoice.id,
+      InvoiceProcessingStage.QUEUED,
+      { attempt },
+    );
+    await this.prisma.invoice.update({
+      where: { id: invoice.id },
+      data: {
+        status: InvoiceStatus.PROCESSING,
+        errorMessage: null,
+        updatedAt: new Date(),
+      },
+    });
+
+    try {
+      await this.queues.add(
+        QUEUE_NAMES.invoiceAnalysis,
+        'analyze',
+        { invoiceId: invoice.id, userId },
+        { jobId: `${invoice.id}:attempt:${attempt}` },
+      );
+    } catch (error) {
+      await this.invoiceProcessingStateService.transition(
+        invoice.id,
+        InvoiceProcessingStage.FAILED,
+        { attempt, errorCode: 'QUEUE_UNAVAILABLE' },
+      );
+      await this.prisma.invoice.update({
+        where: { id: invoice.id },
+        data: {
+          status: InvoiceStatus.FAILED,
+          errorMessage: "La facture n'a pas pu être relancée",
+          updatedAt: new Date(),
+        },
+      });
+      throw error;
+    }
+
+    return this.getInvoiceForUser(userId, invoice.id);
   }
 
   async updateInvoiceItemForUser(

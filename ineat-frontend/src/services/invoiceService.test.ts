@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
 
 import {
-	INVOICE_IMPORT_TIMEOUT_MS,
 	INVOICE_MAX_FILE_SIZE_BYTES,
 	invoiceService,
 } from './invoiceService';
@@ -70,34 +69,20 @@ describe('invoiceService', () => {
 		expect(result.id).toBe(invoice.id);
 	});
 
-	it("utilise un timeout long pour laisser l'analyse OpenAI répondre", async () => {
-		const setTimeoutSpy = vi.spyOn(global, 'setTimeout');
-		const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-
+	it("relance l'analyse d'une facture interrompue", async () => {
 		server.use(
-			http.post(`${API_URL}/invoices/drive-import`, () =>
+			http.post(`${API_URL}/invoices/${invoice.id}/retry`, () =>
 				HttpResponse.json({
-					success: true,
-					data: invoice,
-					message: 'Facture importée',
+					...invoice,
+					status: 'PROCESSING',
+					processingStage: 'QUEUED',
 				})
 			)
 		);
 
-		const file = new File(['%PDF-1.4'], 'facture.pdf', {
-			type: 'application/pdf',
-		});
+		const result = await invoiceService.retryInvoice(invoice.id);
 
-		await invoiceService.importDriveInvoice(file);
-
-		expect(setTimeoutSpy).toHaveBeenCalledWith(
-			expect.any(Function),
-			INVOICE_IMPORT_TIMEOUT_MS
-		);
-		expect(clearTimeoutSpy).toHaveBeenCalled();
-
-		setTimeoutSpy.mockRestore();
-		clearTimeoutSpy.mockRestore();
+		expect(result.processingStage).toBe('QUEUED');
 	});
 
 	it('refuse côté client les fichiers non PDF', async () => {

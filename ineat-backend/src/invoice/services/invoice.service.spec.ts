@@ -90,7 +90,9 @@ describe('InvoiceService', () => {
   };
 
   const config = {
-    get: jest.fn((_key: string, fallback?: unknown) => fallback),
+    get: jest.fn((key: string, fallback?: unknown) =>
+      key === 'INVOICE_PROCESSING_MODE' ? 'sync' : fallback,
+    ),
   };
 
   let service: InvoiceService;
@@ -251,8 +253,8 @@ describe('InvoiceService', () => {
     );
     invoiceProcessingStateService.transition.mockResolvedValue({});
     queues.add.mockResolvedValue({});
-    config.get.mockImplementation(
-      (_key: string, fallback?: unknown) => fallback,
+    config.get.mockImplementation((key: string, fallback?: unknown) =>
+      key === 'INVOICE_PROCESSING_MODE' ? 'sync' : fallback,
     );
     openFoodFactsInvoiceEnrichmentService.enrichItems.mockImplementation(
       async (items) =>
@@ -476,6 +478,39 @@ describe('InvoiceService', () => {
         },
       }),
     );
+  });
+
+  it('relance une facture en échec avec un nouvel identifiant de job', async () => {
+    prisma.invoice.findFirst
+      .mockResolvedValueOnce({
+        ...createdInvoice,
+        status: InvoiceStatus.FAILED,
+        processingStage: InvoiceProcessingStage.FAILED,
+        processingAttempt: 2,
+      })
+      .mockResolvedValueOnce(completedInvoice);
+
+    await service.retryInvoiceForUser('user-1', 'invoice-1');
+
+    expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.QUEUED,
+      { attempt: 3 },
+    );
+    expect(queues.add).toHaveBeenCalledWith(
+      'invoice-analysis',
+      'analyze',
+      { invoiceId: 'invoice-1', userId: 'user-1' },
+      { jobId: 'invoice-1:attempt:3' },
+    );
+  });
+
+  it("refuse de relancer une facture qui n'est pas en échec", async () => {
+    await expect(
+      service.retryInvoiceForUser('user-1', 'invoice-1'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(queues.add).not.toHaveBeenCalled();
   });
 
   it("refuse la validation d'une facture appartenant à un autre utilisateur", async () => {

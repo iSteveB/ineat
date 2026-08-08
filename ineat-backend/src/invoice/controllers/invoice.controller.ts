@@ -149,6 +149,22 @@ export class InvoiceController {
     return this.invoiceService.getInvoiceForUser(req.user.id, invoiceId);
   }
 
+  @Post(':id/retry')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @ApiOperation({ summary: "Relancer l'analyse interrompue d'une facture" })
+  @ApiParam({ name: 'id', description: 'ID de la facture' })
+  @ApiResponse({
+    status: HttpStatus.ACCEPTED,
+    description: 'Nouvelle tentative ajoutée à la file',
+    type: InvoiceResponseDto,
+  })
+  async retryInvoice(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') invoiceId: string,
+  ): Promise<InvoiceResponseDto> {
+    return this.invoiceService.retryInvoiceForUser(req.user.id, invoiceId);
+  }
+
   @Patch(':id/items/:itemId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
