@@ -2,8 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   AnalyzedInvoice,
-  InvoiceAnalysisProvider,
+  ContractualInvoiceAnalysisProvider,
 } from './invoice-analysis-provider';
+import { InvoiceDocumentExtraction } from './invoice-analysis-contracts';
 import {
   KNOWN_INVOICE_CATEGORY_SLUGS,
   OpenAIExtractedInvoicePayload,
@@ -127,8 +128,17 @@ const INVOICE_ANALYSIS_PROMPT = [
   'Si une information est absente ou incertaine, utilise null et baisse la confidence.',
 ].join(' ');
 
+export const OPENAI_INVOICE_VERSIONS = {
+  pipeline: 'invoice-analysis-v1',
+  prompt: 'drive-invoice-fr-v3',
+  schema: 'drive-invoice-v3',
+  normalizer: 'openai-invoice-normalizer-v2',
+} as const;
+
 @Injectable()
-export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
+export class OpenAIInvoiceAnalysisProvider
+  implements ContractualInvoiceAnalysisProvider<OpenAIExtractedInvoicePayload>
+{
   readonly providerName = 'openai';
 
   constructor(private readonly configService: ConfigService) {}
@@ -137,6 +147,14 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
     pdfUrl: string,
     pdfBuffer?: Buffer,
   ): Promise<AnalyzedInvoice> {
+    const extraction = await this.extractDocument(pdfUrl, pdfBuffer);
+    return this.interpretDocument(extraction, pdfUrl);
+  }
+
+  async extractDocument(
+    pdfUrl: string,
+    pdfBuffer?: Buffer,
+  ): Promise<InvoiceDocumentExtraction<OpenAIExtractedInvoicePayload>> {
     const apiKey = this.configService.get<string>('OPENAI_API_KEY');
 
     if (!apiKey) {
@@ -187,11 +205,24 @@ export class OpenAIInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
     const outputText = extractResponseOutputText(responseBody);
     const parsedPayload = parseOpenAIPayload(outputText);
 
-    return normalizeOpenAIInvoiceAnalysis({
+    return {
+      provider: this.providerName,
+      confidence: parsedPayload.confidence,
+      pages: [],
       payload: parsedPayload,
+      versions: { ...OPENAI_INVOICE_VERSIONS, model },
+    };
+  }
+
+  interpretDocument(
+    extraction: InvoiceDocumentExtraction<OpenAIExtractedInvoicePayload>,
+    pdfUrl: string,
+  ): AnalyzedInvoice {
+    return normalizeOpenAIInvoiceAnalysis({
+      payload: extraction.payload,
       pdfUrl,
-      model,
-      providerResponse: responseBody,
+      model: extraction.versions.model,
+      versions: extraction.versions,
     });
   }
 }

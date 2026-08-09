@@ -3,6 +3,7 @@ import {
   AnalyzedInvoice,
   AnalyzedInvoiceItem,
 } from './invoice-analysis-provider';
+import { InvoiceAnalysisVersions } from './invoice-analysis-contracts';
 import {
   INVOICE_CATEGORY_SLUGS,
   normalizeInvoiceCategory,
@@ -57,11 +58,13 @@ export function normalizeOpenAIInvoiceAnalysis({
   pdfUrl,
   model,
   providerResponse,
+  versions,
 }: {
   payload: OpenAIExtractedInvoicePayload;
   pdfUrl: string;
   model: string;
-  providerResponse: unknown;
+  providerResponse?: unknown;
+  versions?: InvoiceAnalysisVersions;
 }): AnalyzedInvoice {
   const items = payload.lines
     .map((line) => normalizeInvoiceLine(line))
@@ -83,12 +86,38 @@ export function normalizeOpenAIInvoiceAnalysis({
       provider: 'openai',
       model,
       pdfUrl,
-      extractionSchema: 'drive_invoice_v2',
+      versions: versions ?? {
+        pipeline: 'invoice-analysis-v1',
+        model,
+        prompt: 'drive-invoice-fr-v2',
+        schema: 'drive-invoice-v2',
+        normalizer: 'openai-invoice-normalizer-v2',
+      },
+      extractionSchema: versions?.schema ?? 'drive_invoice_v2',
       payload,
-      providerResponse,
+      providerMetadata: sanitizeProviderMetadata(providerResponse),
       normalizedItemCount: items.length,
     }),
     items,
+  };
+}
+
+function sanitizeProviderMetadata(providerResponse: unknown) {
+  const response = providerResponse as any;
+  if (!response || typeof response !== 'object') return undefined;
+
+  return {
+    id: typeof response.id === 'string' ? response.id : undefined,
+    createdAt:
+      typeof response.created_at === 'number' ? response.created_at : undefined,
+    usage:
+      response.usage && typeof response.usage === 'object'
+        ? {
+            inputTokens: response.usage.input_tokens,
+            outputTokens: response.usage.output_tokens,
+            totalTokens: response.usage.total_tokens,
+          }
+        : undefined,
   };
 }
 

@@ -1,4 +1,8 @@
 import { Prisma } from '../../../../prisma/generated/prisma/client';
+import {
+  InvoiceDocumentExtractor,
+  InvoiceInterpreter,
+} from './invoice-analysis-contracts';
 
 export type InvoiceExternalProductStatus =
   | 'SKIPPED'
@@ -67,3 +71,8 @@ export interface InvoiceAnalysisProvider {
   readonly providerName: string;
   analyzePdf(pdfUrl: string, pdfBuffer?: Buffer): Promise<AnalyzedInvoice>;
 }
+
+export interface ContractualInvoiceAnalysisProvider<TPayload = Prisma.InputJsonValue>
+  extends InvoiceAnalysisProvider,
+    InvoiceDocumentExtractor<TPayload>,
+    InvoiceInterpreter<TPayload> {}

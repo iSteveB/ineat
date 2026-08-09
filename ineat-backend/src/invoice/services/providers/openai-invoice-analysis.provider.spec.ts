@@ -97,10 +97,11 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
       payload: {
         merchantName: ' Drive Test ',
       },
-      providerResponse: {
+      providerMetadata: {
         id: 'resp_123',
       },
     });
+    expect(JSON.stringify(result.rawData)).not.toContain('providerResponse');
   });
 
   it('filtre les frais, remises globales et totaux', () => {
