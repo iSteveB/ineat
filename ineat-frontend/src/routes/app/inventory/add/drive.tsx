@@ -65,18 +65,6 @@ const TERMINAL_PROCESSING_STAGES = new Set([
 	'VALIDATED'
 ]);
 
-const PROCESSING_STEPS = [
-	{ stage: 'UPLOADED', label: 'Mise en place', detail: 'Upload' },
-	{ stage: 'EXTRACTING', label: 'Lecture de la recette', detail: 'OCR' },
-	{ stage: 'ANALYZING', label: 'Aux fourneaux', detail: 'Analyse' },
-	{
-		stage: 'ENRICHING',
-		label: 'Les bons accords',
-		detail: 'Matching & enrichissement'
-	},
-	{ stage: 'READY_FOR_REVIEW', label: 'Dressage final', detail: 'Résultats' }
-] as const;
-
 const COOKING_MESSAGES = [
 	'On prépare les ingrédients…',
 	'Découpage des oignons numériques… sans les larmes.',
@@ -87,17 +75,6 @@ const COOKING_MESSAGES = [
 
 const MINIMUM_COOKING_DURATION_MS = 4_500;
 const COOKING_MESSAGE_INTERVAL_MS = 1_100;
-
-const PROCESSING_STAGE_ORDER: Record<string, number> = {
-	UPLOADED: 0,
-	QUEUED: 0,
-	EXTRACTING: 1,
-	ANALYZING: 2,
-	NORMALIZING: 2,
-	ENRICHING: 3,
-	READY_FOR_REVIEW: 4,
-	VALIDATED: 4
-};
 
 type InvoiceItemDraft = Pick<
 	InvoiceItem,
@@ -1428,7 +1405,6 @@ function InvoiceProcessingCard({
 	const [messageIndex, setMessageIndex] = useState(0);
 	const stage = invoice?.processingStage;
 	const isFailed = stage === 'FAILED';
-	const currentStageIndex = stage ? (PROCESSING_STAGE_ORDER[stage] ?? 0) : 0;
 	const progress = isUploading ? 5 : (invoice?.processingProgress ?? 0);
 
 	useEffect(() => {
@@ -1444,22 +1420,30 @@ function InvoiceProcessingCard({
 	}, [isFailed]);
 
 	return (
-		<Card className="border-neutral-200 bg-neutral-50">
-			<CardHeader>
-				<CardTitle className="flex items-center gap-2 text-neutral-300">
-					{isFailed ? (
-						<AlertTriangle className="size-5 text-warning-50" />
-					) : (
-						<ChefHat className="size-5 text-primary-50" />
+		<Card className="overflow-hidden border-neutral-200 bg-neutral-50">
+			<CardContent className="space-y-6 p-6">
+				<div
+					className="relative flex min-h-64 flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-100 bg-white px-6 py-10 text-center"
+					aria-live="polite"
+					role="status"
+				>
+					{!isFailed && (
+						<>
+							<div className="absolute -left-12 -top-12 size-40 rounded-full bg-primary-50/5 motion-safe:animate-pulse" />
+							<div className="absolute -bottom-16 -right-10 size-48 rounded-full bg-primary-50/5 motion-safe:animate-pulse" />
+							<div className="relative mb-7 flex size-24 items-center justify-center rounded-full bg-primary-50/10 motion-safe:animate-bounce">
+								<span className="absolute inset-0 rounded-full border border-primary-50/30 motion-safe:animate-ping" />
+								<ChefHat className="relative size-12 text-primary-50" />
+							</div>
+							<p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-50">
+								Cooking progress
+							</p>
+						</>
 					)}
-					{isFailed
-						? 'Analyse interrompue'
-						: 'Cooking progress'}
-				</CardTitle>
-			</CardHeader>
-			<CardContent className="space-y-6">
-				<div aria-live="polite" role="status">
-					<p className="font-medium text-neutral-300">
+					{isFailed && (
+						<AlertTriangle className="mb-4 size-10 text-warning-50" />
+					)}
+					<p className="max-w-xl text-lg font-semibold text-neutral-300">
 						{isFailed
 							? "La facture n’a pas pu être analysée. Vous pouvez relancer un import."
 							: isUploading || (!isFetchError && !isLoading)
@@ -1468,56 +1452,42 @@ function InvoiceProcessingCard({
 								? 'La mise à jour est momentanément indisponible. Le traitement continue en arrière-plan.'
 								: isLoading
 									? 'Récupération de la progression…'
-									: 'Vous pouvez quitter cette page : le traitement continuera.'}
+									: COOKING_MESSAGES[messageIndex]}
 					</p>
 					{!isFailed && (
-						<p className="mt-1 text-sm text-neutral-200">
-							Progression {progress} %
-						</p>
+						<div className="mt-5 flex items-center gap-2" aria-hidden="true">
+							{[0, 1, 2].map((dot) => (
+								<span
+									key={dot}
+									className="size-2 rounded-full bg-primary-50 motion-safe:animate-bounce"
+									style={{ animationDelay: `${dot * 160}ms` }}
+								/>
+							))}
+						</div>
 					)}
 				</div>
 
-				<div
-					className="h-2 overflow-hidden rounded-full bg-neutral-100"
-					role="progressbar"
-					aria-label="Progression de l’analyse"
-					aria-valuemin={0}
-					aria-valuemax={100}
-					aria-valuenow={progress}
-				>
-					<div
-						className="h-full rounded-full bg-primary-50 transition-[width] duration-500"
-						style={{ width: `${progress}%` }}
-					/>
-				</div>
-
-				<ol className="grid gap-3 sm:grid-cols-5">
-					{PROCESSING_STEPS.map((processingStep, index) => {
-						const isComplete = !isFailed && index < currentStageIndex;
-						const isCurrent =
-							!isFailed && index === (isUploading ? 0 : currentStageIndex);
-
-						return (
-							<li
-								key={processingStep.stage}
-								className={`rounded-lg border p-3 text-sm ${
-									isCurrent
-										? 'border-primary-50 bg-white text-neutral-300'
-										: 'border-neutral-200 text-neutral-200'
-								}`}
-								aria-current={isCurrent ? 'step' : undefined}
-							>
-								<span className="mb-2 flex size-6 items-center justify-center rounded-full border border-current">
-									{isComplete ? <Check className="size-4" /> : index + 1}
-								</span>
-								<p className="font-medium">{processingStep.label}</p>
-								<p className="mt-1 text-xs opacity-75">
-									{processingStep.detail}
-								</p>
-							</li>
-						);
-					})}
-				</ol>
+				{!isFailed && (
+					<div className="space-y-2">
+						<div className="flex items-center justify-between text-xs text-neutral-200">
+							<span>Préparation en cours</span>
+							<span>{progress} %</span>
+						</div>
+						<div
+							className="h-2 overflow-hidden rounded-full bg-neutral-100"
+							role="progressbar"
+							aria-label="Progression de l’analyse"
+							aria-valuemin={0}
+							aria-valuemax={100}
+							aria-valuenow={progress}
+						>
+							<div
+								className="h-full rounded-full bg-primary-50 transition-[width] duration-700 ease-out"
+								style={{ width: `${progress}%` }}
+							/>
+						</div>
+					</div>
+				)}
 
 				<div className="flex flex-col gap-3 sm:flex-row">
 					{isFetchError && !isFailed && (
@@ -1537,7 +1507,7 @@ function InvoiceProcessingCard({
 						</Button>
 					)}
 					<Button asChild type="button" variant="outline">
-						<Link to="/app/inventory">Quitter</Link>
+						<Link to="/app/inventory">Annuler</Link>
 					</Button>
 				</div>
 			</CardContent>
