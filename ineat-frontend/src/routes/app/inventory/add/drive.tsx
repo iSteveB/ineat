@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -41,6 +41,12 @@ import { inventoryService } from '@/services/inventoryService';
 import { useAuthStore } from '@/stores/authStore';
 import { useInventoryActions } from '@/stores/inventoryStore';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
+import {
+	getInvoiceTotals,
+	getReliableInvoiceItemIds,
+	requiresInvoiceItemCorrection,
+	sortInvoiceItemsForReview
+} from '@/features/invoice/invoiceReview';
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
 	validateSearch: z.object({
@@ -206,6 +212,13 @@ function DriveInvoiceImportPage() {
 	const [pendingInvoiceFile, setPendingInvoiceFile] = useState<File | null>(
 		null
 	);
+	const autosaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>(
+		{}
+	);
+	const draftRevisions = useRef<Record<string, number>>({});
+	const [saveStates, setSaveStates] = useState<
+		Record<string, 'idle' | 'saving' | 'saved' | 'error'>
+	>({});
 
 	const invoiceQuery = useQuery({
 		queryKey: ['invoice', invoiceId],
@@ -278,6 +291,28 @@ function DriveInvoiceImportPage() {
 			) ?? [],
 		[invoice, selectedIds]
 	);
+	const orderedItems = useMemo(
+		() => sortInvoiceItemsForReview(invoice?.items ?? []),
+		[invoice?.items]
+	);
+	const reliableItemIds = useMemo(
+		() => getReliableInvoiceItemIds(invoice?.items ?? []),
+		[invoice?.items]
+	);
+	const reviewTotals = useMemo(
+		() =>
+			getInvoiceTotals(
+				(invoice?.items ?? []).map((item) => ({
+					...item,
+					...(drafts[item.id] ?? {})
+				})),
+				invoice?.totalAmount
+			),
+		[invoice?.items, invoice?.totalAmount, drafts]
+	);
+	const hasUnsavedChanges = Object.values(saveStates).some(
+		(state) => state === 'idle' || state === 'saving' || state === 'error'
+	);
 
 	const importMutation = useMutation({
 		mutationFn: invoiceService.importDriveInvoice,
@@ -306,43 +341,71 @@ function DriveInvoiceImportPage() {
 		}: {
 			itemId: string;
 			data: UpdateInvoiceItemInput;
+			autosave?: boolean;
+			revision?: number;
 		}) => {
 			if (!invoice) {
 				throw new Error('Facture introuvable');
 			}
 			return invoiceService.updateInvoiceItem(invoice.id, itemId, data);
 		},
-		onSuccess: (updatedItem) => {
-			setInvoice((current) =>
-				current
-					? {
-							...current,
-							items: current.items.map((item) =>
-								item.id === updatedItem.id ? updatedItem : item
-							)
-						}
-					: current
-			);
-			setDrafts((current) => ({
-				...current,
-				[updatedItem.id]: createDraft(updatedItem)
-			}));
-			toast.success('Ligne mise à jour');
+		onSuccess: (updatedItem, variables) => {
+			const isLatestRevision =
+				variables.revision === undefined ||
+				draftRevisions.current[updatedItem.id] === variables.revision;
+
+			if (isLatestRevision) {
+				setInvoice((current) =>
+					current
+						? {
+								...current,
+								items: current.items.map((item) =>
+									item.id === updatedItem.id ? updatedItem : item
+								)
+							}
+						: current
+				);
+				setDrafts((current) => ({
+					...current,
+					[updatedItem.id]: createDraft(updatedItem)
+				}));
+				setSaveStates((current) => ({
+					...current,
+					[updatedItem.id]: 'saved'
+				}));
+			}
+			if (!variables.autosave) toast.success('Ligne mise à jour');
 		},
-		onError: (error: Error) => toast.error(error.message)
+		onError: (error: Error, variables) => {
+			setSaveStates((current) => ({
+				...current,
+				[variables.itemId]: 'error'
+			}));
+			if (!variables.autosave) toast.error(error.message);
+		}
 	});
 
 	const validateMutation = useMutation({
-		mutationFn: () => {
+		mutationFn: (invoiceItemIds?: string[]) => {
 			if (!invoice) {
 				throw new Error('Facture introuvable');
 			}
 			return invoiceService.validateInvoice(
 				invoice.id,
-				selectedItems.map((item) => item.id)
+				invoiceItemIds ?? selectedItems.map((item) => item.id)
 			);
 		},
-		onSuccess: async (validationResult) => {
+		onSuccess: async (validationResult, validatedIds) => {
+			const remainingCount =
+				(invoice?.items.filter((item) => !item.validated).length ?? 0) -
+				(validatedIds?.length ?? selectedItems.length);
+
+			if (remainingCount > 0) {
+				await invoiceQuery.refetch();
+				toast.success('Lignes fiables ajoutées. Vérifiez les exceptions.');
+				return;
+			}
+
 			setResult(validationResult);
 			setStep('done');
 			await Promise.all([
@@ -355,6 +418,13 @@ function DriveInvoiceImportPage() {
 		},
 		onError: (error: Error) => toast.error(error.message)
 	});
+
+	useEffect(
+		() => () => {
+			Object.values(autosaveTimers.current).forEach(clearTimeout);
+		},
+		[]
+	);
 
 	const retryMutation = useMutation({
 		mutationFn: () => {
@@ -399,6 +469,39 @@ function DriveInvoiceImportPage() {
 		setLocalError(null);
 	};
 
+	const draftToUpdateInput = (
+		draft: InvoiceItemDraft
+	): UpdateInvoiceItemInput => ({
+		detectedName: draft.detectedName,
+		quantity: draft.quantity,
+		unitPrice: draft.unitPrice ?? undefined,
+		totalPrice: getLineTotal(draft),
+		category: draft.category ?? undefined,
+		productId: draft.productId === null ? null : (draft.productId ?? undefined),
+		expiryDate: draft.expiryDate ?? undefined,
+		storageLocation:
+			draft.storageLocation === null ? '' : (draft.storageLocation ?? undefined),
+		notes: draft.notes ?? undefined,
+		selectedEan:
+			draft.selectedEan === null ? null : (draft.selectedEan ?? undefined)
+	});
+
+	const scheduleDraftAutosave = (itemId: string, draft: InvoiceItemDraft) => {
+		clearTimeout(autosaveTimers.current[itemId]);
+		const revision = (draftRevisions.current[itemId] ?? 0) + 1;
+		draftRevisions.current[itemId] = revision;
+		setSaveStates((current) => ({ ...current, [itemId]: 'idle' }));
+		autosaveTimers.current[itemId] = setTimeout(() => {
+			setSaveStates((current) => ({ ...current, [itemId]: 'saving' }));
+			updateItemMutation.mutate({
+				itemId,
+				data: draftToUpdateInput(draft),
+				autosave: true,
+				revision
+			});
+		}, 700);
+	};
+
 	const updateDraft = (
 		itemId: string,
 		field: keyof InvoiceItemDraft,
@@ -428,6 +531,7 @@ function DriveInvoiceImportPage() {
 						? roundCurrency(nextDraft.quantity * nextDraft.unitPrice)
 						: undefined;
 			}
+			scheduleDraftAutosave(itemId, nextDraft);
 
 			return {
 				...current,
@@ -445,34 +549,40 @@ function DriveInvoiceImportPage() {
 			}
 
 			if (value === 'new') {
+				const nextDraft = {
+					...draft,
+					productId: null,
+					selectedEan: null
+				};
+				scheduleDraftAutosave(itemId, nextDraft);
 				return {
 					...current,
-					[itemId]: {
-						...draft,
-						productId: null,
-						selectedEan: null
-					}
+					[itemId]: nextDraft
 				};
 			}
 
 			if (value.startsWith('product:')) {
+				const nextDraft = {
+					...draft,
+					productId: value.replace('product:', ''),
+					selectedEan: null
+				};
+				scheduleDraftAutosave(itemId, nextDraft);
 				return {
 					...current,
-					[itemId]: {
-						...draft,
-						productId: value.replace('product:', ''),
-						selectedEan: null
-					}
+					[itemId]: nextDraft
 				};
 			}
 
+			const nextDraft = {
+				...draft,
+				productId: null,
+				selectedEan: value.replace('ean:', '')
+			};
+			scheduleDraftAutosave(itemId, nextDraft);
 			return {
 				...current,
-				[itemId]: {
-					...draft,
-					productId: null,
-					selectedEan: value.replace('ean:', '')
-				}
+				[itemId]: nextDraft
 			};
 		});
 	};
@@ -486,23 +596,7 @@ function DriveInvoiceImportPage() {
 
 		updateItemMutation.mutate({
 			itemId: item.id,
-			data: {
-				detectedName: draft.detectedName,
-				quantity: draft.quantity,
-				unitPrice: draft.unitPrice ?? undefined,
-				totalPrice: getLineTotal(draft),
-				category: draft.category ?? undefined,
-				productId:
-					draft.productId === null ? null : (draft.productId ?? undefined),
-				expiryDate: draft.expiryDate ?? undefined,
-				storageLocation:
-					draft.storageLocation === null
-						? ''
-						: (draft.storageLocation ?? undefined),
-				notes: draft.notes ?? undefined,
-				selectedEan:
-					draft.selectedEan === null ? null : (draft.selectedEan ?? undefined)
-			}
+			data: draftToUpdateInput(draft)
 		});
 	};
 
@@ -658,7 +752,7 @@ function DriveInvoiceImportPage() {
 				{step === 'review' && invoice && (
 					<div className="space-y-4">
 						<Card className="border-neutral-200 bg-neutral-50">
-							<CardContent className="grid gap-4 p-4 sm:grid-cols-4">
+							<CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5">
 								<div>
 									<p className="text-xs uppercase text-neutral-200">Marchand</p>
 									<p className="font-medium text-neutral-300">
@@ -678,47 +772,91 @@ function DriveInvoiceImportPage() {
 									</p>
 								</div>
 								<div>
-									<p className="text-xs uppercase text-neutral-200">Statut</p>
+									<p className="text-xs uppercase text-neutral-200">
+										Somme des lignes
+									</p>
 									<p className="font-medium text-neutral-300">
-										{invoice.status}
+										{formatCurrency(reviewTotals.linesTotal)}
+									</p>
+								</div>
+								<div>
+									<p className="text-xs uppercase text-neutral-200">Écart</p>
+									<p
+										className={`font-medium ${
+											reviewTotals.difference === 0
+												? 'text-success-50'
+												: 'text-warning-50'
+										}`}
+									>
+										{formatCurrency(reviewTotals.difference)}
 									</p>
 								</div>
 							</CardContent>
 						</Card>
 
 						<Card className="border-neutral-200 bg-neutral-50">
-							<CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-								<CardTitle className="text-neutral-300">
-									Lignes détectées
-								</CardTitle>
-								<Button
-									onClick={() => validateMutation.mutate()}
-									disabled={
-										selectedItems.length === 0 || validateMutation.isPending
-									}
-								>
-									{validateMutation.isPending ? (
-										<Loader2 className="mr-2 size-4 animate-spin" />
-									) : (
-										<Check className="mr-2 size-4" />
-									)}
-									Valider {selectedItems.length}
-								</Button>
+							<CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+								<div>
+									<CardTitle className="text-neutral-300">
+										Lignes à vérifier
+									</CardTitle>
+									<p className="mt-1 text-sm text-neutral-200">
+										{
+											orderedItems.filter(requiresInvoiceItemCorrection)
+												.length
+										}{' '}
+										correction(s) prioritaire(s)
+									</p>
+								</div>
+								<div className="flex flex-col gap-2 sm:flex-row">
+									<Button
+										variant="outline"
+										onClick={() => validateMutation.mutate(reliableItemIds)}
+										disabled={
+											reliableItemIds.length === 0 ||
+											validateMutation.isPending ||
+											hasUnsavedChanges
+										}
+									>
+										Valider les {reliableItemIds.length} fiables
+									</Button>
+									<Button
+										onClick={() => validateMutation.mutate(undefined)}
+										disabled={
+											selectedItems.length === 0 ||
+											validateMutation.isPending ||
+											hasUnsavedChanges
+										}
+									>
+										{validateMutation.isPending ? (
+											<Loader2 className="mr-2 size-4 animate-spin" />
+										) : (
+											<Check className="mr-2 size-4" />
+										)}
+										Valider la sélection ({selectedItems.length})
+									</Button>
+								</div>
 							</CardHeader>
 							<CardContent>
 								<div className="space-y-3">
-									{invoice.items.map((item) => {
+									{orderedItems.map((item) => {
 										const draft = drafts[item.id] ?? createDraft(item);
 										const isSelected = selectedIds.has(item.id);
 										const isExpanded = expandedItemId === item.id;
 										const suggestedEans = getSuggestedEans(item);
 										const imageUrl = getItemImageUrl(item);
 										const reviewStatus = getReviewStatus(item);
+										const needsCorrection = requiresInvoiceItemCorrection(item);
+										const saveState = saveStates[item.id] ?? 'idle';
 
 										return (
 											<div
 												key={item.id}
-												className="overflow-hidden rounded-lg border border-neutral-200 bg-white transition-shadow hover:shadow-md"
+												className={`overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md ${
+													needsCorrection
+														? 'border-warning-50'
+														: 'border-neutral-200'
+												}`}
 												data-state={isSelected ? 'selected' : undefined}
 											>
 												<div className="flex items-stretch">
@@ -773,6 +911,10 @@ function DriveInvoiceImportPage() {
 																)}
 																{reviewStatus.label}
 															</Badge>
+															<p className="mt-2 text-xs text-neutral-200">
+																Confiance {Math.round(item.confidence * 100)} %
+																{needsCorrection ? ' · correction requise' : ' · fiable'}
+															</p>
 														</div>
 														<div className="grid shrink-0 grid-cols-2 gap-2 text-right sm:min-w-44">
 															<div>
@@ -1106,7 +1248,20 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 														</div>
-														<div className="mt-4 flex justify-end">
+														<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+															<p
+																className={`text-xs ${
+																	saveState === 'error'
+																		? 'text-warning-50'
+																		: 'text-neutral-200'
+																}`}
+																role="status"
+															>
+																{saveState === 'saving' && 'Sauvegarde…'}
+																{saveState === 'saved' && 'Modifications sauvegardées'}
+																{saveState === 'error' &&
+																	'Échec de sauvegarde · vos modifications sont conservées'}
+															</p>
 															<Button
 																type="button"
 																variant="outline"
