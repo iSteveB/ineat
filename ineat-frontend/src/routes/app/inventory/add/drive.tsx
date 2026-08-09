@@ -65,10 +65,10 @@ const TERMINAL_PROCESSING_STAGES = new Set([
 ]);
 
 const PROCESSING_STEPS = [
-	{ stage: 'UPLOADED', label: 'Fichier reçu' },
-	{ stage: 'EXTRACTING', label: 'Lecture' },
-	{ stage: 'ANALYZING', label: 'Analyse des articles' },
-	{ stage: 'ENRICHING', label: 'Enrichissement' },
+	{ stage: 'UPLOADED', label: 'Upload' },
+	{ stage: 'EXTRACTING', label: 'Extraction / OCR' },
+	{ stage: 'ANALYZING', label: 'Analyse' },
+	{ stage: 'ENRICHING', label: 'Matching et enrichissement' },
 	{ stage: 'READY_FOR_REVIEW', label: 'Prête à vérifier' }
 ] as const;
 
@@ -329,6 +329,7 @@ function DriveInvoiceImportPage() {
 			void getProfile().catch(() => undefined);
 		},
 		onError: (error: Error) => {
+			setStep('upload');
 			setLocalError(error.message);
 			toast.error(error.message);
 		}
@@ -460,6 +461,7 @@ function DriveInvoiceImportPage() {
 			return;
 		}
 
+		setStep('processing');
 		importMutation.mutate(pendingInvoiceFile);
 		setPendingInvoiceFile(null);
 	};
@@ -746,6 +748,7 @@ function DriveInvoiceImportPage() {
 						onRefresh={() => void invoiceQuery.refetch()}
 						onRetry={() => retryMutation.mutate()}
 						isRetrying={retryMutation.isPending}
+						isUploading={importMutation.isPending && !invoiceId}
 					/>
 				)}
 
@@ -1364,7 +1367,8 @@ function InvoiceProcessingCard({
 	isFetchError,
 	onRefresh,
 	onRetry,
-	isRetrying
+	isRetrying,
+	isUploading
 }: {
 	invoice: Invoice | null;
 	isLoading: boolean;
@@ -1372,11 +1376,12 @@ function InvoiceProcessingCard({
 	onRefresh: () => void;
 	onRetry: () => void;
 	isRetrying: boolean;
+	isUploading: boolean;
 }) {
 	const stage = invoice?.processingStage;
 	const isFailed = stage === 'FAILED';
 	const currentStageIndex = stage ? (PROCESSING_STAGE_ORDER[stage] ?? 0) : 0;
-	const progress = invoice?.processingProgress ?? 0;
+	const progress = isUploading ? 5 : (invoice?.processingProgress ?? 0);
 
 	return (
 		<Card className="border-neutral-200 bg-neutral-50">
@@ -1387,7 +1392,11 @@ function InvoiceProcessingCard({
 					) : (
 						<Loader2 className="size-5 animate-spin text-primary-50" />
 					)}
-					{isFailed ? 'Analyse interrompue' : 'Analyse de la facture'}
+					{isFailed
+						? 'Analyse interrompue'
+						: isUploading
+							? 'Envoi de la facture'
+							: 'Analyse de la facture'}
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-6">
@@ -1395,7 +1404,9 @@ function InvoiceProcessingCard({
 					<p className="font-medium text-neutral-300">
 						{isFailed
 							? "La facture n’a pas pu être analysée. Vous pouvez relancer un import."
-							: isFetchError
+							: isUploading
+								? 'Upload sécurisé du PDF en cours…'
+								: isFetchError
 								? 'La mise à jour est momentanément indisponible. Le traitement continue en arrière-plan.'
 								: isLoading
 									? 'Récupération de la progression…'
@@ -1425,7 +1436,8 @@ function InvoiceProcessingCard({
 				<ol className="grid gap-3 sm:grid-cols-5">
 					{PROCESSING_STEPS.map((processingStep, index) => {
 						const isComplete = !isFailed && index < currentStageIndex;
-						const isCurrent = !isFailed && index === currentStageIndex;
+						const isCurrent =
+							!isFailed && index === (isUploading ? 0 : currentStageIndex);
 
 						return (
 							<li
