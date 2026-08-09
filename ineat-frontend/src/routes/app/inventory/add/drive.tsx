@@ -8,6 +8,7 @@ import {
 	AlertTriangle,
 	Check,
 	ChevronDown,
+	ChefHat,
 	FileText,
 	Loader2,
 	Package,
@@ -65,12 +66,27 @@ const TERMINAL_PROCESSING_STAGES = new Set([
 ]);
 
 const PROCESSING_STEPS = [
-	{ stage: 'UPLOADED', label: 'Upload' },
-	{ stage: 'EXTRACTING', label: 'Extraction / OCR' },
-	{ stage: 'ANALYZING', label: 'Analyse' },
-	{ stage: 'ENRICHING', label: 'Matching et enrichissement' },
-	{ stage: 'READY_FOR_REVIEW', label: 'Prête à vérifier' }
+	{ stage: 'UPLOADED', label: 'Mise en place', detail: 'Upload' },
+	{ stage: 'EXTRACTING', label: 'Lecture de la recette', detail: 'OCR' },
+	{ stage: 'ANALYZING', label: 'Aux fourneaux', detail: 'Analyse' },
+	{
+		stage: 'ENRICHING',
+		label: 'Les bons accords',
+		detail: 'Matching & enrichissement'
+	},
+	{ stage: 'READY_FOR_REVIEW', label: 'Dressage final', detail: 'Résultats' }
 ] as const;
+
+const COOKING_MESSAGES = [
+	'On prépare les ingrédients…',
+	'Découpage des oignons numériques… sans les larmes.',
+	'On goûte les totaux pour vérifier l’assaisonnement…',
+	'On cherche les meilleurs accords dans vos produits…',
+	'Un dernier coup de torchon avant le service…'
+] as const;
+
+const MINIMUM_COOKING_DURATION_MS = 4_500;
+const COOKING_MESSAGE_INTERVAL_MS = 1_100;
 
 const PROCESSING_STAGE_ORDER: Record<string, number> = {
 	UPLOADED: 0,
@@ -212,6 +228,11 @@ function DriveInvoiceImportPage() {
 	const [pendingInvoiceFile, setPendingInvoiceFile] = useState<File | null>(
 		null
 	);
+	const [isCookingSequenceComplete, setIsCookingSequenceComplete] =
+		useState(true);
+	const cookingSequenceTimer = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
 	const autosaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>(
 		{}
 	);
@@ -259,6 +280,11 @@ function DriveInvoiceImportPage() {
 			return;
 		}
 
+		if (!isCookingSequenceComplete) {
+			setStep('processing');
+			return;
+		}
+
 		setDrafts(
 			Object.fromEntries(
 				restoredInvoice.items.map((item) => [item.id, createDraft(item)])
@@ -272,7 +298,16 @@ function DriveInvoiceImportPage() {
 			)
 		);
 		setStep('review');
-	}, [invoiceId, invoiceQuery.data]);
+	}, [invoiceId, invoiceQuery.data, isCookingSequenceComplete]);
+
+	useEffect(
+		() => () => {
+			if (cookingSequenceTimer.current) {
+				clearTimeout(cookingSequenceTimer.current);
+			}
+		},
+		[]
+	);
 
 	const { data: categories = [], isLoading: categoriesLoading } = useQuery({
 		queryKey: ['categories'],
@@ -329,6 +364,10 @@ function DriveInvoiceImportPage() {
 			void getProfile().catch(() => undefined);
 		},
 		onError: (error: Error) => {
+			if (cookingSequenceTimer.current) {
+				clearTimeout(cookingSequenceTimer.current);
+			}
+			setIsCookingSequenceComplete(true);
 			setStep('upload');
 			setLocalError(error.message);
 			toast.error(error.message);
@@ -462,6 +501,14 @@ function DriveInvoiceImportPage() {
 		}
 
 		setStep('processing');
+		setIsCookingSequenceComplete(false);
+		if (cookingSequenceTimer.current) {
+			clearTimeout(cookingSequenceTimer.current);
+		}
+		cookingSequenceTimer.current = setTimeout(() => {
+			setIsCookingSequenceComplete(true);
+			cookingSequenceTimer.current = null;
+		}, MINIMUM_COOKING_DURATION_MS);
 		importMutation.mutate(pendingInvoiceFile);
 		setPendingInvoiceFile(null);
 	};
@@ -1378,10 +1425,23 @@ function InvoiceProcessingCard({
 	isRetrying: boolean;
 	isUploading: boolean;
 }) {
+	const [messageIndex, setMessageIndex] = useState(0);
 	const stage = invoice?.processingStage;
 	const isFailed = stage === 'FAILED';
 	const currentStageIndex = stage ? (PROCESSING_STAGE_ORDER[stage] ?? 0) : 0;
 	const progress = isUploading ? 5 : (invoice?.processingProgress ?? 0);
+
+	useEffect(() => {
+		if (isFailed) {
+			return;
+		}
+
+		const interval = setInterval(() => {
+			setMessageIndex((current) => (current + 1) % COOKING_MESSAGES.length);
+		}, COOKING_MESSAGE_INTERVAL_MS);
+
+		return () => clearInterval(interval);
+	}, [isFailed]);
 
 	return (
 		<Card className="border-neutral-200 bg-neutral-50">
@@ -1390,13 +1450,11 @@ function InvoiceProcessingCard({
 					{isFailed ? (
 						<AlertTriangle className="size-5 text-warning-50" />
 					) : (
-						<Loader2 className="size-5 animate-spin text-primary-50" />
+						<ChefHat className="size-5 text-primary-50" />
 					)}
 					{isFailed
 						? 'Analyse interrompue'
-						: isUploading
-							? 'Envoi de la facture'
-							: 'Analyse de la facture'}
+						: 'Cooking progress'}
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="space-y-6">
@@ -1404,8 +1462,8 @@ function InvoiceProcessingCard({
 					<p className="font-medium text-neutral-300">
 						{isFailed
 							? "La facture n’a pas pu être analysée. Vous pouvez relancer un import."
-							: isUploading
-								? 'Upload sécurisé du PDF en cours…'
+							: isUploading || (!isFetchError && !isLoading)
+								? COOKING_MESSAGES[messageIndex]
 								: isFetchError
 								? 'La mise à jour est momentanément indisponible. Le traitement continue en arrière-plan.'
 								: isLoading
@@ -1452,7 +1510,10 @@ function InvoiceProcessingCard({
 								<span className="mb-2 flex size-6 items-center justify-center rounded-full border border-current">
 									{isComplete ? <Check className="size-4" /> : index + 1}
 								</span>
-								{processingStep.label}
+								<p className="font-medium">{processingStep.label}</p>
+								<p className="mt-1 text-xs opacity-75">
+									{processingStep.detail}
+								</p>
 							</li>
 						);
 					})}
