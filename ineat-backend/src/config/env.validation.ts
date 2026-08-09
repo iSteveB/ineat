@@ -102,6 +102,22 @@ const baseEnvironmentSchema = z
       emptyToUndefined,
       z.coerce.number().int().min(1).max(10).default(2),
     ),
+    OPENFOODFACTS_TIMEOUT_MS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(500).max(30000).default(5000),
+    ),
+    OPENFOODFACTS_CACHE_TTL_SECONDS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(60).default(2592000),
+    ),
+    OPENFOODFACTS_NEGATIVE_CACHE_TTL_SECONDS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(60).default(21600),
+    ),
+    OPENFOODFACTS_CONCURRENCY: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).max(10).default(4),
+    ),
   })
   .passthrough();
 

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../../redis/redis.service';
 import {
   AnalyzedInvoiceItem,
   InvoiceExternalProductData,
@@ -52,8 +53,12 @@ export interface OpenFoodFactsInvoiceEnrichmentResult {
 }
 
 const OPENFOODFACTS_PROVIDER = 'openfoodfacts';
+const OPENFOODFACTS_CACHE_SCHEMA = 'v1';
 const DEFAULT_OPENFOODFACTS_BASE_URL = 'https://world.openfoodfacts.org';
 const DEFAULT_OPENFOODFACTS_TIMEOUT_MS = 5000;
+const DEFAULT_OPENFOODFACTS_CACHE_TTL_SECONDS = 30 * 24 * 60 * 60;
+const DEFAULT_OPENFOODFACTS_NEGATIVE_CACHE_TTL_SECONDS = 6 * 60 * 60;
+const DEFAULT_OPENFOODFACTS_CONCURRENCY = 4;
 const DEFAULT_OPENFOODFACTS_USER_AGENT =
   'Ineat/1.0 (invoice-import; contact=dev@ineat.app)';
 const OPENFOODFACTS_FIELDS = [
@@ -85,12 +90,34 @@ export class OpenFoodFactsInvoiceEnrichmentService {
     OpenFoodFactsInvoiceEnrichmentService.name,
   );
 
-  constructor(private readonly configService: ConfigService) {}
+  private readonly inFlightLookups = new Map<
+    string,
+    Promise<OpenFoodFactsInvoiceEnrichmentResult>
+  >();
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly redis: RedisService,
+  ) {}
 
   async enrichItems(
     items: AnalyzedInvoiceItem[],
   ): Promise<AnalyzedInvoiceItem[]> {
-    return Promise.all(items.map((item) => this.enrichItem(item)));
+    const results = new Array<AnalyzedInvoiceItem>(items.length);
+    const concurrency = this.getConcurrency();
+    let cursor = 0;
+
+    const worker = async () => {
+      while (cursor < items.length) {
+        const index = cursor++;
+        results[index] = await this.enrichItem(items[index]);
+      }
+    };
+
+    await Promise.all(
+      Array.from({ length: Math.min(concurrency, items.length) }, worker),
+    );
+    return results;
   }
 
   async enrichItem(item: AnalyzedInvoiceItem): Promise<AnalyzedInvoiceItem> {
@@ -146,7 +173,31 @@ export class OpenFoodFactsInvoiceEnrichmentService {
       };
     }
 
+    const cached = await this.readCache(barcode);
+    if (cached) {
+      this.logLookupEvent({
+        event: 'invoice_openfoodfacts_cache_hit',
+        barcode,
+        status: cached.status,
+      });
+      return cached;
+    }
+
+    const inFlight = this.inFlightLookups.get(barcode);
+    if (inFlight) return inFlight;
+
+    const lookup = this.lookupAndCache(barcode).finally(() => {
+      this.inFlightLookups.delete(barcode);
+    });
+    this.inFlightLookups.set(barcode, lookup);
+    return lookup;
+  }
+
+  private async lookupAndCache(
+    barcode: string,
+  ): Promise<OpenFoodFactsInvoiceEnrichmentResult> {
     try {
+      const startedAt = Date.now();
       const response = await this.fetchProduct(barcode);
 
       if (response.status === 0 || !response.product) {
@@ -156,11 +207,13 @@ export class OpenFoodFactsInvoiceEnrichmentService {
           status: 'NOT_FOUND',
         });
 
-        return {
+        const result: OpenFoodFactsInvoiceEnrichmentResult = {
           status: 'NOT_FOUND',
           data: null,
           error: null,
         };
+        await this.writeCache(barcode, result, true);
+        return result;
       }
 
       const data = this.mapProduct(barcode, response.product);
@@ -172,13 +225,16 @@ export class OpenFoodFactsInvoiceEnrichmentService {
         event: 'invoice_openfoodfacts_lookup_completed',
         barcode,
         status,
+        durationMs: Date.now() - startedAt,
       });
 
-      return {
+      const result: OpenFoodFactsInvoiceEnrichmentResult = {
         status,
         data,
         error: null,
       };
+      await this.writeCache(barcode, result, false);
+      return result;
     } catch (error) {
       const errorCode = this.getErrorCode(error);
 
@@ -195,6 +251,45 @@ export class OpenFoodFactsInvoiceEnrichmentService {
         error: errorCode,
       };
     }
+  }
+
+  private async readCache(
+    barcode: string,
+  ): Promise<OpenFoodFactsInvoiceEnrichmentResult | null> {
+    try {
+      const value = await this.redis.producerConnection().get(
+        this.cacheKey(barcode),
+      );
+      return value
+        ? (JSON.parse(value) as OpenFoodFactsInvoiceEnrichmentResult)
+        : null;
+    } catch {
+      this.logLookupEvent({ event: 'invoice_openfoodfacts_cache_error' });
+      return null;
+    }
+  }
+
+  private async writeCache(
+    barcode: string,
+    result: OpenFoodFactsInvoiceEnrichmentResult,
+    negative: boolean,
+  ): Promise<void> {
+    try {
+      await this.redis
+        .producerConnection()
+        .set(
+          this.cacheKey(barcode),
+          JSON.stringify(result),
+          'EX',
+          negative ? this.getNegativeCacheTtl() : this.getCacheTtl(),
+        );
+    } catch {
+      this.logLookupEvent({ event: 'invoice_openfoodfacts_cache_error' });
+    }
+  }
+
+  private cacheKey(barcode: string): string {
+    return `invoice:openfoodfacts:${OPENFOODFACTS_CACHE_SCHEMA}:${barcode}`;
   }
 
   private async fetchProduct(
@@ -424,6 +519,35 @@ export class OpenFoodFactsInvoiceEnrichmentService {
     return Number.isFinite(configuredTimeout) && configuredTimeout > 0
       ? configuredTimeout
       : DEFAULT_OPENFOODFACTS_TIMEOUT_MS;
+  }
+
+  private getCacheTtl(): number {
+    return this.getPositiveConfig(
+      'OPENFOODFACTS_CACHE_TTL_SECONDS',
+      DEFAULT_OPENFOODFACTS_CACHE_TTL_SECONDS,
+    );
+  }
+
+  private getNegativeCacheTtl(): number {
+    return this.getPositiveConfig(
+      'OPENFOODFACTS_NEGATIVE_CACHE_TTL_SECONDS',
+      DEFAULT_OPENFOODFACTS_NEGATIVE_CACHE_TTL_SECONDS,
+    );
+  }
+
+  private getConcurrency(): number {
+    return Math.min(
+      10,
+      this.getPositiveConfig(
+        'OPENFOODFACTS_CONCURRENCY',
+        DEFAULT_OPENFOODFACTS_CONCURRENCY,
+      ),
+    );
+  }
+
+  private getPositiveConfig(key: string, fallback: number): number {
+    const value = Number(this.configService.get<string>(key));
+    return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
   }
 
   private getUserAgent(): string {

@@ -6,6 +6,13 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
   const configService = {
     get: jest.fn(),
   };
+  const redisConnection = {
+    get: jest.fn(),
+    set: jest.fn(),
+  };
+  const redis = {
+    producerConnection: jest.fn(() => redisConnection),
+  };
 
   let service: OpenFoodFactsInvoiceEnrichmentService;
   let loggerSpy: jest.SpyInstance;
@@ -27,8 +34,11 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
     });
     fetchMock = jest.fn();
     global.fetch = fetchMock;
+    redisConnection.get.mockResolvedValue(null);
+    redisConnection.set.mockResolvedValue('OK');
     service = new OpenFoodFactsInvoiceEnrichmentService(
       configService as unknown as ConfigService,
+      redis as any,
     );
   });
 
@@ -147,6 +157,85 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
       data: null,
       error: null,
     });
+    expect(redisConnection.set).toHaveBeenCalledWith(
+      'invoice:openfoodfacts:v1:9999999999999',
+      expect.any(String),
+      'EX',
+      21600,
+    );
+  });
+
+  it('réutilise une réponse du cache sans appeler le fournisseur', async () => {
+    redisConnection.get.mockResolvedValue(
+      JSON.stringify({
+        status: 'FOUND',
+        data: {
+          source: 'openfoodfacts',
+          barcode: '3017624010701',
+          name: 'Produit en cache',
+        },
+        error: null,
+      }),
+    );
+
+    const result = await service.lookupBarcode('3017624010701');
+
+    expect(result.status).toBe('FOUND');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('déduplique deux EAN identiques pendant une même facture', async () => {
+    let resolveFetch: (value: unknown) => void = () => undefined;
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        resolveFetch = resolve;
+      }),
+    );
+
+    const enrichment = service.enrichItems([
+      {
+        detectedName: 'Produit A',
+        quantity: 1,
+        confidence: 0.9,
+        selectedEan: '3017624010701',
+      },
+      {
+        detectedName: 'Produit B',
+        quantity: 1,
+        confidence: 0.9,
+        selectedEan: '3017624010701',
+      },
+    ]);
+
+    await Promise.resolve();
+    resolveFetch({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        status: 1,
+        product: { code: '3017624010701', product_name_fr: 'Produit' },
+      }),
+    });
+    await enrichment;
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('continue sans cache lorsque Redis est indisponible', async () => {
+    redisConnection.get.mockRejectedValue(new Error('REDIS_DOWN'));
+    redisConnection.set.mockRejectedValue(new Error('REDIS_DOWN'));
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        status: 1,
+        product: { code: '3017624010701', product_name_fr: 'Produit' },
+      }),
+    });
+
+    const result = await service.lookupBarcode('3017624010701');
+
+    expect(result.status).toBe('FOUND');
   });
 
   it('ignore une ligne sans code-barres valide sans appeler OpenFoodFacts', async () => {
