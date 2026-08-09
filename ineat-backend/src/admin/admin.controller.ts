@@ -95,6 +95,11 @@ export class AdminController {
     return this.adminOperationsService.listIncidents(query);
   }
 
+  @Get('invoice-metrics')
+  getInvoiceMetrics() {
+    return this.adminOperationsService.getInvoiceMetrics();
+  }
+
   @Post('queues/:queueName/jobs/:jobId/retry')
   retryQueueJob(
     @Param('queueName') queueName: string,

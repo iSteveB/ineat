@@ -86,6 +86,11 @@ export default function AdminOperationsPage({
 		queryKey: adminKeys.incidents(incidentType, incidentsPage),
 		queryFn: () => adminService.listIncidents(incidentType, incidentsPage, 25),
 	});
+	const invoiceMetricsQuery = useQuery({
+		queryKey: ['admin', 'invoice-metrics'],
+		queryFn: adminService.getInvoiceMetrics,
+		refetchInterval: 30_000,
+	});
 	const retryMutation = useMutation({
 		mutationFn: ({
 			job,
@@ -216,6 +221,48 @@ export default function AdminOperationsPage({
 					</Card>
 				))}
 			</section>
+
+			{invoiceMetricsQuery.data && (
+				<Card>
+					<CardHeader>
+						<CardTitle>Performance des factures · 30 jours</CardTitle>
+					</CardHeader>
+					<CardContent className='space-y-4'>
+						<div className='grid gap-3 sm:grid-cols-4'>
+							<Count label='Factures' value={invoiceMetricsQuery.data.invoices} />
+							<Count
+								label="Taux d’échec (%)"
+								value={Math.round(invoiceMetricsQuery.data.failureRate * 100)}
+							/>
+							<Count label='Rejeux' value={invoiceMetricsQuery.data.retriedInvoices} />
+							<Count
+								label='Articles / facture'
+								value={Math.round(invoiceMetricsQuery.data.averageItemCount * 10) / 10}
+							/>
+						</div>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Étape</TableHead>
+									<TableHead>Volume</TableHead>
+									<TableHead>p50</TableHead>
+									<TableHead>p95</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{invoiceMetricsQuery.data.stages.map((stage) => (
+									<TableRow key={stage.stage}>
+										<TableCell>{stage.stage}</TableCell>
+										<TableCell>{stage.count}</TableCell>
+										<TableCell>{formatDuration(stage.p50Ms)}</TableCell>
+										<TableCell>{formatDuration(stage.p95Ms)}</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</CardContent>
+				</Card>
+			)}
 
 			<Card>
 				<CardHeader>
@@ -356,7 +403,8 @@ export default function AdminOperationsPage({
 							<TableHeader>
 								<TableRow>
 									<TableHead>Incident</TableHead>
-									<TableHead>Type</TableHead>
+									<TableHead>Étape / type</TableHead>
+									<TableHead>Diagnostic</TableHead>
 									<TableHead>Erreur</TableHead>
 									<TableHead>Date</TableHead>
 								</TableRow>
@@ -370,7 +418,21 @@ export default function AdminOperationsPage({
 												{incident.id}
 											</p>
 										</TableCell>
-										<TableCell>{incident.subtype || incident.status}</TableCell>
+										<TableCell>
+											{incident.stage || incident.subtype || incident.status}
+											{incident.attempts && (
+												<p className='text-xs text-neutral-500'>
+													Tentative {incident.attempts}
+												</p>
+											)}
+										</TableCell>
+										<TableCell className='text-xs text-neutral-500'>
+											{incident.subtype || 'Fournisseur inconnu'}
+											{incident.errorCode ? ` · ${incident.errorCode}` : ''}
+											{incident.durationMs
+												? ` · ${formatDuration(incident.durationMs)}`
+												: ''}
+										</TableCell>
 										<TableCell className='max-w-md'>{incident.error}</TableCell>
 										<TableCell>{formatDate(incident.occurredAt)}</TableCell>
 									</TableRow>

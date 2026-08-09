@@ -249,6 +249,10 @@ export type AdminIncidentsPage = {
 		status: string;
 		subtype: string | null;
 		attempts?: number;
+		stage?: string;
+		durationMs?: number | null;
+		modelVersion?: string | null;
+		errorCode?: string | null;
 		emailType?: string | null;
 		error: string;
 		occurredAt: string;
@@ -261,6 +265,20 @@ export type AdminIncidentsPage = {
 		totalItems: number;
 		totalPages: number;
 	};
+};
+
+export type AdminInvoiceMetrics = {
+	periodDays: number;
+	invoices: number;
+	failureRate: number;
+	retriedInvoices: number;
+	averageItemCount: number;
+	stages: Array<{
+		stage: string;
+		count: number;
+		p50Ms: number;
+		p95Ms: number;
+	}>;
 };
 
 export type AdminAuditLog = {
@@ -422,6 +440,13 @@ export const adminService = {
 		const response = await apiClient.get<
 			ApiSuccessResponse<AdminIncidentsPage>
 		>(`/admin/incidents?${params.toString()}`);
+		return response.data;
+	},
+
+	async getInvoiceMetrics() {
+		const response = await apiClient.get<
+			ApiSuccessResponse<AdminInvoiceMetrics>
+		>('/admin/invoice-metrics');
 		return response.data;
 	},
 
