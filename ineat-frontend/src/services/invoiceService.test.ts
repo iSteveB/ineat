@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 
 import {
 	INVOICE_MAX_FILE_SIZE_BYTES,
+	INVOICE_UPLOAD_TIMEOUT_MS,
 	invoiceService,
 } from './invoiceService';
 import { server } from '@/test/mocks/server';
@@ -38,6 +39,7 @@ const invoice = {
 
 describe('invoiceService', () => {
 	it('importe une facture PDF en multipart', async () => {
+		const timeoutSpy = vi.spyOn(globalThis, 'setTimeout');
 		let contentType: string | null = null;
 		let uploadedFileName = '';
 		let requestSignal: AbortSignal | null = null;
@@ -66,7 +68,12 @@ describe('invoiceService', () => {
 		expect(contentType).toContain('multipart/form-data');
 		expect(uploadedFileName).toBe('facture.pdf');
 		expect(requestSignal).toBeInstanceOf(AbortSignal);
+		expect(timeoutSpy).toHaveBeenCalledWith(
+			expect.any(Function),
+			INVOICE_UPLOAD_TIMEOUT_MS
+		);
 		expect(result.id).toBe(invoice.id);
+		timeoutSpy.mockRestore();
 	});
 
 	it("relance l'analyse d'une facture interrompue", async () => {

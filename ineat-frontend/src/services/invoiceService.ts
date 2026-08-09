@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 
 export const INVOICE_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+export const INVOICE_UPLOAD_TIMEOUT_MS = 90_000;
 
 export type InvoiceStatus = 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'VALIDATED';
 export type InvoiceProcessingStage =
@@ -162,7 +163,8 @@ export const invoiceService = {
 			'/invoices/drive-import',
 			{
 				method: 'POST',
-				body: formData
+				body: formData,
+				timeoutMs: INVOICE_UPLOAD_TIMEOUT_MS,
 			}
 		);
 
