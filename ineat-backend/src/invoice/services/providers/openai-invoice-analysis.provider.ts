@@ -155,10 +155,12 @@ export class OpenAIInvoiceAnalysisProvider
     pdfUrl: string,
     pdfBuffer?: Buffer,
   ): Promise<InvoiceDocumentExtraction<OpenAIExtractedInvoicePayload>> {
-    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY_INVOICE');
 
     if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is required for invoice analysis');
+      throw new Error(
+        'OPENAI_API_KEY_INVOICE is required for invoice analysis',
+      );
     }
 
     const model =

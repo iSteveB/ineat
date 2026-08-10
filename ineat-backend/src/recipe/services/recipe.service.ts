@@ -207,13 +207,24 @@ export class RecipeService {
     };
   }
 
-  async completeRecipe(userId: string, recipeId: string, confirm: boolean) {
+  async completeRecipe(
+    userId: string,
+    recipeId: string,
+    confirm: boolean,
+    inventoryItemIds?: string[],
+  ) {
     if (!confirm) {
       throw new BadRequestException('Confirmation requise');
     }
 
     const recipe = await this.findUserRecipe(userId, recipeId);
-    const removableItems = await this.getRemovableInventoryItems(userId, recipe);
+    const candidateItems = await this.getRemovableInventoryItems(userId, recipe);
+    const selectedIds = inventoryItemIds
+      ? new Set(inventoryItemIds)
+      : new Set(candidateItems.map((item) => item.id));
+    const removableItems = candidateItems.filter((item) =>
+      selectedIds.has(item.id),
+    );
     const removableIds = removableItems.map((item) => item.id);
 
     const updatedRecipe = await this.prisma.$transaction(async (tx) => {

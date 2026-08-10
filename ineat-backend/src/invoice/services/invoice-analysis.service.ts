@@ -50,6 +50,8 @@ export class InvoiceAnalysisService {
       return configuredProvider.trim().toLowerCase();
     }
 
-    return this.configService.get<string>('OPENAI_API_KEY') ? 'openai' : 'mock';
+    return this.configService.get<string>('OPENAI_API_KEY_INVOICE')
+      ? 'openai'
+      : 'mock';
   }
 }

@@ -9,6 +9,7 @@ import {
 	ImageOff,
 	ShoppingBasket,
 	Users,
+	X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -83,7 +84,13 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	});
 
 	const completeMutation = useMutation({
-		mutationFn: recipeService.completeRecipe,
+		mutationFn: ({
+			recipeId,
+			inventoryItemIds,
+		}: {
+			recipeId: string;
+			inventoryItemIds: string[];
+		}) => recipeService.completeRecipe(recipeId, inventoryItemIds),
 		onSuccess: (data) => {
 			queryClient.setQueryData(['recipes', 'saved', recipeId], data.recipe);
 			queryClient.invalidateQueries({ queryKey: ['recipes', 'saved'] });
@@ -242,8 +249,28 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 							{completionPreview.items.map((item) => (
 								<li
 									key={item.inventoryItemId}
-									className='rounded-md bg-neutral-100 px-3 py-2'>
-									{item.name}
+									className='flex items-center justify-between gap-3 rounded-md bg-neutral-100 px-3 py-2'>
+									<span>{item.name}</span>
+									<button
+										type='button'
+										className='shrink-0 rounded-full p-1 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2'
+										aria-label={`Ne pas retirer ${item.name} de l’inventaire`}
+										onClick={() =>
+											setCompletionPreview((preview) =>
+												preview
+													? {
+														...preview,
+														items: preview.items.filter(
+															(candidate) =>
+																candidate.inventoryItemId !==
+																item.inventoryItemId
+														),
+													  }
+													: preview
+											)
+										}>
+										<X className='size-4' aria-hidden='true' />
+									</button>
 								</li>
 							))}
 						</ul>
@@ -256,7 +283,15 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 						<AlertDialogCancel>Annuler</AlertDialogCancel>
 						<AlertDialogAction
 							disabled={completeMutation.isPending}
-							onClick={() => completeMutation.mutate(recipe.id)}>
+							onClick={() =>
+								completeMutation.mutate({
+									recipeId: recipe.id,
+									inventoryItemIds:
+										completionPreview?.items.map(
+											(item) => item.inventoryItemId
+										) ?? [],
+								})
+							}>
 							Confirmer
 						</AlertDialogAction>
 					</AlertDialogFooter>

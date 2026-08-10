@@ -95,6 +95,11 @@ export class RecipeController {
     @Body(new ValidationPipe({ transform: true, whitelist: true }))
     dto: CompleteRecipeDto,
   ) {
-    return this.recipeService.completeRecipe(req.user.id, id, dto.confirm);
+    return this.recipeService.completeRecipe(
+      req.user.id,
+      id,
+      dto.confirm,
+      dto.inventoryItemIds,
+    );
   }
 }

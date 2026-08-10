@@ -345,7 +345,7 @@ describe('OpenAIInvoiceAnalysisProvider', () => {
   const originalFetch = global.fetch;
   const configService = {
     get: jest.fn((key: string) => {
-      if (key === 'OPENAI_API_KEY') {
+      if (key === 'OPENAI_API_KEY_INVOICE') {
         return 'test-key';
       }
 

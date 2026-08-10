@@ -19,7 +19,7 @@ describe('InvoiceAnalysisService', () => {
 
   it("utilise OpenAI par défaut quand une clé d'API existe", async () => {
     configService.get.mockImplementation((key: string) =>
-      key === 'OPENAI_API_KEY' ? 'test-key' : undefined,
+      key === 'OPENAI_API_KEY_INVOICE' ? 'test-key' : undefined,
     );
     openAIProvider.analyzePdf.mockResolvedValue({
       provider: 'openai',
@@ -75,7 +75,7 @@ describe('InvoiceAnalysisService', () => {
         return 'mock';
       }
 
-      if (key === 'OPENAI_API_KEY') {
+      if (key === 'OPENAI_API_KEY_INVOICE') {
         return 'test-key';
       }
 

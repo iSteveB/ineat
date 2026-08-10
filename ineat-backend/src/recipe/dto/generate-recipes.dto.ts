@@ -6,6 +6,7 @@ import {
   IsInt,
   IsObject,
   IsOptional,
+  IsString,
   Max,
   Min,
 } from 'class-validator';
@@ -73,6 +74,11 @@ export class SaveGeneratedRecipeDto {
 export class CompleteRecipeDto {
   @IsBoolean()
   confirm: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  inventoryItemIds?: string[];
 }
 
 export class UpdateRecipeFavoriteDto {

@@ -68,8 +68,9 @@ const baseGeneratedRecipe = {
 describe('RecipeService', () => {
   let prisma: {
     user: { findUnique: jest.Mock };
-    inventoryItem: { findMany: jest.Mock };
+    inventoryItem: { findMany: jest.Mock; deleteMany: jest.Mock };
     recipe: { findFirst: jest.Mock; update: jest.Mock };
+    $transaction: jest.Mock;
   };
   let usageQuotaService: {
     assertCanConsume: jest.Mock;
@@ -84,11 +85,15 @@ describe('RecipeService', () => {
   beforeEach(() => {
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue(user) },
-      inventoryItem: { findMany: jest.fn().mockResolvedValue(inventoryItems) },
+      inventoryItem: {
+        findMany: jest.fn().mockResolvedValue(inventoryItems),
+        deleteMany: jest.fn(),
+      },
       recipe: {
         findFirst: jest.fn(),
         update: jest.fn(),
       },
+      $transaction: jest.fn(async (callback) => callback(prisma)),
     };
     usageQuotaService = {
       assertCanConsume: jest.fn().mockResolvedValue({ remaining: 5 }),
@@ -249,5 +254,80 @@ describe('RecipeService', () => {
       service.updateFavorite('user-1', 'recipe-other-user', true),
     ).rejects.toThrow(NotFoundException);
     expect(prisma.recipe.update).not.toHaveBeenCalled();
+  });
+
+  it('retire uniquement les produits confirmés lors de la complétion', async () => {
+    const savedRecipe = {
+      id: 'recipe-saved',
+      userId: 'user-1',
+      name: 'Velouté de pommes',
+      description: null,
+      type: 'STARTER',
+      preparationTime: 10,
+      cookingTime: 15,
+      servings: 2,
+      difficulty: 'EASY',
+      imageUrl: null,
+      source: 'AI',
+      basicIngredients: [],
+      missingIngredients: [],
+      steps: ['Cuire.'],
+      instructions: 'Cuire.',
+      doneAt: null,
+      isFavorite: false,
+      createdAt: new Date('2026-08-08T12:00:00.000Z'),
+      updatedAt: new Date('2026-08-08T12:00:00.000Z'),
+      RecipeIngredient: [
+        {
+          productId: 'product-apple',
+          source: 'INVENTORY',
+        },
+        {
+          productId: 'product-yogurt',
+          source: 'INVENTORY',
+        },
+      ],
+    };
+    const removableItems = [
+      {
+        id: 'inventory-apple',
+        productId: 'product-apple',
+        Product: { name: 'Pommes' },
+      },
+      {
+        id: 'inventory-yogurt',
+        productId: 'product-yogurt',
+        Product: { name: 'Yaourt nature' },
+      },
+    ];
+
+    prisma.recipe.findFirst.mockResolvedValue(savedRecipe);
+    prisma.inventoryItem.findMany.mockResolvedValue(removableItems);
+    prisma.recipe.update.mockResolvedValue({
+      ...savedRecipe,
+      doneAt: new Date('2026-08-10T20:00:00.000Z'),
+      updatedAt: new Date('2026-08-10T20:00:00.000Z'),
+    });
+
+    const result = await service.completeRecipe(
+      'user-1',
+      'recipe-saved',
+      true,
+      ['inventory-apple'],
+    );
+
+    expect(prisma.inventoryItem.deleteMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        id: { in: ['inventory-apple'] },
+      },
+    });
+    expect(result.data.removedItems).toEqual([
+      {
+        inventoryItemId: 'inventory-apple',
+        productId: 'product-apple',
+        name: 'Pommes',
+      },
+    ]);
   });
 });

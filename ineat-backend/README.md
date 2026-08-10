@@ -144,9 +144,7 @@ SENTRY_SEND_DEFAULT_PII=false
 
 Use lower sampling rates in production unless higher volume is intentional. The
 default production sampling is conservative, and `sendDefaultPii` is disabled
-unless `SENTRY_SEND_DEFAULT_PII=true` is explicitly set. For verification outside
-production, call `GET /debug-sentry`; the route throws a test exception and is
-hidden in production.
+unless `SENTRY_SEND_DEFAULT_PII=true` is explicitly set.
 
 Mode watch:
 

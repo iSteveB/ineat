@@ -179,11 +179,23 @@ describe('RecipeDetailPage', () => {
 		expect(screen.getAllByText('Riz').length).toBeGreaterThan(0);
 		expect(screen.getAllByText('Petits pois').length).toBeGreaterThan(0);
 		expect(screen.queryByText('Sel')).toBeInTheDocument();
+		await user.click(
+			screen.getByRole('button', {
+				name: /ne pas retirer petits pois de l’inventaire/i,
+			})
+		);
+		expect(
+			screen.queryByRole('button', {
+				name: /ne pas retirer petits pois de l’inventaire/i,
+			})
+		).not.toBeInTheDocument();
 
 		await user.click(screen.getByRole('button', { name: /confirmer/i }));
 
 		await waitFor(() => {
-			expect(recipeService.completeRecipe).toHaveBeenCalledWith('recipe-1');
+			expect(recipeService.completeRecipe).toHaveBeenCalledWith('recipe-1', [
+				'inventory-1',
+			]);
 		});
 		await waitFor(() => {
 			expect(

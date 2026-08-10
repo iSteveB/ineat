@@ -139,13 +139,13 @@ export const recipeService = {
 		return response.data;
 	},
 
-	async completeRecipe(recipeId: string) {
+	async completeRecipe(recipeId: string, inventoryItemIds: string[]) {
 		const response = await apiClient.post<
 			ApiSuccess<{
 				recipe: SavedRecipe;
 				removedItems: CompletionPreview['items'];
 			}>
-		>(`/recipes/${recipeId}/complete`, { confirm: true });
+		>(`/recipes/${recipeId}/complete`, { confirm: true, inventoryItemIds });
 
 		return response.data;
 	},
