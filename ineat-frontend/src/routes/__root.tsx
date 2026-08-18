@@ -1,13 +1,23 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import { lazy, Suspense } from 'react';
 import { Toaster } from 'sonner';
+
+const RouterDevtools = import.meta.env.DEV
+	? lazy(() =>
+			import('@tanstack/react-router-devtools').then((module) => ({
+				default: module.TanStackRouterDevtools,
+			}))
+		)
+	: null;
 
 export const Route = createRootRoute({
 	component: () => (
 		<main className='bg-primary-50'>
 			<Outlet />
-			{process.env.NODE_ENV === 'development' && (
-				<TanStackRouterDevtools />
+			{RouterDevtools && (
+				<Suspense fallback={null}>
+					<RouterDevtools />
+				</Suspense>
 			)}
 			<Toaster
 				position='top-right'

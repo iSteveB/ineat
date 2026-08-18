@@ -1,8 +1,15 @@
-import { ReactNode } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useAuthStore } from '../stores/authStore';
-import { useEffect } from 'react';
+
+const QueryDevtools = import.meta.env.DEV
+	? lazy(() =>
+			import('@tanstack/react-query-devtools').then((module) => ({
+				default: module.ReactQueryDevtools,
+			}))
+		)
+	: null;
 
 interface AppProviderProps {
 	children: ReactNode;
@@ -47,8 +54,10 @@ export function AppProvider({ children }: AppProviderProps) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			{children}
-			{import.meta.env.DEV && (
-				<ReactQueryDevtools initialIsOpen={false} />
+			{QueryDevtools && (
+				<Suspense fallback={null}>
+					<QueryDevtools initialIsOpen={false} />
+				</Suspense>
 			)}
 		</QueryClientProvider>
 	);

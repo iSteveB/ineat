@@ -14,12 +14,12 @@ import {
 	User,
 } from 'lucide-react';
 
-import foodBowl from '@/assets/landing-food-bowl.png';
-import foodPlate from '@/assets/landing-food-plate.png';
-import heroKitchen from '@/assets/landing-hero-kitchen.png';
-import stepAdd from '@/assets/landing-step-add.png';
-import stepAlert from '@/assets/landing-step-alert.png';
-import stepBasket from '@/assets/landing-step-basket.png';
+import foodBowl from '@/assets/landing-food-bowl.webp';
+import foodPlate from '@/assets/landing-food-plate.webp';
+import heroKitchen from '@/assets/landing-hero-kitchen.webp';
+import stepAdd from '@/assets/landing-step-add.webp';
+import stepAlert from '@/assets/landing-step-alert.webp';
+import stepBasket from '@/assets/landing-step-basket.webp';
 import logoMark from '@/assets/Logo.svg';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/authStore';
