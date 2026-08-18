@@ -1,6 +1,7 @@
 import { TrialEmailService } from './trial-email.service';
 
 describe('TrialEmailService', () => {
+  const originalFrontendUrl = process.env.FRONTEND_URL;
   const now = new Date('2026-07-29T12:00:00.000Z');
   const user = {
     id: 'user-1',
@@ -29,8 +30,16 @@ describe('TrialEmailService', () => {
     };
   };
 
-  afterEach(() => {
-    delete process.env.FRONTEND_URL;
+  beforeEach(() => {
+    process.env.FRONTEND_URL = 'https://frontend.test/';
+  });
+
+  afterAll(() => {
+    if (originalFrontendUrl === undefined) {
+      delete process.env.FRONTEND_URL;
+      return;
+    }
+    process.env.FRONTEND_URL = originalFrontendUrl;
   });
 
   it('sends and records the trial-started email', async () => {
@@ -46,7 +55,7 @@ describe('TrialEmailService', () => {
       expect.objectContaining({
         to: user.email,
         userId: user.id,
-        subscriptionUrl: 'https://ineat.store/app/subscription',
+        subscriptionUrl: 'https://frontend.test/app/subscription',
       }),
     );
     expect(prisma.user.update).toHaveBeenCalledWith({
