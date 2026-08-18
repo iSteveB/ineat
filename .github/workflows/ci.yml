@@ -102,5 +102,8 @@ jobs:
       - name: Test
         run: pnpm exec jest --runInBand --no-watchman
 
+      - name: End-to-end smoke tests
+        run: pnpm run test:e2e
+
       - name: Build
         run: pnpm run build
