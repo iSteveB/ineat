@@ -24,7 +24,7 @@ Le depot est organise en deux applications principales:
 
 ## Prerequis
 
-- Node.js `>=20`
+- Node.js `^20.19`, `^22.12` ou `>=24`
 - pnpm `10.7.0` ou compatible
 - PostgreSQL
 - Redis, utilise par BullMQ pour les traitements asynchrones du worker

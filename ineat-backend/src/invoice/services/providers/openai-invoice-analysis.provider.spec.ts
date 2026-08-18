@@ -427,6 +427,30 @@ describe('OpenAIInvoiceAnalysisProvider', () => {
     });
   });
 
+  it('utilise gpt-5.5 quand aucun modèle facture explicite n’est configuré', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        id: 'resp_default_model',
+        output_text: JSON.stringify(nominalPayload),
+      }),
+    } as any);
+    const defaultConfig = {
+      get: jest.fn((key: string) =>
+        key === 'OPENAI_API_KEY_INVOICE' ? 'test-key' : undefined,
+      ),
+    };
+
+    const provider = new OpenAIInvoiceAnalysisProvider(defaultConfig as any);
+    await provider.analyzePdf(
+      'https://res.cloudinary.com/demo/raw/upload/invoice.pdf',
+      Buffer.from('%PDF-1.4'),
+    );
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.model).toBe('gpt-5.5');
+  });
+
   it("garde file_url en fallback si le buffer n'est pas disponible", async () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,

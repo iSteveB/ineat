@@ -78,7 +78,7 @@ export class InvoiceController {
   @ApiOperation({
     summary: 'Importer une facture Drive PDF',
     description:
-      "Upload une facture Drive PDF, lance l'analyse mock et prépare les lignes à valider.",
+      "Upload une facture Drive PDF, lance son analyse asynchrone et prépare les lignes à valider.",
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

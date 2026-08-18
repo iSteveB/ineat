@@ -164,7 +164,7 @@ export class OpenAIInvoiceAnalysisProvider
     }
 
     const model =
-      this.configService.get<string>('OPENAI_INVOICE_MODEL') ?? 'gpt-5.6-luna';
+      this.configService.get<string>('OPENAI_INVOICE_MODEL') ?? 'gpt-5.5';
     const fileInput = createPdfFileInput(pdfUrl, pdfBuffer);
 
     const response = await fetch('https://api.openai.com/v1/responses', {

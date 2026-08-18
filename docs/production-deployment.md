@@ -134,6 +134,19 @@ Backend:
   webhook Resend
 - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
 - `CLOUDINARY_AVATAR_PRESET`
+- `INVOICE_PROCESSING_MODE=bullmq`
+- `INVOICE_ANALYSIS_PROVIDER=openai`
+
+Worker:
+
+- `NODE_ENV=production`
+- `DATABASE_URL`, `REDIS_URL` et le meme `REDIS_KEY_PREFIX` que le backend
+- `INVOICE_ANALYSIS_PROVIDER=openai`
+- `OPENAI_API_KEY_INVOICE`, cle du projet autorise a analyser les factures
+- `OPENAI_INVOICE_MODEL=gpt-5.5`
+- les variables Cloudinary ne sont pas necessaires au telechargement des PDF
+  publics, mais la livraison des fichiers PDF doit etre autorisee dans les
+  reglages de securite Cloudinary
 
 Frontend:
 
