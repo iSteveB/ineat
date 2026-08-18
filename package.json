@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "ci": "pnpm run ci:frontend && pnpm run ci:backend",
-    "ci:frontend": "pnpm --dir ineat-frontend run lint && pnpm --dir ineat-frontend run test:run && pnpm --dir ineat-frontend run build",
-    "ci:backend": "pnpm --dir ineat-backend run lint:check && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm --dir ineat-backend exec jest --runInBand --no-watchman && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm --dir ineat-backend run test:e2e && cd ineat-backend && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm run build",
+    "ci:frontend": "pnpm --dir ineat-frontend run lint && pnpm --dir ineat-frontend run coverage && pnpm --dir ineat-frontend run build",
+    "ci:backend": "pnpm --dir ineat-backend run lint:check && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm --dir ineat-backend run test:cov && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm --dir ineat-backend run test:e2e && cd ineat-backend && DATABASE_URL=postgresql://user:password@localhost:5432/ineat pnpm run build",
     "test": "pnpm run ci"
   },
   "keywords": [],

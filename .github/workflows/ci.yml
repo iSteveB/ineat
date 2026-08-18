@@ -43,7 +43,7 @@ jobs:
         run: pnpm run lint
 
       - name: Test
-        run: pnpm run test:run
+        run: pnpm run coverage
 
       - name: Build
         run: pnpm run build
@@ -100,7 +100,7 @@ jobs:
         run: pnpm run lint:check
 
       - name: Test
-        run: pnpm exec jest --runInBand --no-watchman
+        run: pnpm run test:cov
 
       - name: End-to-end smoke tests
         run: pnpm run test:e2e

@@ -15,11 +15,21 @@ export default defineConfig({
     minWorkers: 1,
     maxWorkers: 4,
     coverage: {
+      provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
-        'node_modules/',
-        'src/test/',
+        'src/test/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/routeTree.gen.ts',
+        'src/vite-env.d.ts',
       ],
+      thresholds: {
+        statements: 37,
+        branches: 70,
+        functions: 49,
+        lines: 37,
+      },
     },
   },
   resolve: {
