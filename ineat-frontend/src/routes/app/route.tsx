@@ -10,7 +10,7 @@ export const Route = createFileRoute('/app')({
     
     if (!userIsAuthenticated) {
       throw redirect({
-        to: '/',
+        to: '/login',
         search: {
           redirect: location.href,
           session: 'expired'

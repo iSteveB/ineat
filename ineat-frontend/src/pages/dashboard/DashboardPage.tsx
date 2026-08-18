@@ -1,6 +1,6 @@
-import type { FC, ReactNode } from "react";
+import { useEffect, type FC, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, PackagePlus, ScanLine, TriangleAlert } from "lucide-react";
 
 import { InventoryWidget } from "@/features/inventory/InventoryWidget";
@@ -11,6 +11,7 @@ import { ExpiringProductsWidget } from "@/features/product/ExpiringProductsWidge
 import { Button } from "@/components/ui/button";
 
 import { inventoryService } from "@/services/inventoryService";
+import { ApiRequestError } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/authStore";
 import { PrimaryGoal } from "@/schemas";
 
@@ -58,6 +59,7 @@ const goalActions: Record<PrimaryGoal, DashboardAction> = {
 
 const Dashboard: FC = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   // ===== RÉCUPÉRATION DES DONNÉES =====
 
@@ -116,6 +118,15 @@ const Dashboard: FC = () => {
 
   // Gestion des erreurs
   const error = inventoryError || statsError || recentError || expiringError;
+  const isAuthenticationError =
+    error instanceof ApiRequestError && error.status === 401;
+
+  useEffect(() => {
+    if (isAuthenticationError) {
+      void navigate({ to: "/login", replace: true });
+    }
+  }, [isAuthenticationError, navigate]);
+
   const totalInventoryItems =
     inventoryStats?.totalQuantity ??
     scoreInventory.reduce((total, item) => total + (item.quantity ?? 0), 0);
@@ -224,6 +235,10 @@ const Dashboard: FC = () => {
         <div className="animate-spin rounded-full size-12 border-t-4 border-b-4 border-info-500"></div>
       </div>
     );
+  }
+
+  if (isAuthenticationError) {
+    return null;
   }
 
   if (error) {

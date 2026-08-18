@@ -6,11 +6,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import DashboardPage from "./DashboardPage";
 import { inventoryService } from "@/services/inventoryService";
 import { useAuthStore } from "@/stores/authStore";
+import { ApiRequestError } from "@/lib/api-client";
+
+const navigateMock = vi.fn();
 
 vi.mock("@tanstack/react-router", () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => (
     <a href={to}>{children}</a>
   ),
+  useNavigate: () => navigateMock,
 }));
 
 vi.mock("@/stores/authStore", () => ({
@@ -225,6 +229,39 @@ describe("DashboardPage", () => {
       ).toBeInTheDocument();
     });
     expect(screen.getByText("API indisponible")).toBeInTheDocument();
+  });
+
+  it("redirige vers la connexion lorsque la session a expiré", async () => {
+    (
+      inventoryService.getInventory as ReturnType<typeof vi.fn>
+    ).mockRejectedValue(new ApiRequestError("Authentification requise", 401));
+    (
+      inventoryService.getInventoryStats as ReturnType<typeof vi.fn>
+    ).mockResolvedValue({
+      totalQuantity: 0,
+      expiryBreakdown: {
+        good: 0,
+        warning: 0,
+        critical: 0,
+        expired: 0,
+        unknown: 0,
+      },
+    });
+    (
+      inventoryService.getRecentProducts as ReturnType<typeof vi.fn>
+    ).mockResolvedValue([]);
+
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(navigateMock).toHaveBeenCalledWith({
+        to: "/login",
+        replace: true,
+      });
+    });
+    expect(
+      screen.queryByText("Impossible de charger les données du tableau de bord."),
+    ).not.toBeInTheDocument();
   });
 
   it("priorise l'ajout quand l'inventaire est vide", async () => {
