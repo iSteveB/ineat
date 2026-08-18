@@ -18,7 +18,9 @@ Le depot est organise en deux applications principales:
 - Gestion d'inventaire alimentaire avec dates d'achat, peremption, prix et lieu de stockage.
 - Recherche et ajout de produits, avec donnees enrichies OpenFoodFacts cote frontend.
 - Budget mensuel et depenses, dont depenses creees depuis les achats alimentaires.
-- Notifications, recettes et suggestions en cours de structuration.
+- Notifications applicatives et emails planifies avec suivi des seuils budgetaires.
+- Generation de recettes IA depuis l'inventaire, sauvegarde, favoris et action
+  `Fait` avec choix des produits a retirer.
 
 ## Prerequis
 
@@ -116,6 +118,8 @@ Le coeur produit repose sur ce flux:
 1. L'utilisateur ajoute ou scanne des produits dans son inventaire.
 2. Les produits alimentent les widgets du dashboard: stock, produits recents, produits proches de peremption, score global.
 3. Les prix d'achat peuvent creer des depenses et impacter le budget mensuel.
+4. L'inventaire peut servir a generer et sauvegarder des recettes IA; terminer
+   une recette retire uniquement les produits confirmes par l'utilisateur.
 
 ## Documentation Detaillee
 

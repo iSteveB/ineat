@@ -169,6 +169,12 @@ describe('InvoiceService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      arrayBuffer: jest
+        .fn()
+        .mockResolvedValue(Uint8Array.from(Buffer.from('%PDF-1.4')).buffer),
+    } as any);
     loggerSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     service = new InvoiceService(
       prisma as any,
@@ -385,7 +391,7 @@ describe('InvoiceService', () => {
     expect(result).toMatchObject({ id: 'invoice-1' });
   });
 
-  it('traite une facture en file sans buffer et consomme le quota de façon idempotente', async () => {
+  it('télécharge le PDF pour une facture en file et consomme le quota de façon idempotente', async () => {
     prisma.invoice.findFirst.mockResolvedValue({
       ...createdInvoice,
       processingStage: InvoiceProcessingStage.QUEUED,
@@ -401,8 +407,9 @@ describe('InvoiceService', () => {
     );
     expect(invoiceAnalysisService.analyzePdf).toHaveBeenCalledWith(
       createdInvoice.pdfUrl,
-      undefined,
+      expect.any(Buffer),
     );
+    expect(global.fetch).toHaveBeenCalledWith(createdInvoice.pdfUrl);
     expect(usageQuotaService.recordSuccessfulUsage).toHaveBeenCalledWith(
       user,
       'DRIVE_IMPORT',

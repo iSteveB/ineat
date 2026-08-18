@@ -191,9 +191,11 @@ export class InvoiceService {
         { attempt },
       );
       const startedAt = Date.now();
+      const analysisBuffer =
+        pdfBuffer ?? (await this.downloadInvoicePdf(invoice.pdfUrl));
       const analysis = await this.invoiceAnalysisService.analyzePdf(
         invoice.pdfUrl,
-        pdfBuffer,
+        analysisBuffer,
       );
       const processingTime = Date.now() - startedAt;
 
@@ -239,6 +241,22 @@ export class InvoiceService {
 
       throw error;
     }
+  }
+
+  private async downloadInvoicePdf(pdfUrl: string): Promise<Buffer> {
+    const response = await fetch(pdfUrl);
+
+    if (!response.ok) {
+      throw new Error(`Invoice PDF download failed (status=${response.status})`);
+    }
+
+    const pdfBuffer = Buffer.from(await response.arrayBuffer());
+
+    if (!pdfBuffer.subarray(0, 5).equals(Buffer.from('%PDF-'))) {
+      throw new Error('Invoice PDF download returned a non-PDF payload');
+    }
+
+    return pdfBuffer;
   }
 
   private invoiceProcessingMode(): 'sync' | 'bullmq' {

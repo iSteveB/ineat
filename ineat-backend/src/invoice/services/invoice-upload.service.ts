@@ -36,7 +36,7 @@ export class InvoiceUploadService {
     return this.cloudinaryService.uploadRawFile(
       file.buffer,
       `invoices/${userId}`,
-      randomUUID(),
+      `${randomUUID()}.pdf`,
     );
   }
 }

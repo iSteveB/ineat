@@ -37,7 +37,7 @@ describe('InvoiceUploadService', () => {
     expect(cloudinaryService.uploadRawFile).toHaveBeenCalledWith(
       expect.any(Buffer),
       'invoices/user-1',
-      expect.any(String),
+      expect.stringMatching(/\.pdf$/),
     );
     expect(result).toContain('https://res.cloudinary.com');
   });

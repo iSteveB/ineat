@@ -190,6 +190,22 @@ Le scheduler des emails d'essai s'execute toutes les heures. La variable
 optionnelle `BILLING_EMAIL_INTERVAL_MS` permet de modifier cette frequence,
 avec un minimum d'une minute.
 
+### Seuils budgetaires
+
+Deux representations complementaires sont intentionnelles :
+
+- `GET /budget/:budgetId/alerts` calcule sans etat l'avertissement courant
+  affiche sur la page Budget. Il doit rester visible apres rechargement tant
+  que le pourcentage demeure au-dessus de 75, 90 ou 100 % ;
+- le service de notifications persiste et deduplique les occurrences avec les
+  references `budget:threshold_75`, `budget:threshold_90` et
+  `budget:over_budget`. Il resout l'ancienne occurrence quand le seuil actif
+  change ou quand le budget repasse sous 75 %.
+
+Le dernier seuil envoye ne doit donc pas etre ajoute au modele `Budget` : la
+table `Notification` est la source de verite pour la livraison, tandis que la
+route budget expose uniquement l'etat d'affichage courant.
+
 ### Rotation de la cle Resend
 
 1. Creer dans Resend une nouvelle cle limitee a l'envoi depuis `ineat.store`.

@@ -84,4 +84,32 @@ describe('BudgetService', () => {
     expect(budget.periodStart).toEqual(new Date(2026, 2, 1, 0, 0, 0, 0));
     expect(budget.periodEnd).toEqual(new Date(2026, 2, 31, 23, 59, 59, 999));
   });
+
+  it('returns the current budget warning without persisting delivery state', async () => {
+    prisma.budget.findFirst.mockResolvedValue({
+      id: 'budget-1',
+      userId: 'user-1',
+      amount: 100,
+      Expense: [{ amount: 75 }],
+    });
+
+    await expect(service.checkBudgetAlerts('budget-1', 'user-1')).resolves.toEqual([
+      expect.objectContaining({
+        budgetId: 'budget-1',
+        type: 'THRESHOLD_75',
+        isRead: false,
+      }),
+    ]);
+  });
+
+  it('does not display a budget warning below the first threshold', async () => {
+    prisma.budget.findFirst.mockResolvedValue({
+      id: 'budget-1',
+      userId: 'user-1',
+      amount: 100,
+      Expense: [{ amount: 74 }],
+    });
+
+    await expect(service.checkBudgetAlerts('budget-1', 'user-1')).resolves.toEqual([]);
+  });
 });

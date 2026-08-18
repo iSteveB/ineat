@@ -1,5 +1,33 @@
 # Feature recette IA
 
+## Etat au 13 aout 2026
+
+Le MVP decrit dans ce document est livre. Le parcours actuellement implemente
+couvre :
+
+- la generation structuree d'une recette par categorie demandee depuis
+  l'inventaire, en mode strict ou avec ingredients supplementaires ;
+- la prise en compte du nombre de personnes et des restrictions alimentaires ;
+- le quota quotidien de cinq generations, avec consommation transactionnelle ;
+- la consultation des propositions, le drop, la sauvegarde et les favoris ;
+- la generation et le stockage de l'image lors de la sauvegarde ;
+- le book `Mes recettes` et le detail d'une recette sauvegardee ;
+- l'action `Fait`, sa confirmation et le choix des produits d'inventaire a
+  retirer avant validation ;
+- les tests unitaires backend et les tests de parcours frontend associes.
+
+Le controle visuel de la confirmation `Fait` est consigne dans
+`design-qa.md` et ne remonte aucun ecart P0, P1 ou P2.
+
+### Restant hors MVP
+
+- decider si la generation d'images doit avoir son propre quota ;
+- eventuellement historiser les propositions dropees ;
+- definir une politique de doublons pour les sauvegardes ;
+- exploiter les dates de peremption pour prioriser les ingredients ;
+- realiser regulierement une recette de bout en bout sur l'environnement
+  deploye, notamment apres une evolution du traitement des factures.
+
 ## Objectif
 
 Permettre a un utilisateur de generer des recettes a partir de son inventaire, en choisissant les types de recettes souhaites, le nombre de personnes, et le niveau de largesse autorise. Les recettes gardees sont sauvegardees dans `Mes recettes` avec une image illustrative generee au moment de l'enregistrement.
@@ -179,17 +207,17 @@ Points de vigilance :
 - `RecipeIngredient` reference actuellement un `Product`, ce qui peut etre limitant pour les ingredients manquants ou basiques.
 - Les recettes generees non sauvegardees peuvent rester ephemeres cote frontend ou etre persistees temporairement selon l'implementation choisie.
 
-## Decoupage de developpement propose
+## Decoupage de developpement realise
 
-1. Backend : modele de donnees et book de recettes utilisateur.
-2. Backend : service IA de generation structuree avec validation stricte.
-3. Backend : quota 5 generations par jour.
-4. Backend : sauvegarde avec generation d'image et stockage.
-5. Backend : action `Fait` et decrement inventaire.
-6. Frontend : formulaire de generation et cartes de resultats.
-7. Frontend : detail avant sauvegarde et book `Mes recettes`.
-8. Frontend : action `Fait` avec confirmation.
-9. Tests : unites, integration API et cas limites UI.
+1. [x] Backend : modele de donnees et book de recettes utilisateur.
+2. [x] Backend : service IA de generation structuree avec validation stricte.
+3. [x] Backend : quota 5 generations par jour.
+4. [x] Backend : sauvegarde avec generation d'image et stockage.
+5. [x] Backend : action `Fait` et decrement inventaire.
+6. [x] Frontend : formulaire de generation et cartes de resultats.
+7. [x] Frontend : detail avant sauvegarde et book `Mes recettes`.
+8. [x] Frontend : action `Fait` avec confirmation et selection des produits.
+9. [x] Tests : unites backend et parcours UI principaux.
 
 ## Questions non bloquantes pour plus tard
 

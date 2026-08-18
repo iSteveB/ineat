@@ -9,6 +9,11 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['**/*.{test,spec}.{ts,tsx}'],
+    // Keep interactive UI tests responsive when the complete suite runs on
+    // machines with many logical CPUs. Vitest's percentage-based defaults can
+    // otherwise start enough Happy DOM workers to make 5-second tests time out.
+    minWorkers: 1,
+    maxWorkers: 4,
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [

@@ -255,13 +255,11 @@ export class BudgetService {
     const stats = await this.getBudgetStats(budgetId, userId);
     const alerts: BudgetAlert[] = [];
 
-    // Récupérer le dernier pourcentage d'alerte envoyé (à implémenter selon tes besoins)
-    const lastAlertPercentage = 0; // TODO: récupérer depuis la DB ou cache
-
-    const alertCheck: AlertCheckResult = shouldTriggerAlert(
-      stats,
-      lastAlertPercentage,
-    );
+    // This endpoint describes the budget's current display state. It is
+    // intentionally stateless so the warning remains visible after a reload.
+    // Persistent delivery and deduplication are handled by NotificationService
+    // with the budget:threshold_75/90 and budget:over_budget reference types.
+    const alertCheck: AlertCheckResult = shouldTriggerAlert(stats, 0);
 
     if (alertCheck.shouldAlert && alertCheck.alertType) {
       const alert: BudgetAlert = {
