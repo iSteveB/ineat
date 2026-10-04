@@ -329,5 +329,31 @@ describe('RecipeService', () => {
         name: 'Pommes',
       },
     ]);
+
+    prisma.inventoryItem.deleteMany.mockClear();
+    const keepAllResult = await service.completeRecipe(
+      'user-1',
+      'recipe-saved',
+      true,
+      [],
+    );
+
+    expect(prisma.inventoryItem.deleteMany).not.toHaveBeenCalled();
+    expect(keepAllResult.data.removedItems).toEqual([]);
+
+    const removeAllResult = await service.completeRecipe(
+      'user-1',
+      'recipe-saved',
+      true,
+      ['inventory-apple', 'inventory-yogurt'],
+    );
+
+    expect(prisma.inventoryItem.deleteMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        id: { in: ['inventory-apple', 'inventory-yogurt'] },
+      },
+    });
+    expect(removeAllResult.data.removedItems).toHaveLength(2);
   });
 });

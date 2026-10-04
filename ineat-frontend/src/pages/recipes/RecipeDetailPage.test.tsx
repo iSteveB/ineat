@@ -176,19 +176,23 @@ describe('RecipeDetailPage', () => {
 				'recipe-1'
 			);
 		});
-		expect(screen.getAllByText('Riz').length).toBeGreaterThan(0);
-		expect(screen.getAllByText('Petits pois').length).toBeGreaterThan(0);
+		expect(
+			screen.getByRole('checkbox', { name: /retirer riz/i })
+		).toBeChecked();
+		expect(
+			screen.getByRole('checkbox', { name: /retirer petits pois/i })
+		).toBeChecked();
 		expect(screen.queryByText('Sel')).toBeInTheDocument();
 		await user.click(
-			screen.getByRole('button', {
-				name: /ne pas retirer petits pois de l’inventaire/i,
+			screen.getByRole('checkbox', {
+				name: /retirer petits pois/i,
 			})
 		);
 		expect(
-			screen.queryByRole('button', {
-				name: /ne pas retirer petits pois de l’inventaire/i,
+			screen.getByRole('checkbox', {
+				name: /retirer petits pois/i,
 			})
-		).not.toBeInTheDocument();
+		).not.toBeChecked();
 
 		await user.click(screen.getByRole('button', { name: /confirmer/i }));
 
@@ -207,6 +211,51 @@ describe('RecipeDetailPage', () => {
 				name: /marquer la recette comme faite/i,
 			})
 		).not.toBeInTheDocument();
+	});
+
+	it('permet de conserver tous les ingrédients utilisés', async () => {
+		const user = userEvent.setup();
+
+		renderRecipeDetail();
+
+		await screen.findByText('Riz aux petits pois');
+		await user.click(
+			screen.getByRole('button', { name: /marquer comme fait/i })
+		);
+		await screen.findByRole('alertdialog', {
+			name: /marquer la recette comme faite/i,
+		});
+		await user.click(screen.getByRole('button', { name: /tout conserver/i }));
+		await user.click(screen.getByRole('button', { name: /confirmer/i }));
+
+		await waitFor(() => {
+			expect(recipeService.completeRecipe).toHaveBeenCalledWith(
+				'recipe-1',
+				[]
+			);
+		});
+	});
+
+	it('sélectionne tous les ingrédients utilisés par défaut', async () => {
+		const user = userEvent.setup();
+
+		renderRecipeDetail();
+
+		await screen.findByText('Riz aux petits pois');
+		await user.click(
+			screen.getByRole('button', { name: /marquer comme fait/i })
+		);
+		await screen.findByRole('alertdialog', {
+			name: /marquer la recette comme faite/i,
+		});
+		await user.click(screen.getByRole('button', { name: /confirmer/i }));
+
+		await waitFor(() => {
+			expect(recipeService.completeRecipe).toHaveBeenCalledWith('recipe-1', [
+				'inventory-1',
+				'inventory-2',
+			]);
+		});
 	});
 
 	it('affiche un accès premium si les recettes ne sont pas disponibles', () => {

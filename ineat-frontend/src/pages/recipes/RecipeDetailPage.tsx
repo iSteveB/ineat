@@ -9,7 +9,6 @@ import {
 	ImageOff,
 	ShoppingBasket,
 	Users,
-	X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -54,6 +53,9 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	const canUseRecipes = Boolean(user?.capabilities.canUseRecipes);
 	const [completionPreview, setCompletionPreview] =
 		useState<CompletionPreview | null>(null);
+	const [selectedInventoryItemIds, setSelectedInventoryItemIds] = useState<
+		string[]
+	>([]);
 	const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
 	const {
@@ -71,6 +73,9 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 		mutationFn: recipeService.getCompletionPreview,
 		onSuccess: (preview) => {
 			setCompletionPreview(preview);
+			setSelectedInventoryItemIds(
+				preview.items.map((item) => item.inventoryItemId)
+			);
 			setIsConfirmOpen(true);
 		},
 		onError: (error) => {
@@ -96,6 +101,8 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 			queryClient.invalidateQueries({ queryKey: ['recipes', 'saved'] });
 			queryClient.invalidateQueries({ queryKey: ['inventory'] });
 			setIsConfirmOpen(false);
+			setCompletionPreview(null);
+			setSelectedInventoryItemIds([]);
 			toast.success('Recette marquée comme faite', {
 				description:
 					data.removedItems.length > 0
@@ -240,40 +247,63 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Marquer la recette comme faite ?</AlertDialogTitle>
 						<AlertDialogDescription>
-							Les produits suivants seront retirés de l’inventaire. Les basiques
-							et ingrédients manquants ne seront pas modifiés.
+							Choisissez les ingrédients utilisés à retirer de l’inventaire. Les
+							basiques et ingrédients manquants ne seront pas modifiés.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					{completionPreview?.items.length ? (
-						<ul className='space-y-2 text-sm text-neutral-700'>
-							{completionPreview.items.map((item) => (
-								<li
-									key={item.inventoryItemId}
-									className='flex items-center justify-between gap-3 rounded-md bg-neutral-100 px-3 py-2'>
-									<span>{item.name}</span>
-									<button
-										type='button'
-										className='shrink-0 rounded-full p-1 text-red-600 transition-colors hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2'
-										aria-label={`Ne pas retirer ${item.name} de l’inventaire`}
-										onClick={() =>
-											setCompletionPreview((preview) =>
-												preview
-													? {
-														...preview,
-														items: preview.items.filter(
-															(candidate) =>
-																candidate.inventoryItemId !==
-																item.inventoryItemId
-														),
-													  }
-													: preview
+						<div className='space-y-3'>
+							<div className='flex gap-2'>
+								<Button
+									type='button'
+									variant='outline'
+									size='sm'
+									onClick={() =>
+										setSelectedInventoryItemIds(
+											completionPreview.items.map(
+												(item) => item.inventoryItemId
 											)
-										}>
-										<X className='size-4' aria-hidden='true' />
-									</button>
-								</li>
-							))}
-						</ul>
+										)
+									}>
+									Tout retirer
+								</Button>
+								<Button
+									type='button'
+									variant='outline'
+									size='sm'
+									onClick={() => setSelectedInventoryItemIds([])}>
+									Tout conserver
+								</Button>
+							</div>
+							<ul className='space-y-2 text-sm text-neutral-700'>
+								{completionPreview.items.map((item) => {
+									const isSelected = selectedInventoryItemIds.includes(
+										item.inventoryItemId
+									);
+
+									return (
+										<li key={item.inventoryItemId}>
+											<label className='flex cursor-pointer items-center gap-3 rounded-md bg-neutral-100 px-3 py-2'>
+												<input
+													type='checkbox'
+													checked={isSelected}
+													onChange={() =>
+														setSelectedInventoryItemIds((selectedIds) =>
+															isSelected
+																? selectedIds.filter(
+																	(id) => id !== item.inventoryItemId
+																  )
+																: [...selectedIds, item.inventoryItemId]
+														)
+													}
+												/>
+												<span>Retirer {item.name}</span>
+											</label>
+										</li>
+									);
+								})}
+							</ul>
+						</div>
 					) : (
 						<p className='text-sm text-neutral-600'>
 							Aucun produit de l’inventaire ne sera retiré.
@@ -286,10 +316,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 							onClick={() =>
 								completeMutation.mutate({
 									recipeId: recipe.id,
-									inventoryItemIds:
-										completionPreview?.items.map(
-											(item) => item.inventoryItemId
-										) ?? [],
+									inventoryItemIds: selectedInventoryItemIds,
 								})
 							}>
 							Confirmer
