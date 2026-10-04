@@ -316,6 +316,20 @@ const ProfilePage = () => {
 								</div>
 								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
 							</Link>
+							<Link
+								to='/app/recipes/suggestions'
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								<div className='flex items-center gap-3'>
+									<Sparkles className='size-5 text-neutral-500' />
+									<div>
+										<p className='text-sm text-neutral-500'>Images de recettes restantes</p>
+										<p className='font-semibold'>
+											{user?.capabilities.aiRecipeImageGenerationRemaining ?? 0}
+										</p>
+									</div>
+								</div>
+								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+							</Link>
 						</CardContent>
 					</Card>
 				</div>

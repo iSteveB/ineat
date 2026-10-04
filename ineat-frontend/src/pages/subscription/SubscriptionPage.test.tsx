@@ -182,6 +182,7 @@ describe('SubscriptionPage', () => {
 				canUseRecipes: true,
 				canGenerateAiRecipes: true,
 				aiRecipeGenerationRemaining: 100,
+				aiRecipeImageGenerationRemaining: 5,
 				canImportDrive: true,
 				driveImportsRemaining: 25,
 				canUseAutomaticBudgetSync: true,
@@ -196,6 +197,8 @@ describe('SubscriptionPage', () => {
 
 		render(<SubscriptionPage />);
 
+		expect(screen.getByText('Images recettes')).toBeInTheDocument();
+		expect(screen.getByText('5 restantes')).toBeInTheDocument();
 		expect(
 			screen.getByText(/Facturation annuelle gérée par Stripe, renouvellement le/)
 		).toBeInTheDocument();

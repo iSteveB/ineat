@@ -22,6 +22,7 @@ export interface AccessCapabilities {
   canUseRecipes: boolean;
   canGenerateAiRecipes: boolean;
   aiRecipeGenerationRemaining: number;
+  aiRecipeImageGenerationRemaining: number;
   canImportDrive: boolean;
   driveImportsRemaining: number;
   canUseAutomaticBudgetSync: boolean;
@@ -53,6 +54,10 @@ export class AccessPolicyService {
       canUseRecipes: isPremiumLike,
       canGenerateAiRecipes: isPremiumLike,
       aiRecipeGenerationRemaining: this.getAiRecipeGenerationLimit(
+        effectivePlan,
+        isTrial,
+      ),
+      aiRecipeImageGenerationRemaining: this.getAiRecipeGenerationLimit(
         effectivePlan,
         isTrial,
       ),

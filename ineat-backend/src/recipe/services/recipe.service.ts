@@ -86,10 +86,15 @@ export class RecipeService {
   async saveGeneratedRecipe(userId: string, dto: SaveGeneratedRecipeDto) {
     const recipe = dto.recipe;
     this.validateSavedGeneratedRecipe(recipe);
+    const user = await this.getUserForRecipe(userId);
 
     let imageUrl: string | null = null;
 
     try {
+      await this.usageQuotaService.assertCanConsume(
+        user,
+        UsageType.AI_RECIPE_IMAGE_GENERATION,
+      );
       const image = await this.openAiRecipeService.generateRecipeImage(
         recipe.name,
       );
@@ -97,6 +102,12 @@ export class RecipeService {
         image,
         'recipes',
         `recipe_${userId}_${Date.now()}`,
+      );
+      await this.usageQuotaService.recordSuccessfulUsage(
+        user,
+        UsageType.AI_RECIPE_IMAGE_GENERATION,
+        new Date(),
+        `recipe-image:${userId}:${recipe.clientId}`,
       );
     } catch {
       imageUrl = null;

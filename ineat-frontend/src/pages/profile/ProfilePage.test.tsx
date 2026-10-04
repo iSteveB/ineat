@@ -38,6 +38,7 @@ const user = {
 	effectivePlan: 'PREMIUM',
 	capabilities: {
 		aiRecipeGenerationRemaining: 8,
+		aiRecipeImageGenerationRemaining: 4,
 		driveImportsRemaining: 2,
 	},
 };
@@ -75,11 +76,12 @@ describe('ProfilePage', () => {
 		renderPage();
 
 		expect(await screen.findByText('9')).toBeInTheDocument();
-		expect(screen.getByText('4')).toBeInTheDocument();
+		expect(screen.getAllByText('4')).toHaveLength(2);
 		expect(screen.getByText('Économiser')).toBeInTheDocument();
 		expect(screen.getByText('Gluten')).toBeInTheDocument();
 		expect(screen.getByText('Végétarien')).toBeInTheDocument();
 		expect(screen.getByText('8')).toBeInTheDocument();
+		expect(screen.getByText('Images de recettes restantes')).toBeInTheDocument();
 		expect(screen.getByText('2')).toBeInTheDocument();
 
 		expect(

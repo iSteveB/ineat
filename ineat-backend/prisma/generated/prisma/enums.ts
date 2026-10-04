@@ -250,6 +250,7 @@ export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus]
 
 export const UsageType = {
   AI_RECIPE_GENERATION: 'AI_RECIPE_GENERATION',
+  AI_RECIPE_IMAGE_GENERATION: 'AI_RECIPE_IMAGE_GENERATION',
   DRIVE_IMPORT: 'DRIVE_IMPORT'
 } as const
 

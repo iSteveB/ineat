@@ -749,5 +749,6 @@ enum AccountStatus {
 
 enum UsageType {
   AI_RECIPE_GENERATION
+  AI_RECIPE_IMAGE_GENERATION
   DRIVE_IMPORT
 }

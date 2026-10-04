@@ -71,7 +71,7 @@ describe('RecipeService', () => {
   let prisma: {
     user: { findUnique: jest.Mock };
     inventoryItem: { findMany: jest.Mock; deleteMany: jest.Mock };
-    recipe: { findFirst: jest.Mock; update: jest.Mock };
+    recipe: { create: jest.Mock; findFirst: jest.Mock; update: jest.Mock };
     $transaction: jest.Mock;
   };
   let usageQuotaService: {
@@ -82,6 +82,7 @@ describe('RecipeService', () => {
     generateRecipes: jest.Mock;
     generateRecipeImage: jest.Mock;
   };
+  let cloudinaryService: { uploadImage: jest.Mock };
   let service: RecipeService;
 
   beforeEach(() => {
@@ -93,6 +94,7 @@ describe('RecipeService', () => {
         deleteMany: jest.fn(),
       },
       recipe: {
+        create: jest.fn(),
         findFirst: jest.fn(),
         update: jest.fn(),
       },
@@ -106,12 +108,90 @@ describe('RecipeService', () => {
       generateRecipes: jest.fn(),
       generateRecipeImage: jest.fn(),
     };
+    cloudinaryService = {
+      uploadImage: jest.fn(),
+    };
     service = new RecipeService(
       prisma as any,
       usageQuotaService as any,
       openAiRecipeService as any,
-      {} as any,
+      cloudinaryService as any,
     );
+  });
+
+  it('consomme une unité du quota image uniquement après une génération réussie', async () => {
+    const createdAt = new Date('2026-10-04T12:00:00.000Z');
+    openAiRecipeService.generateRecipeImage.mockResolvedValue(
+      Buffer.from('image'),
+    );
+    cloudinaryService.uploadImage.mockResolvedValue(
+      'https://images.example/recipe.webp',
+    );
+    prisma.recipe.create.mockResolvedValue({
+      id: 'saved-recipe-1',
+      ...baseGeneratedRecipe,
+      instructions: baseGeneratedRecipe.steps.join('\n'),
+      source: 'AI',
+      imageUrl: 'https://images.example/recipe.webp',
+      doneAt: null,
+      isFavorite: false,
+      createdAt,
+      updatedAt: createdAt,
+      RecipeIngredient: baseGeneratedRecipe.ingredients.map(
+        (ingredient, index) => ({
+          id: `ingredient-${index}`,
+          ...ingredient,
+        }),
+      ),
+    });
+
+    const result = await service.saveGeneratedRecipe('user-1', {
+      recipe: baseGeneratedRecipe,
+    });
+
+    expect(usageQuotaService.assertCanConsume).toHaveBeenCalledWith(
+      user,
+      UsageType.AI_RECIPE_IMAGE_GENERATION,
+    );
+    expect(usageQuotaService.recordSuccessfulUsage).toHaveBeenCalledWith(
+      user,
+      UsageType.AI_RECIPE_IMAGE_GENERATION,
+      expect.any(Date),
+      'recipe-image:user-1:recipe-1',
+    );
+    expect(result.data.imageUrl).toBe('https://images.example/recipe.webp');
+  });
+
+  it('sauvegarde la recette sans image quand le quota image est épuisé', async () => {
+    const createdAt = new Date('2026-10-04T12:00:00.000Z');
+    usageQuotaService.assertCanConsume.mockRejectedValueOnce(
+      new BadRequestException('Quota image atteint'),
+    );
+    prisma.recipe.create.mockResolvedValue({
+      id: 'saved-recipe-1',
+      ...baseGeneratedRecipe,
+      instructions: baseGeneratedRecipe.steps.join('\n'),
+      source: 'AI',
+      imageUrl: null,
+      doneAt: null,
+      isFavorite: false,
+      createdAt,
+      updatedAt: createdAt,
+      RecipeIngredient: baseGeneratedRecipe.ingredients.map(
+        (ingredient, index) => ({
+          id: `ingredient-${index}`,
+          ...ingredient,
+        }),
+      ),
+    });
+
+    const result = await service.saveGeneratedRecipe('user-1', {
+      recipe: baseGeneratedRecipe,
+    });
+
+    expect(openAiRecipeService.generateRecipeImage).not.toHaveBeenCalled();
+    expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
+    expect(result.data.imageUrl).toBeNull();
   });
 
   it('génère une recette par catégorie demandée et consomme le quota après validation', async () => {

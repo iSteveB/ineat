@@ -161,6 +161,12 @@ export const SubscriptionPage: React.FC = () => {
       capabilities.canGenerateAiRecipes &&
       capabilities.aiRecipeGenerationRemaining === 0
   );
+  const aiImageQuotaReached = Boolean(
+    capabilities &&
+      isPremium &&
+      capabilities.canGenerateAiRecipes &&
+      capabilities.aiRecipeImageGenerationRemaining === 0
+  );
   const driveQuotaReached = Boolean(
     capabilities &&
       isPremium &&
@@ -453,7 +459,7 @@ export const SubscriptionPage: React.FC = () => {
     if (!capabilities) return null;
 
     return (
-      <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
           <p className="text-xs font-medium uppercase text-muted-foreground">Inventaire</p>
           <p className="mt-1 text-lg font-semibold">{capabilities.inventoryLimit} articles</p>
@@ -463,7 +469,16 @@ export const SubscriptionPage: React.FC = () => {
           <p className="mt-1 text-lg font-semibold">{capabilities.aiRecipeGenerationRemaining} restante{capabilities.aiRecipeGenerationRemaining > 1 ? 's' : ''}</p>
           {aiQuotaReached && (
             <p className="mt-1 text-sm text-orange-800">
-              {isTrial ? 'Vous avez utilisé vos 10 générations d’essai.' : 'Vous avez atteint vos 100 générations ce mois-ci.'}
+              Quota quotidien de recettes atteint.
+            </p>
+          )}
+        </div>
+        <div className={`rounded-lg border p-4 ${aiImageQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-neutral-50'}`}>
+          <p className="text-xs font-medium uppercase text-muted-foreground">Images recettes</p>
+          <p className="mt-1 text-lg font-semibold">{capabilities.aiRecipeImageGenerationRemaining} restante{capabilities.aiRecipeImageGenerationRemaining > 1 ? 's' : ''}</p>
+          {aiImageQuotaReached && (
+            <p className="mt-1 text-sm text-orange-800">
+              Quota quotidien d’images atteint. Les recettes restent sauvegardables sans image.
             </p>
           )}
         </div>

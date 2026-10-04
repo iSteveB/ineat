@@ -96,6 +96,30 @@ describe('UsageQuotaService', () => {
     });
   });
 
+  it('devrait accorder le même quota quotidien aux images de recettes', async () => {
+    prisma.usageQuota.findUnique.mockResolvedValue({ usedCount: 2 });
+
+    const state = await service.getUsageState(
+      {
+        id: 'user-1',
+        role: 'USER',
+        subscriptionPlan: 'PREMIUM',
+        subscriptionStatus: 'ACTIVE',
+        currentPeriodEndsAt: '2026-06-15T12:00:00.000Z',
+      },
+      'AI_RECIPE_IMAGE_GENERATION',
+      now,
+    );
+
+    expect(state).toMatchObject({
+      limit: 5,
+      usedCount: 2,
+      remaining: 3,
+      periodStart: new Date('2026-05-15T00:00:00.000Z'),
+      periodEnd: new Date('2026-05-16T00:00:00.000Z'),
+    });
+  });
+
   it('devrait utiliser le quota Drive Trial', async () => {
     const state = await service.getUsageState(
       {

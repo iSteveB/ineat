@@ -54,6 +54,7 @@ export const toSafeUserResponse = (
       canUseRecipes: false,
       canGenerateAiRecipes: false,
       aiRecipeGenerationRemaining: 0,
+      aiRecipeImageGenerationRemaining: 0,
       canImportDrive: false,
       driveImportsRemaining: 0,
       canUseAutomaticBudgetSync: false,
@@ -97,10 +98,14 @@ export const toSafeUserResponseWithUsage = async (
   usageQuotaService: UsageQuotaService,
 ) => {
   const response = toSafeUserResponse(user, accessPolicyService);
-  const [aiUsage, driveUsage] = await Promise.all([
+  const [aiUsage, aiImageUsage, driveUsage] = await Promise.all([
     usageQuotaService.getUsageState(
       user as SafeUserDto & { id: string },
       'AI_RECIPE_GENERATION',
+    ),
+    usageQuotaService.getUsageState(
+      user as SafeUserDto & { id: string },
+      'AI_RECIPE_IMAGE_GENERATION',
     ),
     usageQuotaService.getUsageState(
       user as SafeUserDto & { id: string },
@@ -113,6 +118,7 @@ export const toSafeUserResponseWithUsage = async (
     capabilities: {
       ...response.capabilities,
       aiRecipeGenerationRemaining: aiUsage.remaining,
+      aiRecipeImageGenerationRemaining: aiImageUsage.remaining,
       driveImportsRemaining: driveUsage.remaining,
     },
   };

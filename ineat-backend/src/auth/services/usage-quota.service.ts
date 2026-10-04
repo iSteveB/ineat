@@ -199,7 +199,9 @@ export class UsageQuotaService {
         usageLabel:
           usageType === 'AI_RECIPE_GENERATION'
             ? 'générations de recettes IA'
-            : 'imports de factures',
+            : usageType === 'AI_RECIPE_IMAGE_GENERATION'
+              ? 'générations d’images de recettes'
+              : 'imports de factures',
         usedCount: state.usedCount,
         limit: state.limit,
         resetsAt: state.periodEnd,
@@ -232,7 +234,10 @@ export class UsageQuotaService {
       };
     }
 
-    if (usageType === 'AI_RECIPE_GENERATION') {
+    if (
+      usageType === 'AI_RECIPE_GENERATION' ||
+      usageType === 'AI_RECIPE_IMAGE_GENERATION'
+    ) {
       return {
         limit: 5,
         periodStart: new Date(
