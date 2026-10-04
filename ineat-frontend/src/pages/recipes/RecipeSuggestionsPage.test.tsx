@@ -207,6 +207,7 @@ describe('RecipeSuggestionsPage', () => {
 			expect(recipeService.saveGeneratedRecipe).toHaveBeenCalledWith(
 				starterRecipe
 			);
+			expect(refreshProfile).toHaveBeenCalledTimes(2);
 		});
 		expect(screen.queryByText('Houmous citronné')).not.toBeInTheDocument();
 	});

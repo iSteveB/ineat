@@ -149,15 +149,16 @@ export function RecipeSuggestionsPage() {
 
 	const saveMutation = useMutation({
 		mutationFn: recipeService.saveGeneratedRecipe,
-		onSuccess: (savedRecipe, recipeToSave) => {
+		onSuccess: async (savedRecipe, recipeToSave) => {
 			setGeneratedRecipes((recipes) =>
 				recipes.filter((recipe) => recipe.clientId !== recipeToSave.clientId)
 			);
 			queryClient.invalidateQueries({ queryKey: ['recipes', 'saved'] });
+			await refreshProfile();
 			toast.success('Recette sauvegardée', {
 				description: savedRecipe.imageUrl
 					? 'Image générée et associée.'
-					: "L'image sera à régénérer plus tard.",
+					: 'Recette sauvegardée sans image.',
 			});
 		},
 		onError: (error) => {
