@@ -21,6 +21,7 @@ const user = {
 const inventoryItems = [
   {
     productId: 'product-apple',
+    expiryDate: new Date('2026-10-10T12:00:00.000Z'),
     Product: {
       name: 'Pommes',
       Category: { name: 'Fruits' },
@@ -28,6 +29,7 @@ const inventoryItems = [
   },
   {
     productId: 'product-yogurt',
+    expiryDate: new Date('2026-10-05T12:00:00.000Z'),
     Product: {
       name: 'Yaourt nature',
       Category: { name: 'Produits laitiers' },
@@ -83,6 +85,7 @@ describe('RecipeService', () => {
   let service: RecipeService;
 
   beforeEach(() => {
+    jest.useRealTimers();
     prisma = {
       user: { findUnique: jest.fn().mockResolvedValue(user) },
       inventoryItem: {
@@ -112,6 +115,7 @@ describe('RecipeService', () => {
   });
 
   it('génère une recette par catégorie demandée et consomme le quota après validation', async () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-10-04T12:00:00.000Z'));
     openAiRecipeService.generateRecipes.mockResolvedValue([
       baseGeneratedRecipe,
       {
@@ -146,6 +150,26 @@ describe('RecipeService', () => {
     expect(usageQuotaService.recordSuccessfulUsage).toHaveBeenCalledWith(
       user,
       UsageType.AI_RECIPE_GENERATION,
+    );
+    expect(openAiRecipeService.generateRecipes).toHaveBeenCalledWith(
+      expect.objectContaining({
+        inventory: [
+          {
+            productId: 'product-yogurt',
+            name: 'Yaourt nature',
+            category: 'Produits laitiers',
+            expiryDate: '2026-10-05T12:00:00.000Z',
+            daysUntilExpiry: 1,
+          },
+          {
+            productId: 'product-apple',
+            name: 'Pommes',
+            category: 'Fruits',
+            expiryDate: '2026-10-10T12:00:00.000Z',
+            daysUntilExpiry: 6,
+          },
+        ],
+      }),
     );
   });
 

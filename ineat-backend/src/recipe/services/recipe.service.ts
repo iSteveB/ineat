@@ -288,7 +288,38 @@ export class RecipeService {
         productId: item.productId,
         name: item.Product.name,
         category: item.Product.Category?.name ?? null,
-      }));
+        expiryDate: item.expiryDate?.toISOString() ?? null,
+        daysUntilExpiry: item.expiryDate
+          ? this.getDaysUntilExpiry(item.expiryDate)
+          : null,
+      }))
+      .sort((left, right) => {
+        if (
+          left.daysUntilExpiry === null &&
+          right.daysUntilExpiry === null
+        ) {
+          return 0;
+        }
+        if (left.daysUntilExpiry === null) return 1;
+        if (right.daysUntilExpiry === null) return -1;
+        return left.daysUntilExpiry - right.daysUntilExpiry;
+      });
+  }
+
+  private getDaysUntilExpiry(expiryDate: Date) {
+    const today = new Date();
+    const todayUtc = Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+    );
+    const expiryUtc = Date.UTC(
+      expiryDate.getUTCFullYear(),
+      expiryDate.getUTCMonth(),
+      expiryDate.getUTCDate(),
+    );
+
+    return Math.round((expiryUtc - todayUtc) / (1000 * 60 * 60 * 24));
   }
 
   private validateInventoryForGeneration(

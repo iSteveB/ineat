@@ -16,6 +16,8 @@ export interface RecipeInventoryIngredient {
   productId: string;
   name: string;
   category?: string | null;
+  expiryDate?: string | null;
+  daysUntilExpiry?: number | null;
 }
 
 export interface RecipeGenerationInput {
@@ -177,6 +179,7 @@ export class OpenAiRecipeService {
       'Génère exactement une recette par type demandé.',
       'En mode STRICT, utilise uniquement les ingrédients de l’inventaire et les basiques.',
       'En mode FLEXIBLE, ne dépasse jamais la limite d’ingrédients manquants.',
+      'L’inventaire est trié par urgence de péremption : utilise en priorité les produits dont daysUntilExpiry est le plus faible, notamment les produits expirés ou proches de leur date.',
       'Les basiques sont seulement sel, poivre, eau, huile neutre et ne comptent pas comme manquants.',
       'Respecte strictement les restrictions alimentaires et allergènes utilisateur.',
       'Ne donne pas de conseils, variantes, nutrition, ni matériel.',
