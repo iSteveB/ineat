@@ -374,6 +374,7 @@ model Recipe {
   imageUrl           String?
   type               RecipeType         @default(MAIN)
   source             RecipeSource       @default(MANUAL)
+  generationKey      String?
   basicIngredients   Json               @default("[]")
   missingIngredients Json               @default("[]")
   steps              Json               @default("[]")
@@ -388,6 +389,7 @@ model Recipe {
   @@index([userId, createdAt])
   @@index([userId, type])
   @@index([userId, isFavorite])
+  @@unique([userId, generationKey])
 }
 
 model RecipeIngredient {

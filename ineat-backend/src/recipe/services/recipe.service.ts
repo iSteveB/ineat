@@ -87,36 +87,19 @@ export class RecipeService {
     const recipe = dto.recipe;
     this.validateSavedGeneratedRecipe(recipe);
     const user = await this.getUserForRecipe(userId);
+    const recipeId = randomUUID();
 
-    let imageUrl: string | null = null;
-
-    try {
-      await this.usageQuotaService.assertCanConsume(
-        user,
-        UsageType.AI_RECIPE_IMAGE_GENERATION,
-      );
-      const image = await this.openAiRecipeService.generateRecipeImage(
-        recipe.name,
-      );
-      imageUrl = await this.cloudinaryService.uploadImage(
-        image,
-        'recipes',
-        `recipe_${userId}_${Date.now()}`,
-      );
-      await this.usageQuotaService.recordSuccessfulUsage(
-        user,
-        UsageType.AI_RECIPE_IMAGE_GENERATION,
-        new Date(),
-        `recipe-image:${userId}:${recipe.clientId}`,
-      );
-    } catch {
-      imageUrl = null;
-    }
-
-    const savedRecipe = await this.prisma.recipe.create({
-      data: {
-        id: randomUUID(),
+    let savedRecipe = await this.prisma.recipe.upsert({
+      where: {
+        userId_generationKey: {
+          userId,
+          generationKey: recipe.clientId,
+        },
+      },
+      create: {
+        id: recipeId,
         userId,
+        generationKey: recipe.clientId,
         name: recipe.name,
         description: recipe.description ?? null,
         instructions: recipe.steps.join('\n'),
@@ -126,7 +109,7 @@ export class RecipeService {
         difficulty: recipe.difficulty as RecipeDifficulty,
         type: recipe.type as RecipeType,
         source: RecipeSource.AI,
-        imageUrl,
+        imageUrl: null,
         steps: recipe.steps as Prisma.InputJsonValue,
         basicIngredients: recipe.basicIngredients as Prisma.InputJsonValue,
         missingIngredients: recipe.missingIngredients as Prisma.InputJsonValue,
@@ -145,13 +128,50 @@ export class RecipeService {
           })),
         },
       },
+      update: {},
       include: this.recipeInclude(),
     });
+
+    if (savedRecipe.id !== recipeId) {
+      return {
+        success: true,
+        data: this.formatRecipe(savedRecipe),
+        message: 'Recette déjà sauvegardée',
+      };
+    }
+
+    try {
+      await this.usageQuotaService.assertCanConsume(
+        user,
+        UsageType.AI_RECIPE_IMAGE_GENERATION,
+      );
+      const image = await this.openAiRecipeService.generateRecipeImage(
+        recipe.name,
+      );
+      const imageUrl = await this.cloudinaryService.uploadImage(
+        image,
+        'recipes',
+        `recipe_${userId}_${Date.now()}`,
+      );
+      await this.usageQuotaService.recordSuccessfulUsage(
+        user,
+        UsageType.AI_RECIPE_IMAGE_GENERATION,
+        new Date(),
+        `recipe-image:${userId}:${recipe.clientId}`,
+      );
+      savedRecipe = await this.prisma.recipe.update({
+        where: { id: recipeId },
+        data: { imageUrl, updatedAt: new Date() },
+        include: this.recipeInclude(),
+      });
+    } catch {
+      // La recette reste sauvegardée sans image si le quota ou le fournisseur échoue.
+    }
 
     return {
       success: true,
       data: this.formatRecipe(savedRecipe),
-      message: imageUrl
+      message: savedRecipe.imageUrl
         ? 'Recette sauvegardée'
         : "Recette sauvegardée sans image pour l'instant",
     };
@@ -416,7 +436,11 @@ export class RecipeService {
   }
 
   private validateSavedGeneratedRecipe(recipe: GeneratedRecipePayloadDto) {
-    if (!recipe.steps?.length || !recipe.ingredients?.length) {
+    if (
+      !recipe.clientId?.trim() ||
+      !recipe.steps?.length ||
+      !recipe.ingredients?.length
+    ) {
       throw new BadRequestException('Recette incomplète');
     }
   }

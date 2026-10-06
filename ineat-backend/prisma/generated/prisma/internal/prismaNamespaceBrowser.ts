@@ -390,6 +390,7 @@ export const RecipeScalarFieldEnum = {
   imageUrl: 'imageUrl',
   type: 'type',
   source: 'source',
+  generationKey: 'generationKey',
   basicIngredients: 'basicIngredients',
   missingIngredients: 'missingIngredients',
   steps: 'steps',

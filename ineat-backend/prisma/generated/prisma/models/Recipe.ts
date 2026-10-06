@@ -51,6 +51,7 @@ export type RecipeMinAggregateOutputType = {
   imageUrl: string | null
   type: $Enums.RecipeType | null
   source: $Enums.RecipeSource | null
+  generationKey: string | null
   doneAt: Date | null
   isFavorite: boolean | null
   createdAt: Date | null
@@ -70,6 +71,7 @@ export type RecipeMaxAggregateOutputType = {
   imageUrl: string | null
   type: $Enums.RecipeType | null
   source: $Enums.RecipeSource | null
+  generationKey: string | null
   doneAt: Date | null
   isFavorite: boolean | null
   createdAt: Date | null
@@ -89,6 +91,7 @@ export type RecipeCountAggregateOutputType = {
   imageUrl: number
   type: number
   source: number
+  generationKey: number
   basicIngredients: number
   missingIngredients: number
   steps: number
@@ -125,6 +128,7 @@ export type RecipeMinAggregateInputType = {
   imageUrl?: true
   type?: true
   source?: true
+  generationKey?: true
   doneAt?: true
   isFavorite?: true
   createdAt?: true
@@ -144,6 +148,7 @@ export type RecipeMaxAggregateInputType = {
   imageUrl?: true
   type?: true
   source?: true
+  generationKey?: true
   doneAt?: true
   isFavorite?: true
   createdAt?: true
@@ -163,6 +168,7 @@ export type RecipeCountAggregateInputType = {
   imageUrl?: true
   type?: true
   source?: true
+  generationKey?: true
   basicIngredients?: true
   missingIngredients?: true
   steps?: true
@@ -272,6 +278,7 @@ export type RecipeGroupByOutputType = {
   imageUrl: string | null
   type: $Enums.RecipeType
   source: $Enums.RecipeSource
+  generationKey: string | null
   basicIngredients: runtime.JsonValue
   missingIngredients: runtime.JsonValue
   steps: runtime.JsonValue
@@ -317,6 +324,7 @@ export type RecipeWhereInput = {
   imageUrl?: Prisma.StringNullableFilter<"Recipe"> | string | null
   type?: Prisma.EnumRecipeTypeFilter<"Recipe"> | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFilter<"Recipe"> | $Enums.RecipeSource
+  generationKey?: Prisma.StringNullableFilter<"Recipe"> | string | null
   basicIngredients?: Prisma.JsonFilter<"Recipe">
   missingIngredients?: Prisma.JsonFilter<"Recipe">
   steps?: Prisma.JsonFilter<"Recipe">
@@ -341,6 +349,7 @@ export type RecipeOrderByWithRelationInput = {
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  generationKey?: Prisma.SortOrderInput | Prisma.SortOrder
   basicIngredients?: Prisma.SortOrder
   missingIngredients?: Prisma.SortOrder
   steps?: Prisma.SortOrder
@@ -354,6 +363,7 @@ export type RecipeOrderByWithRelationInput = {
 
 export type RecipeWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  userId_generationKey?: Prisma.RecipeUserIdGenerationKeyCompoundUniqueInput
   AND?: Prisma.RecipeWhereInput | Prisma.RecipeWhereInput[]
   OR?: Prisma.RecipeWhereInput[]
   NOT?: Prisma.RecipeWhereInput | Prisma.RecipeWhereInput[]
@@ -368,6 +378,7 @@ export type RecipeWhereUniqueInput = Prisma.AtLeast<{
   imageUrl?: Prisma.StringNullableFilter<"Recipe"> | string | null
   type?: Prisma.EnumRecipeTypeFilter<"Recipe"> | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFilter<"Recipe"> | $Enums.RecipeSource
+  generationKey?: Prisma.StringNullableFilter<"Recipe"> | string | null
   basicIngredients?: Prisma.JsonFilter<"Recipe">
   missingIngredients?: Prisma.JsonFilter<"Recipe">
   steps?: Prisma.JsonFilter<"Recipe">
@@ -377,7 +388,7 @@ export type RecipeWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Recipe"> | Date | string
   RecipeIngredient?: Prisma.RecipeIngredientListRelationFilter
   User?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-}, "id">
+}, "id" | "userId_generationKey">
 
 export type RecipeOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -392,6 +403,7 @@ export type RecipeOrderByWithAggregationInput = {
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  generationKey?: Prisma.SortOrderInput | Prisma.SortOrder
   basicIngredients?: Prisma.SortOrder
   missingIngredients?: Prisma.SortOrder
   steps?: Prisma.SortOrder
@@ -422,6 +434,7 @@ export type RecipeScalarWhereWithAggregatesInput = {
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Recipe"> | string | null
   type?: Prisma.EnumRecipeTypeWithAggregatesFilter<"Recipe"> | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceWithAggregatesFilter<"Recipe"> | $Enums.RecipeSource
+  generationKey?: Prisma.StringNullableWithAggregatesFilter<"Recipe"> | string | null
   basicIngredients?: Prisma.JsonWithAggregatesFilter<"Recipe">
   missingIngredients?: Prisma.JsonWithAggregatesFilter<"Recipe">
   steps?: Prisma.JsonWithAggregatesFilter<"Recipe">
@@ -443,6 +456,7 @@ export type RecipeCreateInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -467,6 +481,7 @@ export type RecipeUncheckedCreateInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -489,6 +504,7 @@ export type RecipeUpdateInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -513,6 +529,7 @@ export type RecipeUncheckedUpdateInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -536,6 +553,7 @@ export type RecipeCreateManyInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -557,6 +575,7 @@ export type RecipeUpdateManyMutationInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -579,6 +598,7 @@ export type RecipeUncheckedUpdateManyInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -586,6 +606,11 @@ export type RecipeUncheckedUpdateManyInput = {
   isFavorite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RecipeUserIdGenerationKeyCompoundUniqueInput = {
+  userId: string
+  generationKey: string
 }
 
 export type RecipeCountOrderByAggregateInput = {
@@ -601,6 +626,7 @@ export type RecipeCountOrderByAggregateInput = {
   imageUrl?: Prisma.SortOrder
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  generationKey?: Prisma.SortOrder
   basicIngredients?: Prisma.SortOrder
   missingIngredients?: Prisma.SortOrder
   steps?: Prisma.SortOrder
@@ -629,6 +655,7 @@ export type RecipeMaxOrderByAggregateInput = {
   imageUrl?: Prisma.SortOrder
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  generationKey?: Prisma.SortOrder
   doneAt?: Prisma.SortOrder
   isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -648,6 +675,7 @@ export type RecipeMinOrderByAggregateInput = {
   imageUrl?: Prisma.SortOrder
   type?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  generationKey?: Prisma.SortOrder
   doneAt?: Prisma.SortOrder
   isFavorite?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -755,6 +783,7 @@ export type RecipeCreateWithoutRecipeIngredientInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -778,6 +807,7 @@ export type RecipeUncheckedCreateWithoutRecipeIngredientInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -815,6 +845,7 @@ export type RecipeUpdateWithoutRecipeIngredientInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -838,6 +869,7 @@ export type RecipeUncheckedUpdateWithoutRecipeIngredientInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -859,6 +891,7 @@ export type RecipeCreateWithoutUserInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -881,6 +914,7 @@ export type RecipeUncheckedCreateWithoutUserInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -933,6 +967,7 @@ export type RecipeScalarWhereInput = {
   imageUrl?: Prisma.StringNullableFilter<"Recipe"> | string | null
   type?: Prisma.EnumRecipeTypeFilter<"Recipe"> | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFilter<"Recipe"> | $Enums.RecipeSource
+  generationKey?: Prisma.StringNullableFilter<"Recipe"> | string | null
   basicIngredients?: Prisma.JsonFilter<"Recipe">
   missingIngredients?: Prisma.JsonFilter<"Recipe">
   steps?: Prisma.JsonFilter<"Recipe">
@@ -954,6 +989,7 @@ export type RecipeCreateManyUserInput = {
   imageUrl?: string | null
   type?: $Enums.RecipeType
   source?: $Enums.RecipeSource
+  generationKey?: string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -975,6 +1011,7 @@ export type RecipeUpdateWithoutUserInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -997,6 +1034,7 @@ export type RecipeUncheckedUpdateWithoutUserInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1019,6 +1057,7 @@ export type RecipeUncheckedUpdateManyWithoutUserInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   type?: Prisma.EnumRecipeTypeFieldUpdateOperationsInput | $Enums.RecipeType
   source?: Prisma.EnumRecipeSourceFieldUpdateOperationsInput | $Enums.RecipeSource
+  generationKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   basicIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   missingIngredients?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   steps?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1072,6 +1111,7 @@ export type RecipeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   imageUrl?: boolean
   type?: boolean
   source?: boolean
+  generationKey?: boolean
   basicIngredients?: boolean
   missingIngredients?: boolean
   steps?: boolean
@@ -1097,6 +1137,7 @@ export type RecipeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   imageUrl?: boolean
   type?: boolean
   source?: boolean
+  generationKey?: boolean
   basicIngredients?: boolean
   missingIngredients?: boolean
   steps?: boolean
@@ -1120,6 +1161,7 @@ export type RecipeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   imageUrl?: boolean
   type?: boolean
   source?: boolean
+  generationKey?: boolean
   basicIngredients?: boolean
   missingIngredients?: boolean
   steps?: boolean
@@ -1143,6 +1185,7 @@ export type RecipeSelectScalar = {
   imageUrl?: boolean
   type?: boolean
   source?: boolean
+  generationKey?: boolean
   basicIngredients?: boolean
   missingIngredients?: boolean
   steps?: boolean
@@ -1152,7 +1195,7 @@ export type RecipeSelectScalar = {
   updatedAt?: boolean
 }
 
-export type RecipeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "instructions" | "preparationTime" | "cookingTime" | "servings" | "difficulty" | "imageUrl" | "type" | "source" | "basicIngredients" | "missingIngredients" | "steps" | "doneAt" | "isFavorite" | "createdAt" | "updatedAt", ExtArgs["result"]["recipe"]>
+export type RecipeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "name" | "description" | "instructions" | "preparationTime" | "cookingTime" | "servings" | "difficulty" | "imageUrl" | "type" | "source" | "generationKey" | "basicIngredients" | "missingIngredients" | "steps" | "doneAt" | "isFavorite" | "createdAt" | "updatedAt", ExtArgs["result"]["recipe"]>
 export type RecipeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   RecipeIngredient?: boolean | Prisma.Recipe$RecipeIngredientArgs<ExtArgs>
   User?: boolean | Prisma.Recipe$UserArgs<ExtArgs>
@@ -1184,6 +1227,7 @@ export type $RecipePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     imageUrl: string | null
     type: $Enums.RecipeType
     source: $Enums.RecipeSource
+    generationKey: string | null
     basicIngredients: runtime.JsonValue
     missingIngredients: runtime.JsonValue
     steps: runtime.JsonValue
@@ -1628,6 +1672,7 @@ export interface RecipeFieldRefs {
   readonly imageUrl: Prisma.FieldRef<"Recipe", 'String'>
   readonly type: Prisma.FieldRef<"Recipe", 'RecipeType'>
   readonly source: Prisma.FieldRef<"Recipe", 'RecipeSource'>
+  readonly generationKey: Prisma.FieldRef<"Recipe", 'String'>
   readonly basicIngredients: Prisma.FieldRef<"Recipe", 'Json'>
   readonly missingIngredients: Prisma.FieldRef<"Recipe", 'Json'>
   readonly steps: Prisma.FieldRef<"Recipe", 'Json'>
