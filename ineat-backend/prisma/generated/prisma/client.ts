@@ -58,6 +58,11 @@ export type Expense = Prisma.ExpenseModel
  */
 export type InventoryItem = Prisma.InventoryItemModel
 /**
+ * Model InventoryFavorite
+ * 
+ */
+export type InventoryFavorite = Prisma.InventoryFavoriteModel
+/**
  * Model Notification
  * 
  */

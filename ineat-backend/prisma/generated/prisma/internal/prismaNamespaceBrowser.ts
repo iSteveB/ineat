@@ -55,6 +55,7 @@ export const ModelName = {
   Category: 'Category',
   Expense: 'Expense',
   InventoryItem: 'InventoryItem',
+  InventoryFavorite: 'InventoryFavorite',
   Notification: 'Notification',
   NotificationDelivery: 'NotificationDelivery',
   NotificationPreferences: 'NotificationPreferences',
@@ -157,6 +158,17 @@ export const InventoryItemScalarFieldEnum = {
 } as const
 
 export type InventoryItemScalarFieldEnum = (typeof InventoryItemScalarFieldEnum)[keyof typeof InventoryItemScalarFieldEnum]
+
+
+export const InventoryFavoriteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryFavoriteScalarFieldEnum = (typeof InventoryFavoriteScalarFieldEnum)[keyof typeof InventoryFavoriteScalarFieldEnum]
 
 
 export const NotificationScalarFieldEnum = {

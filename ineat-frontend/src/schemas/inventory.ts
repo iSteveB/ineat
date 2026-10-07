@@ -50,6 +50,7 @@ export const InventoryItemSchema = z
 		packageStatus: nullableOptional(PackageStatusSchema),
 		preparationStatus: nullableOptional(PreparationStatusSchema),
 		notes: nullableOptional(MediumTextSchema),
+		isFavorite: z.boolean().default(false),
 	})
 	.merge(TimestampsSchema);
 

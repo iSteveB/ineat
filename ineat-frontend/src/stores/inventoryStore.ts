@@ -77,6 +77,7 @@ interface InventoryDataState {
 		id: string,
 		updates: UpdateInventoryItemData
 	) => Promise<void>;
+	updateInventoryFavorite: (id: string, isFavorite: boolean) => Promise<void>;
 	consumeInventoryItem: (
 		id: string,
 		data: ConsumeInventoryItemData
@@ -117,6 +118,7 @@ type InventoryActions = Pick<
 	| 'fetchInventoryItems'
 	| 'addInventoryItem'
 	| 'updateInventoryItem'
+	| 'updateInventoryFavorite'
 	| 'consumeInventoryItem'
 	| 'removeInventoryItem'
 	| 'removeInventoryItems'
@@ -443,6 +445,38 @@ export const useInventoryStore = create<InventoryState>()(
 					}
 				},
 
+				updateInventoryFavorite: async (id, isFavorite) => {
+					if (!id || typeof id !== 'string') {
+						throw new Error("ID d'item invalide");
+					}
+
+					const previousItems = get().items;
+					const target = previousItems.find((item) => item.id === id);
+					if (!target) {
+						throw new Error("Élément d'inventaire non trouvé");
+					}
+
+					set((state) => ({
+						items: state.items.map((item) =>
+							item.product.id === target.product.id
+								? { ...item, isFavorite }
+								: item
+						),
+						error: null,
+					}));
+
+					try {
+						await inventoryService.updateInventoryFavorite(id, isFavorite);
+					} catch (error) {
+						const errorMessage = getUserFacingErrorMessage(
+							error,
+							'Impossible de modifier ce favori. Veuillez réessayer.'
+						);
+						set({ items: previousItems });
+						throw new Error(errorMessage);
+					}
+				},
+
 				/**
 				 * Consomme une quantité d'un produit avec décrément FEFO côté backend
 				 */
@@ -671,6 +705,7 @@ export const useInventoryActions = () => {
 			fetchInventoryItems: store.fetchInventoryItems,
 			addInventoryItem: store.addInventoryItem,
 			updateInventoryItem: store.updateInventoryItem,
+			updateInventoryFavorite: store.updateInventoryFavorite,
 			consumeInventoryItem: store.consumeInventoryItem,
 			removeInventoryItem: store.removeInventoryItem,
 			removeInventoryItems: store.removeInventoryItems,

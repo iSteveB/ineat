@@ -33,6 +33,32 @@ const inventoryItem = {
 };
 
 describe('inventoryService', () => {
+	it('met à jour le statut favori d’un produit de l’inventaire', async () => {
+		let requestBody: unknown;
+
+		server.use(
+			http.patch(
+				`${API_URL}/inventory/${inventoryItem.id}/favorite`,
+				async ({ request }) => {
+					requestBody = await request.json();
+					return HttpResponse.json({
+						inventoryItemId: inventoryItem.id,
+						productId: inventoryItem.product.id,
+						isFavorite: true,
+					});
+				},
+			),
+		);
+
+		const result = await inventoryService.updateInventoryFavorite(
+			inventoryItem.id,
+			true,
+		);
+
+		expect(requestBody).toEqual({ isFavorite: true });
+		expect(result).toMatchObject({ isFavorite: true });
+	});
+
 	it('récupère l’inventaire avec les filtres de dashboard', async () => {
 		const requestedUrls: string[] = [];
 

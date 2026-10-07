@@ -87,6 +87,20 @@ model InventoryItem {
   @@index([userId, productId, storageLocation, expiryDate])
 }
 
+model InventoryFavorite {
+  id        String   @id
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
+}
+
 enum ExpiryDateSource {
   MANUAL
   ESTIMATED
@@ -181,26 +195,27 @@ model EmailDigestDelivery {
 }
 
 model Product {
-  id               String             @id
-  barcode          String?            @unique
-  name             String
-  brand            String?
-  categoryId       String
-  nutriscore       NutriScore?
-  ecoscore         Ecoscore?
-  novascore        Novascore?
-  unitType         UnitType
-  nutrients        Json?
-  imageUrl         String?
-  externalId       String?
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
-  ingredients      String?
-  InventoryItem    InventoryItem[]
-  InvoiceItem      InvoiceItem[]
-  Category         Category           @relation(fields: [categoryId], references: [id])
-  ReceiptItem      ReceiptItem[]
-  RecipeIngredient RecipeIngredient[]
+  id                String              @id
+  barcode           String?             @unique
+  name              String
+  brand             String?
+  categoryId        String
+  nutriscore        NutriScore?
+  ecoscore          Ecoscore?
+  novascore         Novascore?
+  unitType          UnitType
+  nutrients         Json?
+  imageUrl          String?
+  externalId        String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  ingredients       String?
+  InventoryItem     InventoryItem[]
+  InventoryFavorite InventoryFavorite[]
+  InvoiceItem       InvoiceItem[]
+  Category          Category            @relation(fields: [categoryId], references: [id])
+  ReceiptItem       ReceiptItem[]
+  RecipeIngredient  RecipeIngredient[]
 
   @@index([brand])
   @@index([name])
@@ -385,11 +400,11 @@ model Recipe {
   RecipeIngredient   RecipeIngredient[]
   User               User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, generationKey])
   @@index([userId])
   @@index([userId, createdAt])
   @@index([userId, type])
   @@index([userId, isFavorite])
-  @@unique([userId, generationKey])
 }
 
 model RecipeIngredient {
@@ -452,6 +467,7 @@ model User {
   Expense                      Expense[]
   EmailDigestDelivery          EmailDigestDelivery[]
   InventoryItem                InventoryItem[]
+  InventoryFavorite            InventoryFavorite[]
   Invoice                      Invoice[]
   Notification                 Notification[]
   NotificationPreferences      NotificationPreferences?
@@ -463,9 +479,9 @@ model User {
   accounts                     Account[]
   AdminAuditLog                AdminAuditLog[]          @relation("AdminAuditActor")
 
-  @@map("User")
   @@index([accountStatus])
   @@index([deletionScheduledAt])
+  @@map("User")
 }
 
 model AdminAuditLog {

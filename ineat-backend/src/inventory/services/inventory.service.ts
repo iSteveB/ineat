@@ -348,11 +348,17 @@ export class InventoryService {
 
     if (!limit) {
       const items = await this.prisma.inventoryItem.findMany(query);
-      return this.groupInventoryItemsByProduct(items);
+      return this.addFavoriteStatus(
+        userId,
+        this.groupInventoryItemsByProduct(items),
+      );
     }
 
     const items = await this.prisma.inventoryItem.findMany(query);
-    const groupedItems = this.groupInventoryItemsByProduct(items);
+    const groupedItems = await this.addFavoriteStatus(
+      userId,
+      this.groupInventoryItemsByProduct(items),
+    );
     const totalItems = groupedItems.length;
     const totalPages = Math.ceil(totalItems / limit);
     const paginatedItems = groupedItems.slice((page - 1) * limit, page * limit);
@@ -384,6 +390,42 @@ export class InventoryService {
         },
       },
     });
+  }
+
+  async updateInventoryFavorite(
+    userId: string,
+    inventoryItemId: string,
+    isFavorite: boolean,
+  ) {
+    const item = await this.prisma.inventoryItem.findFirst({
+      where: { id: inventoryItemId, userId },
+      select: { productId: true },
+    });
+
+    if (!item) {
+      throw new NotFoundException("Élément d'inventaire non trouvé");
+    }
+
+    if (isFavorite) {
+      await this.prisma.inventoryFavorite.upsert({
+        where: {
+          userId_productId: { userId, productId: item.productId },
+        },
+        create: {
+          id: randomUUID(),
+          userId,
+          productId: item.productId,
+          updatedAt: new Date(),
+        },
+        update: { updatedAt: new Date() },
+      });
+    } else {
+      await this.prisma.inventoryFavorite.deleteMany({
+        where: { userId, productId: item.productId },
+      });
+    }
+
+    return { inventoryItemId, productId: item.productId, isFavorite };
   }
 
   /**
@@ -1028,6 +1070,26 @@ export class InventoryService {
       lots: item.lots.sort((first: any, second: any) =>
         this.compareNullableDates(first.expiryDate, second.expiryDate),
       ),
+    }));
+  }
+
+  private async addFavoriteStatus(userId: string, items: any[]) {
+    if (items.length === 0) return items;
+
+    const favorites = await this.prisma.inventoryFavorite.findMany({
+      where: {
+        userId,
+        productId: { in: [...new Set(items.map((item) => item.productId))] },
+      },
+      select: { productId: true },
+    });
+    const favoriteProductIds = new Set(
+      favorites.map((favorite) => favorite.productId),
+    );
+
+    return items.map((item) => ({
+      ...item,
+      isFavorite: favoriteProductIds.has(item.productId),
     }));
   }
 

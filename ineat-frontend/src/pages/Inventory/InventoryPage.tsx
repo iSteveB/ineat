@@ -9,6 +9,7 @@ import {
 	Grid3X3,
 	List,
 	Trash2,
+	Heart,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
@@ -38,6 +39,7 @@ const InventoryPage: React.FC = () => {
 		useState<StorageLocationFilter>('ALL');
 	const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
 	const [showFilters, setShowFilters] = useState(false);
+	const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 	const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 	const [isSelectionMode, setIsSelectionMode] = useState(false);
 	const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
@@ -120,9 +122,13 @@ const InventoryPage: React.FC = () => {
 		const matchesProductCategory =
 			!selectedCategoryId ||
 			item.product.category.id === selectedCategoryId;
+		const matchesFavorite = !showFavoritesOnly || item.isFavorite;
 
 		return (
-			matchesSearch && matchesStorageCategory && matchesProductCategory
+			matchesSearch &&
+			matchesStorageCategory &&
+			matchesProductCategory &&
+			matchesFavorite
 		);
 	});
 
@@ -148,6 +154,7 @@ const InventoryPage: React.FC = () => {
 		setSearchQuery('');
 		setActiveStorageCategory('ALL');
 		setSelectedCategoryId('');
+		setShowFavoritesOnly(false);
 		setShowFilters(false);
 	};
 
@@ -213,7 +220,10 @@ const InventoryPage: React.FC = () => {
 	};
 
 	const hasActiveFilters =
-		searchQuery || activeStorageCategory !== 'ALL' || selectedCategoryId;
+		searchQuery ||
+		activeStorageCategory !== 'ALL' ||
+		selectedCategoryId ||
+		showFavoritesOnly;
 
 	const getSelectedCategoryName = () => {
 		if (!selectedCategoryId) return null;
@@ -314,23 +324,49 @@ const InventoryPage: React.FC = () => {
 
 				{/* Contrôles avancés */}
 				<div className='flex items-center justify-between pb-2'>
-					<button
-						onClick={() => setShowFilters(!showFilters)}
-						className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer duration-300 ${
-							hasActiveFilters
-								? 'bg-blue-500 text-neutral-50 border-blue-500 shadow-lg'
-								: 'bg-neutral-50 text-gray-600 border-gray-200 hover:border-blue-500 hover:shadow-md'
-						}`}>
-						<Filter className='size-4 ' />
+					<div className='flex items-center gap-2'>
+						<button
+							onClick={() => setShowFilters(!showFilters)}
+							aria-label='Afficher les filtres'
+							className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer duration-300 ${
+								searchQuery ||
+								activeStorageCategory !== 'ALL' ||
+								selectedCategoryId
+									? 'bg-blue-500 text-neutral-50 border-blue-500 shadow-lg'
+									: 'bg-neutral-50 text-gray-600 border-gray-200 hover:border-blue-500 hover:shadow-md'
+							}`}>
+							<Filter className='size-4' />
 
-						{hasActiveFilters && (
-							<span className='bg-neutral-50/20 text-xs px-2 py-0.5 rounded-full font-semibold'>
-								{(searchQuery ? 1 : 0) +
-									(activeStorageCategory !== 'ALL' ? 1 : 0) +
-									(selectedCategoryId ? 1 : 0)}
-							</span>
-						)}
-					</button>
+							{(searchQuery ||
+								activeStorageCategory !== 'ALL' ||
+								selectedCategoryId) && (
+								<span className='bg-neutral-50/20 text-xs px-2 py-0.5 rounded-full font-semibold'>
+									{(searchQuery ? 1 : 0) +
+										(activeStorageCategory !== 'ALL' ? 1 : 0) +
+										(selectedCategoryId ? 1 : 0)}
+								</span>
+							)}
+						</button>
+						<button
+							type='button'
+							onClick={() => setShowFavoritesOnly((current) => !current)}
+							aria-label={
+								showFavoritesOnly
+									? 'Afficher tout l’inventaire'
+									: 'Afficher les favoris'
+							}
+							aria-pressed={showFavoritesOnly}
+							title='Favoris'
+							className={`inline-flex size-11 cursor-pointer items-center justify-center rounded-xl border transition-all duration-300 ${
+								showFavoritesOnly
+									? 'border-red-500 bg-red-50 text-red-500 shadow-md'
+									: 'border-gray-200 bg-neutral-50 text-gray-600 hover:border-red-300 hover:text-red-500'
+							}`}>
+							<Heart
+								className={`size-4 ${showFavoritesOnly ? 'fill-current' : ''}`}
+							/>
+						</button>
+					</div>
 
 					<div className='flex items-center gap-2'>
 						{isSelectionMode && sortedItems.length > 0 ? (
@@ -470,6 +506,17 @@ const InventoryPage: React.FC = () => {
 								</button>
 							</div>
 						)}
+						{showFavoritesOnly && (
+							<div className='flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-xl text-sm font-medium'>
+								<span>Favoris</span>
+								<button
+									onClick={() => setShowFavoritesOnly(false)}
+									aria-label='Retirer le filtre favoris'
+									className='hover:bg-red-100 rounded-full p-0.5 transition-colors'>
+									<X className='size-3' />
+								</button>
+							</div>
+						)}
 					</div>
 				</div>
 			)}
@@ -562,12 +609,16 @@ const InventoryPage: React.FC = () => {
 							</div>
 							<div className='space-y-3'>
 								<h3 className='text-xl font-bold text-gray-900'>
-									{hasActiveFilters
+									{showFavoritesOnly
+										? 'Aucun produit favori'
+										: hasActiveFilters
 										? 'Aucun produit trouvé'
 										: 'Votre inventaire est vide'}
 								</h3>
 								<p className='text-gray-600 max-w-md'>
-									{hasActiveFilters
+									{showFavoritesOnly
+										? 'Ajoutez des produits à vos favoris depuis leur fiche pour les retrouver ici.'
+										: hasActiveFilters
 										? 'Aucun produit ne correspond à vos critères de recherche. Essayez de modifier vos filtres.'
 										: 'Commencez par ajouter des produits à votre inventaire pour mieux gérer vos stocks.'}
 								</p>

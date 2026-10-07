@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -35,6 +36,7 @@ import {
 } from '../dto/add-manual-product.dto';
 import { RemoveInventoryItemsDto } from '../dto/remove-inventory-items.dto';
 import { ConsumeInventoryItemDto } from '../dto/consume-inventory-item.dto';
+import { UpdateInventoryFavoriteDto } from '../dto/update-inventory-favorite.dto';
 import { SessionAuthGuard } from '../../auth/guards/session-auth.guard';
 import { Request } from 'express';
 
@@ -92,6 +94,7 @@ export class InventoryController {
       packageStatus: item.packageStatus,
       preparationStatus: item.preparationStatus,
       notes: item.notes,
+      isFavorite: Boolean(item.isFavorite),
       createdAt: item.createdAt.toISOString(),
       updatedAt: item.updatedAt.toISOString(),
       lots: item.lots?.map((lot: any) => ({
@@ -110,6 +113,23 @@ export class InventoryController {
       })),
       product: this.formatProduct(item.Product),
     };
+  }
+
+  @Patch(':id/favorite')
+  @ApiOperation({ summary: 'Ajouter ou retirer un produit des favoris' })
+  @ApiResponse({ status: 200, description: 'Statut favori mis à jour' })
+  @ApiResponse({ status: 404, description: "Élément d'inventaire non trouvé" })
+  async updateInventoryFavorite(
+    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) inventoryItemId: string,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    dto: UpdateInventoryFavoriteDto,
+  ) {
+    return this.inventoryService.updateInventoryFavorite(
+      req.user.id,
+      inventoryItemId,
+      dto.isFavorite,
+    );
   }
 
   /**

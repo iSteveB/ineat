@@ -480,6 +480,7 @@ export type UserWhereInput = {
   Expense?: Prisma.ExpenseListRelationFilter
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryListRelationFilter
   InventoryItem?: Prisma.InventoryItemListRelationFilter
+  InventoryFavorite?: Prisma.InventoryFavoriteListRelationFilter
   Invoice?: Prisma.InvoiceListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
   NotificationPreferences?: Prisma.XOR<Prisma.NotificationPreferencesNullableScalarRelationFilter, Prisma.NotificationPreferencesWhereInput> | null
@@ -535,6 +536,7 @@ export type UserOrderByWithRelationInput = {
   Expense?: Prisma.ExpenseOrderByRelationAggregateInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryOrderByRelationAggregateInput
   InventoryItem?: Prisma.InventoryItemOrderByRelationAggregateInput
+  InventoryFavorite?: Prisma.InventoryFavoriteOrderByRelationAggregateInput
   Invoice?: Prisma.InvoiceOrderByRelationAggregateInput
   Notification?: Prisma.NotificationOrderByRelationAggregateInput
   NotificationPreferences?: Prisma.NotificationPreferencesOrderByWithRelationInput
@@ -593,6 +595,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   Expense?: Prisma.ExpenseListRelationFilter
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryListRelationFilter
   InventoryItem?: Prisma.InventoryItemListRelationFilter
+  InventoryFavorite?: Prisma.InventoryFavoriteListRelationFilter
   Invoice?: Prisma.InvoiceListRelationFilter
   Notification?: Prisma.NotificationListRelationFilter
   NotificationPreferences?: Prisma.XOR<Prisma.NotificationPreferencesNullableScalarRelationFilter, Prisma.NotificationPreferencesWhereInput> | null
@@ -738,6 +741,7 @@ export type UserCreateInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -793,6 +797,7 @@ export type UserUncheckedCreateInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -848,6 +853,7 @@ export type UserUpdateInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -903,6 +909,7 @@ export type UserUncheckedUpdateInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -1219,6 +1226,20 @@ export type UserUpdateOneRequiredWithoutInventoryItemNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInventoryItemInput, Prisma.UserUpdateWithoutInventoryItemInput>, Prisma.UserUncheckedUpdateWithoutInventoryItemInput>
 }
 
+export type UserCreateNestedOneWithoutInventoryFavoriteInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInventoryFavoriteInput, Prisma.UserUncheckedCreateWithoutInventoryFavoriteInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInventoryFavoriteInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutInventoryFavoriteNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutInventoryFavoriteInput, Prisma.UserUncheckedCreateWithoutInventoryFavoriteInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutInventoryFavoriteInput
+  upsert?: Prisma.UserUpsertWithoutInventoryFavoriteInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutInventoryFavoriteInput, Prisma.UserUpdateWithoutInventoryFavoriteInput>, Prisma.UserUncheckedUpdateWithoutInventoryFavoriteInput>
+}
+
 export type UserCreateNestedOneWithoutNotificationInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutNotificationInput, Prisma.UserUncheckedCreateWithoutNotificationInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutNotificationInput
@@ -1445,6 +1466,7 @@ export type UserCreateWithoutBudgetInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -1499,6 +1521,7 @@ export type UserUncheckedCreateWithoutBudgetInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -1569,6 +1592,7 @@ export type UserUpdateWithoutBudgetInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -1623,6 +1647,7 @@ export type UserUncheckedUpdateWithoutBudgetInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -1677,6 +1702,7 @@ export type UserCreateWithoutExpenseInput = {
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -1731,6 +1757,7 @@ export type UserUncheckedCreateWithoutExpenseInput = {
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -1801,6 +1828,7 @@ export type UserUpdateWithoutExpenseInput = {
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -1855,6 +1883,7 @@ export type UserUncheckedUpdateWithoutExpenseInput = {
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -1909,6 +1938,7 @@ export type UserCreateWithoutInventoryItemInput = {
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -1963,6 +1993,7 @@ export type UserUncheckedCreateWithoutInventoryItemInput = {
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -2033,6 +2064,7 @@ export type UserUpdateWithoutInventoryItemInput = {
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -2087,6 +2119,243 @@ export type UserUncheckedUpdateWithoutInventoryItemInput = {
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
+  Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
+  Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
+  Receipt?: Prisma.ReceiptUncheckedUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedUpdateManyWithoutUserNestedInput
+  UsageEvent?: Prisma.UsageEventUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  AdminAuditLog?: Prisma.AdminAuditLogUncheckedUpdateManyWithoutAdminUserNestedInput
+}
+
+export type UserCreateWithoutInventoryFavoriteInput = {
+  id: string
+  email: string
+  name: string
+  emailVerified?: boolean
+  welcomeEmailSentAt?: Date | string | null
+  firstName?: string
+  lastName?: string
+  defaultServings?: number
+  primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt: Date | string
+  role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  stripePriceId?: string | null
+  billingInterval?: $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: boolean
+  subscriptionCancelledAt?: Date | string | null
+  lastStripeEventAt?: Date | string | null
+  avatarUrl?: string | null
+  Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
+  Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
+  EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
+  Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
+  Receipt?: Prisma.ReceiptCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaCreateNestedManyWithoutUserInput
+  UsageEvent?: Prisma.UsageEventCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  AdminAuditLog?: Prisma.AdminAuditLogCreateNestedManyWithoutAdminUserInput
+}
+
+export type UserUncheckedCreateWithoutInventoryFavoriteInput = {
+  id: string
+  email: string
+  name: string
+  emailVerified?: boolean
+  welcomeEmailSentAt?: Date | string | null
+  firstName?: string
+  lastName?: string
+  defaultServings?: number
+  primaryGoal?: $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Date | string | null
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt: Date | string
+  role?: $Enums.UserRole
+  accountStatus?: $Enums.AccountStatus
+  accountStatusChangedAt?: Date | string | null
+  suspendedUntil?: Date | string | null
+  moderationReason?: string | null
+  deletionScheduledAt?: Date | string | null
+  statusBeforeDeletion?: $Enums.AccountStatus | null
+  subscriptionPlan?: $Enums.SubscriptionPlan
+  subscriptionStatus?: $Enums.SubscriptionStatus
+  trialStartedAt?: Date | string | null
+  trialEndsAt?: Date | string | null
+  trialUsedAt?: Date | string | null
+  trialStartedEmailSentAt?: Date | string | null
+  trialReminderEmailSentAt?: Date | string | null
+  trialExpiredEmailSentAt?: Date | string | null
+  currentPeriodStartedAt?: Date | string | null
+  currentPeriodEndsAt?: Date | string | null
+  stripeCustomerId?: string | null
+  stripeSubscriptionId?: string | null
+  stripePriceId?: string | null
+  billingInterval?: $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: boolean
+  subscriptionCancelledAt?: Date | string | null
+  lastStripeEventAt?: Date | string | null
+  avatarUrl?: string | null
+  Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
+  Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
+  EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
+  InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
+  Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
+  Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
+  Receipt?: Prisma.ReceiptUncheckedCreateNestedManyWithoutUserInput
+  UsageQuota?: Prisma.UsageQuotaUncheckedCreateNestedManyWithoutUserInput
+  UsageEvent?: Prisma.UsageEventUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  AdminAuditLog?: Prisma.AdminAuditLogUncheckedCreateNestedManyWithoutAdminUserInput
+}
+
+export type UserCreateOrConnectWithoutInventoryFavoriteInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutInventoryFavoriteInput, Prisma.UserUncheckedCreateWithoutInventoryFavoriteInput>
+}
+
+export type UserUpsertWithoutInventoryFavoriteInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutInventoryFavoriteInput, Prisma.UserUncheckedUpdateWithoutInventoryFavoriteInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutInventoryFavoriteInput, Prisma.UserUncheckedCreateWithoutInventoryFavoriteInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutInventoryFavoriteInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutInventoryFavoriteInput, Prisma.UserUncheckedUpdateWithoutInventoryFavoriteInput>
+}
+
+export type UserUpdateWithoutInventoryFavoriteInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInterval?: Prisma.NullableEnumBillingIntervalFieldUpdateOperationsInput | $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionCancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastStripeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
+  Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
+  EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
+  Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
+  Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
+  Receipt?: Prisma.ReceiptUpdateManyWithoutUserNestedInput
+  UsageQuota?: Prisma.UsageQuotaUpdateManyWithoutUserNestedInput
+  UsageEvent?: Prisma.UsageEventUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  AdminAuditLog?: Prisma.AdminAuditLogUpdateManyWithoutAdminUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutInventoryFavoriteInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  welcomeEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultServings?: Prisma.IntFieldUpdateOperationsInput | number
+  primaryGoal?: Prisma.NullableEnumPrimaryGoalFieldUpdateOperationsInput | $Enums.PrimaryGoal | null
+  profileOnboardingCompletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  preferences?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  accountStatus?: Prisma.EnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus
+  accountStatusChangedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  deletionScheduledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  statusBeforeDeletion?: Prisma.NullableEnumAccountStatusFieldUpdateOperationsInput | $Enums.AccountStatus | null
+  subscriptionPlan?: Prisma.EnumSubscriptionPlanFieldUpdateOperationsInput | $Enums.SubscriptionPlan
+  subscriptionStatus?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  trialStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialUsedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialStartedEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialReminderEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  trialExpiredEmailSentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentPeriodEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeSubscriptionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePriceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  billingInterval?: Prisma.NullableEnumBillingIntervalFieldUpdateOperationsInput | $Enums.BillingInterval | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  subscriptionCancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastStripeEventAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
+  Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
+  EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
+  InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -2142,6 +2411,7 @@ export type UserCreateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
@@ -2196,6 +2466,7 @@ export type UserUncheckedCreateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
@@ -2266,6 +2537,7 @@ export type UserUpdateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
@@ -2320,6 +2592,7 @@ export type UserUncheckedUpdateWithoutNotificationInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
@@ -2374,6 +2647,7 @@ export type UserCreateWithoutNotificationPreferencesInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
@@ -2428,6 +2702,7 @@ export type UserUncheckedCreateWithoutNotificationPreferencesInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
@@ -2498,6 +2773,7 @@ export type UserUpdateWithoutNotificationPreferencesInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
@@ -2552,6 +2828,7 @@ export type UserUncheckedUpdateWithoutNotificationPreferencesInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
@@ -2605,6 +2882,7 @@ export type UserCreateWithoutEmailDigestDeliveryInput = {
   Budget?: Prisma.BudgetCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -2659,6 +2937,7 @@ export type UserUncheckedCreateWithoutEmailDigestDeliveryInput = {
   Budget?: Prisma.BudgetUncheckedCreateNestedManyWithoutUserInput
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -2729,6 +3008,7 @@ export type UserUpdateWithoutEmailDigestDeliveryInput = {
   Budget?: Prisma.BudgetUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -2783,6 +3063,7 @@ export type UserUncheckedUpdateWithoutEmailDigestDeliveryInput = {
   Budget?: Prisma.BudgetUncheckedUpdateManyWithoutUserNestedInput
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -2838,6 +3119,7 @@ export type UserCreateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeCreateNestedManyWithoutUserInput
@@ -2892,6 +3174,7 @@ export type UserUncheckedCreateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
   Recipe?: Prisma.RecipeUncheckedCreateNestedManyWithoutUserInput
@@ -2962,6 +3245,7 @@ export type UserUpdateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUpdateManyWithoutUserNestedInput
@@ -3016,6 +3300,7 @@ export type UserUncheckedUpdateWithoutInvoiceInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
   Recipe?: Prisma.RecipeUncheckedUpdateManyWithoutUserNestedInput
@@ -3070,6 +3355,7 @@ export type UserCreateWithoutReceiptInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -3124,6 +3410,7 @@ export type UserUncheckedCreateWithoutReceiptInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -3194,6 +3481,7 @@ export type UserUpdateWithoutReceiptInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -3248,6 +3536,7 @@ export type UserUncheckedUpdateWithoutReceiptInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -3302,6 +3591,7 @@ export type UserCreateWithoutRecipeInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -3356,6 +3646,7 @@ export type UserUncheckedCreateWithoutRecipeInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -3426,6 +3717,7 @@ export type UserUpdateWithoutRecipeInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -3480,6 +3772,7 @@ export type UserUncheckedUpdateWithoutRecipeInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -3534,6 +3827,7 @@ export type UserCreateWithoutAdminAuditLogInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -3588,6 +3882,7 @@ export type UserUncheckedCreateWithoutAdminAuditLogInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -3658,6 +3953,7 @@ export type UserUpdateWithoutAdminAuditLogInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -3712,6 +4008,7 @@ export type UserUncheckedUpdateWithoutAdminAuditLogInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -3766,6 +4063,7 @@ export type UserCreateWithoutUsageQuotaInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -3820,6 +4118,7 @@ export type UserUncheckedCreateWithoutUsageQuotaInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -3890,6 +4189,7 @@ export type UserUpdateWithoutUsageQuotaInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -3944,6 +4244,7 @@ export type UserUncheckedUpdateWithoutUsageQuotaInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -3998,6 +4299,7 @@ export type UserCreateWithoutUsageEventInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -4052,6 +4354,7 @@ export type UserUncheckedCreateWithoutUsageEventInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -4122,6 +4425,7 @@ export type UserUpdateWithoutUsageEventInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -4176,6 +4480,7 @@ export type UserUncheckedUpdateWithoutUsageEventInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -4230,6 +4535,7 @@ export type UserCreateWithoutSessionsInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -4284,6 +4590,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -4354,6 +4661,7 @@ export type UserUpdateWithoutSessionsInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -4408,6 +4716,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -4462,6 +4771,7 @@ export type UserCreateWithoutAccountsInput = {
   Expense?: Prisma.ExpenseCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesCreateNestedOneWithoutUserInput
@@ -4516,6 +4826,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   Expense?: Prisma.ExpenseUncheckedCreateNestedManyWithoutUserInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedCreateNestedManyWithoutUserInput
   InventoryItem?: Prisma.InventoryItemUncheckedCreateNestedManyWithoutUserInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedCreateNestedManyWithoutUserInput
   Invoice?: Prisma.InvoiceUncheckedCreateNestedManyWithoutUserInput
   Notification?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedCreateNestedOneWithoutUserInput
@@ -4586,6 +4897,7 @@ export type UserUpdateWithoutAccountsInput = {
   Expense?: Prisma.ExpenseUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUpdateOneWithoutUserNestedInput
@@ -4640,6 +4952,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   Expense?: Prisma.ExpenseUncheckedUpdateManyWithoutUserNestedInput
   EmailDigestDelivery?: Prisma.EmailDigestDeliveryUncheckedUpdateManyWithoutUserNestedInput
   InventoryItem?: Prisma.InventoryItemUncheckedUpdateManyWithoutUserNestedInput
+  InventoryFavorite?: Prisma.InventoryFavoriteUncheckedUpdateManyWithoutUserNestedInput
   Invoice?: Prisma.InvoiceUncheckedUpdateManyWithoutUserNestedInput
   Notification?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   NotificationPreferences?: Prisma.NotificationPreferencesUncheckedUpdateOneWithoutUserNestedInput
@@ -4661,6 +4974,7 @@ export type UserCountOutputType = {
   Expense: number
   EmailDigestDelivery: number
   InventoryItem: number
+  InventoryFavorite: number
   Invoice: number
   Notification: number
   Recipe: number
@@ -4677,6 +4991,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   Expense?: boolean | UserCountOutputTypeCountExpenseArgs
   EmailDigestDelivery?: boolean | UserCountOutputTypeCountEmailDigestDeliveryArgs
   InventoryItem?: boolean | UserCountOutputTypeCountInventoryItemArgs
+  InventoryFavorite?: boolean | UserCountOutputTypeCountInventoryFavoriteArgs
   Invoice?: boolean | UserCountOutputTypeCountInvoiceArgs
   Notification?: boolean | UserCountOutputTypeCountNotificationArgs
   Recipe?: boolean | UserCountOutputTypeCountRecipeArgs
@@ -4724,6 +5039,13 @@ export type UserCountOutputTypeCountEmailDigestDeliveryArgs<ExtArgs extends runt
  */
 export type UserCountOutputTypeCountInventoryItemArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.InventoryItemWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountInventoryFavoriteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InventoryFavoriteWhereInput
 }
 
 /**
@@ -4833,6 +5155,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
   EmailDigestDelivery?: boolean | Prisma.User$EmailDigestDeliveryArgs<ExtArgs>
   InventoryItem?: boolean | Prisma.User$InventoryItemArgs<ExtArgs>
+  InventoryFavorite?: boolean | Prisma.User$InventoryFavoriteArgs<ExtArgs>
   Invoice?: boolean | Prisma.User$InvoiceArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
   NotificationPreferences?: boolean | Prisma.User$NotificationPreferencesArgs<ExtArgs>
@@ -4975,6 +5298,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   Expense?: boolean | Prisma.User$ExpenseArgs<ExtArgs>
   EmailDigestDelivery?: boolean | Prisma.User$EmailDigestDeliveryArgs<ExtArgs>
   InventoryItem?: boolean | Prisma.User$InventoryItemArgs<ExtArgs>
+  InventoryFavorite?: boolean | Prisma.User$InventoryFavoriteArgs<ExtArgs>
   Invoice?: boolean | Prisma.User$InvoiceArgs<ExtArgs>
   Notification?: boolean | Prisma.User$NotificationArgs<ExtArgs>
   NotificationPreferences?: boolean | Prisma.User$NotificationPreferencesArgs<ExtArgs>
@@ -4997,6 +5321,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     Expense: Prisma.$ExpensePayload<ExtArgs>[]
     EmailDigestDelivery: Prisma.$EmailDigestDeliveryPayload<ExtArgs>[]
     InventoryItem: Prisma.$InventoryItemPayload<ExtArgs>[]
+    InventoryFavorite: Prisma.$InventoryFavoritePayload<ExtArgs>[]
     Invoice: Prisma.$InvoicePayload<ExtArgs>[]
     Notification: Prisma.$NotificationPayload<ExtArgs>[]
     NotificationPreferences: Prisma.$NotificationPreferencesPayload<ExtArgs> | null
@@ -5445,6 +5770,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   Expense<T extends Prisma.User$ExpenseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ExpenseArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExpensePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   EmailDigestDelivery<T extends Prisma.User$EmailDigestDeliveryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$EmailDigestDeliveryArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmailDigestDeliveryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   InventoryItem<T extends Prisma.User$InventoryItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$InventoryItemArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  InventoryFavorite<T extends Prisma.User$InventoryFavoriteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$InventoryFavoriteArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryFavoritePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Invoice<T extends Prisma.User$InvoiceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$InvoiceArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   Notification<T extends Prisma.User$NotificationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotificationArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   NotificationPreferences<T extends Prisma.User$NotificationPreferencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$NotificationPreferencesArgs<ExtArgs>>): Prisma.Prisma__NotificationPreferencesClient<runtime.Types.Result.GetResult<Prisma.$NotificationPreferencesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -6003,6 +6329,30 @@ export type User$InventoryItemArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.InventoryItemScalarFieldEnum | Prisma.InventoryItemScalarFieldEnum[]
+}
+
+/**
+ * User.InventoryFavorite
+ */
+export type User$InventoryFavoriteArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InventoryFavorite
+   */
+  select?: Prisma.InventoryFavoriteSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InventoryFavorite
+   */
+  omit?: Prisma.InventoryFavoriteOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InventoryFavoriteInclude<ExtArgs> | null
+  where?: Prisma.InventoryFavoriteWhereInput
+  orderBy?: Prisma.InventoryFavoriteOrderByWithRelationInput | Prisma.InventoryFavoriteOrderByWithRelationInput[]
+  cursor?: Prisma.InventoryFavoriteWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InventoryFavoriteScalarFieldEnum | Prisma.InventoryFavoriteScalarFieldEnum[]
 }
 
 /**

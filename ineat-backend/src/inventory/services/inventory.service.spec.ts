@@ -36,6 +36,11 @@ describe('InventoryService', () => {
       delete: jest.fn(),
       deleteMany: jest.fn(),
     },
+    inventoryFavorite: {
+      findMany: jest.fn(),
+      upsert: jest.fn(),
+      deleteMany: jest.fn(),
+    },
     product: {
       findUnique: jest.fn(),
     },
@@ -126,6 +131,9 @@ describe('InventoryService', () => {
       _avg: { purchasePrice: 0 },
     });
     prisma.inventoryItem.groupBy.mockResolvedValue([]);
+    prisma.inventoryFavorite.findMany.mockResolvedValue([]);
+    prisma.inventoryFavorite.upsert.mockResolvedValue({});
+    prisma.inventoryFavorite.deleteMany.mockResolvedValue({ count: 0 });
     expenseService.createExpenseFromProduct.mockResolvedValue({
       expense: null,
       budgetId: null,
@@ -440,11 +448,10 @@ describe('InventoryService', () => {
       },
     ]);
 
-    const result = await service.getUserInventory(
-      'user-1',
-      undefined,
-      { page: 1, limit: 1 },
-    );
+    const result = await service.getUserInventory('user-1', undefined, {
+      page: 1,
+      limit: 1,
+    });
 
     expect(result).toEqual(
       expect.objectContaining({
@@ -490,11 +497,10 @@ describe('InventoryService', () => {
     prisma.inventoryItem.count
       .mockResolvedValueOnce(2)
       .mockResolvedValueOnce(1);
-    prisma.inventoryItem.aggregate
-      .mockResolvedValueOnce({
-        _sum: { purchasePrice: 42, quantity: 21 },
-        _avg: { purchasePrice: 21 },
-      });
+    prisma.inventoryItem.aggregate.mockResolvedValueOnce({
+      _sum: { purchasePrice: 42, quantity: 21 },
+      _avg: { purchasePrice: 21 },
+    });
     prisma.inventoryItem.findMany.mockResolvedValue([
       {
         ...inventoryItem,
@@ -929,5 +935,80 @@ describe('InventoryService', () => {
         expiryDate: '2026-05-08T00:00:00.000Z',
       }),
     );
+  });
+
+  it('marks the product of an owned inventory item as favorite', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue({
+      productId: 'product-1',
+    });
+
+    const result = await service.updateInventoryFavorite(
+      'user-1',
+      'item-1',
+      true,
+    );
+
+    expect(prisma.inventoryItem.findFirst).toHaveBeenCalledWith({
+      where: { id: 'item-1', userId: 'user-1' },
+      select: { productId: true },
+    });
+    expect(prisma.inventoryFavorite.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          userId_productId: { userId: 'user-1', productId: 'product-1' },
+        },
+      }),
+    );
+    expect(result).toEqual({
+      inventoryItemId: 'item-1',
+      productId: 'product-1',
+      isFavorite: true,
+    });
+  });
+
+  it('removes a product favorite idempotently', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue({
+      productId: 'product-1',
+    });
+
+    await service.updateInventoryFavorite('user-1', 'item-1', false);
+
+    expect(prisma.inventoryFavorite.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', productId: 'product-1' },
+    });
+    expect(prisma.inventoryFavorite.upsert).not.toHaveBeenCalled();
+  });
+
+  it('refuses to favorite an inventory item owned by another user', async () => {
+    prisma.inventoryItem.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.updateInventoryFavorite('user-1', 'other-item', true),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(prisma.inventoryFavorite.upsert).not.toHaveBeenCalled();
+  });
+
+  it('exposes favorite status on grouped inventory products', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        ...inventoryItem,
+        productId: 'product-1',
+        userId: 'user-1',
+      },
+    ]);
+    prisma.inventoryFavorite.findMany.mockResolvedValue([
+      { productId: 'product-1' },
+    ]);
+
+    const result = await service.getUserInventory('user-1');
+
+    expect(result[0].isFavorite).toBe(true);
+    expect(prisma.inventoryFavorite.findMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        productId: { in: ['product-1'] },
+      },
+      select: { productId: true },
+    });
   });
 });

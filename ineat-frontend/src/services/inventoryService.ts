@@ -421,6 +421,19 @@ export const inventoryService = {
 		);
 	},
 
+	async updateInventoryFavorite(
+		inventoryItemId: string,
+		isFavorite: boolean,
+	): Promise<{
+		inventoryItemId: string;
+		productId: string;
+		isFavorite: boolean;
+	}> {
+		return await apiClient.patch(`/inventory/${inventoryItemId}/favorite`, {
+			isFavorite,
+		});
+	},
+
 	/**
 	 * Consomme une quantité d'un produit en laissant le backend appliquer FEFO.
 	 */

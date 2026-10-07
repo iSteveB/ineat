@@ -37,12 +37,17 @@ const ProductDetailPage: FC = () => {
 	const navigate = useNavigate();
 	const items = useInventoryItems();
 	const isLoading = useInventoryLoading();
-	const { fetchInventoryItems, removeInventoryItem, updateInventoryItem } =
-		useInventoryActions();
+	const {
+		fetchInventoryItems,
+		removeInventoryItem,
+		updateInventoryItem,
+		updateInventoryFavorite,
+	} = useInventoryActions();
 
 	// État pour le modal de modification
 	const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 	const [isUpdating, setIsUpdating] = useState<boolean>(false);
+	const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false);
 
 	// Charger les données au montage du composant si elles ne sont pas déjà chargées
 	useEffect(() => {
@@ -252,6 +257,29 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
+	const handleToggleFavorite = async (): Promise<void> => {
+		if (!inventoryItem) return;
+
+		setIsUpdatingFavorite(true);
+		try {
+			await updateInventoryFavorite(
+				inventoryItem.id,
+				!inventoryItem.isFavorite
+			);
+			toast.success(
+				inventoryItem.isFavorite
+					? 'Produit retiré des favoris'
+					: 'Produit ajouté aux favoris'
+			);
+		} catch (error) {
+			toast.error(
+				getUserFacingErrorMessage(error, 'Impossible de modifier ce favori.'),
+			);
+		} finally {
+			setIsUpdatingFavorite(false);
+		}
+	};
+
 	// S'il n'y a pas d'élément trouvé et qu'on n'est pas en train de charger
 	if (!inventoryItem && !isLoading) {
 		return (
@@ -364,9 +392,21 @@ const ProductDetailPage: FC = () => {
 						<Button
 							variant='ghost'
 							size='sm'
+							onClick={handleToggleFavorite}
+							disabled={isUpdatingFavorite}
+							aria-label={
+								inventoryItem.isFavorite
+									? 'Retirer des favoris'
+									: 'Ajouter aux favoris'
+							}
+							aria-pressed={inventoryItem.isFavorite}
 							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
 						>
-							<Heart className='size-4' />
+							<Heart
+								className={`size-4 text-red-500 ${
+									inventoryItem.isFavorite ? 'fill-current' : ''
+								}`}
+							/>
 						</Button>
 					</div>
 				</div>

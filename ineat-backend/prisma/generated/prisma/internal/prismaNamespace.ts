@@ -388,6 +388,7 @@ export const ModelName = {
   Category: 'Category',
   Expense: 'Expense',
   InventoryItem: 'InventoryItem',
+  InventoryFavorite: 'InventoryFavorite',
   Notification: 'Notification',
   NotificationDelivery: 'NotificationDelivery',
   NotificationPreferences: 'NotificationPreferences',
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceProcessingEvent" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "adminAuditLog" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "usageEvent" | "session" | "account" | "verification"
+    modelProps: "budget" | "category" | "expense" | "inventoryItem" | "inventoryFavorite" | "notification" | "notificationDelivery" | "notificationPreferences" | "emailDigestDelivery" | "product" | "invoice" | "invoiceProcessingEvent" | "invoiceItem" | "receipt" | "receiptItem" | "recipe" | "recipeIngredient" | "user" | "adminAuditLog" | "stripeWebhookEvent" | "resendWebhookEvent" | "emailSuppression" | "usageQuota" | "usageEvent" | "session" | "account" | "verification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -722,6 +723,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.InventoryItemCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.InventoryItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    InventoryFavorite: {
+      payload: Prisma.$InventoryFavoritePayload<ExtArgs>
+      fields: Prisma.InventoryFavoriteFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InventoryFavoriteFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InventoryFavoriteFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>
+        }
+        findFirst: {
+          args: Prisma.InventoryFavoriteFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InventoryFavoriteFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>
+        }
+        findMany: {
+          args: Prisma.InventoryFavoriteFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>[]
+        }
+        create: {
+          args: Prisma.InventoryFavoriteCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>
+        }
+        createMany: {
+          args: Prisma.InventoryFavoriteCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InventoryFavoriteCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>[]
+        }
+        delete: {
+          args: Prisma.InventoryFavoriteDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>
+        }
+        update: {
+          args: Prisma.InventoryFavoriteUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>
+        }
+        deleteMany: {
+          args: Prisma.InventoryFavoriteDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InventoryFavoriteUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InventoryFavoriteUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>[]
+        }
+        upsert: {
+          args: Prisma.InventoryFavoriteUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InventoryFavoritePayload>
+        }
+        aggregate: {
+          args: Prisma.InventoryFavoriteAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInventoryFavorite>
+        }
+        groupBy: {
+          args: Prisma.InventoryFavoriteGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InventoryFavoriteGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InventoryFavoriteCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InventoryFavoriteCountAggregateOutputType> | number
         }
       }
     }
@@ -2456,6 +2531,17 @@ export const InventoryItemScalarFieldEnum = {
 export type InventoryItemScalarFieldEnum = (typeof InventoryItemScalarFieldEnum)[keyof typeof InventoryItemScalarFieldEnum]
 
 
+export const InventoryFavoriteScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryFavoriteScalarFieldEnum = (typeof InventoryFavoriteScalarFieldEnum)[keyof typeof InventoryFavoriteScalarFieldEnum]
+
+
 export const NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -3477,6 +3563,7 @@ export type GlobalOmitConfig = {
   category?: Prisma.CategoryOmit
   expense?: Prisma.ExpenseOmit
   inventoryItem?: Prisma.InventoryItemOmit
+  inventoryFavorite?: Prisma.InventoryFavoriteOmit
   notification?: Prisma.NotificationOmit
   notificationDelivery?: Prisma.NotificationDeliveryOmit
   notificationPreferences?: Prisma.NotificationPreferencesOmit
