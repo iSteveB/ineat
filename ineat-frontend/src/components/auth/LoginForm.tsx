@@ -15,6 +15,7 @@ import {
 import { Alert, AlertDescription } from '../ui/alert';
 import { z } from 'zod';
 import { LoginCredentialsSchema } from '@/schemas';
+import { markPwaPromptAfterLogin } from '@/lib/pwa-install';
 
 interface SearchParams {
 	redirect?: string;
@@ -73,6 +74,7 @@ const LoginForm = () => {
 		try {
 			// Tentative de connexion via le store Zustand
 			await login({ email, password });
+			markPwaPromptAfterLogin();
 
 			// Redirection après connexion réussie
 			if (redirect) {

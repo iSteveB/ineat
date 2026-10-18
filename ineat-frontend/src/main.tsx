@@ -4,6 +4,7 @@ import { AppProvider } from './providers/AppProvider';
 import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { useAuthStore } from './stores/authStore';
 import './index.css';
+import './lib/pwa-install';
 
 import { routeTree } from './routeTree.gen';
 import { Error404Page } from './pages/error/Error404Page';
@@ -42,4 +43,12 @@ if (!rootElement.innerHTML) {
 			</AppProvider>
 		</StrictMode>
 	);
+}
+
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+	window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/sw.js').catch(() => {
+			// L'application reste pleinement fonctionnelle sans service worker.
+		});
+	});
 }

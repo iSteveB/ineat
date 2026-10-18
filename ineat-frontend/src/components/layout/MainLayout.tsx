@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Header } from './Header';
 import NavigationBar from './NavigationBar';
 import { useNavigationStore } from '@/stores/navigationStore';
+import { PwaInstallBottomSheet } from '@/components/pwa/PwaInstallBottomSheet';
 
 interface MainLayoutProps {
 	children: ReactNode;
@@ -24,6 +25,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 					<NavigationBar />
 				</div>
 			)}
+			<PwaInstallBottomSheet />
 		</div>
 	);
 }
