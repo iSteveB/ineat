@@ -91,7 +91,7 @@ describe('LogoutButton', () => {
 
 		// Vérifier que le bouton a les classes correspondant au variant error
 		// Les classes exactes sont définies dans buttonVariants dans button.tsx
-		expect(button).toHaveClass('bg-danger-50');
+		expect(button).toHaveClass('bg-danger-600');
 		expect(button).toHaveClass('text-surface');
 	});
 });

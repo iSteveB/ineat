@@ -230,7 +230,7 @@ export function InventoryListPage() {
 		return (
 			<div className='min-h-screen bg-canvas p-4'>
 				<div className='max-w-2xl mx-auto'>
-					<div className='bg-danger-50 text-surface p-6 rounded-xl'>
+					<div className='bg-danger-600 text-surface p-6 rounded-xl'>
 						<h2 className='text-xl font-semibold mb-2'>Erreur de chargement</h2>
 						<p className='mb-4'>
 							Impossible de charger votre inventaire: {error}
@@ -351,7 +351,7 @@ export function InventoryListPage() {
 								type='button'
 								onClick={openSelectionMode}
 								disabled={isLoading}
-								className='inline-flex items-center gap-2 rounded-lg border border-danger-600 px-3 py-2 text-sm font-medium text-danger-700 transition-colors hover:bg-danger-50 hover:text-surface disabled:opacity-50'
+								className='inline-flex items-center gap-2 rounded-lg border border-danger-600 px-3 py-2 text-sm font-medium text-danger-700 transition-colors hover:bg-danger-600 hover:text-surface disabled:opacity-50'
 							>
 								<Trash2 className='size-4' />
 								Supprimer
@@ -472,7 +472,7 @@ export function InventoryListPage() {
 								type='button'
 								onClick={handleRemoveSelectedItems}
 								disabled={isLoading || selectedCount === 0}
-								className='inline-flex items-center gap-2 rounded-lg bg-danger-50 px-3 py-2 text-sm font-medium text-surface transition-colors hover:bg-danger-600 disabled:opacity-50'
+								className='inline-flex items-center gap-2 rounded-lg bg-danger-600 px-3 py-2 text-sm font-medium text-surface transition-colors hover:bg-danger-700 disabled:opacity-50'
 							>
 								<Trash2 className='size-4' />
 								{isLoading ? 'Suppression...' : 'Supprimer'}

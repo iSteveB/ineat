@@ -320,7 +320,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								<div className='absolute -bottom-1 -left-1 size-10 rounded-bl-md border-b-4 border-l-4 border-white' />
 								<div className='absolute -bottom-1 -right-1 size-10 rounded-br-md border-b-4 border-r-4 border-white' />
 
-								<div className='absolute left-7 right-7 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-danger-50 shadow-[0_0_16px_rgba(239,68,68,0.9)]' />
+								<div className='absolute left-7 right-7 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-danger-600 shadow-[0_0_16px_rgba(239,68,68,0.9)]' />
 								<div className='absolute left-1/2 top-8 bottom-8 w-px bg-surface/25' />
 
 								{state === 'scanning' && (

@@ -5,27 +5,29 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 hover:cursor-pointer",
+	"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5 shrink-0 [&_svg]:shrink-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring hover:cursor-pointer",
 	{
 		variants: {
 			variant: {
 				primary:
-					'bg-accent-600 text-surface shadow-xs hover:bg-accent-600/90 active:bg-accent-600/70',
+					'bg-accent-600 text-surface shadow-xs hover:bg-accent-700 active:bg-accent-800',
 				secondary:
-					'bg-surface border border-neutral-200 text-neutral-900 shadow-xs hover:bg-neutral-50/50 active:bg-neutral-100/50',
-				error: 'bg-danger-50 text-surface shadow-xs hover:bg-danger-600 active:bg-danger-600/80',
+					'bg-surface border border-neutral-300 text-neutral-900 shadow-xs hover:bg-neutral-50 active:bg-neutral-100',
+				error: 'bg-danger-600 text-surface shadow-xs hover:bg-danger-700 active:bg-danger-700',
 				outline:
-					'border border-accent-600 bg-transparent text-accent-700 hover:bg-accent-600 hover:text-surface active:bg-accent-600/90',
-				ghost: 'bg-transparent text-neutral-900 hover:bg-accent-600/10 hover:text-accent-700 active:bg-accent-600/20',
-				link: 'bg-transparent text-accent-700 underline-offset-4 hover:underline active:text-accent-700/80',
+					'border border-accent-600 bg-transparent text-accent-700 hover:bg-accent-50 active:bg-accent-100',
+				ghost: 'bg-transparent text-neutral-900 hover:bg-neutral-50 hover:text-accent-700 active:bg-neutral-100',
+				link: 'bg-transparent text-accent-700 underline-offset-4 hover:underline active:text-accent-800',
+				brand:
+					'bg-brand-300 text-neutral-900 shadow-xs hover:bg-brand-500 active:bg-brand-500',
 			},
 			size: {
-				sm: 'h-8 px-3 py-1.5 text-xs',
-				default: 'h-10 px-4 py-2',
-				lg: 'h-12 px-6 py-2.5 text-base',
-				icon: 'size-10 p-0',
-				'icon-sm': 'size-8 p-0',
-				'icon-lg': 'size-12 p-0',
+				sm: 'h-9 px-3 text-sm',
+				default: 'h-11 px-5 text-base',
+				lg: 'h-13 px-6 text-[1.0625rem]',
+				icon: 'size-11 p-0',
+				'icon-sm': 'size-9 p-0',
+				'icon-lg': 'size-13 p-0',
 				rounded: 'rounded-full',
 			},
 			fullWidth: {

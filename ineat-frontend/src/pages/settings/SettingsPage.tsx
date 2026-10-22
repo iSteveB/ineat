@@ -110,7 +110,7 @@ const SettingsPage = () => {
 						<p className='text-gray-600'>{user?.email}</p>
 
 						{user && isUserPremium(user) && (
-							<span className='inline-block mt-2 px-4 py-1 bg-brand-300 text-surface font-semibold rounded-full shadow-sm'>
+							<span className='inline-block mt-2 px-4 py-1 bg-brand-300 text-neutral-900 font-semibold rounded-full shadow-sm'>
 								Premium
 							</span>
 						)}

@@ -1,365 +1,367 @@
 import { Link } from '@tanstack/react-router';
 import {
 	ArrowRight,
-	Bell,
-	Check,
-	CirclePlay,
-	Euro,
-	Home,
+	ChefHat,
+	Clock,
 	Leaf,
 	LockKeyhole,
-	Package,
-	Plus,
-	ShoppingBasket,
-	User,
+	ScanLine,
+	TriangleAlert,
+	Wallet,
+	type LucideIcon,
 } from 'lucide-react';
 
 import foodBowl from '@/assets/landing-food-bowl.webp';
 import foodPlate from '@/assets/landing-food-plate.webp';
-import heroKitchen from '@/assets/landing-hero-kitchen.webp';
 import stepAdd from '@/assets/landing-step-add.webp';
 import stepAlert from '@/assets/landing-step-alert.webp';
 import stepBasket from '@/assets/landing-step-basket.webp';
 import logoMark from '@/assets/Logo.svg';
+import ExpiryBadge from '@/components/common/ExpiryBadge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import type { ExpiryStatus } from '@/schemas';
 import { useAuthStore } from '@/stores/authStore';
 
-const benefits = [
+type Feature = {
+	icon: LucideIcon;
+	title: string;
+	description: string;
+	tone: string;
+};
+
+const features: Feature[] = [
 	{
-		icon: Leaf,
-		title: 'Moins de gaspillage',
+		icon: Clock,
+		title: 'Alertes de péremption',
 		description:
-			'Évitez de jeter des aliments encore bons. Faites un geste pour votre portefeuille et la planète.',
-		tone: 'bg-accent-600/12 text-accent-700',
+			'Une pastille claire sur chaque produit : frais, bientôt, urgent. Vous savez quoi consommer en premier.',
+		tone: 'bg-warning-50 text-warning-700',
 	},
 	{
-		icon: Bell,
-		title: 'Alertes péremption',
+		icon: ChefHat,
+		title: 'Recettes anti-gaspi',
 		description:
-			"Soyez notifié avant qu'un aliment n'arrive à expiration pour le consommer à temps.",
-		tone: 'bg-brand-300/18 text-[#F2A400]',
+			"Des idées de repas qui utilisent d'abord les produits qui doivent partir.",
+		tone: 'bg-accent-50 text-accent-800',
 	},
 	{
-		icon: Euro,
+		icon: ScanLine,
+		title: 'Scan et Nutri-Score',
+		description:
+			'Scannez vos courses et retrouvez la qualité nutritionnelle de votre stock.',
+		tone: 'bg-brand-50 text-brand-800',
+	},
+	{
+		icon: Wallet,
 		title: 'Budget maîtrisé',
 		description:
-			'Suivez vos dépenses alimentaires et gardez le contrôle sur votre budget.',
-		tone: 'bg-accent-600/12 text-accent-700',
+			'Suivez vos dépenses alimentaires du mois et gardez le contrôle, sans tableur.',
+		tone: 'bg-info-50 text-info-700',
 	},
 ];
 
 const steps = [
 	{
-		number: '1',
 		title: 'Ajoutez vos aliments',
 		description:
 			'Scannez, cherchez ou ajoutez manuellement ce que vous avez à la maison.',
 		image: stepAdd,
 	},
 	{
-		number: '2',
-		title: 'Suivez et recevez des alertes',
+		title: 'Recevez les bonnes alertes',
 		description:
-			'InEat surveille les dates de péremption et vous alerte au bon moment.',
+			'InEat surveille les dates de péremption et vous prévient au bon moment.',
 		image: stepAlert,
 	},
 	{
-		number: '3',
 		title: 'Consommez mieux, dépensez moins',
 		description:
-			'Planifiez vos repas, évitez les achats inutiles et respectez votre budget.',
+			'Cuisinez ce que vous avez, évitez les achats en double et respectez votre budget.',
 		image: stepBasket,
 	},
 ];
 
-const inventoryItems = [
-	{ name: 'Yaourt nature', qty: '2 unités', delay: '6 jours', tone: 'bg-accent-600/15 text-accent-700' },
-	{ name: 'Salade verte', qty: '1 pièce', delay: '2 jours', tone: 'bg-brand-300/25 text-[#D99100]' },
-	{ name: 'Poulet rôti', qty: '1 pièce', delay: "Aujourd'hui", tone: 'bg-danger-50/15 text-danger-700' },
-	{ name: 'Lait demi-écrémé', qty: '1 L', delay: '8 jours', tone: 'bg-accent-600/15 text-accent-700' },
+const previewProducts: { name: string; meta: string; status: ExpiryStatus; label: string }[] = [
+	{ name: 'Yaourt nature bio', meta: '4 pots · Réfrigérateur', status: 'CRITICAL', label: 'Demain' },
+	{ name: 'Courgettes', meta: '3 pièces · Légumes', status: 'WARNING', label: 'Dans 3 jours' },
+	{ name: 'Lait demi-écrémé', meta: '1 L · Réfrigérateur', status: 'GOOD', label: 'Frais · 9 j' },
 ];
 
-const LandingHeader = () => (
-	<header className='sticky top-0 z-30 border-b border-neutral-200/60 bg-surface/96 backdrop-blur'>
-		<div className='mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-5 sm:h-24 sm:px-8 lg:px-12'>
+const LandingHeader = ({
+	primaryLink,
+	primaryLabel,
+}: {
+	primaryLink: '/app' | '/register';
+	primaryLabel: string;
+}) => (
+	<header className='sticky top-0 z-30 border-b border-neutral-200 bg-surface/95 backdrop-blur'>
+		<div className='mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:h-20 sm:px-8 lg:px-12'>
 			<Link
 				to='/'
-				className='flex items-center gap-2 text-neutral-900'
-				aria-label='Accueil InEat'>
-				<img src={logoMark} alt='' className='size-10 sm:size-12' />
-				<span className='font-display text-3xl font-semibold leading-none sm:text-5xl'>
-					<span className='text-[#F2A400]'>In</span>Eat
-				</span>
+				className='flex items-center gap-2 rounded-md text-neutral-900'
+				aria-label='InEat, accueil'>
+				<img src={logoMark} alt='' className='size-9 sm:size-10' />
+				<span className='font-display text-2xl font-bold tracking-tight'>InEat</span>
 			</Link>
 
-			<Button
-				asChild
-				variant='ghost'
-				className='h-11 px-2 text-base font-semibold sm:px-4 sm:text-lg'>
-				<Link to='/login'>
-					<User className='size-5' />
-					<span className='hidden sm:inline'>Se connecter</span>
-				</Link>
-			</Button>
+			<nav aria-label='Site' className='flex items-center gap-1 sm:gap-2'>
+				<a
+					href='#fonctionnalites'
+					className='hidden rounded-md px-3 py-2 font-medium text-neutral-700 hover:text-accent-700 lg:inline-block'>
+					Fonctionnalités
+				</a>
+				<a
+					href='#fonctionnement'
+					className='hidden rounded-md px-3 py-2 font-medium text-neutral-700 hover:text-accent-700 lg:inline-block'>
+					Comment ça marche
+				</a>
+				<Button asChild variant='ghost' className='px-3'>
+					<Link to='/login'>Se connecter</Link>
+				</Button>
+				<Button asChild className='hidden sm:inline-flex'>
+					<Link to={primaryLink}>{primaryLabel}</Link>
+				</Button>
+			</nav>
 		</div>
 	</header>
 );
 
-const HeroPhone = () => (
-	<div
-		aria-label='Aperçu mobile InEat avec inventaire, alertes de péremption et budget'
-		className='relative mx-auto w-[286px] rounded-[2.2rem] border-[7px] border-neutral-400 bg-surface p-4 shadow-2xl sm:w-[342px] sm:rounded-[2.7rem] sm:border-[9px] sm:p-5'>
-		<div className='absolute left-1/2 top-0 h-7 w-28 -translate-x-1/2 rounded-b-2xl bg-neutral-900 sm:w-32' />
+/** Aperçu décoratif de l'app : construit avec les vrais composants du design system. */
+const AppPreview = () => (
+	<figure
+		role='img'
+		aria-label="Aperçu de l'application : produits à consommer bientôt, idée de recette et budget du mois"
+		className='mx-auto w-full max-w-[340px] rounded-[2rem] border-8 border-neutral-950 bg-canvas p-4 shadow-xl'>
+		<div aria-hidden='true' className='flex flex-col gap-3'>
+			<div>
+				<p className='text-sm text-neutral-600'>Mardi 21 octobre</p>
+				<p className='type-h2 text-neutral-900'>Bonjour Camille</p>
+			</div>
 
-		<div className='pt-8'>
-			<div className='mb-5 flex items-center justify-between'>
+			<div className='flex gap-3 rounded-lg bg-warning-50 p-3'>
+				<span className='flex size-9 shrink-0 items-center justify-center rounded-md bg-surface text-warning-700'>
+					<TriangleAlert className='size-5' />
+				</span>
 				<div>
-					<p className='text-xs font-semibold text-neutral-900/70'>9:41</p>
-					<p className='mt-3 text-lg font-semibold text-neutral-900'>
-						Bonjour !
+					<p className='font-bold leading-6 text-neutral-900'>2 produits à traiter</p>
+					<p className='text-sm text-neutral-700'>Consommez-les en priorité.</p>
+				</div>
+			</div>
+
+			<div className='card px-3'>
+				{previewProducts.map((product) => (
+					<div
+						key={product.name}
+						className='flex items-center gap-3 border-b border-neutral-200 py-3 last:border-b-0'>
+						<div className='min-w-0 flex-1'>
+							<p className='truncate font-medium text-neutral-900'>{product.name}</p>
+							<p className='truncate text-sm text-neutral-600'>{product.meta}</p>
+						</div>
+						<ExpiryBadge status={product.status}>{product.label}</ExpiryBadge>
+					</div>
+				))}
+			</div>
+
+			<div className='card p-3'>
+				<div className='flex items-baseline justify-between'>
+					<p className='font-bold text-neutral-900'>Budget</p>
+					<p className='font-display text-lg font-bold text-neutral-900'>
+						212 € <span className='text-sm font-normal text-neutral-600'>/ 350 €</span>
 					</p>
 				</div>
-				<div className='relative flex size-9 items-center justify-center rounded-full bg-neutral-50 text-neutral-900'>
-					<Bell className='size-5' />
-					<span className='absolute right-1 top-1 size-2 rounded-full bg-danger-50' />
-				</div>
-			</div>
-
-			<div className='rounded-lg border border-neutral-200 bg-surface p-3 shadow-sm'>
-				<div className='mb-3 flex items-center justify-between'>
-					<h2 className='text-sm font-semibold text-neutral-900'>Mon inventaire</h2>
-					<span className='text-xs text-neutral-900/55'>Voir tout</span>
-				</div>
-				<div className='space-y-2'>
-					{inventoryItems.map((item) => (
-						<div key={item.name} className='flex items-center gap-2 rounded-md bg-neutral-50/80 p-2'>
-							<div className='flex size-9 items-center justify-center rounded-md bg-brand-300/25 text-lg'>
-								<Package className='size-4 text-accent-700' />
-							</div>
-							<div className='min-w-0 flex-1'>
-								<p className='truncate text-xs font-semibold text-neutral-900'>{item.name}</p>
-								<p className='text-[0.68rem] text-neutral-900/55'>{item.qty}</p>
-							</div>
-							<span className={`rounded-md px-2 py-1 text-[0.65rem] font-semibold ${item.tone}`}>
-								{item.delay}
-							</span>
-						</div>
-					))}
-				</div>
-			</div>
-
-			<div className='mt-3 rounded-lg border border-orange-100 bg-orange-50/70 p-3'>
-				<div className='mb-2 flex items-center justify-between'>
-					<h2 className='text-sm font-semibold text-neutral-900'>Alertes péremption</h2>
-					<span className='text-xs text-neutral-900/55'>Voir tout</span>
-				</div>
-				<div className='space-y-2'>
-					<div className='flex items-center justify-between rounded-md bg-surface p-2'>
-						<div>
-							<p className='text-xs font-semibold text-neutral-900'>Poulet rôti</p>
-							<p className='text-[0.68rem] text-neutral-900/55'>À consommer aujourd’hui</p>
-						</div>
-						<ArrowRight className='size-4 text-danger-700' />
-					</div>
-					<div className='flex items-center justify-between rounded-md bg-surface p-2'>
-						<div>
-							<p className='text-xs font-semibold text-neutral-900'>Fromage frais</p>
-							<p className='text-[0.68rem] text-neutral-900/55'>À consommer dans 1 jour</p>
-						</div>
-						<ArrowRight className='size-4 text-neutral-900/40' />
-					</div>
-				</div>
-			</div>
-
-			<div className='mt-3 rounded-lg border border-neutral-200 bg-surface p-3 shadow-sm'>
-				<div className='flex items-center justify-between'>
-					<div>
-						<h2 className='text-sm font-semibold text-neutral-900'>Mon budget</h2>
-						<p className='text-[0.68rem] text-neutral-900/55'>Mai 2026</p>
-					</div>
-					<ArrowRight className='size-4 text-neutral-900/45' />
-				</div>
-				<p className='mt-2 text-xl font-semibold text-neutral-900'>245 €</p>
-				<p className='text-[0.68rem] text-neutral-900/55'>dépensés sur 400 €</p>
-				<div className='mt-3 h-2 rounded-full bg-neutral-100'>
+				<div className='mt-2 h-2.5 overflow-hidden rounded-full bg-neutral-100'>
 					<div className='h-full w-[61%] rounded-full bg-accent-600' />
 				</div>
-				<p className='mt-1 text-right text-[0.68rem] font-semibold text-accent-700'>61 %</p>
-			</div>
-
-			<div className='mt-4 grid grid-cols-5 items-center text-neutral-900/55'>
-				<Home className='mx-auto size-5 text-[#F2A400]' />
-				<Package className='mx-auto size-5' />
-				<div className='mx-auto flex size-11 items-center justify-center rounded-full bg-accent-600 text-surface'>
-					<Plus className='size-6' />
-				</div>
-				<ShoppingBasket className='mx-auto size-5' />
-				<User className='mx-auto size-5' />
 			</div>
 		</div>
-	</div>
+	</figure>
 );
+
+const FeatureCard = ({ feature }: { feature: Feature }) => {
+	const Icon = feature.icon;
+
+	return (
+		<article className='card p-5'>
+			<span
+				className={cn(
+					'mb-4 flex size-12 items-center justify-center rounded-md',
+					feature.tone
+				)}>
+				<Icon className='size-6' aria-hidden='true' />
+			</span>
+			<h3 className='type-h3 text-neutral-900'>{feature.title}</h3>
+			<p className='mt-2 text-neutral-700'>{feature.description}</p>
+		</article>
+	);
+};
 
 const LandingPage = () => {
 	const { isAuthenticated, user } = useAuthStore();
-	const primaryLink = isAuthenticated && user ? '/app' : '/register';
-	const primaryLabel = isAuthenticated && user ? 'Ouvrir mon espace' : 'Créer mon compte';
+	const isLoggedIn = Boolean(isAuthenticated && user);
+	const primaryLink = isLoggedIn ? '/app' : '/register';
+	const primaryLabel = isLoggedIn ? 'Ouvrir mon espace' : 'Créer un compte';
 
 	return (
-		<div className='min-h-screen bg-surface font-display text-neutral-900'>
-			<LandingHeader />
+		<div className='min-h-screen bg-surface text-neutral-900'>
+			<a
+				href='#contenu'
+				className='sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-surface focus:px-4 focus:py-2 focus:shadow-lg'>
+				Aller au contenu
+			</a>
 
-			<section className='relative overflow-hidden bg-canvas'>
-				<div
-					className='absolute inset-0 bg-cover bg-center opacity-75'
-					style={{ backgroundImage: `url(${heroKitchen})` }}
-					aria-hidden='true'
-				/>
-				<div className='absolute inset-0 bg-linear-to-r from-surface via-surface/94 to-surface/45' />
-				<div className='relative mx-auto grid max-w-7xl items-center gap-8 px-5 py-10 sm:px-8 sm:py-14 lg:min-h-[780px] lg:grid-cols-[0.95fr_1.05fr] lg:px-12 lg:py-0'>
-					<div className='max-w-[620px]'>
-						<h1 className='text-[3.25rem] font-semibold leading-[1.04] text-neutral-900 sm:text-7xl lg:text-[5rem]'>
-							Mangez mieux,
-							<br />
-							gaspillez moins
-						</h1>
-						<div className='mt-3 h-4 w-40 rounded-full border-b-4 border-[#F2A400] sm:ml-[260px]' />
-						<p className='mt-8 max-w-[560px] text-xl leading-relaxed text-neutral-900/85 sm:text-2xl'>
-							InEat vous aide à mieux gérer vos aliments, éviter le gaspillage et
-							maîtriser votre budget alimentaire au quotidien.
-						</p>
+			<LandingHeader primaryLink={primaryLink} primaryLabel={primaryLabel} />
 
-						<div className='mt-9 grid max-w-[520px] grid-cols-1 gap-4'>
-							<Button
-								asChild
-								size='lg'
-								className='h-16 rounded-lg text-xl font-semibold sm:h-20 sm:text-2xl'>
-								<Link to={primaryLink}>
-									{primaryLabel}
-									<ArrowRight className='ml-auto size-7' />
-								</Link>
-							</Button>
-							<Button
-								asChild
-								size='lg'
-								variant='outline'
-								className='h-16 rounded-lg border-2 text-xl font-semibold text-accent-700 sm:h-20 sm:text-2xl'>
-								<a href='#fonctionnement'>
-									Voir comment ça marche
-									<CirclePlay className='ml-auto size-8' />
-								</a>
-							</Button>
+			<main id='contenu'>
+				<section className='px-4 pt-4 sm:px-8 sm:pt-8 lg:px-12'>
+					<div className='mx-auto grid max-w-7xl items-center gap-10 rounded-xl bg-accent-50 px-5 py-10 sm:px-10 sm:py-14 lg:grid-cols-[1.1fr_0.9fr] lg:rounded-2xl lg:px-16 lg:py-20'>
+						<div className='max-w-xl'>
+							<p className='mb-4 inline-flex items-center gap-2 rounded-full bg-surface px-3 py-1 text-sm font-medium text-accent-800'>
+								<Leaf className='size-4' aria-hidden='true' />
+								Anti-gaspillage et nutrition
+							</p>
+							<h1 className='type-display text-neutral-900 lg:text-[3.25rem] lg:leading-[3.5rem]'>
+								Mangez mieux, gaspillez moins.
+							</h1>
+							<p className='mt-4 text-lg leading-7 text-neutral-700'>
+								InEat suit vos produits, vous prévient avant qu'ils ne se perdent
+								et vous propose des recettes avec ce que vous avez déjà.
+							</p>
+
+							<div className='mt-8 flex flex-col gap-3 sm:flex-row'>
+								<Button asChild size='lg'>
+									<Link to={primaryLink}>
+										{isLoggedIn ? primaryLabel : 'Commencer gratuitement'}
+										<ArrowRight aria-hidden='true' />
+									</Link>
+								</Button>
+								<Button asChild size='lg' variant='secondary'>
+									<a href='#fonctionnement'>Voir comment ça marche</a>
+								</Button>
+							</div>
+
+							<p className='mt-5 text-sm text-accent-800'>
+								Gratuit et sans engagement. S'installe sur mobile comme une app.
+							</p>
 						</div>
 
-						<div className='mt-8 flex items-center gap-2 text-base text-neutral-900/80 sm:text-lg'>
-							<Check className='size-6 rounded-full border border-accent-600 p-0.5 text-accent-700' />
-							<span>Gratuit · Rapide · Sans engagement</span>
+						<AppPreview />
+					</div>
+				</section>
+
+				<section
+					id='fonctionnalites'
+					aria-labelledby='fonctionnalites-titre'
+					className='scroll-mt-20 px-4 py-14 sm:px-8 sm:py-20 lg:px-12'>
+					<div className='mx-auto max-w-7xl'>
+						<div className='max-w-2xl'>
+							<h2 id='fonctionnalites-titre' className='type-h1 text-neutral-900'>
+								Tout votre stock alimentaire, sans prise de tête
+							</h2>
+							<p className='mt-3 text-lg leading-7 text-neutral-700'>
+								Quatre outils simples qui travaillent ensemble pour éviter le
+								gaspillage et mieux manger.
+							</p>
+						</div>
+						<div className='mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6'>
+							{features.map((feature) => (
+								<FeatureCard key={feature.title} feature={feature} />
+							))}
 						</div>
 					</div>
+				</section>
 
-					<div className='relative justify-self-center lg:justify-self-end'>
-						<HeroPhone />
+				<section
+					id='fonctionnement'
+					aria-labelledby='fonctionnement-titre'
+					className='scroll-mt-20 bg-canvas px-4 py-14 sm:px-8 sm:py-20 lg:px-12'>
+					<div className='mx-auto max-w-7xl'>
+						<h2 id='fonctionnement-titre' className='type-h1 text-neutral-900'>
+							Comment ça marche
+						</h2>
+						<ol className='mt-8 grid gap-6 md:grid-cols-3'>
+							{steps.map((step, index) => (
+								<li key={step.title} className='card overflow-hidden'>
+									<img
+										src={step.image}
+										alt=''
+										loading='lazy'
+										className='aspect-[4/3] w-full bg-surface object-contain p-4'
+									/>
+									<div className='border-t border-neutral-200 p-5'>
+										<p className='flex items-center gap-3'>
+											<span
+												aria-hidden='true'
+												className='flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-600 font-bold text-surface'>
+												{index + 1}
+											</span>
+											<span className='type-h3 text-neutral-900'>
+												<span className='sr-only'>Étape {index + 1} : </span>
+												{step.title}
+											</span>
+										</p>
+										<p className='mt-3 text-neutral-700'>{step.description}</p>
+									</div>
+								</li>
+							))}
+						</ol>
 					</div>
-				</div>
-			</section>
+				</section>
 
-			<section
-				id='avantages'
-				className='border-y border-neutral-200 bg-surface py-12 sm:py-16'>
-				<div className='mx-auto grid max-w-6xl gap-9 px-5 text-center sm:grid-cols-3 sm:px-8 lg:px-12'>
-					{benefits.map((benefit) => {
-						const Icon = benefit.icon;
-
-						return (
-							<article key={benefit.title} className='mx-auto max-w-[280px]'>
-								<div
-									className={`mx-auto mb-6 flex size-20 items-center justify-center rounded-full ${benefit.tone}`}>
-									<Icon className='size-10' />
-								</div>
-								<h2 className='text-2xl font-semibold text-neutral-900'>
-									{benefit.title}
-								</h2>
-								<p className='mt-4 text-lg leading-snug text-neutral-900/80'>
-									{benefit.description}
+				<section aria-labelledby='cta-titre' className='px-4 py-14 sm:px-8 sm:py-20 lg:px-12'>
+					<div className='mx-auto flex max-w-7xl flex-col items-center gap-8 rounded-xl bg-accent-800 px-6 py-12 text-center sm:px-12 lg:flex-row lg:rounded-2xl lg:px-16 lg:text-left'>
+						<img
+							src={foodPlate}
+							alt=''
+							loading='lazy'
+							className='hidden size-40 shrink-0 rounded-full object-cover lg:block'
+						/>
+						<div className='flex-1'>
+							<h2 id='cta-titre' className='type-h1 text-surface'>
+								Prêt à mieux manger et à faire des économies ?
+							</h2>
+							<p className='mt-3 text-lg leading-7 text-accent-100'>
+								Créez votre compte en deux minutes et ajoutez vos premiers produits.
+							</p>
+							<div className='mt-6 flex flex-col items-center gap-4 sm:flex-row lg:items-center'>
+								<Button asChild size='lg' variant='brand'>
+									<Link to={primaryLink}>
+										{isLoggedIn ? primaryLabel : 'Commencer gratuitement'}
+										<ArrowRight aria-hidden='true' />
+									</Link>
+								</Button>
+								<p className='flex items-center gap-2 text-sm text-accent-100'>
+									<LockKeyhole className='size-4' aria-hidden='true' />
+									Vos données restent privées.
 								</p>
-							</article>
-						);
-					})}
-				</div>
-			</section>
-
-			<section
-				id='fonctionnement'
-				className='bg-canvas/70 py-12 text-center sm:py-16'>
-				<div className='mx-auto max-w-7xl px-5 sm:px-8 lg:px-12'>
-					<h2 className='text-4xl font-semibold text-neutral-900 sm:text-5xl'>
-						3 étapes simples
-					</h2>
-					<div className='mt-9 grid gap-10 sm:grid-cols-3'>
-						{steps.map((step) => (
-							<article key={step.number} className='relative mx-auto max-w-[320px]'>
-								<div className='absolute left-4 top-0 z-10 flex size-12 items-center justify-center rounded-full bg-accent-600 text-2xl font-semibold text-surface sm:left-0'>
-									{step.number}
-								</div>
-								<img
-									src={step.image}
-									alt=''
-									className='mx-auto h-48 w-56 object-contain sm:h-56 sm:w-64'
-								/>
-								<h3 className='mt-5 text-xl font-semibold text-neutral-900 sm:text-2xl'>
-									{step.title}
-								</h3>
-								<p className='mt-3 text-lg leading-snug text-neutral-900/80'>
-									{step.description}
-								</p>
-							</article>
-						))}
+							</div>
+						</div>
+						<img
+							src={foodBowl}
+							alt=''
+							loading='lazy'
+							className='hidden size-40 shrink-0 rounded-full object-cover lg:block'
+						/>
 					</div>
-				</div>
-			</section>
+				</section>
+			</main>
 
-			<section
-				id='preuve'
-				className='relative overflow-hidden bg-surface py-14 text-center sm:py-20'>
-				<img
-					src={foodPlate}
-					alt=''
-					className='pointer-events-none absolute -left-20 bottom-0 hidden h-72 w-72 object-contain lg:block'
-				/>
-				<img
-					src={foodBowl}
-					alt=''
-					className='pointer-events-none absolute -right-16 bottom-5 hidden h-72 w-72 object-contain lg:block'
-				/>
-
-				<div className='relative mx-auto max-w-3xl px-5 sm:px-8'>
-					<h2 className='text-4xl font-semibold leading-tight text-neutral-900 sm:text-5xl'>
-						Prêt à mieux manger
-						<br />
-						et à faire des économies ?
-					</h2>
-					<div className='mx-auto mt-2 h-4 w-40 rounded-full border-b-4 border-[#F2A400]' />
-					<p className='mx-auto mt-5 max-w-xl text-lg leading-relaxed text-neutral-900/75 sm:text-xl'>
-						Rejoignez des milliers de foyers qui utilisent déjà InEat au
-						quotidien.
+			<footer className='border-t border-neutral-200 px-4 py-8 sm:px-8 lg:px-12'>
+				<div className='mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-neutral-600 sm:flex-row'>
+					<p className='flex items-center gap-2'>
+						<img src={logoMark} alt='' className='size-6' />
+						© {new Date().getFullYear()} InEat
 					</p>
-
-					<Button
-						asChild
-						size='lg'
-						className='mx-auto mt-8 h-16 w-full max-w-[520px] rounded-lg text-xl font-semibold sm:h-20 sm:text-2xl'>
-						<Link to={primaryLink}>
-							{primaryLabel}
-							<ArrowRight className='ml-auto size-7' />
+					<nav aria-label='Pied de page' className='flex gap-4'>
+						<Link to='/login' className='rounded-sm hover:text-accent-700'>
+							Se connecter
 						</Link>
-					</Button>
-
-					<p className='mt-5 flex items-center justify-center gap-2 text-sm text-neutral-900/65 sm:text-base'>
-						<LockKeyhole className='size-4' />
-						Vos données sont sécurisées et confidentielles.
-					</p>
+						<Link to='/register' className='rounded-sm hover:text-accent-700'>
+							Créer un compte
+						</Link>
+					</nav>
 				</div>
-			</section>
+			</footer>
 		</div>
 	);
 };

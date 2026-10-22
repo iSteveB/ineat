@@ -251,7 +251,7 @@ const Dashboard: FC = () => {
           {error instanceof Error ? error.message : "Erreur inconnue"}
         </p>
         <button
-          className="mt-4 px-4 py-2 bg-brand-300 text-surface rounded hover:bg-brand-300/80"
+          className="mt-4 px-4 py-2 bg-brand-300 text-neutral-900 rounded hover:bg-brand-500"
           onClick={() => window.location.reload()}
         >
           Réessayer
