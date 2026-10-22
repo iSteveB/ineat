@@ -10,14 +10,14 @@ const buttonVariants = cva(
 		variants: {
 			variant: {
 				primary:
-					'bg-success-50 text-neutral-50 shadow-xs hover:bg-success-50/90 active:bg-success-50/70',
+					'bg-accent-600 text-surface shadow-xs hover:bg-accent-600/90 active:bg-accent-600/70',
 				secondary:
-					'bg-neutral-50 border border-neutral-200 text-neutral-300 shadow-xs hover:bg-neutral-100/50 active:bg-neutral-200/50',
-				error: 'bg-error-50 text-neutral-50 shadow-xs hover:bg-error-100 active:bg-error-100/80',
+					'bg-surface border border-neutral-200 text-neutral-900 shadow-xs hover:bg-neutral-50/50 active:bg-neutral-100/50',
+				error: 'bg-danger-50 text-surface shadow-xs hover:bg-danger-600 active:bg-danger-600/80',
 				outline:
-					'border border-success-50 bg-transparent text-success-50 hover:bg-success-50 hover:text-neutral-50 active:bg-success-50/90',
-				ghost: 'bg-transparent text-neutral-300 hover:bg-success-50/10 hover:text-success-50 active:bg-success-50/20',
-				link: 'bg-transparent text-success-50 underline-offset-4 hover:underline active:text-success-50/80',
+					'border border-accent-600 bg-transparent text-accent-700 hover:bg-accent-600 hover:text-surface active:bg-accent-600/90',
+				ghost: 'bg-transparent text-neutral-900 hover:bg-accent-600/10 hover:text-accent-700 active:bg-accent-600/20',
+				link: 'bg-transparent text-accent-700 underline-offset-4 hover:underline active:text-accent-700/80',
 			},
 			size: {
 				sm: 'h-8 px-3 py-1.5 text-xs',

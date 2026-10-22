@@ -16,7 +16,7 @@ const NavigationBar: FC = () => {
 			{/* Navigation container */}
 			<div className='relative mx-auto max-w-md'>
 				{/* Background */}
-				<div className='bg-neutral-50/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 px-6 py-3'>
+				<div className='bg-surface/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 px-6 py-3'>
 					<div className='flex justify-between items-center'>
 						<NavigationItem
 							icon={<Home size={22} />}
@@ -39,15 +39,15 @@ const NavigationBar: FC = () => {
 								onClick={() =>
 									navigate({ to: '/app/inventory/add' })
 								}
-								className='group relative size-14 bg-gradient-to-r from-success-50 to-emerald-700 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer'
+								className='group relative size-14 bg-gradient-to-r from-accent-600 to-emerald-700 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer'
 								aria-label='Ajouter un produit'>
 								<Plus
 									size={24}
-									className='text-neutral-50 transition-transform duration-300 group-hover:rotate-90'
+									className='text-surface transition-transform duration-300 group-hover:rotate-90'
 								/>
 
 								{/* Glow effect */}
-								<div className='absolute inset-0 bg-gradient-to-r from-success-50 to-emerald-700 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300' />
+								<div className='absolute inset-0 bg-gradient-to-r from-accent-600 to-emerald-700 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300' />
 							</button>
 						</div>
 

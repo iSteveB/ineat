@@ -158,27 +158,27 @@ const SecurityPrivacyPage = () => {
 	};
 
 	return (
-		<div className='min-h-screen bg-neutral-50 pb-16'>
+		<div className='min-h-screen bg-surface pb-16'>
 			{/* ===== HEADER ===== */}
-			<div className='relative overflow-hidden bg-neutral-50 border-b border-neutral-100 shadow-sm'>
+			<div className='relative overflow-hidden bg-surface border-b border-neutral-100 shadow-sm'>
 				{/* Dégradé de fond subtil pour l'ambiance, moins intrusif */}
-				<div className='absolute top-0 right-0 size-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+				<div className='absolute top-0 right-0 size-32 bg-accent-600/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center gap-4'>
 					<Link to='/app/settings'>
 						<Button
 							variant='ghost'
 							size='sm'
-							className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-100 shadow-sm'
+							className='size-10 p-0 rounded-xl bg-surface hover:bg-neutral-50 border border-neutral-100 shadow-sm'
 						>
 							<ChevronLeft className='size-5' />
 						</Button>
 					</Link>
 					<div>
-						<h1 className='text-2xl font-bold text-neutral-300'>
+						<h1 className='text-2xl font-bold text-neutral-900'>
 							Sécurité & Confidentialité
 						</h1>
-						<p className='text-sm text-neutral-300'>
+						<p className='text-sm text-neutral-900'>
 							Gérez vos paramètres de sécurité et de confidentialité
 						</p>
 					</div>
@@ -187,22 +187,22 @@ const SecurityPrivacyPage = () => {
 
 			<div className='p-6 space-y-6'>
 				{/* Formulaire de changement de mot de passe */}
-				<Card className='border-0 bg-neutral-50 shadow-xl'>
+				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
-								<Lock className='size-5 text-success-50' />
+							<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+								<Lock className='size-5 text-accent-700' />
 							</div>
 							Modifier mon mot de passe
 						</CardTitle>
-						<CardDescription className='text-neutral-300'>
+						<CardDescription className='text-neutral-900'>
 							Assurez-vous d'utiliser un mot de passe fort et unique
 						</CardDescription>
 					</CardHeader>
 					<form onSubmit={handlePasswordSubmit}>
 						<CardContent className='space-y-4'>
 							<div className='space-y-2'>
-								<Label htmlFor='currentPassword' className='text-neutral-300'>
+								<Label htmlFor='currentPassword' className='text-neutral-900'>
 									Mot de passe actuel
 								</Label>
 								<Input
@@ -213,12 +213,12 @@ const SecurityPrivacyPage = () => {
 									onChange={handlePasswordChange}
 									disabled={isSubmittingPassword}
 									required
-									className='bg-neutral-50 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none'
+									className='bg-surface border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none'
 								/>
 							</div>
 
 							<div className='space-y-2'>
-								<Label htmlFor='newPassword' className='text-neutral-300'>
+								<Label htmlFor='newPassword' className='text-neutral-900'>
 									Nouveau mot de passe
 								</Label>
 								<Input
@@ -230,18 +230,18 @@ const SecurityPrivacyPage = () => {
 									disabled={isSubmittingPassword}
 									required
 									minLength={8}
-									className='bg-neutral-50 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none'
+									className='bg-surface border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none'
 								/>
 								{passwordInfo.newPassword.length > 0 &&
 									passwordInfo.newPassword.length < 8 && (
-										<p className='text-sm text-error-100'>
+										<p className='text-sm text-danger-700'>
 											Le mot de passe doit contenir au moins 8 caractères
 										</p>
 									)}
 							</div>
 
 							<div className='space-y-2'>
-								<Label htmlFor='confirmPassword' className='text-neutral-300'>
+								<Label htmlFor='confirmPassword' className='text-neutral-900'>
 									Confirmer le mot de passe
 								</Label>
 								<Input
@@ -253,14 +253,14 @@ const SecurityPrivacyPage = () => {
 									disabled={isSubmittingPassword}
 									required
 									className={cn(
-										'bg-neutral-50 border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none',
+										'bg-surface border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none',
 										passwordInfo.confirmPassword.length > 0 && !passwordsMatch
-											? 'border-error-100'
+											? 'border-danger-600'
 											: '',
 									)}
 								/>
 								{passwordInfo.confirmPassword.length > 0 && !passwordsMatch && (
-									<p className='text-sm text-error-100'>
+									<p className='text-sm text-danger-700'>
 										Les mots de passe ne correspondent pas
 									</p>
 								)}
@@ -269,7 +269,7 @@ const SecurityPrivacyPage = () => {
 						<CardFooter>
 							<Button
 								type='submit'
-								className='w-full h-12 bg-success-50 hover:bg-success-50/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+								className='w-full h-12 bg-accent-600 hover:bg-accent-600/90 text-surface shadow-lg hover:shadow-xl transition-all duration-300'
 								disabled={isSubmittingPassword || !canSubmitPassword}
 							>
 								{isSubmittingPassword ? (
@@ -286,15 +286,15 @@ const SecurityPrivacyPage = () => {
 				</Card>
 
 				{/* Section Confidentialité des Données */}
-				<Card className='border-0 bg-neutral-50 shadow-xl'>
+				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
-								<Shield className='size-5 text-success-50' />
+							<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+								<Shield className='size-5 text-accent-700' />
 							</div>
 							Confidentialité des Données
 						</CardTitle>
-						<CardDescription className='text-neutral-300'>
+						<CardDescription className='text-neutral-900'>
 							Gérez vos données personnelles et leur utilisation
 						</CardDescription>
 					</CardHeader>
@@ -303,11 +303,11 @@ const SecurityPrivacyPage = () => {
 							<div>
 								<Label
 									htmlFor='dataSharing'
-									className='font-medium text-neutral-300'
+									className='font-medium text-neutral-900'
 								>
 									Partage des données
 								</Label>
-								<p className='text-sm text-neutral-300'>
+								<p className='text-sm text-neutral-900'>
 									Autoriser le partage anonyme à des fins d'amélioration
 								</p>
 							</div>
@@ -315,18 +315,18 @@ const SecurityPrivacyPage = () => {
 								id='dataSharing'
 								checked={securitySettings.dataSharing}
 								onCheckedChange={() => handleToggleChange('dataSharing')}
-								className='data-[state=checked]:bg-success-50 data-[state=unchecked]:bg-neutral-200'
+								className='data-[state=checked]:bg-accent-600 data-[state=unchecked]:bg-neutral-100'
 							/>
 						</div>
 						<div className='flex items-center justify-between'>
 							<div>
 								<Label
 									htmlFor='locationTracking'
-									className='font-medium text-neutral-300'
+									className='font-medium text-neutral-900'
 								>
 									Suivi de localisation
 								</Label>
-								<p className='text-sm text-neutral-300'>
+								<p className='text-sm text-neutral-900'>
 									Autoriser l'application à utiliser votre localisation
 								</p>
 							</div>
@@ -334,18 +334,18 @@ const SecurityPrivacyPage = () => {
 								id='locationTracking'
 								checked={securitySettings.locationTracking}
 								onCheckedChange={() => handleToggleChange('locationTracking')}
-								className='data-[state=checked]:bg-success-50 data-[state=unchecked]:bg-neutral-200'
+								className='data-[state=checked]:bg-accent-600 data-[state=unchecked]:bg-neutral-100'
 							/>
 						</div>
 						<div className='flex items-center justify-between'>
 							<div>
 								<Label
 									htmlFor='saveSearchHistory'
-									className='font-medium text-neutral-300'
+									className='font-medium text-neutral-900'
 								>
 									Historique de recherche
 								</Label>
-								<p className='text-sm text-neutral-300'>
+								<p className='text-sm text-neutral-900'>
 									Enregistrer vos recherches pour des suggestions futures
 								</p>
 							</div>
@@ -353,18 +353,18 @@ const SecurityPrivacyPage = () => {
 								id='saveSearchHistory'
 								checked={securitySettings.saveSearchHistory}
 								onCheckedChange={() => handleToggleChange('saveSearchHistory')}
-								className='data-[state=checked]:bg-success-50 data-[state=unchecked]:bg-neutral-200'
+								className='data-[state=checked]:bg-accent-600 data-[state=unchecked]:bg-neutral-100'
 							/>
 						</div>
 					</CardContent>
 				</Card>
 
 				{/* Section FAQ */}
-				<Card className='border-0 bg-neutral-50 shadow-xl'>
+				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
-								<Info className='size-5 text-success-50' />
+							<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+								<Info className='size-5 text-accent-700' />
 							</div>
 							Questions fréquentes
 						</CardTitle>
@@ -372,10 +372,10 @@ const SecurityPrivacyPage = () => {
 					<CardContent>
 						<Accordion type='single' collapsible className='w-full'>
 							<AccordionItem value='item-1' className='border-neutral-100'>
-								<AccordionTrigger className='text-neutral-300 hover:no-underline hover:text-success-50 transition-colors'>
+								<AccordionTrigger className='text-neutral-900 hover:no-underline hover:text-accent-700 transition-colors'>
 									Comment mes données sont-elles utilisées ?
 								</AccordionTrigger>
-								<AccordionContent className='text-neutral-300'>
+								<AccordionContent className='text-neutral-900'>
 									InEat utilise vos données uniquement pour améliorer votre
 									expérience et vous proposer des recettes et suggestions
 									personnalisées. Nous ne vendons jamais vos données
@@ -384,10 +384,10 @@ const SecurityPrivacyPage = () => {
 								</AccordionContent>
 							</AccordionItem>
 							<AccordionItem value='item-2' className='border-neutral-100'>
-								<AccordionTrigger className='text-neutral-300 hover:no-underline hover:text-success-50 transition-colors'>
+								<AccordionTrigger className='text-neutral-900 hover:no-underline hover:text-accent-700 transition-colors'>
 									Comment sécuriser mon compte ?
 								</AccordionTrigger>
-								<AccordionContent className='text-neutral-300'>
+								<AccordionContent className='text-neutral-900'>
 									Pour une sécurité optimale, nous vous recommandons d'activer
 									l'authentification à deux facteurs, d'utiliser un mot de passe
 									fort et unique, et de surveiller régulièrement les activités
@@ -395,10 +395,10 @@ const SecurityPrivacyPage = () => {
 								</AccordionContent>
 							</AccordionItem>
 							<AccordionItem value='item-3' className='border-neutral-100'>
-								<AccordionTrigger className='text-neutral-300 hover:no-underline hover:text-success-50 transition-colors'>
+								<AccordionTrigger className='text-neutral-900 hover:no-underline hover:text-accent-700 transition-colors'>
 									Comment désactiver les notifications ?
 								</AccordionTrigger>
-								<AccordionContent className='text-neutral-300'>
+								<AccordionContent className='text-neutral-900'>
 									Vous pouvez gérer vos préférences de notification dans la
 									section "Notifications" de votre profil. Vous pouvez y
 									désactiver les notifications par type ou complètement.
@@ -409,25 +409,25 @@ const SecurityPrivacyPage = () => {
 				</Card>
 
 				{/* Section suppression de compte */}
-				<Card className='border-0 bg-neutral-50 shadow-xl'>
+				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-error-100/20 border border-error-100/50'>
-								<Trash2 className='size-5 text-error-100' />
+							<div className='p-2 rounded-xl bg-danger-600/20 border border-danger-600/50'>
+								<Trash2 className='size-5 text-danger-700' />
 							</div>
 							Supprimer mon compte
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className='flex flex-col p-4 bg-error-50/5 rounded-xl border border-error-100/20'>
-							<p className='text-sm text-neutral-300 mb-4'>
+						<div className='flex flex-col p-4 bg-danger-50/5 rounded-xl border border-danger-600/20'>
+							<p className='text-sm text-neutral-900 mb-4'>
 								Cette action supprimera définitivement votre compte et les
 								données associées, à l’exception des documents conservés
 								conformément à nos obligations légales.
 							</p>
 							<Button
 								onClick={() => setDeleteBenefitsOpen(true)}
-								className='bg-error-100 hover:bg-error-100/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'
+								className='bg-danger-600 hover:bg-danger-600/90 text-surface shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'
 							>
 								<Trash2 className='size-4 mr-2 flex-shrink-0' />
 								<span className='break-words'>
@@ -450,16 +450,16 @@ const SecurityPrivacyPage = () => {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<div className='grid gap-3 py-2'>
-						<div className='flex items-center gap-3 rounded-lg bg-success-50/10 p-3'>
-							<Leaf className='size-5 text-success-50' />
+						<div className='flex items-center gap-3 rounded-lg bg-accent-600/10 p-3'>
+							<Leaf className='size-5 text-accent-700' />
 							<span>Moins de gaspillage alimentaire</span>
 						</div>
-						<div className='flex items-center gap-3 rounded-lg bg-success-50/10 p-3'>
-							<BellRing className='size-5 text-success-50' />
+						<div className='flex items-center gap-3 rounded-lg bg-accent-600/10 p-3'>
+							<BellRing className='size-5 text-accent-700' />
 							<span>Des alertes avant la péremption</span>
 						</div>
-						<div className='flex items-center gap-3 rounded-lg bg-success-50/10 p-3'>
-							<PiggyBank className='size-5 text-success-50' />
+						<div className='flex items-center gap-3 rounded-lg bg-accent-600/10 p-3'>
+							<PiggyBank className='size-5 text-accent-700' />
 							<span>Un budget alimentaire maîtrisé</span>
 						</div>
 					</div>
@@ -471,7 +471,7 @@ const SecurityPrivacyPage = () => {
 								setDeleteConfirmation('');
 								setDeleteConfirmOpen(true);
 							}}
-							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'
+							className='bg-danger-600 text-surface hover:bg-danger-600/90'
 						>
 							Supprimer quand même
 						</AlertDialogAction>
@@ -488,7 +488,7 @@ const SecurityPrivacyPage = () => {
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							Pour confirmer, saisissez exactement la phrase suivante :
-							<strong className='mt-2 block text-neutral-300'>
+							<strong className='mt-2 block text-neutral-900'>
 								{deleteConfirmationPhrase}
 							</strong>
 						</AlertDialogDescription>
@@ -511,7 +511,7 @@ const SecurityPrivacyPage = () => {
 								isDeletingAccount ||
 								deleteConfirmation !== deleteConfirmationPhrase
 							}
-							className='bg-error-100 text-neutral-50 hover:bg-error-100/90'
+							className='bg-danger-600 text-surface hover:bg-danger-600/90'
 						>
 							{isDeletingAccount ? (
 								<>

@@ -7,13 +7,13 @@ const alertVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: 'bg-neutral-50 border-neutral-200 text-neutral-300',
+				default: 'bg-surface border-neutral-200 text-neutral-900',
 				primary:
-					'bg-primary-100/10 border-primary-100 text-neutral-300',
-				success: 'bg-success-50/10 border-success-50 text-neutral-300',
-				warning: 'bg-warning-50/10 border-warning-50 text-neutral-300',
-				error: 'bg-error-50/10 border-error-50 text-neutral-300',
-				info: 'bg-info-200/10 border-info-200 text-neutral-300',
+					'bg-brand-300/10 border-brand-300 text-neutral-900',
+				success: 'bg-accent-600/10 border-accent-600 text-neutral-900',
+				warning: 'bg-warning-50/10 border-warning-500 text-neutral-900',
+				error: 'bg-danger-50/10 border-danger-600 text-neutral-900',
+				info: 'bg-info-50/10 border-info-700 text-neutral-900',
 			},
 		},
 		defaultVariants: {
@@ -65,7 +65,7 @@ function AlertDescription({
 		<div
 			data-slot='alert-description'
 			className={cn(
-				'col-start-2 grid justify-items-start gap-1 text-sm text-neutral-200',
+				'col-start-2 grid justify-items-start gap-1 text-sm text-neutral-600',
 				className
 			)}
 			{...props}

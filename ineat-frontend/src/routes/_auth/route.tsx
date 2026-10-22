@@ -13,7 +13,7 @@ export default function AuthLayout() {
 					<div className='flex item-center justify-center'>
 						<Logo />
 					</div>
-					<h1 className='text-3xl font-bold font-fredoka'>InEat</h1>
+					<h1 className='text-3xl font-bold font-display'>InEat</h1>
 					<h2 className='text-gray-600'>
 						Gérez vos <strong>courses</strong> comme un <strong>chef</strong> !
 					</h2>

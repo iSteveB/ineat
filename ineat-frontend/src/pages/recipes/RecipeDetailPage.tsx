@@ -133,7 +133,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	if (isLoading) {
 		return (
 			<div className='flex min-h-80 items-center justify-center'>
-				<div className='size-8 animate-spin rounded-full border-2 border-success-50 border-t-transparent' />
+				<div className='size-8 animate-spin rounded-full border-2 border-accent-600 border-t-transparent' />
 			</div>
 		);
 	}
@@ -142,7 +142,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 		return (
 			<div className='mx-auto max-w-3xl space-y-4 p-4'>
 				<BackButton filter={activeFilter} />
-				<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6'>
+				<div className='rounded-lg border border-neutral-200 bg-surface p-6'>
 					<h1 className='text-lg font-semibold text-neutral-900'>
 						Recette indisponible
 					</h1>
@@ -157,7 +157,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	return (
 		<div className='mx-auto max-w-5xl space-y-6 p-4'>
 			<BackButton filter={activeFilter} />
-			<header className='relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm'>
+			<header className='relative overflow-hidden rounded-lg border border-neutral-200 bg-surface shadow-sm'>
 				<FavoriteRecipeButton
 					isFavorite={recipe.isFavorite}
 					isPending={favoriteMutation.isPending}
@@ -176,7 +176,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 						className='h-72 w-full object-cover'
 					/>
 				) : (
-					<div className='flex h-56 items-center justify-center bg-neutral-100 text-neutral-500'>
+					<div className='flex h-56 items-center justify-center bg-neutral-50 text-neutral-500'>
 						<ImageOff className='mr-2 size-5' />
 						Image indisponible
 					</div>
@@ -214,14 +214,14 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 			</header>
 
 			<div className='grid gap-4 lg:grid-cols-[1fr_320px]'>
-				<section className='rounded-lg border border-neutral-200 bg-neutral-50 p-5 shadow-sm'>
+				<section className='rounded-lg border border-neutral-200 bg-surface p-5 shadow-sm'>
 					<h2 className='text-lg font-semibold text-neutral-900'>
 						Préparation
 					</h2>
 					<ol className='mt-4 space-y-3'>
 						{recipe.steps.map((step, index) => (
 							<li key={step} className='flex gap-3 text-sm text-neutral-700'>
-								<span className='flex size-6 shrink-0 items-center justify-center rounded-full bg-success-50 text-xs font-semibold text-neutral-50'>
+								<span className='flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-600 text-xs font-semibold text-surface'>
 									{index + 1}
 								</span>
 								{step}
@@ -283,7 +283,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 
 									return (
 										<li key={item.inventoryItemId}>
-											<label className='flex cursor-pointer items-center gap-3 rounded-md bg-neutral-100 px-3 py-2'>
+											<label className='flex cursor-pointer items-center gap-3 rounded-md bg-neutral-50 px-3 py-2'>
 												<input
 													type='checkbox'
 													checked={isSelected}
@@ -347,7 +347,7 @@ function Stat({
 	icon?: ReactNode;
 }) {
 	return (
-		<div className='rounded-md bg-neutral-100 px-3 py-2 font-semibold text-neutral-900'>
+		<div className='rounded-md bg-neutral-50 px-3 py-2 font-semibold text-neutral-900'>
 			<span className='flex items-center gap-1'>
 				{icon}
 				{children}
@@ -368,7 +368,7 @@ function IngredientList({ recipe }: { recipe: SavedRecipe }) {
 	);
 
 	return (
-		<section className='rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm'>
+		<section className='rounded-lg border border-neutral-200 bg-surface p-4 shadow-sm'>
 			<h2 className='flex items-center gap-2 text-base font-semibold text-neutral-900'>
 				<ShoppingBasket className='size-4 text-neutral-700' />
 				Ingrédients
@@ -396,7 +396,7 @@ function IngredientGroup({
 				{ingredients.map((ingredient) => (
 					<li
 						key={ingredient.id}
-						className='rounded-md bg-neutral-100 px-3 py-2 text-sm text-neutral-700'>
+						className='rounded-md bg-neutral-50 px-3 py-2 text-sm text-neutral-700'>
 						{ingredient.name}
 						{ingredient.quantity ? ` · ${ingredient.quantity}` : ''}
 						{ingredient.unit ? ` ${ingredient.unit}` : ''}

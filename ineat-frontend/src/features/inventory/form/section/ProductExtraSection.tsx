@@ -61,22 +61,22 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 
 	const getInputClassName = (field: keyof ProductExtrasData) => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
 
 		// Erreur
 		if (errors[field]) {
-			baseClass += ' border-error-100';
+			baseClass += ' border-danger-600';
 		}
 
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace(
 				'border-neutral-200',
 				'border-blue-500/20'
 			);
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 		}
@@ -86,17 +86,17 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 
 	const getSelectClassName = () => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
 
 		// Mode readonly avec style différencié
 		if (readonly && values.storageLocation) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace(
 				'border-neutral-200',
 				'border-blue-500/20'
 			);
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 		}
@@ -107,7 +107,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 	return (
 		<div className={className}>
 			{showTitle && (
-				<h3 className='text-md font-medium text-neutral-300 mb-4'>
+				<h3 className='text-md font-medium text-neutral-900 mb-4'>
 					Informations supplémentaires
 				</h3>
 			)}
@@ -119,10 +119,10 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 					<div className='space-y-2'>
 						<Label
 							htmlFor='purchasePrice'
-							className='flex items-center gap-2 text-neutral-300'>
-							<Euro className='size-3 text-neutral-300' />
+							className='flex items-center gap-2 text-neutral-900'>
+							<Euro className='size-3 text-neutral-900' />
 							Prix d'achat (€)
-							<span className='text-xs text-neutral-200 font-normal'>
+							<span className='text-xs text-neutral-600 font-normal'>
 								(déduit du budget)
 							</span>
 						</Label>
@@ -141,7 +141,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 							readOnly={readonly}
 						/>
 						{errors.purchasePrice && (
-							<p className='text-sm text-error-100'>
+							<p className='text-sm text-danger-700'>
 								{errors.purchasePrice}
 							</p>
 						)}
@@ -151,7 +151,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 					<div className='space-y-2'>
 						<Label
 							htmlFor='storageLocation'
-							className='text-neutral-300'>
+							className='text-neutral-900'>
 							Lieu de stockage
 						</Label>
 						<Select
@@ -163,12 +163,12 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 							<SelectTrigger className={getSelectClassName()}>
 								<SelectValue placeholder='Sélectionnez un lieu' />
 							</SelectTrigger>
-							<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
+							<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 								{storageLocationOptions.map((location) => (
 									<SelectItem
 										key={location}
 										value={location}
-										className='text-neutral-300 hover:bg-neutral-100'>
+										className='text-neutral-900 hover:bg-neutral-50'>
 										{location}
 									</SelectItem>
 								))}
@@ -179,7 +179,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 
 				{/* Notes */}
 				<div className='space-y-2'>
-					<Label htmlFor='notes' className='text-neutral-300'>
+					<Label htmlFor='notes' className='text-neutral-900'>
 						Notes
 					</Label>
 					<Textarea
@@ -195,7 +195,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 						readOnly={readonly}
 					/>
 					{errors.notes && (
-						<p className='text-sm text-error-100'>
+						<p className='text-sm text-danger-700'>
 							{errors.notes}
 						</p>
 					)}

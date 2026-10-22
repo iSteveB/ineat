@@ -87,7 +87,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
 					<DialogTitle className='flex items-center gap-2'>
-						<Edit className='size-5 text-accent' />
+						<Edit className='size-5 text-accent-700' />
 						Modifier le budget
 					</DialogTitle>
 					<DialogDescription>
@@ -97,9 +97,9 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 				</DialogHeader>
 
 				<div className='space-y-4'>
-					<Alert className='border-success-50/20 bg-success-50/10'>
-						<CheckCircle className='size-4 text-success-50' />
-						<AlertDescription className='text-neutral-300'>
+					<Alert className='border-accent-600/20 bg-accent-600/10'>
+						<CheckCircle className='size-4 text-accent-700' />
+						<AlertDescription className='text-neutral-900'>
 							<span className="font-bold">À savoir :</span> Cette
 							action modifie uniquement le montant de votre
 							budget. Toutes vos dépenses existantes sont conservées.
@@ -131,7 +131,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 						</Alert>
 					)}
 
-					<div className='bg-neutral-100 p-3 rounded-md'>
+					<div className='bg-neutral-50 p-3 rounded-md'>
 						<div className='flex justify-between text-sm'>
 							<span>Montant actuel :</span>
 							<span className='font-semibold'>
@@ -142,7 +142,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 							parseFloat(amount) !== budget.amount && (
 								<div className='flex justify-between text-sm mt-1'>
 									<span>Nouveau montant :</span>
-									<span className='font-semibold text-accent'>
+									<span className='font-semibold text-accent-700'>
 										{budgetService.formatCurrency(
 											parseFloat(amount)
 										)}

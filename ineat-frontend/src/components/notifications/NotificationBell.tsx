@@ -51,7 +51,7 @@ const BellButton = forwardRef<
 			{...props}>
 			<Bell className='size-5' />
 			{unreadCount > 0 && (
-				<span className='absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-error-500 text-[10px] font-semibold text-neutral-50'>
+				<span className='absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-danger-600 text-[10px] font-semibold text-surface'>
 					{unreadCount > 9 ? '9+' : unreadCount}
 				</span>
 			)}

@@ -1,121 +1,98 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Spectral:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
 @import 'tailwindcss';
 
 @plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
+/* Police auto-hébergée : Outfit variable 100–900 (titres en 700, texte en 400/500) */
+@font-face {
+	font-family: 'Outfit';
+	src: url('./assets/fonts/Outfit-Variable.woff2') format('woff2');
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+
+/*
+ * Design system InEat — direction B « Marché frais ».
+ * Source de vérité : l'artefact Design System (tokens.json). Contrastes WCAG AA vérifiés.
+ */
 @theme {
-	/* Couleurs */
-	/* Couleurs principales */
-	--color-primary-50: oklch(0.99 0.011 89.72);
-	--color-primary-100: oklch(0.83 0.1273 77.38);
+	/* Surfaces */
+	--color-canvas: #f7f9f8;
+	--color-surface: #ffffff;
 
-	/* Couleurs sémantiques */
-	--color-success-50: oklch(0.64 0.0663 148.15);
+	/* Neutres gris-vert */
+	--color-neutral-50: #f1f5f2;
+	--color-neutral-100: #e5ebe7;
+	--color-neutral-200: #d5ddd8;
+	--color-neutral-300: #b6c1ba;
+	--color-neutral-400: #86928a; /* bordures de champ, jamais du texte */
+	--color-neutral-500: #65716a; /* placeholders, texte tertiaire */
+	--color-neutral-600: #4e5953; /* texte secondaire */
+	--color-neutral-700: #38423c;
+	--color-neutral-800: #233029;
+	--color-neutral-900: #14231a; /* texte principal */
+	--color-neutral-950: #0b140f;
 
-	--color-warning-50: oklch(0.87 0.1767 90.37);
+	/* Touche jaune (logo) */
+	--color-brand-50: #fff6dd;
+	--color-brand-100: #ffe3a3;
+	--color-brand-300: #f4bb5f;
+	--color-brand-500: #de9a2e;
+	--color-brand-800: #6b4a00;
 
-	--color-error-50: oklch(0.75 0.1456 32.38);
-	--color-error-100: oklch(0.62 0.243 23.78);
+	/* Vert d'action */
+	--color-accent-50: #e8f5ec;
+	--color-accent-100: #cdebd7;
+	--color-accent-400: #3fa66b; /* décoratif */
+	--color-accent-600: #1e7a4c; /* boutons, texte blanc 5.3:1 */
+	--color-accent-700: #17633d; /* survol, liens, focus */
+	--color-accent-800: #114a2e;
 
-	--color-info-50: oklch(0.95 0.075 255);
-	--color-info-100: oklch(0.92 0.1 255);
-	--color-info-200: oklch(0.87 0.13 255);
-	--color-info-300: oklch(0.82 0.16 255);
-	--color-info-400: oklch(0.77 0.19 255);
-	--color-info-500: oklch(0.7 0.21 255); /* #3B82F6 - Bleu */
+	/* États : texte -700 sur fond -50 */
+	--color-success-50: #e8f5ec;
+	--color-success-700: #1f5f38;
+	--color-warning-50: #fff3e3;
+	--color-warning-500: #e58a1f;
+	--color-warning-700: #a34e06;
+	--color-danger-50: #fdeceb;
+	--color-danger-600: #c93a30;
+	--color-danger-700: #a32b23;
+	--color-info-50: #ebf2fe;
+	--color-info-700: #1d4fc4;
 
-	/* Couleurs neutres */
-	--color-neutral-50: oklch(1 0 0);
-	--color-neutral-100: oklch(0.989 0 0);
-	--color-neutral-200: oklch(0.5 0.01 255);
-	--color-neutral-300: oklch(0.25 0.01 255);
+	/* Nutri-Score : couleurs officielles */
+	--color-nutri-a: #038141;
+	--color-nutri-b: #85bb2f;
+	--color-nutri-c: #fecb02;
+	--color-nutri-d: #ee8100;
+	--color-nutri-e: #e63e11;
 
-	/* Couleurs Score */
-	--color-score-a: oklch(0.5 0.13 145); /* #2E7D32 - Vert foncé */
-	--color-score-b: oklch(0.73 0.1734 128.53); /* #689F38 - Vert clair */
-	--color-score-c: oklch(0.8 0.14 85); /* #FBC02D - Jaune */
-	--color-score-d: oklch(0.74 0.17 50); /* #F57C00 - Orange */
-	--color-score-e: oklch(0.6 0.18 20); /* #D32F2F - Rouge */
-
-	/* Polices */
+	/* Typographie */
 	--font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
-	--font-fredoka: Fredoka, serif;
+	--font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
 
-	/* Tailles de texte */
-	--text-xs: 0.75rem;
-	--text-sm: 0.875rem;
-	--text-base: 1rem;
-	--text-lg: 1.125rem;
-	--text-xl: 1.25rem;
-	--text-2xl: 1.5rem;
-	--text-3xl: 1.875rem;
-	--text-4xl: 2.25rem;
-
-	/* Poids de police */
-	--font-weight-normal: 400;
-	--font-weight-medium: 500;
-	--font-weight-semibold: 600;
-	--font-weight-bold: 700;
-
-	/* Hauteurs de ligne */
-	--leading-tight: 1.25;
-	--leading-normal: 1.5;
-	--leading-relaxed: 1.75;
-
-	/* Espacements */
-	--spacing-0: 0px;
-	--spacing-0.5: 0.125rem;
-	--spacing-1: 0.25rem;
-	--spacing-2: 0.5rem;
-	--spacing-3: 0.75rem;
-	--spacing-4: 1rem;
-	--spacing-5: 1.25rem;
-	--spacing-6: 1.5rem;
-	--spacing-8: 2rem;
-	--spacing-10: 2.5rem;
-	--spacing-12: 3rem;
-	--spacing-16: 4rem;
-
-	/* Borders */
-	--border-0: 0px;
-	--border-1: 1px;
-	--border-2: 2px;
-	--border-4: 4px;
-
-	/* Border radius */
+	/* Rayons */
 	--radius-xs: 0.125rem;
-	--radius-sm: 0.25rem;
-	--radius-md: 0.375rem;
-	--radius-lg: 0.5rem;
-	--radius-xl: 0.75rem;
-	--radius-2xl: 1rem;
-	--radius-full: 9999px;
+	--radius-sm: 6px;
+	--radius-md: 10px;
+	--radius-lg: 14px;
+	--radius-xl: 22px;
+	--radius-2xl: 28px;
 
-	/* Ombres */
-	--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
-	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-		0 2px 4px -1px rgba(0, 0, 0, 0.06);
-	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-		0 4px 6px -2px rgba(0, 0, 0, 0.05);
-	--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-		0 10px 10px -5px rgba(0, 0, 0, 0.04);
-
-	/* Breakpoints */
-	--breakpoint-sm: 40rem; /* 640px */
-	--breakpoint-md: 48rem; /* 768px */
-	--breakpoint-lg: 64rem; /* 1024px */
-	--breakpoint-xl: 80rem; /* 1280px */
-	--breakpoint-2xl: 96rem; /* 1536px */
+	/* Ombres teintées vert profond */
+	--shadow-xs: 0 1px 2px rgba(20, 35, 26, 0.05);
+	--shadow-sm: 0 1px 2px rgba(20, 35, 26, 0.05), 0 1px 3px rgba(20, 35, 26, 0.07);
+	--shadow-md: 0 4px 12px -2px rgba(20, 35, 26, 0.1), 0 2px 4px -2px rgba(20, 35, 26, 0.06);
+	--shadow-lg: 0 12px 32px -8px rgba(20, 35, 26, 0.16), 0 4px 8px -4px rgba(20, 35, 26, 0.08);
+	--shadow-xl: 0 20px 40px -12px rgba(20, 35, 26, 0.2), 0 8px 12px -6px rgba(20, 35, 26, 0.08);
 
 	/* Transitions */
 	--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 	--animate-fade: fade 0.3s var(--ease-in-out);
 	--animate-slide: slide 0.3s var(--ease-in-out);
 
-	/* Animations */
 	@keyframes fade {
 		from {
 			opacity: 0;
@@ -137,116 +114,101 @@
 	}
 }
 
-/* Utilitaires personnalisés */
-@utility nutriscore-a {
-	background-color: var(--color-nutriscore-a);
-	color: white;
-	border-radius: var(--radius-full);
-	width: 1.5rem;
-	height: 1.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: var(--font-weight-bold);
+/* Alias shadcn/ui : les composants ui/ héritent du thème sans modification */
+@theme inline {
+	--color-background: var(--color-canvas);
+	--color-foreground: var(--color-neutral-900);
+	--color-card: var(--color-surface);
+	--color-card-foreground: var(--color-neutral-900);
+	--color-popover: var(--color-surface);
+	--color-popover-foreground: var(--color-neutral-900);
+	--color-primary: var(--color-accent-600);
+	--color-primary-foreground: var(--color-surface);
+	--color-secondary: var(--color-neutral-50);
+	--color-secondary-foreground: var(--color-neutral-900);
+	--color-muted: var(--color-neutral-100);
+	--color-muted-foreground: var(--color-neutral-600);
+	--color-accent: var(--color-neutral-50);
+	--color-accent-foreground: var(--color-neutral-900);
+	--color-destructive: var(--color-danger-600);
+	--color-destructive-foreground: var(--color-surface);
+	--color-border: var(--color-neutral-200);
+	--color-input: var(--color-neutral-400);
+	--color-ring: var(--color-accent-700);
 }
 
-@utility nutriscore-b {
-	background-color: var(--color-nutriscore-b);
-	color: white;
-	border-radius: var(--radius-full);
-	width: 1.5rem;
-	height: 1.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: var(--font-weight-bold);
+@layer base {
+	body {
+		background-color: var(--color-canvas);
+		color: var(--color-neutral-900);
+		-webkit-font-smoothing: antialiased;
+	}
+
+	/* Focus visible par défaut : anneau plein 2px accent-700, décalé de 2px */
+	:focus-visible {
+		outline: 2px solid var(--color-ring);
+		outline-offset: 2px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		::before,
+		::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+			transition-duration: 0.01ms !important;
+			scroll-behavior: auto !important;
+		}
+	}
 }
 
-@utility nutriscore-c {
-	background-color: var(--color-nutriscore-c);
-	color: var(--color-neutral-50);
-	border-radius: var(--radius-full);
-	width: 1.5rem;
-	height: 1.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: var(--font-weight-bold);
+/* Styles typographiques du design system */
+@utility type-display {
+	font-family: var(--font-display);
+	font-size: 2rem;
+	line-height: 2.25rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+
+	@variant sm {
+		font-size: 2.5rem;
+		line-height: 2.75rem;
+	}
 }
 
-@utility nutriscore-d {
-	background-color: var(--color-nutriscore-d);
-	color: var(--color-neutral-50);
-	border-radius: var(--radius-full);
-	width: 1.5rem;
-	height: 1.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: var(--font-weight-bold);
+@utility type-h1 {
+	font-family: var(--font-display);
+	font-size: 1.75rem;
+	line-height: 2.125rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
 }
 
-@utility nutriscore-e {
-	background-color: var(--color-nutriscore-e);
-	color: var(--color-neutral-50);
-	border-radius: var(--radius-full);
-	width: 1.5rem;
-	height: 1.5rem;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: var(--font-weight-bold);
+@utility type-h2 {
+	font-family: var(--font-display);
+	font-size: 1.375rem;
+	line-height: 1.75rem;
+	font-weight: 700;
+}
+
+@utility type-h3 {
+	font-family: var(--font-display);
+	font-size: 1.125rem;
+	line-height: 1.5rem;
+	font-weight: 700;
+}
+
+@utility type-stat {
+	font-family: var(--font-display);
+	font-size: 2rem;
+	line-height: 2.25rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
 }
 
 @utility card {
-	background-color: var(--color-card);
+	background-color: var(--color-surface);
+	border: 1px solid var(--color-neutral-200);
 	border-radius: var(--radius-lg);
 	box-shadow: var(--shadow-sm);
-	overflow: hidden;
-}
-
-@utility card-product {
-	background-color: var(--color-card);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-sm);
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
-}
-
-@utility card-stat {
-	background-color: var(--color-card);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-sm);
-	overflow: hidden;
-	padding: var(--spacing-4);
-}
-
-@utility expiry-safe {
-	color: var(--color-success-500);
-	font-weight: var(--font-weight-medium);
-}
-
-@utility expiry-warning {
-	color: var(--color-warning-500);
-	font-weight: var(--font-weight-medium);
-}
-
-@utility expiry-danger {
-	color: var(--color-error-500);
-	font-weight: var(--font-weight-bold);
-}
-
-@utility budget-bar {
-	width: 100%;
-	height: 0.5rem;
-	background-color: oklch(0.9 0.03 240);
-	border-radius: var(--radius-full);
-	overflow: hidden;
-}
-
-@utility budget-progress {
-	height: 100%;
-	background-color: var(--color-accent-500);
-	border-radius: var(--radius-full);
 }

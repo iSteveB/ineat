@@ -26,7 +26,7 @@ function PreferenceRow({
 	return (
 		<div className='flex items-center justify-between gap-4 border-b border-neutral-100 py-4 last:border-0'>
 			<div className='flex min-w-0 gap-3'>
-				<div className='mt-0.5 text-success-600'>{icon}</div>
+				<div className='mt-0.5 text-accent-700'>{icon}</div>
 				<div>
 					<p className='font-medium text-neutral-900'>{title}</p>
 					<p className='text-sm text-neutral-600'>{description}</p>
@@ -73,7 +73,7 @@ export default function NotificationSettingsPage() {
 
 	if (isError || !preferences) {
 		return (
-			<div className='p-8 text-center text-error-700'>
+			<div className='p-8 text-center text-danger-700'>
 				Impossible de charger les préférences de notification.
 			</div>
 		);

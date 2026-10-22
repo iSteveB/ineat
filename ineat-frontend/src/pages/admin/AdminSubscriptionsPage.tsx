@@ -367,7 +367,7 @@ export default function AdminSubscriptionsPage() {
 					{promotionsQuery.isLoading ? (
 						<p className='p-6 text-sm'>Chargement…</p>
 					) : promotionsQuery.isError ? (
-						<div className='space-y-3 p-6 text-sm text-error-700'>
+						<div className='space-y-3 p-6 text-sm text-danger-700'>
 							<p>Impossible de charger les promotions Stripe.</p>
 							<Button
 								variant='outline'
@@ -448,7 +448,7 @@ export default function AdminSubscriptionsPage() {
 					{subscribersQuery.isLoading ? (
 						<p className='p-6 text-sm'>Chargement…</p>
 					) : subscribersQuery.isError ? (
-						<div className='space-y-3 p-6 text-sm text-error-700'>
+						<div className='space-y-3 p-6 text-sm text-danger-700'>
 							<p>Impossible de charger les abonnements.</p>
 							<Button
 								variant='outline'

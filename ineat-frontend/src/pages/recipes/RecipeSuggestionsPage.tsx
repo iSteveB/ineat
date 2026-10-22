@@ -174,8 +174,8 @@ export function RecipeSuggestionsPage() {
 	if (!canUseRecipes) {
 		return (
 			<div className='mx-auto max-w-3xl p-4'>
-				<section className='rounded-lg border border-neutral-200 bg-neutral-50 p-8 text-center'>
-					<ListChecks className='mx-auto mb-3 size-8 text-success-600' />
+				<section className='rounded-lg border border-neutral-200 bg-surface p-8 text-center'>
+					<ListChecks className='mx-auto mb-3 size-8 text-accent-700' />
 					<h1 className='text-xl font-semibold text-neutral-900'>
 						Recettes réservées Premium
 					</h1>
@@ -204,7 +204,7 @@ export function RecipeSuggestionsPage() {
 				</div>
 			</header>
 
-			<section className='rounded-lg border border-neutral-200 bg-neutral-50 p-5 shadow-sm'>
+			<section className='rounded-lg border border-neutral-200 bg-surface p-5 shadow-sm'>
 				<div className='grid gap-5 lg:grid-cols-[1.2fr_0.8fr]'>
 					<div className='space-y-4'>
 						<div>
@@ -225,8 +225,8 @@ export function RecipeSuggestionsPage() {
 											}
 											className={`rounded-md border px-3 py-2 text-sm font-medium ${
 												selected
-													? 'border-success-600 bg-success-50/10 text-success-700'
-													: 'border-neutral-200 bg-neutral-50 text-neutral-700'
+													? 'border-accent-600 bg-accent-600/10 text-success-700'
+													: 'border-neutral-200 bg-surface text-neutral-700'
 											}`}>
 											{selected && <Check className='mr-1 inline size-4' />}
 											{type.label}
@@ -284,13 +284,13 @@ export function RecipeSuggestionsPage() {
 									onChange={(event) =>
 										setExtraIngredientLimit(Number(event.target.value))
 									}
-									className='mt-3 w-full accent-success-600'
+									className='mt-3 w-full accent-accent-600'
 								/>
 							</div>
 						)}
 					</div>
 
-					<div className='rounded-lg border border-neutral-200 bg-neutral-100 p-4'>
+					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-4'>
 						<p className='text-sm font-semibold text-neutral-900'>
 							Règles MVP
 						</p>
@@ -326,7 +326,7 @@ export function RecipeSuggestionsPage() {
 							return (
 								<article
 									key={recipe.clientId}
-									className='rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm'>
+									className='rounded-lg border border-neutral-200 bg-surface p-4 shadow-sm'>
 									<div className='space-y-2'>
 										<Badge variant='secondary'>
 											{recipeTypes.find((type) => type.value === recipe.type)?.label}
@@ -409,19 +409,19 @@ export function RecipeSuggestionsPage() {
 					</nav>
 				</div>
 				{isLoadingSavedRecipes ? (
-					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-600'>
+					<div className='rounded-lg border border-neutral-200 bg-surface p-6 text-sm text-neutral-600'>
 						Chargement des recettes...
 					</div>
 				) : isSavedRecipesError ? (
-					<div className='rounded-lg border border-error-100 bg-error-50/10 p-4 text-error-700'>
+					<div className='rounded-lg border border-danger-600 bg-danger-50/10 p-4 text-danger-700'>
 						Impossible de charger vos recettes.
 					</div>
 				) : savedRecipes.length === 0 ? (
-					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-600'>
+					<div className='rounded-lg border border-neutral-200 bg-surface p-6 text-sm text-neutral-600'>
 						Aucune recette gardée pour l’instant.
 					</div>
 				) : filteredSavedRecipes.length === 0 ? (
-					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-6 text-sm text-neutral-600'>
+					<div className='rounded-lg border border-neutral-200 bg-surface p-6 text-sm text-neutral-600'>
 						{activeFilter === 'favorites'
 							? 'Vous n’avez pas encore de recette favorite.'
 							: 'Aucune recette ne correspond à ce filtre.'}
@@ -431,7 +431,7 @@ export function RecipeSuggestionsPage() {
 						{filteredSavedRecipes.map((recipe) => (
 							<article
 								key={recipe.id}
-								className='relative overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm'>
+								className='relative overflow-hidden rounded-lg border border-neutral-200 bg-surface shadow-sm'>
 								<FavoriteRecipeButton
 									isFavorite={recipe.isFavorite}
 									isPending={
@@ -492,7 +492,7 @@ function RecipeStat({
 	icon?: ReactNode;
 }) {
 	return (
-		<div className='rounded-md bg-neutral-100 px-3 py-2 font-semibold text-neutral-900'>
+		<div className='rounded-md bg-neutral-50 px-3 py-2 font-semibold text-neutral-900'>
 			<span className='flex items-center gap-1'>
 				{icon}
 				{children}
@@ -512,7 +512,7 @@ function GeneratedRecipeDetails({ recipe }: { recipe: GeneratedRecipe }) {
 					{recipe.ingredients.map((ingredient) => (
 						<span
 							key={`${ingredient.source}-${ingredient.name}`}
-							className='rounded-md bg-neutral-100 px-2 py-1 text-xs text-neutral-700'>
+							className='rounded-md bg-neutral-50 px-2 py-1 text-xs text-neutral-700'>
 							{ingredient.name}
 							{ingredient.source === 'MISSING' ? ' · à ajouter' : ''}
 						</span>

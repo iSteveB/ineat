@@ -460,11 +460,11 @@ export const SubscriptionPage: React.FC = () => {
 
     return (
       <div className="mb-8 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+        <div className="rounded-lg border border-neutral-200 bg-surface p-4">
           <p className="text-xs font-medium uppercase text-muted-foreground">Inventaire</p>
           <p className="mt-1 text-lg font-semibold">{capabilities.inventoryLimit} articles</p>
         </div>
-        <div className={`rounded-lg border p-4 ${aiQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-neutral-50'}`}>
+        <div className={`rounded-lg border p-4 ${aiQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-surface'}`}>
           <p className="text-xs font-medium uppercase text-muted-foreground">IA recettes</p>
           <p className="mt-1 text-lg font-semibold">{capabilities.aiRecipeGenerationRemaining} restante{capabilities.aiRecipeGenerationRemaining > 1 ? 's' : ''}</p>
           {aiQuotaReached && (
@@ -473,7 +473,7 @@ export const SubscriptionPage: React.FC = () => {
             </p>
           )}
         </div>
-        <div className={`rounded-lg border p-4 ${aiImageQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-neutral-50'}`}>
+        <div className={`rounded-lg border p-4 ${aiImageQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-surface'}`}>
           <p className="text-xs font-medium uppercase text-muted-foreground">Images recettes</p>
           <p className="mt-1 text-lg font-semibold">{capabilities.aiRecipeImageGenerationRemaining} restante{capabilities.aiRecipeImageGenerationRemaining > 1 ? 's' : ''}</p>
           {aiImageQuotaReached && (
@@ -482,7 +482,7 @@ export const SubscriptionPage: React.FC = () => {
             </p>
           )}
         </div>
-        <div className={`rounded-lg border p-4 ${driveQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-neutral-50'}`}>
+        <div className={`rounded-lg border p-4 ${driveQuotaReached ? 'border-orange-200 bg-orange-50' : 'border-neutral-200 bg-surface'}`}>
           <p className="text-xs font-medium uppercase text-muted-foreground">Drive</p>
           <p className="mt-1 text-lg font-semibold">{capabilities.driveImportsRemaining} import{capabilities.driveImportsRemaining > 1 ? 's' : ''}</p>
           {driveQuotaReached && (

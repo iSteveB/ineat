@@ -56,22 +56,22 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 
 	const getInputClassName = (field: keyof ProductQuantityData) => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
 
 		// Erreur
 		if (errors[field]) {
-			baseClass += ' border-error-100';
+			baseClass += ' border-danger-600';
 		}
 
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace(
 				'border-neutral-200',
 				'border-blue-500/20'
 			);
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 		}
@@ -81,17 +81,17 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 
 	const getSelectClassName = () => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
 
 		// Mode readonly avec style différencié
 		if (readonly && values.unitType) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace(
 				'border-neutral-200',
 				'border-blue-500/20'
 			);
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 		}
@@ -104,7 +104,7 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>
+						<h3 className='text-md font-medium text-neutral-900'>
 							Quantité et unité
 						</h3>
 
@@ -113,9 +113,9 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 							<div className='space-y-2'>
 								<Label
 									htmlFor='quantity'
-									className='text-neutral-300'>
+									className='text-neutral-900'>
 									Quantité{' '}
-									<span className='text-error-100'>*</span>
+									<span className='text-danger-700'>*</span>
 								</Label>
 								<Input
 									id='quantity'
@@ -134,7 +134,7 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 									disabled={isFieldDisabled}
 								/>
 								{errors.quantity && (
-									<p className='text-sm text-error-100'>
+									<p className='text-sm text-danger-700'>
 										{errors.quantity}
 									</p>
 								)}
@@ -144,9 +144,9 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 							<div className='space-y-2'>
 								<Label
 									htmlFor='unitType'
-									className='text-neutral-300'>
+									className='text-neutral-900'>
 									Unité{' '}
-									<span className='text-error-100'>*</span>
+									<span className='text-danger-700'>*</span>
 								</Label>
 								<Select
 									value={values.unitType}
@@ -158,26 +158,26 @@ export const ProductQuantitySection: React.FC<ProductQuantitySectionProps> = ({
 										className={getSelectClassName()}>
 										<SelectValue />
 									</SelectTrigger>
-									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
+									<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 										{UNIT_TYPE_OPTIONS.map((option) => (
 											<SelectItem
 												key={option.value}
 												value={option.value}
-												className='text-neutral-300 hover:bg-neutral-100'>
+												className='text-neutral-900 hover:bg-neutral-50'>
 												{option.label}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
 								{errors.unitType && (
-									<p className='text-sm text-error-100'>
+									<p className='text-sm text-danger-700'>
 										{errors.unitType}
 									</p>
 								)}
 							</div>
 						</div>
 					</div>
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 				</>
 			)}
 		</div>

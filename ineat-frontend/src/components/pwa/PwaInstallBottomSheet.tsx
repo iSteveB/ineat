@@ -72,17 +72,17 @@ export function PwaInstallBottomSheet() {
 			<DialogPrimitive.Portal>
 				<DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-black/45 data-[state=closed]:animate-fade data-[state=open]:animate-fade' />
 				<DialogPrimitive.Content
-					className='fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-lg rounded-t-2xl bg-neutral-50 px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-xl outline-none data-[state=open]:animate-slide'
+					className='fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-lg rounded-t-2xl bg-surface px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-xl outline-none data-[state=open]:animate-slide'
 					aria-describedby='pwa-install-description'>
-					<div className='mx-auto mb-5 h-1 w-10 rounded-full bg-neutral-200/40' />
+					<div className='mx-auto mb-5 h-1 w-10 rounded-full bg-neutral-100/40' />
 
 					<DialogPrimitive.Close
-						className='absolute right-4 top-4 rounded-full p-2 text-neutral-200 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-50'
+						className='absolute right-4 top-4 rounded-full p-2 text-neutral-600 transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600'
 						aria-label='Fermer'>
 						<X className='size-5' />
 					</DialogPrimitive.Close>
 
-					<div className='mb-4 flex size-12 items-center justify-center rounded-full bg-primary-100/35 text-neutral-300'>
+					<div className='mb-4 flex size-12 items-center justify-center rounded-full bg-brand-300/35 text-neutral-900'>
 						{showIosInstructions ? (
 							<Share className='size-6' />
 						) : (
@@ -90,7 +90,7 @@ export function PwaInstallBottomSheet() {
 						)}
 					</div>
 
-					<DialogPrimitive.Title className='pr-10 font-fredoka text-xl font-semibold text-neutral-300'>
+					<DialogPrimitive.Title className='pr-10 font-display text-xl font-semibold text-neutral-900'>
 						{showIosInstructions
 							? 'Ajouter INEAT sur iPhone'
 							: 'Installer INEAT'}
@@ -98,22 +98,22 @@ export function PwaInstallBottomSheet() {
 
 					<DialogPrimitive.Description
 						id='pwa-install-description'
-						className='mt-2 text-sm leading-relaxed text-neutral-200'>
+						className='mt-2 text-sm leading-relaxed text-neutral-600'>
 						{showIosInstructions
 							? "Dans Safari, utilisez le menu de partage pour installer l’application."
 							: "Ajouter l’application à votre écran d’accueil"}
 					</DialogPrimitive.Description>
 
 					{showIosInstructions && (
-						<ol className='mt-5 space-y-4 text-sm text-neutral-300'>
+						<ol className='mt-5 space-y-4 text-sm text-neutral-900'>
 							<li className='flex items-center gap-3'>
-								<span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100/35'>
+								<span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-300/35'>
 									<Share className='size-4' aria-hidden='true' />
 								</span>
 								<span>Touchez <strong>Partager</strong> dans Safari.</span>
 							</li>
 							<li className='flex items-center gap-3'>
-								<span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-100/35'>
+								<span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-300/35'>
 									<SquarePlus className='size-4' aria-hidden='true' />
 								</span>
 								<span>Sélectionnez <strong>Sur l’écran d’accueil</strong>.</span>

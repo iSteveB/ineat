@@ -41,16 +41,16 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 
 	const getTextareaClassName = () => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200 resize-none';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600 resize-none';
 
 		if (readonly && values.ingredients) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace(
 				'border-neutral-200',
 				'border-blue-500/20'
 			);
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 		}
@@ -60,22 +60,22 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 
 	const getInputClassName = (field: keyof ProductContentData) => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
 
 		// Erreur
 		if (errors[field]) {
-			baseClass += ' border-error-100';
+			baseClass += ' border-danger-600';
 		}
 
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace(
 				'border-neutral-200',
 				'border-blue-500/20'
 			);
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 		}
@@ -88,7 +88,7 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>
+						<h3 className='text-md font-medium text-neutral-900'>
 							Contenu et média
 						</h3>
 
@@ -96,7 +96,7 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 						<div className='space-y-2'>
 							<Label
 								htmlFor='ingredients'
-								className='text-neutral-300'>
+								className='text-neutral-900'>
 								Liste des ingrédients
 							</Label>
 							<Textarea
@@ -114,11 +114,11 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 								disabled={isFieldDisabled}
 							/>
 							{errors.ingredients && (
-								<p className='text-sm text-error-100'>
+								<p className='text-sm text-danger-700'>
 									{errors.ingredients}
 								</p>
 							)}
-							<p className='text-xs text-neutral-200'>
+							<p className='text-xs text-neutral-600'>
 								Listez les ingrédients par ordre décroissant de
 								quantité
 							</p>
@@ -128,7 +128,7 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 						<div className='space-y-2'>
 							<Label
 								htmlFor='imageUrl'
-								className='text-neutral-300'>
+								className='text-neutral-900'>
 								Image du produit (URL)
 							</Label>
 							<Input
@@ -146,16 +146,16 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 								disabled={isFieldDisabled}
 							/>
 							{errors.imageUrl && (
-								<p className='text-sm text-error-100'>
+								<p className='text-sm text-danger-700'>
 									{errors.imageUrl}
 								</p>
 							)}
-							<p className='text-xs text-neutral-200'>
+							<p className='text-xs text-neutral-600'>
 								URL de l'image du produit (JPG, PNG, WebP)
 							</p>
 						</div>
 					</div>
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 				</>
 			)}
 		</div>

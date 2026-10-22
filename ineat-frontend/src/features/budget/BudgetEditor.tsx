@@ -82,8 +82,8 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 			<Card>
 				<CardContent className='flex items-center justify-center py-12'>
 					<div className='text-center space-y-2'>
-						<Loader2 className='size-8 animate-spin mx-auto text-accent' />
-						<p className='text-neutral-200'>
+						<Loader2 className='size-8 animate-spin mx-auto text-accent-700' />
+						<p className='text-neutral-600'>
 							Vérification d'un budget existant...
 						</p>
 					</div>
@@ -98,12 +98,12 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 				<CardTitle className='flex items-center gap-2'>
 					{existingBudget ? (
 						<>
-							<Edit className='size-5 text-accent' />
+							<Edit className='size-5 text-accent-700' />
 							Modifier votre budget mensuel
 						</>
 					) : (
 						<>
-							<Plus className='size-5 text-accent' />
+							<Plus className='size-5 text-accent-700' />
 							Créer votre budget mensuel
 						</>
 					)}
@@ -112,9 +112,9 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 
 			<CardContent className='space-y-4'>
 				{existingBudget ? (
-					<Alert className='border-primary-100 bg-primary-50/50'>
-						<Edit className='size-4 text-primary-100' />
-						<AlertDescription className='text-neutral-300'>
+					<Alert className='border-brand-300 bg-canvas/50'>
+						<Edit className='size-4 text-brand-800' />
+						<AlertDescription className='text-neutral-900'>
 							<strong>
 								Budget existant détecté pour cette période
 							</strong>
@@ -125,7 +125,7 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 									`${existingBudget.amount}€`}
 							</strong>
 							<br />
-							<span className='text-sm text-neutral-200'>
+							<span className='text-sm text-neutral-600'>
 								✅ La modification conservera toutes vos
 								dépenses actuelles.
 							</span>
@@ -138,15 +138,15 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 							<h3 className='font-semibold'>
 								Aucun budget défini
 							</h3>
-							<p className='text-neutral-200 text-sm'>
+							<p className='text-neutral-600 text-sm'>
 								Créez votre budget mensuel pour suivre vos
 								dépenses alimentaires
 							</p>
 						</div>
 
-						<Alert className='border-accent/20 bg-accent/10'>
-							<Info className='size-4 text-accent' />
-							<AlertDescription className='text-neutral-300'>
+						<Alert className='border-accent-600/20 bg-accent-600/10'>
+							<Info className='size-4 text-accent-700' />
+							<AlertDescription className='text-neutral-900'>
 								<strong>Nouveau budget</strong> - Aucun budget
 								n'existe pour cette période.
 							</AlertDescription>
@@ -223,7 +223,7 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 					</Button>
 				</div>
 
-				<div className='text-xs text-neutral-200 text-center'>
+				<div className='text-xs text-neutral-600 text-center'>
 					💡{' '}
 					{existingBudget
 						? 'La modification préservera toutes vos dépenses existantes'

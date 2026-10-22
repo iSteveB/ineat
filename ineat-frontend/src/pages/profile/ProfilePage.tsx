@@ -81,7 +81,7 @@ function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
 				<path
 					d={path}
 					fill='none'
-					className='stroke-success-50'
+					className='stroke-accent-600'
 					strokeWidth='3'
 					strokeLinecap='round'
 					strokeLinejoin='round'
@@ -92,7 +92,7 @@ function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
 							cx={point.x}
 							cy={point.y}
 							r='5'
-							className='fill-success-50 stroke-white'
+							className='fill-accent-600 stroke-white'
 							strokeWidth='2'>
 							<title>{`${formatMonth(point.month, 'long')} : ${currencyFormatter.format(point.total)}`}</title>
 						</circle>
@@ -142,11 +142,11 @@ const ProfilePage = () => {
 					<Link
 						to='/app/settings'
 						aria-label='Ouvrir les paramètres'
-						className='absolute right-4 top-4 rounded-full border border-neutral-200 p-2 text-neutral-600 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-50'>
+						className='absolute right-4 top-4 rounded-full border border-neutral-200 p-2 text-neutral-600 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600'>
 						<Settings className='size-5' />
 					</Link>
 					<div className='flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left'>
-						<div className='flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 text-2xl font-semibold text-white'>
+						<div className='flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-300 text-2xl font-semibold text-white'>
 							{user?.avatarUrl ? (
 								<img
 									src={user.avatarUrl}
@@ -169,7 +169,7 @@ const ProfilePage = () => {
 
 				<section aria-labelledby='recipe-stats-title'>
 					<div className='mb-3 flex items-center gap-2'>
-						<ChefHat className='size-5 text-success-50' />
+						<ChefHat className='size-5 text-accent-700' />
 						<h2 id='recipe-stats-title' className='text-xl font-semibold'>
 							Mes recettes
 						</h2>
@@ -190,10 +190,10 @@ const ProfilePage = () => {
 							<Link
 								key={stat.label}
 								to='/app/recipes'
-								className='group rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-success-50/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-50'>
+								className='group rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-600/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600'>
 								<div className='flex items-center justify-between'>
 									<div className='flex items-center gap-3'>
-										<div className='rounded-lg bg-success-50/20 p-3 text-success-50'>
+										<div className='rounded-lg bg-accent-600/20 p-3 text-accent-700'>
 											<stat.icon className='size-5' />
 										</div>
 										<div>
@@ -203,13 +203,13 @@ const ProfilePage = () => {
 											<p className='text-sm text-neutral-500'>{stat.label}</p>
 										</div>
 									</div>
-									<ArrowRight className='size-5 text-neutral-400 transition group-hover:translate-x-1 group-hover:text-success-50' />
+									<ArrowRight className='size-5 text-neutral-500 transition group-hover:translate-x-1 group-hover:text-accent-700' />
 								</div>
 							</Link>
 						))}
 					</div>
 					{insightsQuery.isError && (
-						<p className='mt-3 text-sm text-error-100'>
+						<p className='mt-3 text-sm text-danger-700'>
 							Les statistiques de recettes sont temporairement indisponibles.
 						</p>
 					)}
@@ -219,14 +219,14 @@ const ProfilePage = () => {
 					<Card>
 						<CardHeader>
 							<CardTitle className='flex items-center gap-2'>
-								<Sparkles className='size-5 text-success-50' />
+								<Sparkles className='size-5 text-accent-700' />
 								Ma personnalisation
 							</CardTitle>
 						</CardHeader>
 						<CardContent className='divide-y divide-neutral-200 p-0'>
 							<Link
 								to='/app/settings/personal-info'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div className='flex items-center gap-3'>
 									<Utensils className='size-5 text-neutral-500' />
 									<div>
@@ -234,11 +234,11 @@ const ProfilePage = () => {
 										<p className='font-medium'>{user?.defaultServings ?? 4}</p>
 									</div>
 								</div>
-								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 							<Link
 								to='/app/settings/personal-info'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div className='flex items-center gap-3'>
 									<Target className='size-5 text-neutral-500' />
 									<div>
@@ -250,11 +250,11 @@ const ProfilePage = () => {
 										</p>
 									</div>
 								</div>
-								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 							<Link
 								to='/app/settings/diet-restrictions'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div>
 									<p className='text-sm text-neutral-500'>Allergies et régimes</p>
 									<div className='mt-1 flex flex-wrap gap-1.5'>
@@ -269,7 +269,7 @@ const ProfilePage = () => {
 										)}
 									</div>
 								</div>
-								<ArrowRight className='size-4 shrink-0 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 shrink-0 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 						</CardContent>
 					</Card>
@@ -277,23 +277,23 @@ const ProfilePage = () => {
 					<Card>
 						<CardHeader>
 							<CardTitle className='flex items-center gap-2'>
-								<CreditCard className='size-5 text-success-50' />
+								<CreditCard className='size-5 text-accent-700' />
 								Formule et quotas
 							</CardTitle>
 						</CardHeader>
 						<CardContent className='divide-y divide-neutral-200 p-0'>
 							<Link
 								to='/app/subscription'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div>
 									<p className='text-sm text-neutral-500'>Formule actuelle</p>
 									<p className='font-semibold'>{planLabel}</p>
 								</div>
-								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 							<Link
 								to='/app/recipes/suggestions'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div className='flex items-center gap-3'>
 									<WandSparkles className='size-5 text-neutral-500' />
 									<div>
@@ -303,22 +303,22 @@ const ProfilePage = () => {
 										</p>
 									</div>
 								</div>
-								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 							<Link
 								to='/app/inventory/add/drive'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div>
 									<p className='text-sm text-neutral-500'>Imports Drive restants</p>
 									<p className='font-semibold'>
 										{user?.capabilities.driveImportsRemaining ?? 0}
 									</p>
 								</div>
-								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 							<Link
 								to='/app/recipes/suggestions'
-								className='group flex items-center justify-between px-6 py-4 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-success-50'>
+								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
 								<div className='flex items-center gap-3'>
 									<Sparkles className='size-5 text-neutral-500' />
 									<div>
@@ -328,7 +328,7 @@ const ProfilePage = () => {
 										</p>
 									</div>
 								</div>
-								<ArrowRight className='size-4 text-neutral-400 group-hover:text-success-50' />
+								<ArrowRight className='size-4 text-neutral-500 group-hover:text-accent-700' />
 							</Link>
 						</CardContent>
 					</Card>
@@ -337,15 +337,15 @@ const ProfilePage = () => {
 				<section aria-labelledby='spending-title'>
 					<Link
 						to='/app/budget'
-						className='group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success-50'>
-						<Card className='transition group-hover:border-success-50/50 group-hover:shadow-md'>
+						className='group block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600'>
+						<Card className='transition group-hover:border-accent-600/50 group-hover:shadow-md'>
 							<CardHeader className='pb-2'>
 								<div className='flex items-start justify-between gap-4'>
 									<div>
 										<CardTitle id='spending-title'>Évolution des dépenses</CardTitle>
 										<p className='mt-1 text-sm text-neutral-500'>Six derniers mois</p>
 									</div>
-									<ArrowRight className='size-5 text-neutral-400 transition group-hover:translate-x-1 group-hover:text-success-50' />
+									<ArrowRight className='size-5 text-neutral-500 transition group-hover:translate-x-1 group-hover:text-accent-700' />
 								</div>
 							</CardHeader>
 							<CardContent>
@@ -354,7 +354,7 @@ const ProfilePage = () => {
 										Chargement des dépenses…
 									</div>
 								) : insightsQuery.isError ? (
-									<div className='flex h-48 items-center justify-center text-error-100'>
+									<div className='flex h-48 items-center justify-center text-danger-700'>
 										Les dépenses sont temporairement indisponibles.
 									</div>
 								) : insights ? (
@@ -368,7 +368,7 @@ const ProfilePage = () => {
 											</p>
 											{spendingChange !== null && (
 												<span
-											className={`flex items-center gap-1 pb-0.5 text-sm font-medium ${spendingChange <= 0 ? 'text-success-50' : 'text-neutral-300'}`}>
+											className={`flex items-center gap-1 pb-0.5 text-sm font-medium ${spendingChange <= 0 ? 'text-accent-700' : 'text-neutral-900'}`}>
 													{spendingChange <= 0 ? (
 														<ArrowDownRight className='size-4' />
 													) : (

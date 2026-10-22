@@ -232,7 +232,7 @@ const Dashboard: FC = () => {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full size-12 border-t-4 border-b-4 border-info-500"></div>
+        <div className="animate-spin rounded-full size-12 border-t-4 border-b-4 border-info-700"></div>
       </div>
     );
   }
@@ -243,15 +243,15 @@ const Dashboard: FC = () => {
 
   if (error) {
     return (
-      <div className="bg-neutral-50 rounded-lg shadow-md p-6 text-center">
-        <p className="text-error-100">
+      <div className="bg-surface rounded-lg shadow-md p-6 text-center">
+        <p className="text-danger-700">
           Impossible de charger les données du tableau de bord.
         </p>
-        <p className="text-error-50 text-sm mt-2">
+        <p className="text-danger-700 text-sm mt-2">
           {error instanceof Error ? error.message : "Erreur inconnue"}
         </p>
         <button
-          className="mt-4 px-4 py-2 bg-primary-100 text-neutral-50 rounded hover:bg-primary-100/80"
+          className="mt-4 px-4 py-2 bg-brand-300 text-surface rounded hover:bg-brand-300/80"
           onClick={() => window.location.reload()}
         >
           Réessayer
@@ -263,19 +263,19 @@ const Dashboard: FC = () => {
   // ===== RENDU DU DASHBOARD =====
 
   return (
-    <div className="p-6 bg-neutral-100 min-h-screen lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto">
+    <div className="p-6 bg-neutral-50 min-h-screen lg:max-w-2/3 2xl:max-w-1/2 lg:m-auto">
       {/* ===== HEADER ===== */}
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-neutral-300">
+        <h1 className="text-3xl font-bold text-neutral-900">
           Bonjour {user?.firstName || "Utilisateur"},
         </h1>
-        <p className="text-neutral-300/70">
+        <p className="text-neutral-900/70">
           Bienvenue sur votre tableau de bord InEat
         </p>
       </header>
 
       <section
-        className="mb-6 rounded-lg border border-neutral-200 bg-neutral-50 p-4 shadow-sm"
+        className="mb-6 rounded-lg border border-neutral-200 bg-surface p-4 shadow-sm"
         aria-labelledby="dashboard-priority-title"
       >
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -290,19 +290,19 @@ const Dashboard: FC = () => {
               {priorityAction.description}
             </p>
             <div className="grid grid-cols-3 gap-2 text-sm sm:max-w-md">
-              <div className="rounded-md bg-neutral-100 px-3 py-2">
+              <div className="rounded-md bg-neutral-50 px-3 py-2">
                 <p className="font-semibold text-neutral-900">
                   {totalInventoryItems}
                 </p>
                 <p className="text-xs text-neutral-600">en stock</p>
               </div>
-              <div className="rounded-md bg-neutral-100 px-3 py-2">
+              <div className="rounded-md bg-neutral-50 px-3 py-2">
                 <p className="font-semibold text-neutral-900">
                   {expiringProducts.length}
                 </p>
                 <p className="text-xs text-neutral-600">à consommer</p>
               </div>
-              <div className="rounded-md bg-neutral-100 px-3 py-2">
+              <div className="rounded-md bg-neutral-50 px-3 py-2">
                 <p className="font-semibold text-neutral-900">
                   {recentProducts.length}
                 </p>

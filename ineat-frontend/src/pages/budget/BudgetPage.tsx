@@ -101,7 +101,7 @@ export const BudgetPage: FC = () => {
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
 			{/* ===== HEADER ===== */}
-			<div className='relative overflow-hidden bg-neutral-50 border-b border-gray-200 shadow-sm'>
+			<div className='relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm'>
 				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center justify-between'>
@@ -177,8 +177,8 @@ export const BudgetPage: FC = () => {
 					<Card>
 						<CardContent className='flex items-center justify-center py-12'>
 							<div className='text-center space-y-2'>
-								<Loader2 className='size-8 animate-spin mx-auto text-accent' />
-								<p className='text-neutral-200'>
+								<Loader2 className='size-8 animate-spin mx-auto text-accent-700' />
+								<p className='text-neutral-600'>
 									Chargement du budget...
 								</p>
 							</div>

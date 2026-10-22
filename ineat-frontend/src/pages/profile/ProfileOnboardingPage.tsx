@@ -99,7 +99,7 @@ export default function ProfileOnboardingPage() {
     <div className="mx-auto flex min-h-[calc(100vh-8rem)] max-w-4xl items-center px-4 py-8">
       <Card className="w-full">
         <CardHeader>
-          <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-success-50/15 text-success-700">
+          <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-accent-600/15 text-success-700">
             <Sparkles className="size-5" />
           </div>
           <CardTitle>Personnalisons votre expérience</CardTitle>
@@ -179,7 +179,7 @@ export default function ProfileOnboardingPage() {
                     type="button"
                     aria-pressed={primaryGoal === goal.value}
                     onClick={() => setPrimaryGoal(goal.value)}
-                    className={`rounded-lg border p-4 text-left transition ${primaryGoal === goal.value ? "border-success-600 bg-success-50/10" : "border-neutral-200 hover:border-success-300"}`}
+                    className={`rounded-lg border p-4 text-left transition ${primaryGoal === goal.value ? "border-accent-600 bg-accent-600/10" : "border-neutral-200 hover:border-accent-400"}`}
                   >
                     <span className="block font-medium">{goal.label}</span>
                     <span className="mt-1 block text-sm text-neutral-500">

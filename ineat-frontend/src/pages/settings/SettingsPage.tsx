@@ -85,9 +85,9 @@ const SettingsPage = () => {
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 pb-16'>
 			{/* Header utilisateur */}
-			<div className='bg-neutral-50 py-8 shadow-sm border-b border-gray-200'>
+			<div className='bg-surface py-8 shadow-sm border-b border-gray-200'>
 				<div className='flex flex-col items-center space-y-4'>
-					<div className='size-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden shadow-lg'>
+					<div className='size-24 rounded-full bg-brand-300 flex items-center justify-center overflow-hidden shadow-lg'>
 						{user?.avatarUrl ? (
 							<img
 								src={user.avatarUrl || '/placeholder.svg'}
@@ -95,7 +95,7 @@ const SettingsPage = () => {
 								className='size-full object-cover'
 							/>
 						) : (
-							<span className='text-2xl font-semibold text-neutral-50'>
+							<span className='text-2xl font-semibold text-surface'>
 								{user?.firstName && user?.lastName
 									? `${user?.firstName[0]}${user?.lastName[0]}`
 									: '?'}
@@ -110,7 +110,7 @@ const SettingsPage = () => {
 						<p className='text-gray-600'>{user?.email}</p>
 
 						{user && isUserPremium(user) && (
-							<span className='inline-block mt-2 px-4 py-1 bg-primary-100 text-neutral-50 font-semibold rounded-full shadow-sm'>
+							<span className='inline-block mt-2 px-4 py-1 bg-brand-300 text-surface font-semibold rounded-full shadow-sm'>
 								Premium
 							</span>
 						)}
@@ -121,8 +121,8 @@ const SettingsPage = () => {
 			{/* Section PROFIL */}
 			<section className='px-4 py-6'>
 				<div className='flex items-center gap-3 mb-4'>
-					<div className='p-2 bg-primary-100/10 rounded-lg'>
-						<User className='size-5 text-primary-100' />
+					<div className='p-2 bg-brand-300/10 rounded-lg'>
+						<User className='size-5 text-brand-800' />
 					</div>
 					<div>
 						<h2 className='text-xl font-bold text-gray-900'>
@@ -134,7 +134,7 @@ const SettingsPage = () => {
 					</div>
 				</div>
 
-				<div className='bg-neutral-50 rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
+				<div className='bg-surface rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
 					{profileItems.map((item, index) => (
 						<Link
 							key={index}
@@ -164,8 +164,8 @@ const SettingsPage = () => {
 			{/* Section PARAMÈTRES - "Configuration" */}
 			<section className='px-4 py-6'>
 				<div className='flex items-center gap-3 mb-4'>
-					<div className='p-2 bg-primary-100/10 rounded-lg'>
-						<Settings className='size-5 text-primary-100' />
+					<div className='p-2 bg-brand-300/10 rounded-lg'>
+						<Settings className='size-5 text-brand-800' />
 					</div>
 					<div>
 						<h2 className='text-xl font-bold text-gray-900'>
@@ -177,7 +177,7 @@ const SettingsPage = () => {
 					</div>
 				</div>
 
-				<div className='bg-neutral-50 rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
+				<div className='bg-surface rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
 					{systemSettingsItems.map((item, index) => (
 						<Link
 							key={index}
@@ -208,7 +208,7 @@ const SettingsPage = () => {
 			<div className='px-4 mt-2 space-y-4'>
 				<button
 					onClick={() => logout()}
-					className='w-full py-3 px-4 rounded-xl bg-neutral-400 text-neutral-50 font-semibold flex items-center justify-center cursor-pointer hover:bg-neutral-500 transition-colors shadow-md hover:shadow-lg'>
+					className='w-full py-3 px-4 rounded-xl bg-neutral-400 text-surface font-semibold flex items-center justify-center cursor-pointer hover:bg-neutral-500 transition-colors shadow-md hover:shadow-lg'>
 					<LogOut className='size-5 mr-2' />
 					Déconnexion
 				</button>

@@ -639,23 +639,23 @@ function DriveInvoiceImportPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-neutral-50">
-			<div className="border-b border-neutral-200 bg-neutral-50">
+		<div className="min-h-screen bg-surface">
+			<div className="border-b border-neutral-200 bg-surface">
 				<div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4">
 					<Link to="/app/inventory/add">
 						<Button
 							variant="ghost"
 							size="sm"
-							className="size-10 p-0 rounded-xl border border-neutral-200 bg-neutral-50"
+							className="size-10 p-0 rounded-xl border border-neutral-200 bg-surface"
 						>
-							<ArrowLeft className="size-5 text-neutral-300" />
+							<ArrowLeft className="size-5 text-neutral-900" />
 						</Button>
 					</Link>
 					<div className="min-w-0 flex-1">
-						<h1 className="text-2xl font-bold text-neutral-300">
+						<h1 className="text-2xl font-bold text-neutral-900">
 							Facture Drive
 						</h1>
-						<p className="text-sm text-neutral-200">
+						<p className="text-sm text-neutral-600">
 							{driveImportsRemaining} import
 							{driveImportsRemaining > 1 ? 's' : ''} restant
 							{driveImportsRemaining > 1 ? 's' : ''}
@@ -669,13 +669,13 @@ function DriveInvoiceImportPage() {
 
 			<main className="mx-auto max-w-6xl px-4 py-6">
 				{!canImportDrive && !invoiceId && (
-					<Card className="border-neutral-200 bg-neutral-50">
+					<Card className="border-neutral-200 bg-surface">
 						<CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
 							<div>
-								<h2 className="text-lg font-semibold text-neutral-300">
+								<h2 className="text-lg font-semibold text-neutral-900">
 									Import non disponible
 								</h2>
-								<p className="mt-1 text-sm text-neutral-200">
+								<p className="mt-1 text-sm text-neutral-600">
 									{hasDriveAccess
 										? 'Quota Drive atteint pour la période en cours.'
 										: 'Cette action nécessite Premium.'}
@@ -689,9 +689,9 @@ function DriveInvoiceImportPage() {
 				)}
 
 				{canImportDrive && step === 'upload' && (
-					<Card className="border-neutral-200 bg-neutral-50">
+					<Card className="border-neutral-200 bg-surface">
 						<CardHeader>
-							<CardTitle className="flex items-center gap-2 text-neutral-300">
+							<CardTitle className="flex items-center gap-2 text-neutral-900">
 								<FileText className="size-5" />
 								Importer une facture
 							</CardTitle>
@@ -699,12 +699,12 @@ function DriveInvoiceImportPage() {
 						<CardContent className="space-y-4">
 							{pendingInvoiceFile ? (
 								<div className="flex min-h-56 flex-col items-center justify-center gap-4 rounded-lg border border-neutral-200 bg-white p-6 text-center">
-									<FileText className="size-8 text-primary-50" />
+									<FileText className="size-8 text-surface" />
 									<div className="max-w-full">
-										<p className="text-base font-medium text-neutral-300">
+										<p className="text-base font-medium text-neutral-900">
 											Analyser ce fichier ?
 										</p>
-										<p className="mt-1 max-w-full truncate text-sm text-neutral-200">
+										<p className="mt-1 max-w-full truncate text-sm text-neutral-600">
 											{pendingInvoiceFile.name}
 										</p>
 									</div>
@@ -729,19 +729,19 @@ function DriveInvoiceImportPage() {
 									</div>
 								</div>
 							) : (
-								<label className="flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-200 bg-white p-6 text-center transition-colors hover:bg-neutral-100">
+								<label className="flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-200 bg-white p-6 text-center transition-colors hover:bg-neutral-50">
 									{importMutation.isPending ? (
-										<Loader2 className="size-8 animate-spin text-primary-50" />
+										<Loader2 className="size-8 animate-spin text-surface" />
 									) : (
-										<Upload className="size-8 text-primary-50" />
+										<Upload className="size-8 text-surface" />
 									)}
 									<div>
-										<p className="text-base font-medium text-neutral-300">
+										<p className="text-base font-medium text-neutral-900">
 											{importMutation.isPending
 												? 'Analyse en cours...'
 												: 'Charger un PDF'}
 										</p>
-										<p className="mt-1 text-sm text-neutral-200">
+										<p className="mt-1 text-sm text-neutral-600">
 											PDF, 5 Mo max
 										</p>
 									</div>
@@ -778,41 +778,41 @@ function DriveInvoiceImportPage() {
 
 				{step === 'review' && invoice && (
 					<div className="space-y-4">
-						<Card className="border-neutral-200 bg-neutral-50">
+						<Card className="border-neutral-200 bg-surface">
 							<CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5">
 								<div>
-									<p className="text-xs uppercase text-neutral-200">Marchand</p>
-									<p className="font-medium text-neutral-300">
+									<p className="text-xs uppercase text-neutral-600">Marchand</p>
+									<p className="font-medium text-neutral-900">
 										{invoice.merchantName ?? '-'}
 									</p>
 								</div>
 								<div>
-									<p className="text-xs uppercase text-neutral-200">Date</p>
-									<p className="font-medium text-neutral-300">
+									<p className="text-xs uppercase text-neutral-600">Date</p>
+									<p className="font-medium text-neutral-900">
 										{formatDate(invoice.purchaseDate)}
 									</p>
 								</div>
 								<div>
-									<p className="text-xs uppercase text-neutral-200">Total</p>
-									<p className="font-medium text-neutral-300">
+									<p className="text-xs uppercase text-neutral-600">Total</p>
+									<p className="font-medium text-neutral-900">
 										{formatCurrency(invoice.totalAmount)}
 									</p>
 								</div>
 								<div>
-									<p className="text-xs uppercase text-neutral-200">
+									<p className="text-xs uppercase text-neutral-600">
 										Somme des lignes
 									</p>
-									<p className="font-medium text-neutral-300">
+									<p className="font-medium text-neutral-900">
 										{formatCurrency(reviewTotals.linesTotal)}
 									</p>
 								</div>
 								<div>
-									<p className="text-xs uppercase text-neutral-200">Écart</p>
+									<p className="text-xs uppercase text-neutral-600">Écart</p>
 									<p
 										className={`font-medium ${
 											reviewTotals.difference === 0
-												? 'text-success-50'
-												: 'text-warning-50'
+												? 'text-accent-700'
+												: 'text-warning-700'
 										}`}
 									>
 										{formatCurrency(reviewTotals.difference)}
@@ -821,13 +821,13 @@ function DriveInvoiceImportPage() {
 							</CardContent>
 						</Card>
 
-						<Card className="border-neutral-200 bg-neutral-50">
+						<Card className="border-neutral-200 bg-surface">
 							<CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
 								<div>
-									<CardTitle className="text-neutral-300">
+									<CardTitle className="text-neutral-900">
 										Lignes à vérifier
 									</CardTitle>
-									<p className="mt-1 text-sm text-neutral-200">
+									<p className="mt-1 text-sm text-neutral-600">
 										{
 											orderedItems.filter(requiresInvoiceItemCorrection)
 												.length
@@ -881,7 +881,7 @@ function DriveInvoiceImportPage() {
 												key={item.id}
 												className={`overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md ${
 													needsCorrection
-														? 'border-warning-50'
+														? 'border-warning-500'
 														: 'border-neutral-200'
 												}`}
 												data-state={isSelected ? 'selected' : undefined}
@@ -905,9 +905,9 @@ function DriveInvoiceImportPage() {
 																current === item.id ? null : item.id
 															)
 														}
-														className="flex min-w-0 flex-1 items-center gap-3 p-3 text-left transition-colors hover:bg-neutral-100 sm:gap-4"
+														className="flex min-w-0 flex-1 items-center gap-3 p-3 text-left transition-colors hover:bg-neutral-50 sm:gap-4"
 													>
-														<div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100">
+														<div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
 															{imageUrl ? (
 																<img
 																	src={imageUrl}
@@ -915,14 +915,14 @@ function DriveInvoiceImportPage() {
 																	className="size-full object-cover"
 																/>
 															) : (
-																<Package className="size-6 text-neutral-200" />
+																<Package className="size-6 text-neutral-600" />
 															)}
 														</div>
 														<div className="min-w-0 flex-1">
-															<p className="truncate font-semibold text-neutral-300">
+															<p className="truncate font-semibold text-neutral-900">
 																{draft.detectedName || 'Produit sans nom'}
 															</p>
-															<p className="mt-1 text-xs text-neutral-200">
+															<p className="mt-1 text-xs text-neutral-600">
 																{item.validated
 																	? 'Déjà validé'
 																	: isSelected
@@ -938,31 +938,31 @@ function DriveInvoiceImportPage() {
 																)}
 																{reviewStatus.label}
 															</Badge>
-															<p className="mt-2 text-xs text-neutral-200">
+															<p className="mt-2 text-xs text-neutral-600">
 																Confiance {Math.round(item.confidence * 100)} %
 																{needsCorrection ? ' · correction requise' : ' · fiable'}
 															</p>
 														</div>
 														<div className="grid shrink-0 grid-cols-2 gap-2 text-right sm:min-w-44">
 															<div>
-																<p className="text-xs uppercase text-neutral-200">
+																<p className="text-xs uppercase text-neutral-600">
 																	Qté
 																</p>
-																<p className="font-semibold text-neutral-300">
+																<p className="font-semibold text-neutral-900">
 																	{draft.quantity ?? '-'}
 																</p>
 															</div>
 															<div>
-																<p className="text-xs uppercase text-neutral-200">
+																<p className="text-xs uppercase text-neutral-600">
 																	Prix
 																</p>
-																<p className="font-semibold text-neutral-300">
+																<p className="font-semibold text-neutral-900">
 																	{formatCurrency(getLineTotal(draft))}
 																</p>
 															</div>
 														</div>
 														<ChevronDown
-															className={`size-5 shrink-0 text-neutral-200 transition-transform ${
+															className={`size-5 shrink-0 text-neutral-600 transition-transform ${
 																isExpanded ? 'rotate-180' : ''
 															}`}
 														/>
@@ -972,64 +972,64 @@ function DriveInvoiceImportPage() {
 												{isExpanded && (
 													<div className="border-t border-neutral-100 p-4">
 														{item.externalProductData && (
-															<div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-100 p-4">
-																<p className="text-sm font-semibold text-neutral-300">
+															<div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+																<p className="text-sm font-semibold text-neutral-900">
 																	Données OpenFoodFacts disponibles
 																</p>
 																<div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
 																	<div>
-																		<span className="text-neutral-200">
+																		<span className="text-neutral-600">
 																			Nom
 																		</span>
-																		<p className="font-medium text-neutral-300">
+																		<p className="font-medium text-neutral-900">
 																			{item.externalProductData.name ??
 																				'Information non disponible'}
 																		</p>
 																	</div>
 																	<div>
-																		<span className="text-neutral-200">
+																		<span className="text-neutral-600">
 																			Marque
 																		</span>
-																		<p className="font-medium text-neutral-300">
+																		<p className="font-medium text-neutral-900">
 																			{item.externalProductData.brand ??
 																				'Information non disponible'}
 																		</p>
 																	</div>
 																	<div>
-																		<span className="text-neutral-200">
+																		<span className="text-neutral-600">
 																			Nutri-score
 																		</span>
-																		<p className="font-medium text-neutral-300">
+																		<p className="font-medium text-neutral-900">
 																			{formatProductScore(
 																				item.externalProductData.nutriscore
 																			)}
 																		</p>
 																	</div>
 																	<div>
-																		<span className="text-neutral-200">
+																		<span className="text-neutral-600">
 																			Eco-score
 																		</span>
-																		<p className="font-medium text-neutral-300">
+																		<p className="font-medium text-neutral-900">
 																			{formatProductScore(
 																				item.externalProductData.ecoscore
 																			)}
 																		</p>
 																	</div>
 																	<div>
-																		<span className="text-neutral-200">
+																		<span className="text-neutral-600">
 																			NOVA
 																		</span>
-																		<p className="font-medium text-neutral-300">
+																		<p className="font-medium text-neutral-900">
 																			{formatProductScore(
 																				item.externalProductData.novascore
 																			)}
 																		</p>
 																	</div>
 																	<div className="sm:col-span-2 lg:col-span-3">
-																		<span className="text-neutral-200">
+																		<span className="text-neutral-600">
 																			Ingrédients
 																		</span>
-																		<p className="font-medium text-neutral-300">
+																		<p className="font-medium text-neutral-900">
 																			{item.externalProductData.ingredients ??
 																				'Information non disponible'}
 																		</p>
@@ -1039,7 +1039,7 @@ function DriveInvoiceImportPage() {
 														)}
 														<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 															<div className="space-y-1.5 md:col-span-2 lg:col-span-1">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Produit
 																</label>
 																<Input
@@ -1055,7 +1055,7 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Quantité
 																</label>
 																<Input
@@ -1074,7 +1074,7 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Prix unitaire TTC
 																</label>
 																<Input
@@ -1093,7 +1093,7 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Total ligne
 																</label>
 																<Input
@@ -1112,7 +1112,7 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Association
 																</label>
 																<Select
@@ -1147,19 +1147,19 @@ function DriveInvoiceImportPage() {
 																	</SelectContent>
 																</Select>
 																{item.product ? (
-																	<p className="text-xs text-neutral-200">
+																	<p className="text-xs text-neutral-600">
 																		Produit connu
 																		{item.product.barcode
 																			? ` · ${item.product.barcode}`
 																			: ''}
 																	</p>
 																) : suggestedEans.length > 0 ? (
-																	<p className="text-xs text-warning-50">
+																	<p className="text-xs text-warning-700">
 																		{suggestedEans.length} EAN proposé
 																		{suggestedEans.length > 1 ? 's' : ''}
 																	</p>
 																) : (
-																	<p className="text-xs text-neutral-200">
+																	<p className="text-xs text-neutral-600">
 																		Création à la validation
 																	</p>
 																)}
@@ -1178,7 +1178,7 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Catégorie
 																</label>
 																<Select
@@ -1204,7 +1204,7 @@ function DriveInvoiceImportPage() {
 																</Select>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Stockage
 																</label>
 																<Select
@@ -1241,7 +1241,7 @@ function DriveInvoiceImportPage() {
 																</Select>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Date d'expiration
 																</label>
 																<Input
@@ -1258,7 +1258,7 @@ function DriveInvoiceImportPage() {
 																/>
 															</div>
 															<div className="space-y-1.5 md:col-span-2">
-																<label className="text-xs font-medium uppercase text-neutral-200">
+																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Notes
 																</label>
 																<Textarea
@@ -1279,8 +1279,8 @@ function DriveInvoiceImportPage() {
 															<p
 																className={`text-xs ${
 																	saveState === 'error'
-																		? 'text-warning-50'
-																		: 'text-neutral-200'
+																		? 'text-warning-700'
+																		: 'text-neutral-600'
 																}`}
 																role="status"
 															>
@@ -1318,10 +1318,10 @@ function DriveInvoiceImportPage() {
 				)}
 
 				{step === 'done' && (result || invoice) && (
-					<Card className="border-neutral-200 bg-neutral-50">
+					<Card className="border-neutral-200 bg-surface">
 						<CardHeader>
-							<CardTitle className="flex items-center gap-2 text-neutral-300">
-								<Check className="size-5 text-success-50" />
+							<CardTitle className="flex items-center gap-2 text-neutral-900">
+								<Check className="size-5 text-accent-700" />
 								Import terminé
 							</CardTitle>
 						</CardHeader>
@@ -1379,8 +1379,8 @@ function DriveInvoiceImportPage() {
 function SummaryCell({ label, value }: { label: string; value: string }) {
 	return (
 		<div className="rounded-md border border-neutral-200 bg-white p-4">
-			<p className="text-xs uppercase text-neutral-200">{label}</p>
-			<p className="mt-1 text-lg font-semibold text-neutral-300">{value}</p>
+			<p className="text-xs uppercase text-neutral-600">{label}</p>
+			<p className="mt-1 text-lg font-semibold text-neutral-900">{value}</p>
 		</div>
 	);
 }
@@ -1420,7 +1420,7 @@ function InvoiceProcessingCard({
 	}, [isFailed]);
 
 	return (
-		<Card className="overflow-hidden border-neutral-200 bg-neutral-50">
+		<Card className="overflow-hidden border-neutral-200 bg-surface">
 			<CardContent className="space-y-6 p-6">
 				<div
 					className="relative flex min-h-64 flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-100 bg-white px-6 py-10 text-center"
@@ -1429,21 +1429,21 @@ function InvoiceProcessingCard({
 				>
 					{!isFailed && (
 						<>
-							<div className="absolute -left-12 -top-12 size-40 rounded-full bg-primary-50/5 motion-safe:animate-pulse" />
-							<div className="absolute -bottom-16 -right-10 size-48 rounded-full bg-primary-50/5 motion-safe:animate-pulse" />
-							<div className="relative mb-7 flex size-24 items-center justify-center rounded-full bg-primary-50/10 motion-safe:animate-bounce">
-								<span className="absolute inset-0 rounded-full border border-primary-50/30 motion-safe:animate-ping" />
-								<ChefHat className="relative size-12 text-primary-50" />
+							<div className="absolute -left-12 -top-12 size-40 rounded-full bg-canvas/5 motion-safe:animate-pulse" />
+							<div className="absolute -bottom-16 -right-10 size-48 rounded-full bg-canvas/5 motion-safe:animate-pulse" />
+							<div className="relative mb-7 flex size-24 items-center justify-center rounded-full bg-canvas/10 motion-safe:animate-bounce">
+								<span className="absolute inset-0 rounded-full border border-neutral-200/30 motion-safe:animate-ping" />
+								<ChefHat className="relative size-12 text-surface" />
 							</div>
-							<p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-primary-50">
+							<p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-surface">
 								Cooking progress
 							</p>
 						</>
 					)}
 					{isFailed && (
-						<AlertTriangle className="mb-4 size-10 text-warning-50" />
+						<AlertTriangle className="mb-4 size-10 text-warning-700" />
 					)}
-					<p className="max-w-xl text-lg font-semibold text-neutral-300">
+					<p className="max-w-xl text-lg font-semibold text-neutral-900">
 						{isFailed
 							? "La facture n’a pas pu être analysée. Vous pouvez relancer un import."
 							: isUploading || (!isFetchError && !isLoading)
@@ -1459,7 +1459,7 @@ function InvoiceProcessingCard({
 							{[0, 1, 2].map((dot) => (
 								<span
 									key={dot}
-									className="size-2 rounded-full bg-primary-50 motion-safe:animate-bounce"
+									className="size-2 rounded-full bg-canvas motion-safe:animate-bounce"
 									style={{ animationDelay: `${dot * 160}ms` }}
 								/>
 							))}
@@ -1469,12 +1469,12 @@ function InvoiceProcessingCard({
 
 				{!isFailed && (
 					<div className="space-y-2">
-						<div className="flex items-center justify-between text-xs text-neutral-200">
+						<div className="flex items-center justify-between text-xs text-neutral-600">
 							<span>Préparation en cours</span>
 							<span>{progress} %</span>
 						</div>
 						<div
-							className="h-2 overflow-hidden rounded-full bg-neutral-100"
+							className="h-2 overflow-hidden rounded-full bg-neutral-50"
 							role="progressbar"
 							aria-label="Progression de l’analyse"
 							aria-valuemin={0}
@@ -1482,7 +1482,7 @@ function InvoiceProcessingCard({
 							aria-valuenow={progress}
 						>
 							<div
-								className="h-full rounded-full bg-primary-50 transition-[width] duration-700 ease-out"
+								className="h-full rounded-full bg-canvas transition-[width] duration-700 ease-out"
 								style={{ width: `${progress}%` }}
 							/>
 						</div>

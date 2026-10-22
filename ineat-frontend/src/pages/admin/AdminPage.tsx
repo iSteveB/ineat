@@ -76,7 +76,7 @@ export default function AdminPage() {
 							onChange={(event) =>
 								setPeriod(event.target.value as typeof search.period)
 							}
-							className='h-10 rounded-md border border-neutral-200 bg-neutral-50 px-3'
+							className='h-10 rounded-md border border-neutral-200 bg-surface px-3'
 						>
 							<option value='7d'>7 jours</option>
 							<option value='30d'>30 jours</option>
@@ -91,7 +91,7 @@ export default function AdminPage() {
 			</header>
 
 			{search.period === 'custom' && (
-				<div className='flex flex-wrap gap-3 rounded-lg border bg-neutral-50 p-3'>
+				<div className='flex flex-wrap gap-3 rounded-lg border bg-surface p-3'>
 					<DateField
 						label='Du'
 						value={search.from ?? ''}
@@ -233,7 +233,7 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 						},
 						{
 							label: 'Conversions',
-							color: 'bg-success-500',
+							color: 'bg-accent-600',
 							points: dashboard.trends.subscriptions.map((point) => ({
 								date: point.date,
 								value: point.conversions,
@@ -246,7 +246,7 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 					series={[
 						{
 							label: 'Succès',
-							color: 'bg-success-500',
+							color: 'bg-accent-600',
 							points: dashboard.trends.operations.map((point) => ({
 								date: point.date,
 								value: point.successes,
@@ -254,7 +254,7 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 						},
 						{
 							label: 'Échecs',
-							color: 'bg-error-500',
+							color: 'bg-danger-600',
 							points: dashboard.trends.operations.map((point) => ({
 								date: point.date,
 								value: point.failures,
@@ -305,10 +305,10 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 									key={item.type}
 									onClick={() => openAttention(item.type)}
 									aria-label={`Voir ${attentionLabels[item.type]}`}
-									className='flex w-full items-center justify-between rounded-lg border border-error-100 bg-error-50/40 p-3 text-left transition hover:border-error-300 hover:bg-error-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+									className='flex w-full items-center justify-between rounded-lg border border-danger-600 bg-danger-50/40 p-3 text-left transition hover:border-danger-600 hover:bg-danger-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
 								>
 									<p className='flex items-center gap-2 text-sm text-neutral-800'>
-										<AlertTriangle className='size-4 text-error-600' />
+										<AlertTriangle className='size-4 text-danger-700' />
 										{attentionLabels[item.type]}
 									</p>
 									<Badge variant='outline'>{item.count}</Badge>
@@ -442,7 +442,7 @@ function UsageValue({
 	icon?: typeof FileText;
 }) {
 	return (
-		<div className='rounded-lg border bg-neutral-50 p-3'>
+		<div className='rounded-lg border bg-surface p-3'>
 			<p className='flex items-center gap-1 text-xs text-neutral-500'>
 				{Icon && <Icon className='size-3' />}
 				{label}
@@ -480,7 +480,7 @@ function DashboardSkeleton() {
 			{Array.from({ length: 4 }).map((_, index) => (
 				<div
 					key={index}
-					className='h-28 animate-pulse rounded-xl bg-neutral-100'
+					className='h-28 animate-pulse rounded-xl bg-neutral-50'
 				/>
 			))}
 		</div>

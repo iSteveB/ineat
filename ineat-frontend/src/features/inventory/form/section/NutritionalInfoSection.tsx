@@ -40,7 +40,7 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 	};
 
 	const getInputClassName = (hasValue: boolean = false) => {
-		let baseClass = 'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200';
+		let baseClass = 'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
 		
 		if (readonly && hasValue) {
 			baseClass = 'bg-blue-50/5 border-blue-500/20 text-neutral-700 placeholder:text-neutral-500';
@@ -108,7 +108,7 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>
+						<h3 className='text-md font-medium text-neutral-900'>
 							Informations nutritionnelles (pour 100g)
 						</h3>
 
@@ -116,7 +116,7 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
 							{nutrients.map((nutrient) => (
 								<div key={nutrient.key} className='space-y-2'>
-									<Label htmlFor={nutrient.key} className='text-neutral-300'>
+									<Label htmlFor={nutrient.key} className='text-neutral-900'>
 										{nutrient.label}
 									</Label>
 									<Input
@@ -138,7 +138,7 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 						<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
 							{secondaryNutrients.map((nutrient) => (
 								<div key={nutrient.key} className='space-y-2'>
-									<Label htmlFor={nutrient.key} className='text-neutral-300'>
+									<Label htmlFor={nutrient.key} className='text-neutral-900'>
 										{nutrient.label}
 									</Label>
 									<Input
@@ -156,7 +156,7 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 							))}
 						</div>
 					</div>
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 				</>
 			)}
 		</div>

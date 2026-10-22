@@ -85,17 +85,17 @@ export const formatDate = (date: string | Date): string => {
 export const getExpiryStatusColor = (status: ExpiryStatus): string => {
 	switch (status) {
 		case 'EXPIRED':
-			return 'text-error-100';
+			return 'text-danger-700';
 		case 'CRITICAL':
-			return 'text-error-50';
+			return 'text-danger-700';
 		case 'WARNING':
-			return 'text-warning-50';
+			return 'text-warning-700';
 		case 'GOOD':
-			return 'text-success-50';
+			return 'text-accent-700';
 		case 'UNKNOWN':
-			return 'text-neutral-200';
+			return 'text-neutral-600';
 		default:
-			return 'text-neutral-200';
+			return 'text-neutral-600';
 	}
 };
 
@@ -107,17 +107,17 @@ export const getExpiryStatusColor = (status: ExpiryStatus): string => {
 export const getExpiryStatusBgColor = (status: ExpiryStatus): string => {
 	switch (status) {
 		case 'EXPIRED':
-			return 'bg-error-100';
+			return 'bg-danger-600';
 		case 'CRITICAL':
-			return 'bg-error-50';
+			return 'bg-danger-50';
 		case 'WARNING':
 			return 'bg-warning-50';
 		case 'GOOD':
-			return 'bg-success-50';
+			return 'bg-accent-600';
 		case 'UNKNOWN':
-			return 'bg-neutral-100';
+			return 'bg-neutral-50';
 		default:
-			return 'bg-neutral-100';
+			return 'bg-neutral-50';
 	}
 };
 

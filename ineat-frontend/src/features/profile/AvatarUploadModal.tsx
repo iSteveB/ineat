@@ -95,7 +95,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
 					<DialogTitle className='flex items-center gap-2'>
-						<ImageIcon className='size-5 text-success-50' />
+						<ImageIcon className='size-5 text-accent-700' />
 						Modifier votre photo de profil
 					</DialogTitle>
 					<DialogDescription>
@@ -106,7 +106,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 				<div className='space-y-4'>
 					{/* Aperçu de l'image */}
 					<div className='flex justify-center'>
-						<div className='relative size-32 rounded-full overflow-hidden bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center shadow-lg'>
+						<div className='relative size-32 rounded-full overflow-hidden bg-gradient-to-br from-accent-600 to-accent-600/80 flex items-center justify-center shadow-lg'>
 							{previewUrl ? (
 								<img
 									src={previewUrl}
@@ -120,7 +120,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 									className='size-full object-cover'
 								/>
 							) : (
-								<ImageIcon className='size-12 text-neutral-50' />
+								<ImageIcon className='size-12 text-surface' />
 							)}
 						</div>
 					</div>
@@ -171,11 +171,11 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 						<div className='space-y-2'>
 							<div className='w-full bg-gray-200 rounded-full h-2 overflow-hidden'>
 								<div
-									className='bg-success-50 h-2 transition-all duration-300 ease-out'
+									className='bg-accent-600 h-2 transition-all duration-300 ease-out'
 									style={{ width: `${uploadProgress}%` }}
 								/>
 							</div>
-							<p className='text-sm text-center text-neutral-200'>
+							<p className='text-sm text-center text-neutral-600'>
 								Upload en cours... {uploadProgress}%
 							</p>
 						</div>
@@ -183,9 +183,9 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 
 					{/* Informations sur les contraintes */}
 					{!selectedFile && !isUploading && (
-						<Alert className='border-info-50/20 bg-info-50/10'>
-							<AlertCircle className='size-4 text-info-50' />
-							<AlertDescription className='text-sm text-neutral-300'>
+						<Alert className='border-info-700/20 bg-info-50/10'>
+							<AlertCircle className='size-4 text-info-700' />
+							<AlertDescription className='text-sm text-neutral-900'>
 								<strong>Formats acceptés :</strong> JPG, PNG, GIF
 								<br />
 								<strong>Taille maximale :</strong> 5 MB
@@ -203,9 +203,9 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 
 					{/* Nom du fichier sélectionné */}
 					{selectedFile && !isUploading && (
-						<Alert className='border-success-50/20 bg-success-50/10'>
-							<AlertCircle className='size-4 text-success-50' />
-							<AlertDescription className='text-sm text-neutral-300'>
+						<Alert className='border-accent-600/20 bg-accent-600/10'>
+							<AlertCircle className='size-4 text-accent-700' />
+							<AlertDescription className='text-sm text-neutral-900'>
 								<strong>Fichier sélectionné :</strong> {selectedFile.name}
 								<br />
 								<strong>Taille :</strong>{' '}
@@ -227,9 +227,9 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 							onClick={handleUpload}
 							disabled={isUploading}
 							className={cn(
-								'bg-gradient-to-r from-success-50 to-success-50',
-								'hover:from-success-50/90 hover:to-success-50/90',
-								'text-neutral-50'
+								'bg-gradient-to-r from-accent-600 to-accent-600',
+								'hover:from-accent-600/90 hover:to-accent-600/90',
+								'text-surface'
 							)}>
 							{isUploading ? (
 								<>

@@ -228,9 +228,9 @@ export function InventoryListPage() {
 	// ===== GESTION DES ERREURS =====
 	if (error) {
 		return (
-			<div className='min-h-screen bg-primary-50 p-4'>
+			<div className='min-h-screen bg-canvas p-4'>
 				<div className='max-w-2xl mx-auto'>
-					<div className='bg-error-50 text-neutral-50 p-6 rounded-xl'>
+					<div className='bg-danger-50 text-surface p-6 rounded-xl'>
 						<h2 className='text-xl font-semibold mb-2'>Erreur de chargement</h2>
 						<p className='mb-4'>
 							Impossible de charger votre inventaire: {error}
@@ -238,13 +238,13 @@ export function InventoryListPage() {
 						<div className='flex gap-2'>
 							<button
 								onClick={() => fetchInventoryItems()}
-								className='bg-neutral-50 text-error-50 px-4 py-2 rounded-lg font-medium'
+								className='bg-surface text-danger-700 px-4 py-2 rounded-lg font-medium'
 							>
 								Réessayer
 							</button>
 							<button
 								onClick={clearError}
-								className='bg-neutral-50/20 text-neutral-50 px-4 py-2 rounded-lg font-medium'
+								className='bg-surface/20 text-surface px-4 py-2 rounded-lg font-medium'
 							>
 								Fermer
 							</button>
@@ -256,9 +256,9 @@ export function InventoryListPage() {
 	}
 
 	return (
-		<div className='min-h-screen bg-primary-50'>
+		<div className='min-h-screen bg-canvas'>
 			{/* ===== HEADER ===== */}
-			<div className='bg-neutral-50 border-b border-neutral-200 sticky top-0 z-10'>
+			<div className='bg-surface border-b border-neutral-200 sticky top-0 z-10'>
 				<div className='p-4'>
 					<div className='flex items-center justify-between mb-4'>
 						<h1 className='text-2xl font-bold text-neutral-900'>
@@ -266,7 +266,7 @@ export function InventoryListPage() {
 						</h1>
 						<Link
 							to='/app/inventory/add'
-							className='bg-success-50 text-neutral-50 px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-success-50/80 transition-colors'
+							className='bg-accent-600 text-surface px-4 py-2 rounded-lg font-medium flex items-center gap-2 hover:bg-accent-600/80 transition-colors'
 						>
 							<Plus className='size-4' />
 							Ajouter
@@ -275,9 +275,9 @@ export function InventoryListPage() {
 
 					{/* ===== STATISTIQUES RAPIDES ===== */}
 					<div className='grid grid-cols-3 gap-4 mb-4'>
-						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
+						<div className='bg-surface p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
-								<Package2 className='size-4 text-success-50' />
+								<Package2 className='size-4 text-accent-700' />
 								<span className='text-sm text-neutral-600'>Total</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
@@ -285,9 +285,9 @@ export function InventoryListPage() {
 							</p>
 						</div>
 
-						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
+						<div className='bg-surface p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
-								<AlertTriangle className='size-4 text-warning-50' />
+								<AlertTriangle className='size-4 text-warning-700' />
 								<span className='text-sm text-neutral-600'>À consommer</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
@@ -295,9 +295,9 @@ export function InventoryListPage() {
 							</p>
 						</div>
 
-						<div className='bg-neutral-50 p-3 rounded-lg border border-neutral-200'>
+						<div className='bg-surface p-3 rounded-lg border border-neutral-200'>
 							<div className='flex items-center gap-2'>
-								<CheckCircle className='size-4 text-success-50' />
+								<CheckCircle className='size-4 text-accent-700' />
 								<span className='text-sm text-neutral-600'>Valeur</span>
 							</div>
 							<p className='text-lg font-semibold text-neutral-900'>
@@ -308,13 +308,13 @@ export function InventoryListPage() {
 
 					{/* ===== BARRE DE RECHERCHE ===== */}
 					<div className='relative mb-4'>
-						<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-neutral-400' />
+						<Search className='absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-neutral-500' />
 						<input
 							type='text'
 							placeholder='Rechercher un produit...'
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
-							className='w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+							className='w-full pl-10 pr-4 py-2 border border-neutral-400 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-accent-600'
 						/>
 					</div>
 
@@ -329,7 +329,7 @@ export function InventoryListPage() {
 							{(currentFilters.categoryId ||
 								currentFilters.storageLocation ||
 								currentFilters.expiringWithinDays) && (
-								<span className='bg-accent text-neutral-50 text-xs px-2 py-1 rounded-full'>
+								<span className='bg-accent-600 text-surface text-xs px-2 py-1 rounded-full'>
 									Actifs
 								</span>
 							)}
@@ -342,7 +342,7 @@ export function InventoryListPage() {
 									checked={areAllFilteredItemsSelected}
 									onChange={toggleSelectAllFilteredItems}
 									disabled={isLoading}
-									className='size-4 rounded border-neutral-300 text-success-50 focus:ring-success-50'
+									className='size-4 rounded border-neutral-400 text-accent-700 focus:ring-accent-600'
 								/>
 								Tout sélectionner
 							</label>
@@ -351,7 +351,7 @@ export function InventoryListPage() {
 								type='button'
 								onClick={openSelectionMode}
 								disabled={isLoading}
-								className='inline-flex items-center gap-2 rounded-lg border border-error-50 px-3 py-2 text-sm font-medium text-error-50 transition-colors hover:bg-error-50 hover:text-neutral-50 disabled:opacity-50'
+								className='inline-flex items-center gap-2 rounded-lg border border-danger-600 px-3 py-2 text-sm font-medium text-danger-700 transition-colors hover:bg-danger-50 hover:text-surface disabled:opacity-50'
 							>
 								<Trash2 className='size-4' />
 								Supprimer
@@ -362,7 +362,7 @@ export function InventoryListPage() {
 
 				{/* ===== PANNEAU DE FILTRES ===== */}
 				{showFilters && (
-					<div className='bg-neutral-50 border-t border-neutral-200 p-4'>
+					<div className='bg-surface border-t border-neutral-200 p-4'>
 						<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
 							{/* Filtre par catégorie */}
 							<div>
@@ -376,7 +376,7 @@ export function InventoryListPage() {
 											categoryId: e.target.value || undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+									className='w-full px-3 py-2 border border-neutral-400 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-accent-600'
 								>
 									<option value=''>Toutes les catégories</option>
 									{INVENTORY_CATEGORIES.map((cat) => (
@@ -399,7 +399,7 @@ export function InventoryListPage() {
 											storageLocation: e.target.value || undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+									className='w-full px-3 py-2 border border-neutral-400 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-accent-600'
 								>
 									<option value=''>Tous les lieux</option>
 									{INVENTORY_STORAGE_LOCATIONS.map((loc) => (
@@ -424,7 +424,7 @@ export function InventoryListPage() {
 												: undefined,
 										})
 									}
-									className='w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-accent'
+									className='w-full px-3 py-2 border border-neutral-400 rounded-lg focus:ring-2 focus:ring-accent-600 focus:border-accent-600'
 								>
 									<option value=''>Toutes les dates</option>
 									<option value='1'>1 jour</option>
@@ -450,7 +450,7 @@ export function InventoryListPage() {
 			{/* ===== LISTE DES PRODUITS ===== */}
 			<div className='p-4'>
 				{isSelectionMode && (
-					<div className='mb-4 flex flex-col gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
+					<div className='mb-4 flex flex-col gap-3 rounded-lg border border-neutral-200 bg-surface p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
 						<p className='text-sm font-medium text-neutral-800'>
 							{selectedCount > 0
 								? `${selectedCount} produit${
@@ -463,7 +463,7 @@ export function InventoryListPage() {
 								type='button'
 								onClick={closeSelectionMode}
 								disabled={isLoading}
-								className='inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 disabled:opacity-50'
+								className='inline-flex items-center gap-2 rounded-lg border border-neutral-400 px-3 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 disabled:opacity-50'
 							>
 								<X className='size-4' />
 								Annuler
@@ -472,7 +472,7 @@ export function InventoryListPage() {
 								type='button'
 								onClick={handleRemoveSelectedItems}
 								disabled={isLoading || selectedCount === 0}
-								className='inline-flex items-center gap-2 rounded-lg bg-error-50 px-3 py-2 text-sm font-medium text-neutral-50 transition-colors hover:bg-error-100 disabled:opacity-50'
+								className='inline-flex items-center gap-2 rounded-lg bg-danger-50 px-3 py-2 text-sm font-medium text-surface transition-colors hover:bg-danger-600 disabled:opacity-50'
 							>
 								<Trash2 className='size-4' />
 								{isLoading ? 'Suppression...' : 'Supprimer'}
@@ -483,11 +483,11 @@ export function InventoryListPage() {
 
 				{isLoading ? (
 					<div className='flex justify-center items-center py-12'>
-						<div className='animate-spin rounded-full h-8 w-8 border-b-2 border-success-50'></div>
+						<div className='animate-spin rounded-full h-8 w-8 border-b-2 border-accent-600'></div>
 					</div>
 				) : filteredInventory.length === 0 ? (
 					<div className='text-center py-12'>
-						<Package2 className='size-12 text-neutral-400 mx-auto mb-4' />
+						<Package2 className='size-12 text-neutral-500 mx-auto mb-4' />
 						<h3 className='text-lg font-medium text-neutral-900 mb-2'>
 							{items.length === 0
 								? 'Aucun produit dans votre inventaire'
@@ -501,7 +501,7 @@ export function InventoryListPage() {
 						{items.length === 0 && (
 							<Link
 								to='/app/inventory/add'
-								className='bg-success-50 text-neutral-50 px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-success-50/80 transition-colors'
+								className='bg-accent-600 text-surface px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2 hover:bg-accent-600/80 transition-colors'
 							>
 								<Plus className='size-4' />
 								Ajouter mon premier produit
@@ -549,17 +549,17 @@ export function InventoryItemCard({
 	const expiryStatus = item.expiryStatus;
 
 	const statusColors = {
-		GOOD: 'border-l-success-50',
-		WARNING: 'border-l-warning-50',
-		CRITICAL: 'border-l-error-50',
-		EXPIRED: 'border-l-error-100',
+		GOOD: 'border-l-accent-600',
+		WARNING: 'border-l-warning-500',
+		CRITICAL: 'border-l-danger-600',
+		EXPIRED: 'border-l-danger-600',
 		UNKNOWN: 'border-l-neutral-200',
 	};
 
 	return (
 		<div
-			className={`bg-neutral-50 border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm ${
-				isSelected ? 'ring-2 ring-success-50' : ''
+			className={`bg-surface border-l-4 ${statusColors[expiryStatus]} rounded-lg p-4 shadow-sm ${
+				isSelected ? 'ring-2 ring-accent-600' : ''
 			}`}
 		>
 			<div className='flex items-start justify-between'>
@@ -573,12 +573,12 @@ export function InventoryItemCard({
 								onChange={onToggleSelection}
 								disabled={isRemoving}
 								aria-label={`Sélectionner ${item.product.name}`}
-								className='mt-4 size-4 rounded border-neutral-300 text-success-50 focus:ring-success-50 disabled:opacity-50'
+								className='mt-4 size-4 rounded border-neutral-400 text-accent-700 focus:ring-accent-600 disabled:opacity-50'
 							/>
 						)}
 
 						{/* ===== IMAGE DU PRODUIT ===== */}
-						<div className='size-12 bg-neutral-100 rounded-lg flex items-center justify-center overflow-hidden'>
+						<div className='size-12 bg-neutral-50 rounded-lg flex items-center justify-center overflow-hidden'>
 							{item.product.imageUrl ? (
 								<img
 									src={item.product.imageUrl}
@@ -586,7 +586,7 @@ export function InventoryItemCard({
 									className='size-full object-cover'
 								/>
 							) : (
-								<Package2 className='size-6 text-neutral-400' />
+								<Package2 className='size-6 text-neutral-500' />
 							)}
 						</div>
 
@@ -609,7 +609,7 @@ export function InventoryItemCard({
 							</div>
 
 							{item.lots && item.lots.length > 1 && (
-								<div className='mt-3 rounded-lg border border-neutral-200 bg-neutral-100/60 p-3'>
+								<div className='mt-3 rounded-lg border border-neutral-200 bg-neutral-50/60 p-3'>
 									<p className='mb-2 text-xs font-medium uppercase tracking-wide text-neutral-500'>
 										{item.lots.length} lots
 									</p>
@@ -639,12 +639,12 @@ export function InventoryItemCard({
 							{/* ===== SCORES NUTRITIONNELS ===== */}
 							<div className='flex gap-2 mt-2'>
 								{item.product.nutriscore && (
-									<span className='text-xs px-2 py-1 bg-nutriscore-a text-neutral-50 rounded'>
+									<span className='text-xs px-2 py-1 bg-nutri-a text-surface rounded'>
 										Nutriscore {item.product.nutriscore}
 									</span>
 								)}
 								{item.product.ecoscore && (
-									<span className='text-xs px-2 py-1 bg-success-50 text-neutral-50 rounded'>
+									<span className='text-xs px-2 py-1 bg-accent-600 text-surface rounded'>
 										Eco {item.product.ecoscore}
 									</span>
 								)}
@@ -693,7 +693,7 @@ export function InventoryItemCard({
 					<button
 						onClick={onRemove}
 						disabled={isRemoving}
-						className='text-error-50 hover:text-error-100 transition-colors p-2 disabled:opacity-50'
+						className='text-danger-700 hover:text-danger-700 transition-colors p-2 disabled:opacity-50'
 					>
 						{isRemoving ? 'Suppression...' : 'Supprimer'}
 					</button>

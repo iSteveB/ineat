@@ -290,12 +290,12 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 					<div className='absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-black/75 via-black/35 to-transparent' />
 
 					<header className='relative z-10 flex items-center justify-between px-4 pt-5 sm:px-6'>
-						<div className='rounded-lg border border-neutral-50/15 bg-neutral-50/12 px-4 py-3 text-neutral-50 shadow-lg backdrop-blur-md'>
+						<div className='rounded-lg border border-surface/15 bg-surface/12 px-4 py-3 text-surface shadow-lg backdrop-blur-md'>
 							<div className='flex items-center gap-2'>
-								<Barcode className='size-5 text-primary-100' />
+								<Barcode className='size-5 text-brand-800' />
 								<p className='font-semibold'>Scanner un produit</p>
 							</div>
-							<p className='mt-1 text-xs text-neutral-50/70'>
+							<p className='mt-1 text-xs text-surface/70'>
 								Alignez le code-barres dans le cadre
 							</p>
 						</div>
@@ -305,7 +305,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								onClick={onClose}
 								variant='ghost'
 								size='icon'
-								className='rounded-full border border-neutral-50/15 bg-neutral-50/12 text-neutral-50 shadow-lg backdrop-blur-md hover:bg-neutral-50/20 hover:text-neutral-50'
+								className='rounded-full border border-surface/15 bg-surface/12 text-surface shadow-lg backdrop-blur-md hover:bg-surface/20 hover:text-surface'
 								aria-label='Fermer le scanner'>
 								<X className='size-5' />
 							</Button>
@@ -320,8 +320,8 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								<div className='absolute -bottom-1 -left-1 size-10 rounded-bl-md border-b-4 border-l-4 border-white' />
 								<div className='absolute -bottom-1 -right-1 size-10 rounded-br-md border-b-4 border-r-4 border-white' />
 
-								<div className='absolute left-7 right-7 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-error-50 shadow-[0_0_16px_rgba(239,68,68,0.9)]' />
-								<div className='absolute left-1/2 top-8 bottom-8 w-px bg-neutral-50/25' />
+								<div className='absolute left-7 right-7 top-1/2 h-0.5 -translate-y-1/2 rounded-full bg-danger-50 shadow-[0_0_16px_rgba(239,68,68,0.9)]' />
+								<div className='absolute left-1/2 top-8 bottom-8 w-px bg-surface/25' />
 
 								{state === 'scanning' && (
 									<div
@@ -331,13 +331,13 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								)}
 							</div>
 
-							<div className='mx-auto mt-5 max-w-sm rounded-lg border border-neutral-50/15 bg-neutral-50/14 px-4 py-3 text-center text-neutral-50 shadow-lg backdrop-blur-md'>
+							<div className='mx-auto mt-5 max-w-sm rounded-lg border border-surface/15 bg-surface/14 px-4 py-3 text-center text-surface shadow-lg backdrop-blur-md'>
 								<p className='font-semibold'>
 									{state === 'initializing' && 'Préparation de la caméra'}
 									{state === 'scanning' && 'Placez le code-barres au centre'}
 									{state === 'searching' && 'Produit détecté'}
 								</p>
-								<div className='mt-2 flex items-center justify-center gap-2 text-sm text-neutral-50/75'>
+								<div className='mt-2 flex items-center justify-center gap-2 text-sm text-surface/75'>
 									{state === 'initializing' && (
 										<LoaderCircle className='size-4 animate-spin' />
 									)}
@@ -358,11 +358,11 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 					</div>
 
 					<div className='fixed inset-x-0 bottom-0 z-20 px-4 pb-5 sm:px-6'>
-						<div className='mx-auto grid max-w-md grid-cols-1 gap-3 rounded-lg border border-neutral-50/15 bg-black/55 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-2'>
+						<div className='mx-auto grid max-w-md grid-cols-1 gap-3 rounded-lg border border-surface/15 bg-black/55 p-3 shadow-2xl backdrop-blur-xl sm:grid-cols-2'>
 							<Button
 								onClick={switchToManualInput}
 								variant='secondary'
-								className='h-12 border-neutral-50/15 bg-neutral-50 text-neutral-300 hover:bg-neutral-100'>
+								className='h-12 border-surface/15 bg-surface text-neutral-900 hover:bg-neutral-50'>
 								<Keyboard className='size-4' />
 								Saisie manuelle
 							</Button>
@@ -371,7 +371,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								<Button
 									onClick={onClose}
 									variant='ghost'
-									className='h-12 border border-neutral-50/15 bg-neutral-50/10 text-neutral-50 hover:bg-neutral-50/20 hover:text-neutral-50'>
+									className='h-12 border border-surface/15 bg-surface/10 text-surface hover:bg-surface/20 hover:text-surface'>
 									<X className='size-4' />
 									Annuler
 								</Button>
@@ -379,7 +379,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 								<Button
 									onClick={retry}
 									variant='ghost'
-									className='h-12 border border-neutral-50/15 bg-neutral-50/10 text-neutral-50 hover:bg-neutral-50/20 hover:text-neutral-50'>
+									className='h-12 border border-surface/15 bg-surface/10 text-surface hover:bg-surface/20 hover:text-surface'>
 									<RotateCcw className='size-4' />
 									Relancer
 								</Button>
@@ -391,18 +391,18 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 			{/* Mode saisie manuelle */}
 			{state === 'manual-input' && (
-				<div className='flex min-h-screen items-center justify-center bg-primary-50 px-4 py-8'>
-					<Card className='w-full max-w-md border border-neutral-200 bg-neutral-50 shadow-xl'>
+				<div className='flex min-h-screen items-center justify-center bg-canvas px-4 py-8'>
+					<Card className='w-full max-w-md border border-neutral-200 bg-surface shadow-xl'>
 						<CardContent className='p-6'>
 							<div className='space-y-5'>
 							<div className='text-center'>
-								<div className='mx-auto mb-4 flex size-12 items-center justify-center rounded-lg bg-success-50/12 text-success-50'>
+								<div className='mx-auto mb-4 flex size-12 items-center justify-center rounded-lg bg-accent-600/12 text-accent-700'>
 									<Keyboard className='size-6' />
 								</div>
-								<h3 className='mb-2 text-xl font-semibold text-neutral-300'>
+								<h3 className='mb-2 text-xl font-semibold text-neutral-900'>
 									Saisie manuelle
 								</h3>
-								<p className='text-sm leading-relaxed text-neutral-300/70'>
+								<p className='text-sm leading-relaxed text-neutral-900/70'>
 									Entrez le code-barres si la caméra ne le détecte pas.
 								</p>
 							</div>
@@ -439,24 +439,24 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 
 			{/* État d'erreur */}
 			{state === 'error' && (
-				<div className='flex min-h-screen items-center justify-center bg-primary-50 px-4 py-8'>
-					<Card className='w-full max-w-md border border-neutral-200 bg-neutral-50 shadow-xl'>
+				<div className='flex min-h-screen items-center justify-center bg-canvas px-4 py-8'>
+					<Card className='w-full max-w-md border border-neutral-200 bg-surface shadow-xl'>
 						<CardContent className='p-6'>
 							<div className='mb-5 text-center'>
-								<div className='mx-auto mb-4 flex size-12 items-center justify-center rounded-lg bg-error-50/12 text-error-100'>
+								<div className='mx-auto mb-4 flex size-12 items-center justify-center rounded-lg bg-danger-50/12 text-danger-700'>
 									<AlertCircle className='size-6' />
 								</div>
-								<h3 className='text-xl font-semibold text-neutral-300'>
+								<h3 className='text-xl font-semibold text-neutral-900'>
 									Caméra indisponible
 								</h3>
-								<p className='mt-2 text-sm leading-relaxed text-neutral-300/70'>
+								<p className='mt-2 text-sm leading-relaxed text-neutral-900/70'>
 									Vous pouvez réessayer ou saisir le code-barres à la main.
 								</p>
 							</div>
 
-							<Alert className='border-error-100/20 bg-error-100/10'>
-								<AlertCircle className='size-4 text-error-100' />
-								<AlertDescription className='text-neutral-300'>
+							<Alert className='border-danger-600/20 bg-danger-600/10'>
+								<AlertCircle className='size-4 text-danger-700' />
+								<AlertDescription className='text-neutral-900'>
 									{error}
 								</AlertDescription>
 							</Alert>

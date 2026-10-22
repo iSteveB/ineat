@@ -28,8 +28,8 @@ const optionButtonClass = (selected: boolean): string =>
 	cn(
 		'h-8 rounded-full px-3 text-xs',
 		selected
-			? 'bg-success-50 text-neutral-50 hover:bg-success-50/90'
-			: 'border-neutral-200 text-neutral-300 hover:bg-neutral-100',
+			? 'bg-accent-600 text-surface hover:bg-accent-600/90'
+			: 'border-neutral-200 text-neutral-900 hover:bg-neutral-50',
 	);
 
 export const ProductStateSection: React.FC<ProductStateSectionProps> = ({
@@ -56,10 +56,10 @@ export const ProductStateSection: React.FC<ProductStateSectionProps> = ({
 	return (
 		<div className={cn('space-y-3', className)}>
 			<div>
-				<h3 className='text-sm font-medium text-neutral-300'>
+				<h3 className='text-sm font-medium text-neutral-900'>
 					Préciser l’état du produit
 				</h3>
-				<p className='text-xs text-neutral-200'>
+				<p className='text-xs text-neutral-600'>
 					Optionnel, utilisé pour ajuster la date estimée.
 				</p>
 			</div>
@@ -67,7 +67,7 @@ export const ProductStateSection: React.FC<ProductStateSectionProps> = ({
 			<div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
 				{options.showPackageStatus && (
 					<div className='space-y-2'>
-						<Label className='text-xs text-neutral-300'>Ouverture</Label>
+						<Label className='text-xs text-neutral-900'>Ouverture</Label>
 						<div className='flex gap-2'>
 							<Button
 								type='button'
@@ -101,7 +101,7 @@ export const ProductStateSection: React.FC<ProductStateSectionProps> = ({
 
 				{options.showPreparationStatus && (
 					<div className='space-y-2'>
-						<Label className='text-xs text-neutral-300'>Préparation</Label>
+						<Label className='text-xs text-neutral-900'>Préparation</Label>
 						<div className='flex gap-2'>
 							<Button
 								type='button'

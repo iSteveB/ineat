@@ -385,22 +385,22 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 			case 'form':
 				return (
-					<div className='min-h-screen bg-neutral-50'>
+					<div className='min-h-screen bg-surface'>
 						{/* Header */}
-						<div className='relative bg-neutral-50 border-b border-neutral-100 shadow-sm'>
-							<div className='absolute top-0 right-0 size-32 bg-primary-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+						<div className='relative bg-surface border-b border-neutral-100 shadow-sm'>
+							<div className='absolute top-0 right-0 size-32 bg-canvas/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 							<div className='relative px-6 py-4 flex items-center gap-4'>
 								<Button
 									variant='ghost'
 									size='sm'
 									onClick={handleBackToScan}
-									className='size-10 p-0 rounded-xl bg-neutral-50 border border-neutral-200 shadow-sm'>
+									className='size-10 p-0 rounded-xl bg-surface border border-neutral-200 shadow-sm'>
 									<ArrowLeft className='size-5 text-neutral-600' />
 								</Button>
 								<div className='flex items-center gap-3'>
-									<div className='p-2 rounded-xl bg-primary-50/20 border border-success-50/50'>
-										<Package className='size-5 text-neutral-300' />
+									<div className='p-2 rounded-xl bg-canvas/20 border border-accent-600/50'>
+										<Package className='size-5 text-neutral-900' />
 									</div>
 									<div>
 										<h1 className='text-xl font-bold text-neutral-900'>
@@ -426,12 +426,12 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 							{/* Information sur le produit existant */}
 							{!flowData.isNewProduct &&
 								flowData.existingProduct && (
-									<Alert className='mb-6 border-primary-200 bg-primary-50'>
-										<Package className='size-5 text-primary-600' />
-										<AlertTitle className='text-primary-800'>
+									<Alert className='mb-6 border-brand-300 bg-canvas'>
+										<Package className='size-5 text-brand-800' />
+										<AlertTitle className='text-brand-800'>
 											Produit déjà dans votre inventaire
 										</AlertTitle>
-										<AlertDescription className='text-primary-700'>
+										<AlertDescription className='text-brand-800'>
 											Ce produit existe déjà. Vous pouvez
 											l'ajouter directement.
 										</AlertDescription>
@@ -441,9 +441,9 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 							{/* Information nouveau produit */}
 							{flowData.isNewProduct &&
 								flowData.offProductData?.name && (
-									<Alert className='mb-6 border-neutral-150 bg-primary-50'>
-										<Plus className='size-5 text-neutral-150' />
-										<AlertTitle className='text-neutral-150'>
+									<Alert className='mb-6 border-neutral-200 bg-canvas'>
+										<Plus className='size-5 text-neutral-600' />
+										<AlertTitle className='text-neutral-600'>
 											Nouveau produit scanné
 										</AlertTitle>
 										<AlertDescription className='text-success-700'>
@@ -520,7 +520,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 			case 'not-found':
 				return (
-					<div className='min-h-screen bg-neutral-50 flex flex-col'>
+					<div className='min-h-screen bg-surface flex flex-col'>
 						{/* Header avec bouton retour */}
 						<div className='relative bg-white border-b border-neutral-100 shadow-sm'>
 							<div className='absolute top-0 right-0 size-32 bg-warning-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
@@ -530,12 +530,12 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									variant='ghost'
 									size='sm'
 									onClick={handleBackToScan}
-									className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 shadow-sm'>
+									className='size-10 p-0 rounded-xl bg-surface hover:bg-neutral-50 border border-neutral-200 shadow-sm'>
 									<ArrowLeft className='size-5 text-neutral-600' />
 								</Button>
 								<div className='flex items-center gap-3'>
-									<div className='p-2 rounded-xl bg-warning-50/20 border border-warning-100/50'>
-										<AlertTriangle className='size-5 text-warning-600' />
+									<div className='p-2 rounded-xl bg-warning-50/20 border border-warning-500/50'>
+										<AlertTriangle className='size-5 text-warning-700' />
 									</div>
 									<div>
 										<h1 className='text-xl font-bold text-neutral-900'>
@@ -555,7 +555,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 							<Card className='w-full max-w-md border-0 bg-white shadow-xl rounded-2xl'>
 								<CardContent className='p-8 text-center space-y-6'>
 									<div className='space-y-4'>
-										<AlertTriangle className='size-20 text-warning-500 mx-auto' />
+										<AlertTriangle className='size-20 text-warning-700 mx-auto' />
 										<div>
 											<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
 												Produit introuvable
@@ -565,7 +565,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 												base OpenFoodFacts.
 											</CardDescription>
 											{flowData.scannedBarcode && (
-												<div className='inline-flex items-center px-3 py-2 bg-neutral-100 rounded-lg'>
+												<div className='inline-flex items-center px-3 py-2 bg-neutral-50 rounded-lg'>
 													<span className='text-sm text-neutral-600 font-medium'>
 														Code-barre :
 													</span>
@@ -582,7 +582,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									<div className='space-y-3'>
 										<Button
 											onClick={handleCreateManually}
-											className='w-full h-12 bg-primary-600 hover:bg-primary-700 text-white shadow-lg hover:shadow-xl transition-all duration-300'
+											className='w-full h-12 bg-brand-500 hover:bg-brand-500 text-white shadow-lg hover:shadow-xl transition-all duration-300'
 											size='lg'>
 											<Plus className='size-5 mr-2' />
 											<span>
@@ -593,7 +593,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 										<Button
 											onClick={handleBackToScan}
 											variant='outline'
-											className='w-full h-12 border-neutral-200 text-neutral-700 hover:bg-neutral-50'
+											className='w-full h-12 border-neutral-200 text-neutral-700 hover:bg-surface'
 											size='lg'>
 											<Scan className='size-5 mr-2' />
 											<span>
@@ -611,7 +611,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 											href='https://fr.openfoodfacts.org/contribuer'
 											target='_blank'
 											rel='noopener noreferrer'
-											className='inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-800 transition-colors'>
+											className='inline-flex items-center gap-2 text-sm text-brand-800 hover:text-brand-800 transition-colors'>
 											<ExternalLink className='size-4' />
 											<span>
 												Contribuer à OpenFoodFacts
@@ -626,10 +626,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 			case 'success':
 				return (
-					<div className='min-h-screen bg-neutral-50 flex items-center justify-center p-6'>
+					<div className='min-h-screen bg-surface flex items-center justify-center p-6'>
 						<Card className='w-full max-w-md border-0 bg-white shadow-xl rounded-2xl'>
 							<CardContent className='p-8 text-center space-y-6'>
-								<CheckCircle2 className='size-20 text-success-500 mx-auto animate-pulse' />
+								<CheckCircle2 className='size-20 text-accent-700 mx-auto animate-pulse' />
 								<div>
 									<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
 										Produit ajouté avec succès !
@@ -640,8 +640,8 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 										a été ajouté à votre inventaire.
 									</CardDescription>
 								</div>
-								<div className='w-32 h-2 bg-neutral-200 rounded-full mx-auto overflow-hidden'>
-									<div className='h-full bg-success-500 rounded-full animate-pulse'></div>
+								<div className='w-32 h-2 bg-neutral-100 rounded-full mx-auto overflow-hidden'>
+									<div className='h-full bg-accent-600 rounded-full animate-pulse'></div>
 								</div>
 							</CardContent>
 						</Card>

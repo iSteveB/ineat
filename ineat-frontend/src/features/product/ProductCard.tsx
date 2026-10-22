@@ -32,35 +32,35 @@ const ProductCard: React.FC<ProductCardProps> = ({
 			case 'EXPIRED':
 				return {
 					bg: 'bg-gradient-to-r from-red-500 to-red-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <AlertTriangle className='size-4' />,
 					bar: 'bg-red-500',
 				};
 			case 'CRITICAL':
 				return {
 					bg: 'bg-gradient-to-r from-orange-500 to-orange-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <Clock className='size-4' />,
 					bar: 'bg-orange-500',
 				};
 			case 'WARNING':
 				return {
 					bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <Clock className='size-4' />,
 					bar: 'bg-yellow-500',
 				};
 			case 'GOOD':
 				return {
 					bg: 'bg-gradient-to-r from-emerald-500 to-green-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <CheckCircle2 className='size-4' />,
 					bar: 'bg-emerald-500',
 				};
 			default:
 				return {
 					bg: 'bg-gradient-to-r from-gray-500 to-gray-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <Clock className='size-4' />,
 					bar: 'bg-gray-500',
 				};
@@ -79,15 +79,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
 						onClick={(event) => event.stopPropagation()}
 						onChange={onToggleSelection}
 						aria-label={`Sélectionner ${item.product.name}`}
-						className='size-5 rounded border-gray-300 text-success-50 shadow-sm focus:ring-success-50'
+						className='size-5 rounded border-gray-300 text-accent-700 shadow-sm focus:ring-accent-600'
 					/>
 				</div>
 			)}
 
 			<div
-				className={`relative overflow-hidden bg-neutral-50 border rounded-2xl shadow-sm transition-all duration-300 ${
+				className={`relative overflow-hidden bg-surface border rounded-2xl shadow-sm transition-all duration-300 ${
 					isSelected
-						? 'border-success-50 ring-2 ring-success-50'
+						? 'border-accent-600 ring-2 ring-accent-600'
 						: 'border-gray-200 group-hover:border-gray-300'
 				} ${
 					isSelectionMode
@@ -117,7 +117,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 							</div>
 
 							{/* Badge de quantité */}
-							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-neutral-50 border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
+							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-surface border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
 								{formatQuantity(item.quantity, item.product.unitType)}
 							</div>
 						</div>

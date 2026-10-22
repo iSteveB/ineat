@@ -124,7 +124,7 @@ export function NotificationCenter({
 	if (isLoading) {
 		return (
 			<div className='flex min-h-48 items-center justify-center'>
-				<div className='size-8 animate-spin rounded-full border-2 border-success-500 border-t-transparent' />
+				<div className='size-8 animate-spin rounded-full border-2 border-accent-600 border-t-transparent' />
 			</div>
 		);
 	}
@@ -153,8 +153,8 @@ export function NotificationCenter({
 			</header>
 
 			{isError ? (
-				<div className='rounded-lg border border-error-200 bg-error-50 p-5 text-center'>
-					<p className='text-sm text-error-700'>
+				<div className='rounded-lg border border-danger-600 bg-danger-50 p-5 text-center'>
+					<p className='text-sm text-danger-700'>
 						Impossible de charger les notifications.
 					</p>
 					<Button className='mt-3' variant='outline' onClick={() => refetch()}>
@@ -162,8 +162,8 @@ export function NotificationCenter({
 					</Button>
 				</div>
 			) : notifications.length === 0 ? (
-				<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-8 text-center'>
-					<Bell className='mx-auto mb-3 size-8 text-success-600' />
+				<div className='rounded-lg border border-neutral-200 bg-surface p-8 text-center'>
+					<Bell className='mx-auto mb-3 size-8 text-accent-700' />
 					<p className='font-semibold text-neutral-900'>Rien à signaler</p>
 					<p className='mt-1 text-sm text-neutral-600'>
 						Les alertes de péremption et de budget apparaîtront ici.
@@ -177,10 +177,10 @@ export function NotificationCenter({
 							<article
 								key={notification.id}
 								className={cn(
-									'rounded-lg border bg-neutral-50 p-3',
+									'rounded-lg border bg-surface p-3',
 									notification.isRead
 										? 'border-neutral-200 opacity-75'
-										: 'border-success-200'
+										: 'border-accent-100'
 								)}>
 								<div className='flex gap-3'>
 									<div

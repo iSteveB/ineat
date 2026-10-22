@@ -75,9 +75,9 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
 			<div className='relative'>
 				<div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
 					{isLoading ? (
-						<Loader2 className='size-4 text-neutral-200 animate-spin' />
+						<Loader2 className='size-4 text-neutral-600 animate-spin' />
 					) : (
-						<Search className='size-4 text-neutral-200' />
+						<Search className='size-4 text-neutral-600' />
 					)}
 				</div>
 
@@ -90,8 +90,8 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
 					autoFocus={autoFocus}
 					className={cn(
 						'pl-10 pr-10',
-						'focus:ring-2 focus:ring-accent-500 focus:border-accent-500',
-						'placeholder:text-neutral-200'
+						'focus:ring-2 focus:ring-accent-600 focus:border-accent-600',
+						'placeholder:text-neutral-600'
 					)}
 				/>
 
@@ -99,15 +99,15 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
 					<button
 						type='button'
 						onClick={handleClear}
-						className='absolute inset-y-0 right-0 flex items-center pr-3 hover:text-neutral-300 transition-colors'
+						className='absolute inset-y-0 right-0 flex items-center pr-3 hover:text-neutral-900 transition-colors'
 						aria-label='Effacer la recherche'>
-						<X className='size-4 text-neutral-200' />
+						<X className='size-4 text-neutral-600' />
 					</button>
 				)}
 			</div>
 
 			{searchValue.length > 0 && searchValue.length < minSearchLength && (
-				<p className='text-xs text-neutral-200 mt-1 ml-1'>
+				<p className='text-xs text-neutral-600 mt-1 ml-1'>
 					Entrez au moins {minSearchLength} caractères pour lancer la
 					recherche
 				</p>

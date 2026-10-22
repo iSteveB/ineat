@@ -58,7 +58,7 @@ const BudgetOnboardingCard: FC = () => {
 				<div className='text-center space-y-4'>
 					<div className='relative'>
 						<div className='size-16 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg'>
-							<Target className='size-8 text-neutral-50' />
+							<Target className='size-8 text-surface' />
 						</div>
 					</div>
 					<div className='space-y-2'>
@@ -117,7 +117,7 @@ const BudgetOnboardingCard: FC = () => {
 							Number.parseFloat(amount) <= 0 ||
 							isCreating
 						}
-						className='w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-neutral-50 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'>
+						className='w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-surface font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100'>
 						{isCreating ? (
 							<>
 								<Loader2 className='size-5 mr-2 animate-spin' />

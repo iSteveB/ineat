@@ -125,14 +125,14 @@ export default function HelpPage() {
 		<div className='mx-auto w-full max-w-4xl space-y-8 px-4 py-6 sm:px-6 lg:py-10'>
 			<section aria-labelledby='faq-title'>
 				<div className='mb-5 flex items-start gap-3'>
-					<div className='rounded-xl bg-primary-100/10 p-3 text-primary-100'>
+					<div className='rounded-xl bg-brand-300/10 p-3 text-brand-800'>
 						<HelpCircle aria-hidden='true' className='size-6' />
 					</div>
 					<div>
 						<h2 id='faq-title' className='text-2xl font-semibold text-text-primary'>
 							Questions fréquentes
 						</h2>
-						<p className='mt-1 text-sm text-neutral-200'>
+						<p className='mt-1 text-sm text-neutral-600'>
 							Retrouvez rapidement les réponses aux questions les plus courantes.
 						</p>
 					</div>
@@ -149,7 +149,7 @@ export default function HelpPage() {
 									{section.items.map((item) => (
 										<AccordionItem key={item.question} value={item.question}>
 											<AccordionTrigger>{item.question}</AccordionTrigger>
-											<AccordionContent className='leading-6 text-neutral-200'>
+											<AccordionContent className='leading-6 text-neutral-600'>
 												{item.answer}
 											</AccordionContent>
 										</AccordionItem>
@@ -165,12 +165,12 @@ export default function HelpPage() {
 				<Card>
 					<CardHeader>
 						<div className='flex items-start gap-3'>
-							<div className='rounded-xl bg-success-50/10 p-3 text-success-100'>
+							<div className='rounded-xl bg-accent-600/10 p-3 text-success-700'>
 								<Lightbulb aria-hidden='true' className='size-6' />
 							</div>
 							<div>
 								<CardTitle id='contact-title'>Une question ou une idée ?</CardTitle>
-								<p className='mt-1 text-sm text-neutral-200'>
+								<p className='mt-1 text-sm text-neutral-600'>
 									Votre message sera envoyé directement à l’équipe InEat.
 								</p>
 							</div>
@@ -181,16 +181,16 @@ export default function HelpPage() {
 							<div className='space-y-2'>
 								<Label htmlFor='support-email'>Votre adresse e-mail</Label>
 								<div className='relative'>
-									<Mail aria-hidden='true' className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-200' />
+									<Mail aria-hidden='true' className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-600' />
 									<input
 										id='support-email'
 										type='email'
 										value={user?.email ?? ''}
 										readOnly
-										className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-100/40 pl-10 pr-3 text-sm text-neutral-300'
+										className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-50/40 pl-10 pr-3 text-sm text-neutral-900'
 									/>
 								</div>
-								<p className='text-xs text-neutral-200'>Nous répondrons à cette adresse.</p>
+								<p className='text-xs text-neutral-600'>Nous répondrons à cette adresse.</p>
 							</div>
 
 							<div className='space-y-2'>
@@ -199,7 +199,7 @@ export default function HelpPage() {
 									id='support-subject'
 									value={subject}
 									onChange={(event) => setSubject(event.target.value as SupportSubject)}
-									className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm text-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-100'>
+									className='h-10 w-full rounded-md border border-neutral-200 bg-surface px-3 text-sm text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300'>
 									{Object.entries(SUPPORT_SUBJECTS).map(([value, label]) => (
 										<option key={value} value={value}>{label}</option>
 									))}
@@ -209,7 +209,7 @@ export default function HelpPage() {
 							<div className='space-y-2'>
 								<div className='flex items-center justify-between gap-4'>
 									<Label htmlFor='support-message'>Message</Label>
-									<span className='text-xs text-neutral-200'>{message.length}/2 000</span>
+									<span className='text-xs text-neutral-600'>{message.length}/2 000</span>
 								</div>
 								<Textarea
 									id='support-message'
@@ -226,7 +226,7 @@ export default function HelpPage() {
 									aria-invalid={Boolean(messageError)}
 								/>
 								{messageError && (
-									<p id='support-message-error' className='text-sm text-error-100'>{messageError}</p>
+									<p id='support-message-error' className='text-sm text-danger-700'>{messageError}</p>
 								)}
 							</div>
 

@@ -64,11 +64,11 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	});
 
 	return (
-		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+		<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
 			<CardHeader>
 				<CardTitle className='flex items-center gap-3'>
-					<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
-						<PackagePlus className='size-5 text-success-50' />
+					<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+						<PackagePlus className='size-5 text-accent-700' />
 					</div>
 					Ajouter un produit manuellement
 				</CardTitle>
@@ -76,8 +76,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 			<CardContent className='p-6 space-y-6'>
 				{/* Alerte données pré-remplies */}
 				{hasPrefilledData && (
-					<Alert className='border-success-500/20 bg-success-50/10'>
-						<AlertDescription className='flex flex-col text-neutral-300'>
+					<Alert className='border-accent-600/20 bg-accent-600/10'>
+						<AlertDescription className='flex flex-col text-neutral-900'>
 							<strong>Données récupérées du scan :</strong>
 							{defaultProductName && <span>Nom: {defaultProductName}</span>}
 							{defaultBrand && <span>Marque: {defaultBrand}</span>}
@@ -105,7 +105,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}}
 					/>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Section Quantité et unité */}
 					<ProductQuantitySection
@@ -121,7 +121,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}}
 					/>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Section Scores */}
 					<ProductScoresSection
@@ -134,7 +134,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						disabled={isSubmitting}
 					/>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Section Informations nutritionnelles */}
 					<NutritionalInfoSection
@@ -152,7 +152,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						disabled={isSubmitting}
 					/>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Section Contenu */}
 					<ProductContentSection
@@ -167,7 +167,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}}
 					/>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Section Dates */}
 					<ProductDatesSection
@@ -186,7 +186,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						}}
 					/>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Section Informations supplémentaires */}
 					<ProductExtraSection
@@ -222,14 +222,14 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							variant='outline'
 							onClick={onCancel}
 							disabled={isSubmitting}
-							className='flex-1 border-neutral-200 text-neutral-300 hover:bg-neutral-100 hover:text-neutral-300'
+							className='flex-1 border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:text-neutral-900'
 						>
 							Annuler
 						</Button>
 						<Button
 							type='submit'
 							disabled={isSubmitting}
-							className='flex-1 bg-success-50 hover:bg-success-50/90 text-neutral-50'
+							className='flex-1 bg-accent-600 hover:bg-accent-600/90 text-surface'
 						>
 							{isSubmitting ? (
 								<>

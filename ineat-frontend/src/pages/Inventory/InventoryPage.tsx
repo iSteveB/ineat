@@ -235,12 +235,12 @@ const InventoryPage: React.FC = () => {
 
 	return (
 		<div className='flex flex-col h-full bg-gradient-to-br from-gray-50 to-blue-50/30'>
-			<div className='relative overflow-hidden bg-neutral-50 border-b border-gray-200 shadow-sm'>
+			<div className='relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm'>
 				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center gap-4'>
 					<div className='relative'>
-						<div className='size-14 rounded-2xl bg-gradient-to-br from-primary-100/50 to-primary-100 overflow-hidden shadow-lg'>
+						<div className='size-14 rounded-2xl bg-gradient-to-br from-brand-300/50 to-brand-300 overflow-hidden shadow-lg'>
 							{user?.avatarUrl ? (
 								<img
 									src={user.avatarUrl}
@@ -248,7 +248,7 @@ const InventoryPage: React.FC = () => {
 									className='size-full object-cover'
 								/>
 							) : (
-								<div className='flex items-center justify-center size-full text-neutral-50 text-4xl'>
+								<div className='flex items-center justify-center size-full text-surface text-4xl'>
 									{getInitials(
 										user?.firstName || '',
 										user?.lastName || ''
@@ -273,7 +273,7 @@ const InventoryPage: React.FC = () => {
 								? '/app/subscription'
 								: '/app/inventory/add'
 						}
-						className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-success-50 to-emerald-700 text-neutral-50 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'>
+						className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-600 to-emerald-700 text-surface rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'>
 						<Plus className='size-4' />
 						<span className='font-semibold'>
 							{hasReachedInventoryLimit ? 'Débloquer' : 'Ajouter'}
@@ -300,7 +300,7 @@ const InventoryPage: React.FC = () => {
 					<input
 						type='text'
 						placeholder='Rechercher un produit ou une marque...'
-						className='w-full pl-12 pr-4 py-4 bg-neutral-50 border border-gray-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none transition-all duration-300'
+						className='w-full pl-12 pr-4 py-4 bg-surface border border-gray-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none transition-all duration-300'
 						value={searchQuery}
 						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
@@ -332,15 +332,15 @@ const InventoryPage: React.FC = () => {
 								searchQuery ||
 								activeStorageCategory !== 'ALL' ||
 								selectedCategoryId
-									? 'bg-blue-500 text-neutral-50 border-blue-500 shadow-lg'
-									: 'bg-neutral-50 text-gray-600 border-gray-200 hover:border-blue-500 hover:shadow-md'
+									? 'bg-blue-500 text-surface border-blue-500 shadow-lg'
+									: 'bg-surface text-gray-600 border-gray-200 hover:border-blue-500 hover:shadow-md'
 							}`}>
 							<Filter className='size-4' />
 
 							{(searchQuery ||
 								activeStorageCategory !== 'ALL' ||
 								selectedCategoryId) && (
-								<span className='bg-neutral-50/20 text-xs px-2 py-0.5 rounded-full font-semibold'>
+								<span className='bg-surface/20 text-xs px-2 py-0.5 rounded-full font-semibold'>
 									{(searchQuery ? 1 : 0) +
 										(activeStorageCategory !== 'ALL' ? 1 : 0) +
 										(selectedCategoryId ? 1 : 0)}
@@ -360,7 +360,7 @@ const InventoryPage: React.FC = () => {
 							className={`inline-flex size-11 cursor-pointer items-center justify-center rounded-xl border transition-all duration-300 ${
 								showFavoritesOnly
 									? 'border-red-500 bg-red-50 text-red-500 shadow-md'
-									: 'border-gray-200 bg-neutral-50 text-gray-600 hover:border-red-300 hover:text-red-500'
+									: 'border-gray-200 bg-surface text-gray-600 hover:border-red-300 hover:text-red-500'
 							}`}>
 							<Heart
 								className={`size-4 ${showFavoritesOnly ? 'fill-current' : ''}`}
@@ -370,13 +370,13 @@ const InventoryPage: React.FC = () => {
 
 					<div className='flex items-center gap-2'>
 						{isSelectionMode && sortedItems.length > 0 ? (
-							<label className='flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-neutral-50 text-sm font-semibold text-gray-600'>
+							<label className='flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-surface text-sm font-semibold text-gray-600'>
 								<input
 									type='checkbox'
 									checked={areAllVisibleItemsSelected}
 									onChange={toggleSelectAllVisibleItems}
 									disabled={isLoading}
-									className='size-4 rounded border-gray-300 text-success-50 focus:ring-success-50'
+									className='size-4 rounded border-gray-300 text-accent-700 focus:ring-accent-600'
 								/>
 								Tout sélectionner
 							</label>
@@ -386,7 +386,7 @@ const InventoryPage: React.FC = () => {
 								onClick={openSelectionMode}
 								disabled={isLoading}
 								aria-label='Supprimer des produits'
-								className='inline-flex cursor-pointer items-center justify-center p-2.5 rounded-xl border border-red-200 bg-neutral-50 text-red-600 transition-all hover:border-red-500 hover:bg-red-50 disabled:opacity-50'>
+								className='inline-flex cursor-pointer items-center justify-center p-2.5 rounded-xl border border-red-200 bg-surface text-red-600 transition-all hover:border-red-500 hover:bg-red-50 disabled:opacity-50'>
 								<Trash2 className='size-4' />
 							</button>
 						) : null}
@@ -418,7 +418,7 @@ const InventoryPage: React.FC = () => {
 			{/* ===== PANNEAU FILTRES AVANCÉS ===== */}
 			{showFilters && (
 				<div className='px-6 py-5'>
-					<div className='bg-neutral-50 rounded-2xl p-6 shadow-lg border border-gray-200'>
+					<div className='bg-surface rounded-2xl p-6 shadow-lg border border-gray-200'>
 						<div className='flex items-center justify-between mb-5'>
 							<h3 className='text-lg font-bold text-gray-900'>
 								Filtres
@@ -470,7 +470,7 @@ const InventoryPage: React.FC = () => {
 								</button>
 								<button
 									onClick={() => setShowFilters(false)}
-									className='bg-success-50 text-neutral-50 px-6 py-2 rounded-xl hover:bg-success-50/80 cursor-pointer transition-colors font-semibold shadow-lg hover:shadow-xl'>
+									className='bg-accent-600 text-surface px-6 py-2 rounded-xl hover:bg-accent-600/80 cursor-pointer transition-colors font-semibold shadow-lg hover:shadow-xl'>
 									Appliquer
 								</button>
 							</div>
@@ -525,7 +525,7 @@ const InventoryPage: React.FC = () => {
 			<div className='flex-1 pb-28 overflow-auto'>
 				<div className='px-4 sm:px-6'>
 					{isSelectionMode && (
-						<div className='mb-4 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-neutral-50 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
+						<div className='mb-4 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
 							<p className='text-sm font-semibold text-gray-800'>
 								{selectedCount > 0
 									? `${selectedCount} produit${
@@ -546,7 +546,7 @@ const InventoryPage: React.FC = () => {
 									type='button'
 									onClick={handleRemoveSelectedItems}
 									disabled={isLoading || selectedCount === 0}
-									className='inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-neutral-50 transition-colors hover:bg-red-700 disabled:opacity-50'>
+									className='inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-red-700 disabled:opacity-50'>
 									<Trash2 className='size-4' />
 									{isLoading ? 'Suppression...' : 'Supprimer'}
 								</button>
@@ -604,7 +604,7 @@ const InventoryPage: React.FC = () => {
 									<Package className='size-10 text-gray-400' />
 								</div>
 								<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg'>
-									<Plus className='size-4 text-neutral-50' />
+									<Plus className='size-4 text-surface' />
 								</div>
 							</div>
 							<div className='space-y-3'>
@@ -631,7 +631,7 @@ const InventoryPage: React.FC = () => {
 								) : (
 									<Link
 										to='/app/inventory/add'
-										className='inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-neutral-50 font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105'>
+										className='inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-surface font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105'>
 										<Plus className='size-5' />
 										Ajouter un produit
 									</Link>

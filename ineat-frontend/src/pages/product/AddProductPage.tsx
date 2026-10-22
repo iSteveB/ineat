@@ -30,9 +30,9 @@ const AddProductPage: React.FC = () => {
 	};
 
 	return (
-		<div className='min-h-screen bg-neutral-50'>
+		<div className='min-h-screen bg-surface'>
 			{/* Header */}
-			<div className='bg-neutral-50 border-b border-gray-200 shadow-sm'>
+			<div className='bg-surface border-b border-gray-200 shadow-sm'>
 				<div className='max-w-md mx-auto px-4 py-4'>
 					<div className='flex items-center space-x-4'>
 						<Link
@@ -42,7 +42,7 @@ const AddProductPage: React.FC = () => {
 						</Link>
 
 						<div className='flex items-center space-x-3'>
-							<div className='size-12 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary-100/50 to-primary-100 shadow-lg'>
+							<div className='size-12 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-brand-300/50 to-brand-300 shadow-lg'>
 								{user?.avatarUrl ? (
 									<img
 										src={user.avatarUrl}
@@ -50,7 +50,7 @@ const AddProductPage: React.FC = () => {
 										className='size-full object-cover'
 									/>
 								) : (
-									<div className='flex items-center justify-center size-full text-neutral-50 text-xl font-semibold'>
+									<div className='flex items-center justify-center size-full text-surface text-xl font-semibold'>
 										{getInitials(
 											user?.firstName || '',
 											user?.lastName || ''
@@ -58,7 +58,7 @@ const AddProductPage: React.FC = () => {
 									</div>
 								)}
 							</div>
-							<h1 className="text-xl font-semibold text-gray-900 font-['Fredoka']">
+							<h1 className="text-xl font-semibold text-gray-900 font-display">
 								Ajouter un produit
 							</h1>
 						</div>

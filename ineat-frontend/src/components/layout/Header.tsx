@@ -33,7 +33,7 @@ export function Header() {
 	};
 
 	return (
-		<header className='bg-primary-50 border-neutral-200 h-18 px-4 flex items-center justify-between lg:max-w-1/3 2xl:min-w-1/2 2xl:max-w-1/2 lg:m-auto lg:min-w-2/3'>
+		<header className='bg-canvas border-neutral-200 h-18 px-4 flex items-center justify-between lg:max-w-1/3 2xl:min-w-1/2 2xl:max-w-1/2 lg:m-auto lg:min-w-2/3'>
 			<div className='flex items-center mr-3 size-10'>
 				<Logo />
 			</div>

@@ -288,7 +288,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					size='sm'
 					onClick={onCancel}
 					disabled={isSubmitting}
-					className='hover:bg-neutral-100'
+					className='hover:bg-neutral-50'
 				>
 					<ArrowLeft className='size-4 mr-1' />
 					Retour à la recherche
@@ -296,9 +296,9 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 			</div>
 
 			{/* Carte du produit sélectionné */}
-			<Card className='p-4 bg-primary-50/50 border-primary-100'>
+			<Card className='p-4 bg-canvas/50 border-brand-300'>
 				<div className='flex items-center space-x-4'>
-					<div className='size-16 rounded-lg overflow-hidden bg-neutral-50 flex-shrink-0'>
+					<div className='size-16 rounded-lg overflow-hidden bg-surface flex-shrink-0'>
 						{product.imageUrl ? (
 							<img
 								src={product.imageUrl}
@@ -307,16 +307,16 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							/>
 						) : (
 							<div className='size-full flex items-center justify-center'>
-								<Package className='size-8 text-neutral-200' />
+								<Package className='size-8 text-neutral-600' />
 							</div>
 						)}
 					</div>
 					<div className='flex-1'>
-						<h3 className='font-semibold text-neutral-300'>{product.name}</h3>
+						<h3 className='font-semibold text-neutral-900'>{product.name}</h3>
 						{product.brand && (
-							<p className='text-sm text-neutral-200'>{product.brand}</p>
+							<p className='text-sm text-neutral-600'>{product.brand}</p>
 						)}
-						<p className='text-sm text-neutral-200 mt-1'>
+						<p className='text-sm text-neutral-600 mt-1'>
 							{product.category.name} • {product.unitType}
 						</p>
 					</div>
@@ -337,7 +337,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					{/* Quantité */}
 					<div className='space-y-2'>
 						<Label htmlFor='quantity'>
-							Quantité <span className='text-error-100'>*</span>
+							Quantité <span className='text-danger-700'>*</span>
 						</Label>
 						<div className='relative'>
 							<Input
@@ -349,15 +349,15 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 								onChange={(e) =>
 									handleFieldChange('quantity', e.target.value, setQuantity)
 								}
-								className={errors.quantity ? 'border-error-50' : ''}
+								className={errors.quantity ? 'border-danger-600' : ''}
 								disabled={isSubmitting}
 							/>
-							<span className='absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-200'>
+							<span className='absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-600'>
 								{product.unitType}
 							</span>
 						</div>
 						{errors.quantity && (
-							<p className='text-xs text-error-50'>{errors.quantity}</p>
+							<p className='text-xs text-danger-700'>{errors.quantity}</p>
 						)}
 					</div>
 
@@ -365,7 +365,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					<div className='space-y-2'>
 						<Label htmlFor='category'>
 							<Tag className='inline size-3 mr-1' />
-							Catégorie <span className='text-error-100'>*</span>
+							Catégorie <span className='text-danger-700'>*</span>
 						</Label>
 						<Select
 							value={category}
@@ -376,7 +376,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						>
 							<SelectTrigger
 								id='category'
-								className={errors.category ? 'border-error-50' : ''}
+								className={errors.category ? 'border-danger-600' : ''}
 							>
 								<SelectValue placeholder='Sélectionnez une catégorie' />
 							</SelectTrigger>
@@ -399,9 +399,9 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							</SelectContent>
 						</Select>
 						{errors.category && (
-							<p className='text-xs text-error-50'>{errors.category}</p>
+							<p className='text-xs text-danger-700'>{errors.category}</p>
 						)}
-						<p className='text-xs text-neutral-200'>
+						<p className='text-xs text-neutral-600'>
 							Catégorie suggérée basée sur "{product.category.name}"
 						</p>
 					</div>
@@ -434,7 +434,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					<div className='space-y-2'>
 						<Label htmlFor='purchaseDate'>
 							<Calendar className='inline size-3 mr-1' />
-							Date d'achat <span className='text-error-100'>*</span>
+							Date d'achat <span className='text-danger-700'>*</span>
 						</Label>
 						<Input
 							id='purchaseDate'
@@ -447,11 +447,11 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 									setPurchaseDate,
 								)
 							}
-							className={errors.purchaseDate ? 'border-error-50' : ''}
+							className={errors.purchaseDate ? 'border-danger-600' : ''}
 							disabled={isSubmitting}
 						/>
 						{errors.purchaseDate && (
-							<p className='text-xs text-error-50'>{errors.purchaseDate}</p>
+							<p className='text-xs text-danger-700'>{errors.purchaseDate}</p>
 						)}
 					</div>
 
@@ -466,25 +466,25 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							type='date'
 							value={expiryDate}
 							onChange={(e) => handleExpiryDateChange(e.target.value)}
-							className={errors.expiryDate ? 'border-error-50' : ''}
+							className={errors.expiryDate ? 'border-danger-600' : ''}
 							disabled={isSubmitting}
 						/>
 						{errors.expiryDate && (
-							<p className='text-xs text-error-50'>{errors.expiryDate}</p>
+							<p className='text-xs text-danger-700'>{errors.expiryDate}</p>
 						)}
 						{expiryDateSource === 'ESTIMATED' && expiryDate && (
-							<p className='text-xs text-neutral-200'>
+							<p className='text-xs text-neutral-600'>
 								Date estimée : {expiryDate} ({expirySuggestion?.reason})
 							</p>
 						)}
 						{!expiryDate && expirySuggestion && (
-							<p className='text-xs text-neutral-200'>
+							<p className='text-xs text-neutral-600'>
 								Date estimée : {expirySuggestion.date} (
 								{expirySuggestion.reason})
 							</p>
 						)}
 						{expiryDateSource === 'MANUAL' && expiryDate && (
-							<p className='text-xs text-neutral-200'>
+							<p className='text-xs text-neutral-600'>
 								Date saisie manuellement
 							</p>
 						)}
@@ -495,7 +495,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						<Label htmlFor='purchasePrice' className='flex items-center gap-2'>
 							<Euro className='size-3' />
 							Prix d'achat (€)
-							<span className='text-xs text-neutral-200 font-normal'>
+							<span className='text-xs text-neutral-600 font-normal'>
 								(pour le budget)
 							</span>
 						</Label>
@@ -513,13 +513,13 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 									setPurchasePrice,
 								)
 							}
-							className={errors.purchasePrice ? 'border-error-50' : ''}
+							className={errors.purchasePrice ? 'border-danger-600' : ''}
 							disabled={isSubmitting}
 						/>
 						{errors.purchasePrice && (
-							<p className='text-xs text-error-50'>{errors.purchasePrice}</p>
+							<p className='text-xs text-danger-700'>{errors.purchasePrice}</p>
 						)}
-						<p className='text-xs text-neutral-200'>
+						<p className='text-xs text-neutral-600'>
 							Optionnel - nécessaire pour le suivi budgétaire
 						</p>
 					</div>
@@ -553,7 +553,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					<Button
 						type='button'
 						variant='outline'
-						className='text-error-100 border-error-100'
+						className='text-danger-700 border-danger-600'
 						onClick={onCancel}
 						disabled={isSubmitting}
 					>
@@ -563,7 +563,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						type='button'
 						onClick={handleSubmit}
 						disabled={isSubmitting}
-						className='bg-success-50 hover:bg-success-50/90'
+						className='bg-accent-600 hover:bg-accent-600/90'
 					>
 						{isSubmitting ? (
 							<>

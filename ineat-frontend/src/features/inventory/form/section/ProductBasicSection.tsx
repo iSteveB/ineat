@@ -55,27 +55,27 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 		hasValue: boolean = false
 	) => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300 placeholder:text-neutral-200';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
 
 		// Erreur
 		if (errors[field]) {
-			baseClass += ' border-error-100';
+			baseClass += ' border-danger-600';
 		}
 
 		// Valeur pré-remplie (readonly ou avec valeur)
 		if ((readonly && hasValue) || (hasValue && !readonly)) {
-			baseClass += ' bg-success-50/5 border-success-500/20';
+			baseClass += ' bg-accent-600/5 border-accent-600/20';
 		}
 
 		// Mode readonly avec style différencié
 		if (readonly) {
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 			if (hasValue) {
 				baseClass = baseClass.replace(
-					'bg-success-50/5 border-success-500/20',
+					'bg-accent-600/5 border-accent-600/20',
 					'bg-blue-50/5 border-blue-500/20'
 				);
 			}
@@ -86,15 +86,15 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 
 	const getSelectClassName = (field: keyof ProductBasicsData) => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
 
 		if (errors[field]) {
-			baseClass += ' border-error-100';
+			baseClass += ' border-danger-600';
 		}
 
 		if (readonly) {
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500'
 			);
 			if (values[field]) {
@@ -110,15 +110,15 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>
+						<h3 className='text-md font-medium text-neutral-900'>
 							Informations de base
 						</h3>
 
 						{/* Nom du produit */}
 						<div className='space-y-2'>
-							<Label htmlFor='name' className='text-neutral-300'>
+							<Label htmlFor='name' className='text-neutral-900'>
 								Nom du produit{' '}
-								<span className='text-error-100'>*</span>
+								<span className='text-danger-700'>*</span>
 							</Label>
 							<Input
 								id='name'
@@ -134,7 +134,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 								disabled={isFieldDisabled}
 							/>
 							{errors.name && (
-								<p className='text-sm text-error-100'>
+								<p className='text-sm text-danger-700'>
 									{errors.name}
 								</p>
 							)}
@@ -142,7 +142,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 
 						{/* Marque */}
 						<div className='space-y-2'>
-							<Label htmlFor='brand' className='text-neutral-300'>
+							<Label htmlFor='brand' className='text-neutral-900'>
 								Marque
 							</Label>
 							<Input
@@ -159,7 +159,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 								disabled={isFieldDisabled}
 							/>
 							{errors.brand && (
-								<p className='text-sm text-error-100'>
+								<p className='text-sm text-danger-700'>
 									{errors.brand}
 								</p>
 							)}
@@ -169,7 +169,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 						<div className='space-y-2'>
 							<Label
 								htmlFor='barcode'
-								className='text-neutral-300'>
+								className='text-neutral-900'>
 								Code-barres
 							</Label>
 							<Input
@@ -186,11 +186,11 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 								disabled={isFieldDisabled}
 							/>
 							{errors.barcode && (
-								<p className='text-sm text-error-100'>
+								<p className='text-sm text-danger-700'>
 									{errors.barcode}
 								</p>
 							)}
-							<p className='text-xs text-neutral-200'>
+							<p className='text-xs text-neutral-600'>
 								Entre 8 et 13 chiffres uniquement
 							</p>
 						</div>
@@ -199,9 +199,9 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 						<div className='space-y-2'>
 							<Label
 								htmlFor='category'
-								className='text-neutral-300'>
+								className='text-neutral-900'>
 								Catégorie{' '}
-								<span className='text-error-100'>*</span>
+								<span className='text-danger-700'>*</span>
 							</Label>
 							<Select
 								value={values.category}
@@ -213,7 +213,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 									className={getSelectClassName('category')}>
 									<SelectValue placeholder='Sélectionnez une catégorie' />
 								</SelectTrigger>
-								<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
+								<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 									{categories.length === 0 ? (
 										<SelectItem value='loading' disabled>
 											Chargement...
@@ -223,7 +223,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 											<SelectItem
 												key={category.id}
 												value={category.slug}
-												className='text-neutral-300 hover:bg-neutral-100'>
+												className='text-neutral-900 hover:bg-neutral-50'>
 												{category.name}
 											</SelectItem>
 										))
@@ -231,13 +231,13 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 								</SelectContent>
 							</Select>
 							{errors.category && (
-								<p className='text-sm text-error-100'>
+								<p className='text-sm text-danger-700'>
 									{errors.category}
 								</p>
 							)}
 						</div>
 					</div>
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 				</>
 			)}
 		</div>

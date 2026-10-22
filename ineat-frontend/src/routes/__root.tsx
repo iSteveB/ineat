@@ -12,7 +12,7 @@ const RouterDevtools = import.meta.env.DEV
 
 export const Route = createRootRoute({
 	component: () => (
-		<main className='bg-primary-50'>
+		<main className='bg-canvas'>
 			<Outlet />
 			{RouterDevtools && (
 				<Suspense fallback={null}>
@@ -24,7 +24,7 @@ export const Route = createRootRoute({
 				toastOptions={{
 					duration: 5000,
 					style: {
-						background: 'bg-neutral-50',
+						background: 'bg-surface',
 						color: 'text-neutral-900',
 					},
 				}}

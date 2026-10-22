@@ -27,12 +27,12 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 				{[1, 2, 3].map((i) => (
 					<Card key={i} className='p-4 animate-pulse'>
 						<div className='flex items-center space-x-4'>
-							<div className='size-16 bg-neutral-100 rounded-lg' />
+							<div className='size-16 bg-neutral-50 rounded-lg' />
 							<div className='flex-1 space-y-2'>
-								<div className='h-4 bg-neutral-100 rounded w-3/4' />
-								<div className='h-3 bg-neutral-100 rounded w-1/2' />
+								<div className='h-4 bg-neutral-50 rounded w-3/4' />
+								<div className='h-3 bg-neutral-50 rounded w-1/2' />
 							</div>
-							<div className='h-8 w-24 bg-neutral-100 rounded' />
+							<div className='h-8 w-24 bg-neutral-50 rounded' />
 						</div>
 					</Card>
 				))}
@@ -45,16 +45,16 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 			<Card className={cn('p-8 text-center', className)}>
 				<div className='flex flex-col items-center space-y-4'>
 					<div className='size-12 rounded-full bg-warning-50/10 flex items-center justify-center'>
-						<Package className='size-6 text-warning-50' />
+						<Package className='size-6 text-warning-700' />
 					</div>
 					<div>
-						<h3 className='text-lg font-semibold text-neutral-300'>
+						<h3 className='text-lg font-semibold text-neutral-900'>
 							Aucun produit trouvé
 						</h3>
-						<p className='text-sm text-neutral-200 mt-1'>
+						<p className='text-sm text-neutral-600 mt-1'>
 							Aucun produit ne correspond à "{searchQuery}"
 						</p>
-						<p className='text-sm text-neutral-200 mt-2'>
+						<p className='text-sm text-neutral-600 mt-2'>
 							Vous pouvez créer un nouveau produit en utilisant le
 							formulaire complet.
 						</p>
@@ -73,7 +73,7 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 					onClick={() => onSelectProduct(product)}>
 					<div className='flex items-center space-x-4'>
 						{/* Image du produit ou placeholder */}
-						<div className='size-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0'>
+						<div className='size-16 rounded-lg overflow-hidden bg-neutral-50 flex-shrink-0'>
 							{product.imageUrl ? (
 								<img
 									src={product.imageUrl}
@@ -82,33 +82,33 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 								/>
 							) : (
 								<div className='size-full flex items-center justify-center'>
-									<Package className='size-8 text-neutral-200' />
+									<Package className='size-8 text-neutral-600' />
 								</div>
 							)}
 						</div>
 
 						{/* Informations du produit */}
 						<div className='flex-1 min-w-0'>
-							<h4 className='font-semibold text-neutral-300 truncate'>
+							<h4 className='font-semibold text-neutral-900 truncate'>
 								{product.name}
 							</h4>
 							<div className='flex items-center space-x-2 mt-1'>
 								{product.brand && (
-									<span className='text-sm text-neutral-200'>
+									<span className='text-sm text-neutral-600'>
 										{product.brand}
 									</span>
 								)}
 								{product.brand && product.category && (
-									<span className='text-neutral-200'>•</span>
+									<span className='text-neutral-600'>•</span>
 								)}
 								{product.category && (
-									<span className='text-sm text-neutral-200'>
+									<span className='text-sm text-neutral-600'>
 										{product.category.name}
 									</span>
 								)}
 							</div>
 							{product.barcode && (
-								<p className='text-xs text-neutral-200 mt-1'>
+								<p className='text-xs text-neutral-600 mt-1'>
 									Code-barres: {product.barcode}
 								</p>
 							)}
@@ -150,13 +150,13 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 
 			{results.length > 0 && (
 				<div className='text-center pt-4'>
-					<p className='text-sm text-neutral-200'>
+					<p className='text-sm text-neutral-600'>
 						{results.length} produit{results.length > 1 ? 's' : ''}{' '}
 						trouvé
 						{results.length > 1 ? 's' : ''}
 					</p>
 					{results.length >= 10 && (
-						<p className='text-xs text-neutral-200 mt-1'>
+						<p className='text-xs text-neutral-600 mt-1'>
 							<AlertCircle className='inline size-3 mr-1' />
 							Affinez votre recherche pour voir plus de résultats
 						</p>

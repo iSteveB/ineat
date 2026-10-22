@@ -39,8 +39,8 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 			<Card>
 				<CardContent className='p-4'>
 					<div className='flex items-center gap-2 mb-1'>
-						<Euro className='size-4 text-accent' />
-						<span className='text-sm text-neutral-200'>
+						<Euro className='size-4 text-accent-700' />
+						<span className='text-sm text-neutral-600'>
 							Budget total
 						</span>
 					</div>
@@ -51,12 +51,12 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 			<Card>
 				<CardContent className='p-4'>
 					<div className='flex items-center gap-2 mb-1'>
-						<TrendingDown className='size-4 text-error-100' />
-						<span className='text-sm text-neutral-200'>
+						<TrendingDown className='size-4 text-danger-700' />
+						<span className='text-sm text-neutral-600'>
 							Dépensé
 						</span>
 					</div>
-					<p className='text-2xl font-bold text-error-100'>
+					<p className='text-2xl font-bold text-danger-700'>
 						{safeTotalSpent}
 					</p>
 				</CardContent>
@@ -65,12 +65,12 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 			<Card>
 				<CardContent className='p-4'>
 					<div className='flex items-center gap-2 mb-1'>
-						<TrendingUp className='size-4 text-success-50' />
-						<span className='text-sm text-neutral-200'>
+						<TrendingUp className='size-4 text-accent-700' />
+						<span className='text-sm text-neutral-600'>
 							Restant
 						</span>
 					</div>
-					<p className='text-2xl font-bold text-success-50'>
+					<p className='text-2xl font-bold text-accent-700'>
 						{safeRemaining}
 					</p>
 				</CardContent>
@@ -79,12 +79,12 @@ const BudgetStatsCards: FC<BudgetStatsCardsProps> = ({ budget, stats }) => {
 			<Card>
 				<CardContent className='p-4'>
 					<div className='flex items-center gap-2 mb-1'>
-						<PieChart className='size-4 text-warning-50' />
-						<span className='text-sm text-neutral-200'>
+						<PieChart className='size-4 text-warning-700' />
+						<span className='text-sm text-neutral-600'>
 							Utilisé
 						</span>
 					</div>
-					<p className='text-2xl font-bold text-warning-50'>
+					<p className='text-2xl font-bold text-warning-700'>
 						{Math.round(stats.percentageUsed)}%
 					</p>
 				</CardContent>

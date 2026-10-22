@@ -42,19 +42,19 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 
 	const getInputClassName = (field: keyof ProductDatesData) => {
 		let baseClass =
-			'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300';
+			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
 
 		// Erreur
 		if (errors[field]) {
-			baseClass += ' border-error-100';
+			baseClass += ' border-danger-600';
 		}
 
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
-			baseClass = baseClass.replace('bg-neutral-50', 'bg-blue-50/5');
+			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
 			baseClass = baseClass.replace('border-neutral-200', 'border-blue-500/20');
 			baseClass = baseClass.replace(
-				'focus:ring-success-50 focus:border-success-50',
+				'focus:ring-accent-600 focus:border-accent-600',
 				'focus:ring-blue-500 focus:border-blue-500',
 			);
 		}
@@ -89,13 +89,13 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>Dates</h3>
+						<h3 className='text-md font-medium text-neutral-900'>Dates</h3>
 
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 							{/* Date d'achat */}
 							<div className='space-y-2'>
-								<Label htmlFor='purchaseDate' className='text-neutral-300'>
-									Date d'achat <span className='text-error-100'>*</span>
+								<Label htmlFor='purchaseDate' className='text-neutral-900'>
+									Date d'achat <span className='text-danger-700'>*</span>
 								</Label>
 								<Input
 									id='purchaseDate'
@@ -108,7 +108,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 									disabled={isFieldDisabled}
 								/>
 								{errors.purchaseDate && (
-									<p className='text-sm text-error-100'>
+									<p className='text-sm text-danger-700'>
 										{errors.purchaseDate}
 									</p>
 								)}
@@ -116,7 +116,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 
 							{/* Date de péremption */}
 							<div className='space-y-2'>
-								<Label htmlFor='expiryDate' className='text-neutral-300'>
+								<Label htmlFor='expiryDate' className='text-neutral-900'>
 									Date de péremption
 								</Label>
 								<Input
@@ -130,16 +130,16 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 									disabled={isFieldDisabled}
 								/>
 								{errors.expiryDate && (
-									<p className='text-sm text-error-100'>{errors.expiryDate}</p>
+									<p className='text-sm text-danger-700'>{errors.expiryDate}</p>
 								)}
 								{showEstimatedDate && (
-									<p className='text-sm text-neutral-200'>
+									<p className='text-sm text-neutral-600'>
 										Date estimée : {values.expiryDate || estimatedExpiryDate}
 										{estimatedExpiryReason ? ` (${estimatedExpiryReason})` : ''}
 									</p>
 								)}
 								{values.expiryDateSource === 'MANUAL' && values.expiryDate && (
-									<p className='text-sm text-neutral-200'>
+									<p className='text-sm text-neutral-600'>
 										Date saisie manuellement
 									</p>
 								)}
@@ -149,14 +149,14 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 						{/* Erreur de validation croisée des dates */}
 						{datesValidationError && (
 							<div className='mt-2'>
-								<p className='text-sm text-error-100 flex items-start gap-2'>
+								<p className='text-sm text-danger-700 flex items-start gap-2'>
 									<span className='mt-0.5'>⚠️</span>
 									{datesValidationError}
 								</p>
 							</div>
 						)}
 					</div>
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 				</>
 			)}
 		</div>

@@ -58,8 +58,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 transition-all duration-200 cursor-pointer flex-shrink-0 border
                 ${
 					isActive
-						? 'bg-success-50 text-neutral-50 border-success-50 shadow-sm'
-						: 'bg-neutral-50 text-[#6B7280] border-[#E5E7EB] hover:bg-[#F9F9E9] hover:text-[#1F2937] hover:border-success-50/20'
+						? 'bg-accent-600 text-surface border-accent-600 shadow-sm'
+						: 'bg-surface text-[#6B7280] border-[#E5E7EB] hover:bg-[#F9F9E9] hover:text-[#1F2937] hover:border-accent-600/20'
 				}
               `}
 							onClick={() => onCategoryChange(category.id)}>
@@ -67,8 +67,8 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
 							<div
 								className={`transition-colors duration-200 ${
 									isActive
-										? 'text-neutral-50'
-										: 'text-[#6B7280] group-hover:text-success-50'
+										? 'text-surface'
+										: 'text-[#6B7280] group-hover:text-accent-700'
 								}`}>
 								{category.icon}
 							</div>

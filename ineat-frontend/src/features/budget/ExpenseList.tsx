@@ -33,7 +33,7 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-blue-50/50 shadow-xl'>
 				<CardContent className='flex items-center justify-center py-12'>
 					<div className='text-center space-y-2'>
-						<Loader2 className='size-8 animate-spin mx-auto text-accent' />
+						<Loader2 className='size-8 animate-spin mx-auto text-accent-700' />
 						<p className='text-gray-700 font-medium'>
 							Chargement des dépenses...
 						</p>
@@ -74,7 +74,7 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 								<ShoppingCart className='size-10 text-gray-400' />
 							</div>
 							<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg'>
-								<Plus className='size-4 text-neutral-50' />
+								<Plus className='size-4 text-surface' />
 							</div>
 						</div>
 						<div className='space-y-3'>

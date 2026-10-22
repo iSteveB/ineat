@@ -76,17 +76,17 @@ const DietaryRestrictionsPage = () => {
   // Afficher un loader pendant le chargement initial
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-info-50/30 flex items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-neutral-200" />
+      <div className="min-h-screen bg-gradient-to-br from-surface to-info-50/30 flex items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-neutral-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-info-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-surface to-info-50/30">
       {/* ===== HEADER ===== */}
-      <div className="relative overflow-hidden bg-neutral-50 border-b border-gray-200 shadow-sm">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-info-100/30 to-primary-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+      <div className="relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-info-50/30 to-brand-300/30 rounded-full blur-3xl -translate-y-16 translate-x-16" />
 
         <div className="relative px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -94,16 +94,16 @@ const DietaryRestrictionsPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="size-10 p-0 rounded-xl bg-neutral-100 hover:bg-neutral-100 border border-gray-200 shadow-sm"
+                className="size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-50 border border-gray-200 shadow-sm"
               >
                 <ChevronLeft className="size-5" />
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-neutral-300">
+              <h1 className="text-2xl font-bold text-neutral-900">
                 Restrictions alimentaires
               </h1>
-              <p className="text-sm text-neutral-200">
+              <p className="text-sm text-neutral-600">
                 Gérez vos préférences alimentaires
               </p>
             </div>
@@ -113,11 +113,11 @@ const DietaryRestrictionsPage = () => {
 
       <div className="px-6 py-6 space-y-6">
         {/* ===== Section Allergies et intolérances ===== */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-neutral-50 to-neutral-100/50 shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-error-50/20 to-error-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-surface to-neutral-50/50 shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-danger-50/20 to-danger-600/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="size-5 text-error-100" />
+              <AlertTriangle className="size-5 text-danger-700" />
               Allergies et intolérances
             </CardTitle>
             <CardDescription>
@@ -130,10 +130,10 @@ const DietaryRestrictionsPage = () => {
               <Label
                 htmlFor="allergen-none"
                 className={cn(
-                  "flex items-center justify-center rounded-xl border-2 border-gray-200 bg-neutral-100 p-4 cursor-pointer transition-all duration-200 text-center",
+                  "flex items-center justify-center rounded-xl border-2 border-gray-200 bg-neutral-50 p-4 cursor-pointer transition-all duration-200 text-center",
                   selectedAllergens.length === 0
-                    ? "border-success-50 bg-success-50/20 shadow-md text-success-50 font-semibold"
-                    : "text-neutral-200 hover:bg-neutral-50",
+                    ? "border-accent-600 bg-accent-600/20 shadow-md text-accent-700 font-semibold"
+                    : "text-neutral-600 hover:bg-surface",
                 )}
               >
                 <Input
@@ -150,10 +150,10 @@ const DietaryRestrictionsPage = () => {
                   key={allergen.id}
                   htmlFor={`allergen-${allergen.id}`}
                   className={cn(
-                    "flex items-center justify-center rounded-xl border-2 border-gray-200 bg-neutral-100 p-4 cursor-pointer transition-all duration-200 text-center",
+                    "flex items-center justify-center rounded-xl border-2 border-gray-200 bg-neutral-50 p-4 cursor-pointer transition-all duration-200 text-center",
                     selectedAllergens.includes(allergen.id)
-                      ? "border-success-50 bg-success-50/20 shadow-md text-success-50 font-semibold"
-                      : "text-neutral-200 hover:bg-neutral-50",
+                      ? "border-accent-600 bg-accent-600/20 shadow-md text-accent-700 font-semibold"
+                      : "text-neutral-600 hover:bg-surface",
                   )}
                 >
                   <Input
@@ -180,11 +180,11 @@ const DietaryRestrictionsPage = () => {
         </Card>
 
         {/* ===== Section Régimes alimentaires ===== */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-neutral-50 to-neutral-100/50 shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-success-50/20 to-success-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-surface to-neutral-50/50 shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent-600/20 to-accent-600/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Leaf className="size-5 text-success-50" />
+              <Leaf className="size-5 text-accent-700" />
               Régimes alimentaires
             </CardTitle>
             <CardDescription>
@@ -198,10 +198,10 @@ const DietaryRestrictionsPage = () => {
                   key={diet.id}
                   htmlFor={`diet-${diet.id}`}
                   className={cn(
-                    "flex items-center justify-center rounded-xl border-2 border-gray-200 bg-neutral-100 p-4 cursor-pointer transition-all duration-200 text-center",
+                    "flex items-center justify-center rounded-xl border-2 border-gray-200 bg-neutral-50 p-4 cursor-pointer transition-all duration-200 text-center",
                     selectedDiets.includes(diet.id)
-                      ? "border-success-50 bg-success-50/20 shadow-md text-success-50 font-semibold"
-                      : "text-neutral-200 hover:bg-neutral-50",
+                      ? "border-accent-600 bg-accent-600/20 shadow-md text-accent-700 font-semibold"
+                      : "text-neutral-600 hover:bg-surface",
                   )}
                 >
                   <Input
@@ -222,7 +222,7 @@ const DietaryRestrictionsPage = () => {
         <div className="flex justify-center pt-4 pb-8">
           <Button
             onClick={savePreferences}
-            className="w-full max-w-md h-12 bg-gradient-to-r from-success-50 to-success-50 hover:from-success-50/90 hover:to-success-50/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full max-w-md h-12 bg-gradient-to-r from-accent-600 to-accent-600 hover:from-accent-600/90 hover:to-accent-600/90 text-surface shadow-lg hover:shadow-xl transition-all duration-300"
             disabled={isSaving}
           >
             {isSaving ? (

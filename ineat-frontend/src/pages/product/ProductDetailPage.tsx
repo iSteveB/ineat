@@ -70,35 +70,35 @@ const ProductDetailPage: FC = () => {
 			case 'EXPIRED':
 				return {
 					bg: 'bg-gradient-to-r from-red-500 to-red-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <AlertTriangle className='size-5' />,
 					badge: 'bg-red-100 text-red-800 border-red-200',
 				};
 			case 'CRITICAL':
 				return {
 					bg: 'bg-gradient-to-r from-orange-500 to-orange-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <Clock className='size-5' />,
 					badge: 'bg-orange-100 text-orange-800 border-orange-200',
 				};
 			case 'WARNING':
 				return {
 					bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <Clock className='size-5' />,
 					badge: 'bg-yellow-100 text-yellow-800 border-yellow-200',
 				};
 			case 'GOOD':
 				return {
 					bg: 'bg-gradient-to-r from-emerald-500 to-green-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <CheckCircle2 className='size-5' />,
 					badge: 'bg-emerald-100 text-emerald-800 border-emerald-200',
 				};
 			default:
 				return {
 					bg: 'bg-gradient-to-r from-gray-500 to-gray-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					icon: <Clock className='size-5' />,
 					badge: 'bg-gray-100 text-gray-800 border-gray-200',
 				};
@@ -108,32 +108,32 @@ const ProductDetailPage: FC = () => {
 	const getScoreColors = (score: string | undefined) => {
 		switch (score) {
 			case 'A':
-				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
+				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-surface';
 			case 'B':
-				return 'bg-gradient-to-br from-lime-500 to-green-500 text-neutral-50';
+				return 'bg-gradient-to-br from-lime-500 to-green-500 text-surface';
 			case 'C':
 				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
 			case 'D':
-				return 'bg-gradient-to-br from-orange-500 to-red-500 text-neutral-50';
+				return 'bg-gradient-to-br from-orange-500 to-red-500 text-surface';
 			case 'E':
-				return 'bg-gradient-to-br from-red-500 to-red-600 text-neutral-50';
+				return 'bg-gradient-to-br from-red-500 to-red-600 text-surface';
 			default:
-				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-neutral-50';
+				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-surface';
 		}
 	};
 
 	const getGroupColor = (group: string | undefined) => {
 		switch (group) {
 			case 'GROUP_1':
-				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-neutral-50';
+				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-surface';
 			case 'GROUP_2':
-				return 'bg-gradient-to-br from-lime-500 to-green-500 text-neutral-50';
+				return 'bg-gradient-to-br from-lime-500 to-green-500 text-surface';
 			case 'GROUP_3':
 				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
 			case 'GROUP_4':
-				return 'bg-gradient-to-br from-orange-500 to-red-500 text-neutral-50';
+				return 'bg-gradient-to-br from-orange-500 to-red-500 text-surface';
 			default:
-				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-neutral-50';
+				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-surface';
 		}
 	};
 
@@ -290,7 +290,7 @@ const ProductDetailPage: FC = () => {
 							<Package className='size-12 text-gray-400' />
 						</div>
 						<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center shadow-lg'>
-							<AlertTriangle className='size-4 text-neutral-50' />
+							<AlertTriangle className='size-4 text-surface' />
 						</div>
 					</div>
 					<div className='space-y-3'>
@@ -303,7 +303,7 @@ const ProductDetailPage: FC = () => {
 					</div>
 					<Button
 						onClick={() => navigate({ to: '/app/inventory' })}
-						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-surface shadow-lg hover:shadow-xl transition-all duration-300'
 					>
 						<ArrowLeft className='size-4' />
 						Retour à l'inventaire
@@ -367,7 +367,7 @@ const ProductDetailPage: FC = () => {
 	return (
 		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
 			{/* ===== HEADER ===== */}
-			<div className='relative overflow-hidden bg-neutral-50 border-b border-gray-200 shadow-sm'>
+			<div className='relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm'>
 				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center justify-between'>
@@ -751,7 +751,7 @@ const ProductDetailPage: FC = () => {
 
 					<Button
 						onClick={handleDelete}
-						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300'
+						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-surface shadow-lg hover:shadow-xl transition-all duration-300'
 					>
 						<Trash2 className='size-4 mr-2' />
 						Supprimer

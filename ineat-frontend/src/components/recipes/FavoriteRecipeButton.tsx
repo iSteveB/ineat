@@ -28,7 +28,7 @@ export function FavoriteRecipeButton({
 			title={label}
 			disabled={isPending}
 			onClick={onToggle}
-			className={cn('bg-neutral-50/95', className)}>
+			className={cn('bg-surface/95', className)}>
 			<Heart
 				className={cn(
 					'size-5 text-success-700',

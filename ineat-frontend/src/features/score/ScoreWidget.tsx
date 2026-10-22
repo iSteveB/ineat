@@ -170,24 +170,24 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 		return `
 			relative font-bold rounded-2xl size-16 flex items-center justify-center text-2xl
 			${getScoreBackgroundColor(letter as 'A' | 'B' | 'C' | 'D' | 'E')} 
-			text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105
-			before:absolute before:inset-0 before:rounded-2xl before:bg-neutral-50/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
+			text-surface shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105
+			before:absolute before:inset-0 before:rounded-2xl before:bg-surface/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
 		`;
 	};
 
 	// Obtenir les classes CSS pour le badge Novascore (avec couleurs basées sur le groupe)
 	const getNovascoreBadgeClasses = (group: Novascore): string => {
 		const colorMap = {
-			GROUP_1: 'bg-score-a',
-			GROUP_2: 'bg-score-b',
-			GROUP_3: 'bg-score-d',
-			GROUP_4: 'bg-score-e',
+			GROUP_1: 'bg-nutri-a',
+			GROUP_2: 'bg-nutri-b',
+			GROUP_3: 'bg-nutri-d',
+			GROUP_4: 'bg-nutri-e',
 		};
 		return `
 			relative font-bold rounded-2xl size-16 flex items-center justify-center text-2xl
 			${colorMap[group]} 
-			text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105
-			before:absolute before:inset-0 before:rounded-2xl before:bg-neutral-50/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
+			text-surface shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105
+			before:absolute before:inset-0 before:rounded-2xl before:bg-surface/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
 		`;
 	};
 

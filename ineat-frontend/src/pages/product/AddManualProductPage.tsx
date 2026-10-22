@@ -223,10 +223,10 @@ const AddManualProductPage: React.FC = () => {
 	};
 
 	return (
-		<div className='min-h-screen bg-neutral-50'>
+		<div className='min-h-screen bg-surface'>
 			{/* HEADER */}
-			<div className='relative overflow-hidden bg-neutral-50 border-b border-neutral-100 shadow-sm'>
-				<div className='absolute top-0 right-0 size-32 bg-success-50/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+			<div className='relative overflow-hidden bg-surface border-b border-neutral-100 shadow-sm'>
+				<div className='absolute top-0 right-0 size-32 bg-accent-600/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center justify-between'>
 					<div className='flex items-center gap-4'>
@@ -234,15 +234,15 @@ const AddManualProductPage: React.FC = () => {
 							<Button
 								variant='ghost'
 								size='sm'
-								className='size-10 p-0 rounded-xl bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 shadow-sm'>
-								<ArrowLeft className='size-5 text-neutral-300' />
+								className='size-10 p-0 rounded-xl bg-surface hover:bg-neutral-50 border border-neutral-200 shadow-sm'>
+								<ArrowLeft className='size-5 text-neutral-900' />
 							</Button>
 						</Link>
 						<div>
-							<h1 className='text-2xl font-bold text-neutral-300'>
+							<h1 className='text-2xl font-bold text-neutral-900'>
 								Ajouter un produit
 							</h1>
-							<p className='text-sm text-neutral-200'>
+							<p className='text-sm text-neutral-600'>
 								Recherchez ou créez un nouveau produit
 							</p>
 						</div>
@@ -255,7 +255,7 @@ const AddManualProductPage: React.FC = () => {
 								onClick={handleSwitchToManualAdd}
 								variant='outline'
 								size='sm'
-								className='flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 text-neutral-300 hover:bg-neutral-100 hover:text-neutral-300 shadow-sm'>
+								className='flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:text-neutral-900 shadow-sm'>
 								<Plus className='size-4' />
 								Créer un nouveau produit
 							</Button>
@@ -269,17 +269,17 @@ const AddManualProductPage: React.FC = () => {
 				{pageState === 'search' && (
 					<div className='space-y-6'>
 						{/* Barre de recherche */}
-						<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+						<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
 							<CardHeader>
 								<CardTitle className='flex items-center gap-3'>
-									<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
-										<Search className='size-5 text-success-50' />
+									<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+										<Search className='size-5 text-accent-700' />
 									</div>
 									Rechercher un produit existant
 								</CardTitle>
 							</CardHeader>
 							<CardContent className='p-6 pt-0 space-y-3'>
-								<p className='text-sm text-neutral-200'>
+								<p className='text-sm text-neutral-600'>
 									Commencez par rechercher si le produit
 									existe déjà dans notre base de données
 								</p>
@@ -307,14 +307,14 @@ const AddManualProductPage: React.FC = () => {
 						{searchResults.length === 0 &&
 							searchQuery &&
 							!isSearching && (
-								<Alert className='border-warning-50/20 bg-warning-50/10 text-neutral-300'>
-									<AlertCircle className='size-4 text-warning-50' />
+								<Alert className='border-warning-500/20 bg-warning-50/10 text-neutral-900'>
+									<AlertCircle className='size-4 text-warning-700' />
 									<AlertDescription>
 										Aucun produit trouvé pour "{searchQuery}
 										".{' '}
 										<Button
 											variant='link'
-											className='px-1 h-auto font-medium text-success-50 hover:text-success-50/90'
+											className='px-1 h-auto font-medium text-accent-700 hover:text-accent-700/90'
 											onClick={handleSwitchToManualAdd}>
 											Créer ce produit
 										</Button>
@@ -324,17 +324,17 @@ const AddManualProductPage: React.FC = () => {
 
 						{/* Aide initiale */}
 						{!searchQuery && (
-							<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+							<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
 								<CardContent className='p-8 text-center'>
 									<div className='flex flex-col items-center space-y-4'>
-										<div className='size-16 rounded-full bg-neutral-100 flex items-center justify-center'>
-											<Package className='size-8 text-neutral-200' />
+										<div className='size-16 rounded-full bg-neutral-50 flex items-center justify-center'>
+											<Package className='size-8 text-neutral-600' />
 										</div>
 										<div className='space-y-2'>
-											<h3 className='text-lg font-medium text-neutral-300'>
+											<h3 className='text-lg font-medium text-neutral-900'>
 												Commencez par rechercher
 											</h3>
-											<p className='text-sm text-neutral-200 max-w-md mx-auto'>
+											<p className='text-sm text-neutral-600 max-w-md mx-auto'>
 												Tapez le nom, la marque ou le
 												code-barres du produit que vous
 												souhaitez ajouter. Si le produit
@@ -342,11 +342,11 @@ const AddManualProductPage: React.FC = () => {
 												créer.
 											</p>
 										</div>
-										<div className='flex flex-col items-center space-x-4 text-sm text-neutral-200'>
+										<div className='flex flex-col items-center space-x-4 text-sm text-neutral-600'>
 											<span>ou</span>
 											<Button
 												variant='link'
-												className='text-success-50 hover:text-success-50/90'
+												className='text-accent-700 hover:text-accent-700/90'
 												onClick={
 													handleSwitchToManualAdd
 												}>
@@ -363,11 +363,11 @@ const AddManualProductPage: React.FC = () => {
 
 				{/* État ajout rapide avec produit existant */}
 				{pageState === 'quick-add' && selectedProduct && (
-					<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+					<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
 						<CardHeader>
 							<CardTitle className='flex items-center gap-3'>
-								<div className='p-2 rounded-xl bg-success-50/20 border border-success-50/50'>
-									<Plus className='size-5 text-success-50' />
+								<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+									<Plus className='size-5 text-accent-700' />
 								</div>
 								Ajout rapide : {selectedProduct.name}
 							</CardTitle>
@@ -396,7 +396,7 @@ const AddManualProductPage: React.FC = () => {
 										Données OpenFoodFacts détectées !
 									</strong>
 									<br />
-									<span className='text-neutral-300'>
+									<span className='text-neutral-900'>
 										Le formulaire sera pré-rempli avec les
 										informations nutritionnelles et
 										environnementales disponibles (

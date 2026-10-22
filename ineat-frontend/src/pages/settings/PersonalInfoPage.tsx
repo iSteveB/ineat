@@ -128,10 +128,10 @@ const PersonalInfoPage = () => {
   const showEmailError = Boolean(emailError && emailChanged);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-info-50/30">
+    <div className="min-h-screen bg-gradient-to-br from-surface to-info-50/30">
       {/* ===== HEADER ===== */}
-      <div className="relative overflow-hidden bg-neutral-50 border-b border-gray-200 shadow-sm">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-info-100/30 to-primary-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+      <div className="relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-info-50/30 to-brand-300/30 rounded-full blur-3xl -translate-y-16 translate-x-16" />
 
         <div className="relative px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -139,16 +139,16 @@ const PersonalInfoPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="size-10 p-0 rounded-xl bg-neutral-100 hover:bg-gray-100 border border-gray-200 shadow-sm"
+                className="size-10 p-0 rounded-xl bg-neutral-50 hover:bg-gray-100 border border-gray-200 shadow-sm"
               >
                 <ChevronLeft className="size-5" />
               </Button>
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-neutral-300">
+              <h1 className="text-2xl font-bold text-neutral-900">
                 Informations personnelles
               </h1>
-              <p className="text-sm text-neutral-200">Gérez vos données</p>
+              <p className="text-sm text-neutral-600">Gérez vos données</p>
             </div>
           </div>
         </div>
@@ -156,11 +156,11 @@ const PersonalInfoPage = () => {
 
       <div className="px-6 py-6 space-y-6">
         {/* ===== SECTION PHOTO DE PROFIL ===== */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-neutral-50 to-neutral-100/50 shadow-xl">
-          <div className="absolute top-0 right-0 size-32 bg-gradient-to-br from-success-50/20 to-primary-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-surface to-neutral-50/50 shadow-xl">
+          <div className="absolute top-0 right-0 size-32 bg-gradient-to-br from-accent-600/20 to-brand-300/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
           <CardContent className="p-6 flex flex-col items-center justify-center gap-4">
             <div
-              className="relative size-28 rounded-full bg-gradient-to-br from-success-50 to-success-50/80 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl cursor-pointer"
+              className="relative size-28 rounded-full bg-gradient-to-br from-accent-600 to-accent-600/80 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl cursor-pointer"
               onClick={handleAvatarClick}
             >
               {/* Photo de profil */}
@@ -171,11 +171,11 @@ const PersonalInfoPage = () => {
                   className="size-full object-cover transition-all duration-300 group-hover:scale-110"
                 />
               ) : (
-                <span className="text-4xl font-semibold text-neutral-50 transition-all duration-300 group-hover:scale-110">
+                <span className="text-4xl font-semibold text-surface transition-all duration-300 group-hover:scale-110">
                   {user?.firstName && user?.lastName ? (
                     `${user?.firstName[0]}${user?.lastName[0]}`
                   ) : (
-                    <User className="size-12 text-neutral-50" />
+                    <User className="size-12 text-surface" />
                   )}
                 </span>
               )}
@@ -183,10 +183,10 @@ const PersonalInfoPage = () => {
 
             {/* Informations utilisateur */}
             <div className="text-center">
-              <h2 className="text-xl font-bold text-neutral-300">
+              <h2 className="text-xl font-bold text-neutral-900">
                 {user?.firstName} {user?.lastName}
               </h2>
-              <p className="text-sm text-neutral-200">{user?.email}</p>
+              <p className="text-sm text-neutral-600">{user?.email}</p>
             </div>
 
             {/* Bouton d'édition de profil */}
@@ -194,7 +194,7 @@ const PersonalInfoPage = () => {
               variant="ghost"
               size="sm"
               onClick={handleAvatarClick}
-              className="mt-2 text-success-50 hover:text-success-50/80 hover:bg-success-50/10 border border-success-50/20 hover:border-success-50/30 transition-all duration-200"
+              className="mt-2 text-accent-700 hover:text-accent-700/80 hover:bg-accent-600/10 border border-accent-600/20 hover:border-accent-600/30 transition-all duration-200"
             >
               <Edit3 className="size-4 mr-2" />
               Modifier la photo
@@ -203,11 +203,11 @@ const PersonalInfoPage = () => {
         </Card>
 
         {/* ===== FORMULAIRE D'INFORMATIONS PERSONNELLES ===== */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-neutral-50 to-neutral-100/50 shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-success-50/20 to-success-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-surface to-neutral-50/50 shadow-xl">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent-600/20 to-accent-600/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="size-5 text-success-50" />
+              <User className="size-5 text-accent-700" />
               Informations de base
             </CardTitle>
             <CardDescription>
@@ -225,7 +225,7 @@ const PersonalInfoPage = () => {
                     value={personalInfo.firstName}
                     onChange={handlePersonalChange}
                     required
-                    className="bg-neutral-100 border-gray-200 focus:ring-success-50 focus:border-success-50"
+                    className="bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600"
                   />
                 </div>
                 <div className="space-y-2">
@@ -236,7 +236,7 @@ const PersonalInfoPage = () => {
                     value={personalInfo.lastName}
                     onChange={handlePersonalChange}
                     required
-                    className="bg-neutral-100 border-gray-200 focus:ring-success-50 focus:border-success-50"
+                    className="bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ const PersonalInfoPage = () => {
                   onChange={handlePersonalChange}
                   required
                   className={cn(
-                    "bg-neutral-100 border-gray-200 focus:ring-success-50 focus:border-success-50",
+                    "bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600",
                     showEmailError &&
                       "border-red-500 focus:ring-red-500 focus:border-red-500",
                   )}
@@ -268,7 +268,7 @@ const PersonalInfoPage = () => {
                   onChange={handlePersonalChange}
                   required={emailChanged}
                   className={cn(
-                    "bg-neutral-100 border-gray-200 focus:ring-success-50 focus:border-success-50",
+                    "bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600",
                     showEmailError &&
                       "border-red-500 focus:ring-red-500 focus:border-red-500",
                   )}
@@ -283,7 +283,7 @@ const PersonalInfoPage = () => {
                   emailChanged &&
                   personalInfo.emailConfirmation.length > 0 &&
                   emailsMatch && (
-                    <div className="flex items-center gap-2 text-sm text-success-50 mt-1">
+                    <div className="flex items-center gap-2 text-sm text-accent-700 mt-1">
                       <svg
                         className="size-4"
                         fill="none"
@@ -351,7 +351,7 @@ const PersonalInfoPage = () => {
             <CardFooter>
               <Button
                 onClick={handlePersonalSubmit}
-                className="w-full h-12 bg-gradient-to-r from-success-50 to-success-50 hover:from-success-50/90 hover:to-success-50/90 text-neutral-50 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full h-12 bg-gradient-to-r from-accent-600 to-accent-600 hover:from-accent-600/90 hover:to-accent-600/90 text-surface shadow-lg hover:shadow-xl transition-all duration-300"
                 disabled={!isEditing || isLoading}
               >
                 {isLoading ? (

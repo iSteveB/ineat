@@ -13,48 +13,48 @@ interface ScoreBadgeProps {
 const SCORE_COLORS = {
 	A: {
 		bg: 'bg-[#2E7D32]', // Vert foncé
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#2E7D32]',
 	},
 	B: {
 		bg: 'bg-[#689F38]', // Vert moyen
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#689F38]',
 	},
 	C: {
 		bg: 'bg-[#FDBF26]', // Jaune
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#FDBF26]',
 	},
 	D: {
 		bg: 'bg-[#ED661C]', // Orange
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#ED661C]',
 	},
 	E: {
 		bg: 'bg-[#DC0B13]', // Rouge
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#DC0B13]',
 	},
 	// Mapping pour Novascore
 	GROUP_1: {
 		bg: 'bg-[#2E7D32]', // Vert foncé
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#2E7D32]',
 	},
 	GROUP_2: {
 		bg: 'bg-[#689F38]', // Vert moyen
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#689F38]',
 	},
 	GROUP_3: {
 		bg: 'bg-[#ED661C]', // Orange
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#ED661C]',
 	},
 	GROUP_4: {
 		bg: 'bg-[#DC0B13]', // Rouge
-		text: 'text-neutral-50',
+		text: 'text-surface',
 		border: 'border-[#DC0B13]',
 	},
 } as const;
@@ -125,7 +125,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 				{/* Label en haut */}
 				<span
 					className={cn(
-						'text-neutral-200 font-medium leading-none',
+						'text-neutral-600 font-medium leading-none',
 						sizeStyle.labelText
 					)}>
 					{config.label}
@@ -146,7 +146,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 					{/* Point d'interrogation pour score inconnu */}
 					<span
 						className={cn(
-							'text-neutral-50 font-bold leading-none',
+							'text-surface font-bold leading-none',
 							sizeStyle.scoreText
 						)}>
 						?
@@ -168,7 +168,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 				{/* Label en haut */}
 				<span
 					className={cn(
-						'text-neutral-200 font-medium leading-none',
+						'text-neutral-600 font-medium leading-none',
 						sizeStyle.labelText
 					)}>
 					{config.label}
@@ -189,7 +189,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 					{/* Point d'interrogation pour score invalide */}
 					<span
 						className={cn(
-							'text-neutral-50 font-bold leading-none',
+							'text-surface font-bold leading-none',
 							sizeStyle.scoreText
 						)}>
 						?
@@ -205,7 +205,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 			{/* Label en haut */}
 			<span
 				className={cn(
-					'text-neutral-200 font-medium leading-none',
+					'text-neutral-600 font-medium leading-none',
 					sizeStyle.labelText
 				)}>
 				{config.label}

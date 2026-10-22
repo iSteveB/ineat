@@ -177,7 +177,7 @@ export default function AdminUsersPage() {
 					)}
 					<label className="relative xl:col-span-2">
 						<span className="sr-only">Rechercher un utilisateur</span>
-						<Search className="pointer-events-none absolute left-3 top-3 size-4 text-neutral-400" />
+						<Search className="pointer-events-none absolute left-3 top-3 size-4 text-neutral-500" />
 						<Input
 							value={searchValue}
 							onChange={(event) => setSearchValue(event.target.value)}
@@ -278,7 +278,7 @@ export default function AdminUsersPage() {
 						<p className="p-6 text-sm text-neutral-600">Chargement…</p>
 					)}
 					{usersQuery.isError && (
-						<p className="p-6 text-sm text-error-600">
+						<p className="p-6 text-sm text-danger-700">
 							Impossible de charger les utilisateurs.
 						</p>
 					)}
@@ -441,7 +441,7 @@ function FilterSelect({
 				aria-label={label}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-sm"
+				className="h-10 w-full rounded-md border border-neutral-200 bg-surface px-3 text-sm"
 			>
 				{allowAll && <option value="">Tous · {label}</option>}
 				{options.map((option) => (
@@ -471,7 +471,7 @@ function InlineSelect({
 			value={value}
 			disabled={disabled}
 			onChange={(event) => onChange(event.target.value)}
-			className="rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-sm disabled:opacity-60"
+			className="rounded-md border border-neutral-200 bg-surface px-2 py-1 text-sm disabled:opacity-60"
 		>
 			{options.map((option) => (
 				<option key={option}>{option}</option>

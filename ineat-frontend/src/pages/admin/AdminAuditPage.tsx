@@ -70,7 +70,7 @@ export default function AdminAuditPage() {
 				<CardContent className='grid gap-3 md:grid-cols-2 xl:grid-cols-4'>
 					<label className='relative'>
 						<span className='sr-only'>Action</span>
-						<Search className='pointer-events-none absolute left-3 top-3 size-4 text-neutral-400' />
+						<Search className='pointer-events-none absolute left-3 top-3 size-4 text-neutral-500' />
 						<Input
 							className='pl-9'
 							value={draft.action ?? ''}
@@ -175,7 +175,7 @@ export default function AdminAuditPage() {
 						{auditQuery.isLoading ? (
 							<p className='p-6 text-sm'>Chargement…</p>
 						) : auditQuery.isError ? (
-							<div className='space-y-3 p-6 text-sm text-error-700'>
+							<div className='space-y-3 p-6 text-sm text-danger-700'>
 								<p>Impossible de charger le journal d’audit.</p>
 								<Button
 									variant='outline'
@@ -322,7 +322,7 @@ function JsonValue({ label, value }: { label: string; value: unknown }) {
 	return (
 		<div>
 			<p className='mb-1 text-xs text-neutral-500'>{label}</p>
-			<pre className='max-h-56 overflow-auto rounded-lg bg-neutral-950 p-3 text-xs text-neutral-50'>
+			<pre className='max-h-56 overflow-auto rounded-lg bg-neutral-950 p-3 text-xs text-surface'>
 				{value === null ? '—' : JSON.stringify(value, null, 2)}
 			</pre>
 		</div>

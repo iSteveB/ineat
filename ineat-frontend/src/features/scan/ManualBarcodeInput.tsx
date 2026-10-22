@@ -187,12 +187,12 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 						disabled={disabled || loading}
 						className={`pr-12 ${
 							inputState === 'error'
-								? 'border-error-100 focus:border-error-100 focus:ring-error-100/20'
+								? 'border-danger-600 focus:border-danger-600 focus:ring-danger-600/20'
 								: inputState === 'success'
-								? 'border-success-50 focus:border-success-50 focus:ring-success-50/20'
+								? 'border-accent-600 focus:border-accent-600 focus:ring-accent-600/20'
 								: inputState === 'not-found'
-								? 'border-warning-50 focus:border-warning-50 focus:ring-warning-50/20'
-								: 'focus:border-success-50 focus:ring-success-50/20'
+								? 'border-warning-500 focus:border-warning-500 focus:ring-warning-500/20'
+								: 'focus:border-accent-600 focus:ring-accent-600/20'
 						}`}
 						maxLength={13}
 						inputMode='numeric'
@@ -208,25 +208,25 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 							<Loader2 className='size-4 text-blue-500 animate-spin' />
 						)}
 						{inputState === 'success' && (
-							<CheckCircle2 className='size-4 text-success-50' />
+							<CheckCircle2 className='size-4 text-accent-700' />
 						)}
 						{inputState === 'error' && (
-							<AlertCircle className='size-4 text-error-100' />
+							<AlertCircle className='size-4 text-danger-700' />
 						)}
 						{inputState === 'not-found' && (
-							<AlertCircle className='size-4 text-warning-50' />
+							<AlertCircle className='size-4 text-warning-700' />
 						)}
 						{inputState === 'default' &&
 							barcode.length > 0 &&
 							!validationError && (
-								<Search className='size-4 text-neutral-300' />
+								<Search className='size-4 text-neutral-900' />
 							)}
 					</div>
 				</div>
 
 				{/* Messages d'erreur/validation */}
 				{validationError && (
-					<p className='text-sm text-error-100 flex items-center gap-1'>
+					<p className='text-sm text-danger-700 flex items-center gap-1'>
 						<AlertCircle className='size-3' />
 						{validationError}
 					</p>
@@ -241,7 +241,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 						!!validationError ||
 						!barcode.trim()
 					}
-					className='w-full bg-success-50 hover:bg-success-50/90 disabled:bg-neutral-200'>
+					className='w-full bg-accent-600 hover:bg-accent-600/90 disabled:bg-neutral-100'>
 					{loading ? (
 						<>
 							<Loader2 className='size-4 mr-2 animate-spin' />
@@ -257,14 +257,14 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 			</form>
 
 			{/* Informations d'aide */}
-			<div className='text-xs text-neutral-200 space-y-1'>
+			<div className='text-xs text-neutral-600 space-y-1'>
 				<p>
 					• Codes-barres acceptés : EAN-8 (8 chiffres) ou EAN-13 (13
 					chiffres)
 				</p>
 				<p>• La recherche se fait dans la base OpenFoodFacts</p>
 				{barcode.length > 0 && !validationError && (
-					<p className='text-success-50'>
+					<p className='text-accent-700'>
 						• Code-barre valide : {barcode} ({barcode.length}{' '}
 						chiffres)
 					</p>
@@ -273,20 +273,20 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 
 			{/* Indicateur de qualité des données (affiché après recherche réussie) */}
 			{product && hasSearched && (
-				<div className='mt-4 p-3 bg-success-50/10 border border-success-50/20 rounded-lg'>
+				<div className='mt-4 p-3 bg-accent-600/10 border border-accent-600/20 rounded-lg'>
 					<div className='flex items-center gap-2 text-sm'>
-						<CheckCircle2 className='size-4 text-success-50' />
-						<span className='text-success-50 font-medium'>
+						<CheckCircle2 className='size-4 text-accent-700' />
+						<span className='text-accent-700 font-medium'>
 							Produit trouvé
 						</span>
-						<span className='text-neutral-300'>
+						<span className='text-neutral-900'>
 							({Math.round(product.quality.completeness * 100)}%
 							complet)
 						</span>
 					</div>
 
 					{product.quality.completeness < 0.7 && (
-						<p className='text-xs text-neutral-200 mt-1'>
+						<p className='text-xs text-neutral-600 mt-1'>
 							Données partielles - certaines informations peuvent
 							être manquantes
 						</p>

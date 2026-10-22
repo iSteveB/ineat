@@ -129,7 +129,7 @@ export default function AdminOperationsPage({
 		return (
 			<Card>
 				<CardContent className='space-y-3 p-8 text-center'>
-					<AlertTriangle className='mx-auto size-8 text-error-600' />
+					<AlertTriangle className='mx-auto size-8 text-danger-700' />
 					<p className='font-medium'>Supervision indisponible</p>
 					<Button variant='outline' onClick={() => queuesQuery.refetch()}>
 						Réessayer
@@ -172,9 +172,9 @@ export default function AdminOperationsPage({
 				<CardContent className='flex flex-wrap items-center justify-between gap-4 p-5'>
 					<div className='flex items-center gap-3'>
 						{snapshot.health === 'healthy' ? (
-							<CheckCircle2 className='size-7 text-success-600' />
+							<CheckCircle2 className='size-7 text-accent-700' />
 						) : (
-							<AlertTriangle className='size-7 text-error-600' />
+							<AlertTriangle className='size-7 text-danger-700' />
 						)}
 						<div>
 							<p className='text-sm text-neutral-500'>Santé globale</p>
@@ -274,7 +274,7 @@ export default function AdminOperationsPage({
 							File
 							<select
 								aria-label='File'
-								className='block h-10 rounded-md border border-neutral-300 bg-white px-3'
+								className='block h-10 rounded-md border border-neutral-400 bg-white px-3'
 								value={selectedQueue}
 								onChange={(event) => {
 									setQueueName(event.target.value);
@@ -292,7 +292,7 @@ export default function AdminOperationsPage({
 							État
 							<select
 								aria-label='État du job'
-								className='block h-10 rounded-md border border-neutral-300 bg-white px-3'
+								className='block h-10 rounded-md border border-neutral-400 bg-white px-3'
 								value={jobState}
 								onChange={(event) => {
 									setJobState(event.target.value as AdminQueueJobState);
@@ -380,7 +380,7 @@ export default function AdminOperationsPage({
 						Source
 						<select
 							aria-label="Type d'incident"
-							className='block h-10 rounded-md border border-neutral-300 bg-white px-3'
+							className='block h-10 rounded-md border border-neutral-400 bg-white px-3'
 							value={incidentType}
 							onChange={(event) => {
 								setIncidentType(event.target.value as AdminIncidentType);
@@ -475,7 +475,7 @@ export default function AdminOperationsPage({
 												{job.queueName} · {job.id}
 											</p>
 										</TableCell>
-										<TableCell className='max-w-md text-sm text-error-700'>
+										<TableCell className='max-w-md text-sm text-danger-700'>
 											{job.failedReason}
 										</TableCell>
 										<TableCell>{job.attemptsMade}</TableCell>
@@ -546,7 +546,7 @@ function HealthBadge({ health }: { health: keyof typeof healthLabels }) {
 
 function Count({ label, value }: { label: string; value: number }) {
 	return (
-		<div className='rounded-lg bg-neutral-50 p-2'>
+		<div className='rounded-lg bg-surface p-2'>
 			<p className='text-lg font-semibold'>{value}</p>
 			<p className='text-xs text-neutral-500'>{label}</p>
 		</div>
@@ -571,7 +571,7 @@ function PagedStatus({
 }) {
 	if (loading) return <p className='text-sm text-neutral-500'>Chargement…</p>;
 	if (error)
-		return <p className='text-sm text-error-700'>Données indisponibles.</p>;
+		return <p className='text-sm text-danger-700'>Données indisponibles.</p>;
 	if (empty) return <p className='text-sm text-neutral-500'>Aucun résultat.</p>;
 	return null;
 }

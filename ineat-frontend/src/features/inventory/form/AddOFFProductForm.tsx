@@ -190,7 +190,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 	};
 
 	return (
-		<Card className='relative overflow-hidden border-0 bg-neutral-50 shadow-xl'>
+		<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
 			<CardHeader>
 				<CardTitle className='flex items-center gap-3'>
 					<div className='p-2 rounded-xl bg-blue-50/20 border border-blue-500/50'>
@@ -284,7 +284,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						</div>
 					</div>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Catégorie - obligatoire */}
 					<div className='space-y-4'>
@@ -294,7 +294,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						
 						<div className='space-y-2'>
 							<Label htmlFor='category' className='text-neutral-700'>
-								Catégorie <span className='text-error-500'>*</span>
+								Catégorie <span className='text-danger-700'>*</span>
 							</Label>
 							<Select
 								value={formData.category}
@@ -302,7 +302,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 								disabled={isSubmitting}>
 								<SelectTrigger
 									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-										errors['category'] ? 'border-error-500' : ''
+										errors['category'] ? 'border-danger-600' : ''
 									}`}>
 									<SelectValue placeholder='Sélectionnez une catégorie' />
 								</SelectTrigger>
@@ -316,7 +316,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 											<SelectItem
 												key={category.id}
 												value={category.slug}
-												className='text-neutral-700 hover:bg-neutral-50'>
+												className='text-neutral-700 hover:bg-surface'>
 												{category.name}
 											</SelectItem>
 										))
@@ -324,12 +324,12 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 								</SelectContent>
 							</Select>
 							{errors['category'] && (
-								<p className='text-sm text-error-600'>{errors['category']}</p>
+								<p className='text-sm text-danger-700'>{errors['category']}</p>
 							)}
 						</div>
 					</div>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Quantité et unité */}
 					<div className='space-y-4'>
@@ -339,7 +339,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 							<div className='space-y-2'>
 								<Label htmlFor='quantity' className='text-neutral-700'>
-									Quantité <span className='text-error-500'>*</span>
+									Quantité <span className='text-danger-700'>*</span>
 								</Label>
 								<Input
 									id='quantity'
@@ -350,18 +350,18 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									onChange={(e) => handleInputChange('quantity', e.target.value)}
 									placeholder='Ex: 1.5'
 									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-										errors['quantity'] ? 'border-error-500' : ''
+										errors['quantity'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
 								/>
 								{errors['quantity'] && (
-									<p className='text-sm text-error-600'>{errors['quantity']}</p>
+									<p className='text-sm text-danger-700'>{errors['quantity']}</p>
 								)}
 							</div>
 
 							<div className='space-y-2'>
 								<Label htmlFor='unitType' className='text-neutral-700'>
-									Unité <span className='text-error-500'>*</span>
+									Unité <span className='text-danger-700'>*</span>
 								</Label>
 								<Select
 									value={formData.unitType}
@@ -376,7 +376,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 											<SelectItem
 												key={option.value}
 												value={option.value}
-												className='text-neutral-700 hover:bg-neutral-50'>
+												className='text-neutral-700 hover:bg-surface'>
 												{option.label}
 											</SelectItem>
 										))}
@@ -386,7 +386,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						</div>
 					</div>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Dates */}
 					<div className='space-y-4'>
@@ -394,7 +394,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
 							<div className='space-y-2'>
 								<Label htmlFor='purchaseDate' className='text-neutral-700'>
-									Date d'achat <span className='text-error-500'>*</span>
+									Date d'achat <span className='text-danger-700'>*</span>
 								</Label>
 								<Input
 									id='purchaseDate'
@@ -402,12 +402,12 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									value={formData.purchaseDate}
 									onChange={(e) => handleInputChange('purchaseDate', e.target.value)}
 									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-										errors['purchaseDate'] ? 'border-error-500' : ''
+										errors['purchaseDate'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
 								/>
 								{errors['purchaseDate'] && (
-									<p className='text-sm text-error-600'>{errors['purchaseDate']}</p>
+									<p className='text-sm text-danger-700'>{errors['purchaseDate']}</p>
 								)}
 							</div>
 
@@ -421,18 +421,18 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									value={formData.expiryDate}
 									onChange={(e) => handleInputChange('expiryDate', e.target.value)}
 									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-										errors['expiryDate'] ? 'border-error-500' : ''
+										errors['expiryDate'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
 								/>
 								{errors['expiryDate'] && (
-									<p className='text-sm text-error-600'>{errors['expiryDate']}</p>
+									<p className='text-sm text-danger-700'>{errors['expiryDate']}</p>
 								)}
 							</div>
 						</div>
 					</div>
 
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 
 					{/* Informations supplémentaires */}
 					<div className='space-y-4'>
@@ -458,12 +458,12 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									onChange={(e) => handleInputChange('purchasePrice', e.target.value)}
 									placeholder='Ex: 2.50'
 									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-										errors['purchasePrice'] ? 'border-error-500' : ''
+										errors['purchasePrice'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
 								/>
 								{errors['purchasePrice'] && (
-									<p className='text-sm text-error-600'>{errors['purchasePrice']}</p>
+									<p className='text-sm text-danger-700'>{errors['purchasePrice']}</p>
 								)}
 							</div>
 
@@ -483,7 +483,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 											<SelectItem
 												key={location}
 												value={location}
-												className='text-neutral-700 hover:bg-neutral-50'>
+												className='text-neutral-700 hover:bg-surface'>
 												{location}
 											</SelectItem>
 										))}
@@ -513,7 +513,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							variant='outline'
 							onClick={onCancel}
 							disabled={isSubmitting}
-							className='flex-1 border-neutral-300 text-neutral-700 hover:bg-neutral-50'>
+							className='flex-1 border-neutral-400 text-neutral-700 hover:bg-surface'>
 							Annuler
 						</Button>
 						<Button

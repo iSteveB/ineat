@@ -78,7 +78,7 @@ export function UserMenu() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-neutral-50" data-testid="dropdown-content">
+      <DropdownMenuContent align="end" className="w-56 bg-surface" data-testid="dropdown-content">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1" data-testid="user-info">
             <p className="text-sm font-medium leading-none" data-testid="user-name">
@@ -105,7 +105,7 @@ export function UserMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem 
           onClick={handleLogout} 
-          className="cursor-pointer text-error-100" 
+          className="cursor-pointer text-danger-700" 
           data-testid="logout-menu-item"
           disabled={isLoggingOut}
         >

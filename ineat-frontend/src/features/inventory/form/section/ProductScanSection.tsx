@@ -42,7 +42,7 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 	};
 
 	const getSelectClassName = (hasValue: boolean = false) => {
-		let baseClass = 'bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-success-50 focus:border-success-50 focus:outline-none text-neutral-300';
+		let baseClass = 'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
 		
 		if (readonly && hasValue) {
 			baseClass += ' bg-blue-50/5 border-blue-500/20';
@@ -56,14 +56,14 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 			{showTitle && (
 				<>
 					<div className='space-y-4'>
-						<h3 className='text-md font-medium text-neutral-300'>
+						<h3 className='text-md font-medium text-neutral-900'>
 							Scores nutritionnels et environnementaux
 						</h3>
 						
 						<div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
 							{/* Nutri-Score */}
 							<div className='space-y-2'>
-								<Label htmlFor='nutriscore' className='text-neutral-300'>
+								<Label htmlFor='nutriscore' className='text-neutral-900'>
 									<Zap className='inline size-3 mr-1' />
 									Nutri-Score
 								</Label>
@@ -74,20 +74,20 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 									<SelectTrigger className={getSelectClassName(!!values.nutriscore)}>
 										<SelectValue placeholder='Sélectionnez un score' />
 									</SelectTrigger>
-									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
-										<SelectItem value='A' className='text-neutral-300 hover:bg-neutral-100'>
+									<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
+										<SelectItem value='A' className='text-neutral-900 hover:bg-neutral-50'>
 											A - Très bonne qualité
 										</SelectItem>
-										<SelectItem value='B' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='B' className='text-neutral-900 hover:bg-neutral-50'>
 											B - Bonne qualité
 										</SelectItem>
-										<SelectItem value='C' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='C' className='text-neutral-900 hover:bg-neutral-50'>
 											C - Qualité moyenne
 										</SelectItem>
-										<SelectItem value='D' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='D' className='text-neutral-900 hover:bg-neutral-50'>
 											D - Mauvaise qualité
 										</SelectItem>
-										<SelectItem value='E' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='E' className='text-neutral-900 hover:bg-neutral-50'>
 											E - Très mauvaise qualité
 										</SelectItem>
 									</SelectContent>
@@ -96,7 +96,7 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 
 							{/* Eco-Score */}
 							<div className='space-y-2'>
-								<Label htmlFor='ecoscore' className='text-neutral-300'>
+								<Label htmlFor='ecoscore' className='text-neutral-900'>
 									<Leaf className='inline size-3 mr-1' />
 									Eco-Score
 								</Label>
@@ -107,20 +107,20 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 									<SelectTrigger className={getSelectClassName(!!values.ecoscore)}>
 										<SelectValue placeholder='Sélectionnez un score' />
 									</SelectTrigger>
-									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
-										<SelectItem value='A' className='text-neutral-300 hover:bg-neutral-100'>
+									<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
+										<SelectItem value='A' className='text-neutral-900 hover:bg-neutral-50'>
 											A - Très faible impact
 										</SelectItem>
-										<SelectItem value='B' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='B' className='text-neutral-900 hover:bg-neutral-50'>
 											B - Faible impact
 										</SelectItem>
-										<SelectItem value='C' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='C' className='text-neutral-900 hover:bg-neutral-50'>
 											C - Impact modéré
 										</SelectItem>
-										<SelectItem value='D' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='D' className='text-neutral-900 hover:bg-neutral-50'>
 											D - Impact élevé
 										</SelectItem>
-										<SelectItem value='E' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='E' className='text-neutral-900 hover:bg-neutral-50'>
 											E - Impact très élevé
 										</SelectItem>
 									</SelectContent>
@@ -129,7 +129,7 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 
 							{/* Nova-Score */}
 							<div className='space-y-2'>
-								<Label htmlFor='novascore' className='text-neutral-300'>
+								<Label htmlFor='novascore' className='text-neutral-900'>
 									Nova Score
 								</Label>
 								<Select
@@ -139,17 +139,17 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 									<SelectTrigger className={getSelectClassName(!!values.novascore)}>
 										<SelectValue placeholder='Niveau de transformation' />
 									</SelectTrigger>
-									<SelectContent className='bg-neutral-50 border border-neutral-200 rounded-xl shadow-sm'>
-										<SelectItem value='1' className='text-neutral-300 hover:bg-neutral-100'>
+									<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
+										<SelectItem value='1' className='text-neutral-900 hover:bg-neutral-50'>
 											1 - Non transformés
 										</SelectItem>
-										<SelectItem value='2' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='2' className='text-neutral-900 hover:bg-neutral-50'>
 											2 - Ingrédients transformés
 										</SelectItem>
-										<SelectItem value='3' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='3' className='text-neutral-900 hover:bg-neutral-50'>
 											3 - Transformés
 										</SelectItem>
-										<SelectItem value='4' className='text-neutral-300 hover:bg-neutral-100'>
+										<SelectItem value='4' className='text-neutral-900 hover:bg-neutral-50'>
 											4 - Ultra-transformés
 										</SelectItem>
 									</SelectContent>
@@ -157,7 +157,7 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 							</div>
 						</div>
 					</div>
-					<Separator className='bg-neutral-200/20' />
+					<Separator className='bg-neutral-100/20' />
 				</>
 			)}
 		</div>

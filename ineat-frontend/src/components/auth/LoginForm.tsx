@@ -191,7 +191,7 @@ const LoginForm = () => {
 				</form>
 			</CardContent>
 			<CardFooter className='flex justify-center'>
-				<p className='text-sm text-neutral-200'>
+				<p className='text-sm text-neutral-600'>
 					Vous n'avez pas de compte ?{' '}
 					<Button
 						variant='link'

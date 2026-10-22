@@ -46,35 +46,35 @@ const ProductItem: FC<ProductItemProps> = ({
 			case 'EXPIRED':
 				return {
 					bg: 'bg-gradient-to-r from-red-500 to-red-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					border: 'border-red-200',
 					icon: <AlertTriangle className='size-3 sm:size-4' />,
 				};
 			case 'CRITICAL':
 				return {
 					bg: 'bg-gradient-to-r from-orange-500 to-orange-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					border: 'border-orange-200',
 					icon: <Clock className='size-3 sm:size-4' />,
 				};
 			case 'WARNING':
 				return {
 					bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					border: 'border-yellow-200',
 					icon: <Clock className='size-3 sm:size-4' />,
 				};
 			case 'GOOD':
 				return {
 					bg: 'bg-gradient-to-r from-emerald-500 to-green-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					border: 'border-emerald-200',
 					icon: <CheckCircle2 className='size-3 sm:size-4' />,
 				};
 			default:
 				return {
 					bg: 'bg-gradient-to-r from-gray-500 to-gray-600',
-					text: 'text-neutral-50',
+					text: 'text-surface',
 					border: 'border-gray-200',
 					icon: <Calendar className='size-3 sm:size-4' />,
 				};
@@ -110,7 +110,7 @@ const ProductItem: FC<ProductItemProps> = ({
 			params={{ productId: item.id }}
 			className='block group'
 		>
-			<div className='relative overflow-hidden bg-neutral-50 border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:border-gray-300'>
+			<div className='relative overflow-hidden bg-surface border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:border-gray-300'>
 				{/* Effet de brillance en arrière-plan */}
 				<div className='absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
 
@@ -135,7 +135,7 @@ const ProductItem: FC<ProductItemProps> = ({
 									)}
 								</div>
 								{/* Badge de quantité - plus petit sur mobile */}
-								<div className='absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-neutral-50 border border-gray-200 rounded-md shadow-md text-xs font-semibold text-gray-700'>
+								<div className='absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-surface border border-gray-200 rounded-md shadow-md text-xs font-semibold text-gray-700'>
 									{formatQuantity()}
 								</div>
 							</div>
@@ -240,7 +240,7 @@ const ProductItem: FC<ProductItemProps> = ({
 								)}
 							</div>
 							{/* Badge de quantité */}
-							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-neutral-50 border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
+							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-surface border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
 								{formatQuantity()}
 							</div>
 						</div>

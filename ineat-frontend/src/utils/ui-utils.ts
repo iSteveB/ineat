@@ -145,20 +145,20 @@ export const calculateBudgetPercentage = (
  * Obtient la classe de couleur pour le budget selon le pourcentage utilisé
  */
 export const getBudgetColorClass = (percentage: number): string => {
-	if (percentage < 65) return 'text-success-50';
-	if (percentage < 80) return 'text-warning-50';
-	if (percentage < 90) return 'text-error-50';
-	return 'text-error-100';
+	if (percentage < 65) return 'text-accent-700';
+	if (percentage < 80) return 'text-warning-700';
+	if (percentage < 90) return 'text-danger-700';
+	return 'text-danger-700';
 };
 
 /**
  * Obtient la classe de couleur de fond pour les barres de progression du budget
  */
 export const getBudgetBackgroundClass = (percentage: number): string => {
-	if (percentage < 65) return 'bg-success-50';
+	if (percentage < 65) return 'bg-accent-600';
 	if (percentage < 80) return 'bg-warning-50';
-	if (percentage < 90) return 'bg-error-50';
-	return 'bg-error-100';
+	if (percentage < 90) return 'bg-danger-50';
+	return 'bg-danger-600';
 };
 
 // ===== COULEURS SCORE =====
@@ -169,17 +169,17 @@ export const getBudgetBackgroundClass = (percentage: number): string => {
 export const getScoreTextColor = (score: NutriScore): string => {
 	switch (score) {
 		case 'A':
-			return 'text-score-a';
+			return 'text-nutri-a';
 		case 'B':
-			return 'text-score-b';
+			return 'text-nutri-b';
 		case 'C':
-			return 'text-score-c';
+			return 'text-nutri-c';
 		case 'D':
-			return 'text-score-d';
+			return 'text-nutri-d';
 		case 'E':
-			return 'text-score-e';
+			return 'text-nutri-e';
 		default:
-			return 'text-neutral-300';
+			return 'text-neutral-900';
 	}
 };
 
@@ -189,17 +189,17 @@ export const getScoreTextColor = (score: NutriScore): string => {
 export const getScoreBackgroundColor = (score: NutriScore): string => {
 	switch (score) {
 		case 'A':
-			return 'bg-score-a';
+			return 'bg-nutri-a';
 		case 'B':
-			return 'bg-score-b';
+			return 'bg-nutri-b';
 		case 'C':
-			return 'bg-score-c';
+			return 'bg-nutri-c';
 		case 'D':
-			return 'bg-score-d';
+			return 'bg-nutri-d';
 		case 'E':
-			return 'bg-score-e';
+			return 'bg-nutri-e';
 		default:
-			return 'bg-neutral-200';
+			return 'bg-neutral-100';
 	}
 };
 
@@ -252,16 +252,16 @@ export const getExpiryStatusBackgroundColor = (
 ): string => {
 	switch (status) {
 		case 'EXPIRED':
-			return 'bg-error-100';
+			return 'bg-danger-600';
 		case 'CRITICAL':
-			return 'bg-error-50';
+			return 'bg-danger-50';
 		case 'WARNING':
 			return 'bg-warning-50';
 		case 'GOOD':
-			return 'bg-success-50';
+			return 'bg-accent-600';
 		case 'UNKNOWN':
 		default:
-			return 'bg-neutral-200';
+			return 'bg-neutral-100';
 	}
 };
 
@@ -271,16 +271,16 @@ export const getExpiryStatusBackgroundColor = (
 export const getExpiryStatusTextColor = (status: ExpiryStatus): string => {
 	switch (status) {
 		case 'EXPIRED':
-			return 'text-error-100';
+			return 'text-danger-700';
 		case 'CRITICAL':
-			return 'text-error-50';
+			return 'text-danger-700';
 		case 'WARNING':
-			return 'text-warning-50';
+			return 'text-warning-700';
 		case 'GOOD':
-			return 'text-success-50';
+			return 'text-accent-700';
 		case 'UNKNOWN':
 		default:
-			return 'text-neutral-200';
+			return 'text-neutral-600';
 	}
 };
 
@@ -421,8 +421,8 @@ export const UI_CONSTANTS = {
 
 	// Couleurs par défaut
 	DEFAULT_COLORS: {
-		TEXT: 'text-neutral-300',
-		BACKGROUND: 'bg-neutral-200',
+		TEXT: 'text-neutral-900',
+		BACKGROUND: 'bg-neutral-100',
 	},
 } as const;
 

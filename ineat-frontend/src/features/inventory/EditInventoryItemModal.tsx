@@ -198,7 +198,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			<DialogContent className='max-w-md'>
 				<DialogHeader>
 					<DialogTitle className='flex items-center gap-2'>
-						<Package className='size-5 text-success-50' />
+						<Package className='size-5 text-accent-700' />
 						Modifier le produit
 					</DialogTitle>
 				</DialogHeader>
@@ -257,7 +257,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							<SelectTrigger id='storageLocation' className='mt-1'>
 								<SelectValue placeholder='Sélectionner un lieu' />
 							</SelectTrigger>
-							<SelectContent className='bg-neutral-100'>
+							<SelectContent className='bg-neutral-50'>
 								{STORAGE_LOCATIONS.map((location) => (
 									<SelectItem key={location.value} value={location.value}>
 										{location.label}
@@ -350,7 +350,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 						<Button
 							type='submit'
 							disabled={isSubmitting}
-							className='bg-success-50 hover:bg-success-50/80'
+							className='bg-accent-600 hover:bg-accent-600/80'
 						>
 							{isSubmitting ? (
 								<>
