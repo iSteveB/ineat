@@ -109,6 +109,10 @@ export const ProductSchema = z
 		novascore: nullableOptional(NovascoreSchema),
 		imageUrl: nullableOptional(z.string().url("URL d'image invalide")),
 		externalId: nullableOptional(z.string()), // ID OpenFoodFacts
+		ciqualCode: nullableOptional(z.string()),
+		ciqualName: nullableOptional(z.string()),
+		nutritionSource: nullableOptional(z.string()),
+		nutritionSourceVersion: nullableOptional(z.string()),
 		ingredients: nullableOptional(z.string()),
 		nutrients: nullableOptional(NutritionalInfoSchema),
 	})

@@ -43,6 +43,7 @@ import ScoreBadge from '@/components/common/ScoreBadge';
 import WidgetCard from '@/components/common/WidgetCard';
 import { UpdateInventoryItemData } from '@/schemas';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
+import { getProductImageUrl } from '@/utils/productPresentation';
 
 const ProductDetailPage: FC = () => {
 	const { productId } = useParams({ from: '/app/inventory/$productId' });
@@ -269,6 +270,7 @@ const ProductDetailPage: FC = () => {
 	);
 	const hasSeveralLots = purchaseLots.length > 1;
 	const { product } = inventoryItem;
+	const productImageUrl = getProductImageUrl(product);
 	const isEstimated = inventoryItem.expiryDateSource === 'ESTIMATED';
 	const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
@@ -297,8 +299,8 @@ const ProductDetailPage: FC = () => {
 			{/* ===== EN-TÊTE PRODUIT ===== */}
 			<section aria-labelledby='product-title' className='card flex flex-col gap-4 p-4 sm:flex-row sm:p-5'>
 				<span className='flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-50 text-brand-800 sm:size-32'>
-					{product.imageUrl ? (
-						<img src={product.imageUrl} alt='' className='size-full object-cover' />
+					{productImageUrl ? (
+						<img src={productImageUrl} alt='' className='size-full object-cover' />
 					) : (
 						<Package className='size-12' aria-hidden='true' />
 					)}
@@ -326,7 +328,7 @@ const ProductDetailPage: FC = () => {
 
 					<div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
 						<ExpiryBadge status={expiryStatus}>
-							{formatExpiryLabel(inventoryItem.expiryDate)}
+							{formatExpiryLabel(inventoryItem.expiryDate, product.category.slug)}
 						</ExpiryBadge>
 						{inventoryItem.expiryDate && (
 							<p className='text-sm text-neutral-700'>
@@ -373,7 +375,12 @@ const ProductDetailPage: FC = () => {
 					</WidgetCard>
 
 					{product.nutrients && (
-						<NutritionInfoCard nutrients={product.nutrients} unitType={product.unitType} />
+						<NutritionInfoCard
+							nutrients={product.nutrients}
+							unitType={product.unitType}
+							source={product.nutritionSource}
+							sourceVersion={product.nutritionSourceVersion}
+						/>
 					)}
 
 					{product.ingredients && <IngredientsCard ingredients={product.ingredients} />}
@@ -413,7 +420,11 @@ const ProductDetailPage: FC = () => {
 										<dd className='text-neutral-900'>{formatDate(lot.purchaseDate)}</dd>
 										<dt className='text-neutral-600'>Péremption</dt>
 										<dd className='text-neutral-900'>
-											{lot.expiryDate ? formatDate(lot.expiryDate) : 'Non renseignée'}
+							{lot.expiryDate
+								? formatDate(lot.expiryDate)
+								: product.category.slug === 'fruits-et-legumes'
+									? 'Selon maturité'
+									: 'Non renseignée'}
 										</dd>
 										{lot.storageLocation && (
 											<>

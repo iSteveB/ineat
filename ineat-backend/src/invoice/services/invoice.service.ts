@@ -27,6 +27,7 @@ import { OpenFoodFactsInvoiceEnrichmentService } from './openfoodfacts-invoice-e
 import { isInvoiceStorageLocation } from './invoice-product-classification';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
+import { CiqualReferenceService } from '../../ciqual/ciqual-reference.service';
 
 export interface InvoiceUser {
   id: string;
@@ -61,6 +62,7 @@ export class InvoiceService {
     private readonly invoiceProductResolverService: InvoiceProductResolverService,
     private readonly invoiceProcessingStateService: InvoiceProcessingStateService,
     private readonly openFoodFactsInvoiceEnrichmentService: OpenFoodFactsInvoiceEnrichmentService,
+    private readonly ciqualReferenceService: CiqualReferenceService,
     private readonly usageQuotaService: UsageQuotaService,
     private readonly queues: QueueService,
     private readonly config: ConfigService,
@@ -477,6 +479,35 @@ export class InvoiceService {
       updateData.selectedEan = updateDto.selectedEan;
     }
 
+    if (
+      updateDto.detectedName !== undefined ||
+      updateDto.category !== undefined ||
+      updateDto.selectedEan !== undefined
+    ) {
+      const ciqualMatch = this.ciqualReferenceService.matchInvoiceItem({
+        detectedName:
+          (updateData.detectedName as string | undefined) ??
+          invoiceItem.detectedName,
+        category:
+          updateDto.category !== undefined
+            ? ((updateData.category as string | null) ?? null)
+            : invoiceItem.category,
+        selectedEan:
+          updateDto.selectedEan !== undefined
+            ? updateDto.selectedEan
+            : invoiceItem.selectedEan,
+        productCode: invoiceItem.productCode,
+        quantity: invoiceItem.quantity,
+        confidence: invoiceItem.confidence,
+      });
+      updateData.ciqualCode = ciqualMatch?.code ?? null;
+      updateData.ciqualName = ciqualMatch?.name ?? null;
+      updateData.ciqualMatchConfidence = ciqualMatch?.confidence ?? null;
+      updateData.ciqualNutrients = ciqualMatch
+        ? (ciqualMatch.nutrients as Prisma.InputJsonValue)
+        : Prisma.JsonNull;
+    }
+
     const updatedItem = await this.prisma.invoiceItem.update({
       where: { id: itemId },
       data: updateData,
@@ -816,10 +847,13 @@ export class InvoiceService {
       invoiceId,
       InvoiceProcessingStage.ENRICHING,
     );
-    const enrichedItems =
+    const openFoodFactsItems =
       await this.openFoodFactsInvoiceEnrichmentService.enrichItems(
         analysis.items,
       );
+    const enrichedItems = openFoodFactsItems.map((item) =>
+      this.ciqualReferenceService.enrichItem(item),
+    );
 
     await this.prisma.$transaction(async (tx) => {
       const resolvedItems =
@@ -875,6 +909,12 @@ export class InvoiceService {
             ? (item.externalProductData as unknown as Prisma.InputJsonValue)
             : undefined,
           externalProductError: item.externalProductError,
+          ciqualCode: item.ciqualCode,
+          ciqualName: item.ciqualName,
+          ciqualMatchConfidence: item.ciqualMatchConfidence,
+          ciqualNutrients: item.ciqualNutrients
+            ? (item.ciqualNutrients as Prisma.InputJsonValue)
+            : undefined,
           updatedAt: now,
         })),
       });
@@ -974,6 +1014,7 @@ export class InvoiceService {
     }
 
     const externalProductData = this.getInvoiceExternalProductData(item);
+    const ciqualSource = this.ciqualReferenceService.source();
     const productName =
       this.getNonEmptyString(externalProductData?.name) ?? item.detectedName;
 
@@ -992,8 +1033,14 @@ export class InvoiceService {
         imageUrl: this.getNonEmptyString(externalProductData?.imageUrl),
         externalId:
           this.getNonEmptyString(externalProductData?.barcode) ?? barcode,
-        nutrients: externalProductData?.nutrients
-          ? (externalProductData.nutrients as Prisma.InputJsonValue)
+        ciqualCode: item.ciqualCode,
+        ciqualName: item.ciqualName,
+        nutritionSource: item.ciqualCode ? ciqualSource.name : undefined,
+        nutritionSourceVersion: item.ciqualCode
+          ? ciqualSource.version
+          : undefined,
+        nutrients: externalProductData?.nutrients ?? item.ciqualNutrients
+          ? ((externalProductData?.nutrients ?? item.ciqualNutrients) as Prisma.InputJsonValue)
           : undefined,
         updatedAt: new Date(),
       },
@@ -1074,6 +1121,13 @@ export class InvoiceService {
     if (externalProductData?.nutrients) {
       updateData.nutrients =
         externalProductData.nutrients as Prisma.InputJsonValue;
+    } else if (item.ciqualCode && item.ciqualNutrients) {
+      const ciqualSource = this.ciqualReferenceService.source();
+      updateData.ciqualCode = item.ciqualCode;
+      updateData.ciqualName = item.ciqualName;
+      updateData.nutritionSource = ciqualSource.name;
+      updateData.nutritionSourceVersion = ciqualSource.version;
+      updateData.nutrients = item.ciqualNutrients as Prisma.InputJsonValue;
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -1445,6 +1499,9 @@ export class InvoiceService {
       externalProductStatus: item.externalProductStatus,
       externalProductData: item.externalProductData,
       externalProductError: item.externalProductError,
+      ciqualCode: item.ciqualCode,
+      ciqualName: item.ciqualName,
+      ciqualMatchConfidence: item.ciqualMatchConfidence,
       product: item.Product
         ? {
             id: item.Product.id,

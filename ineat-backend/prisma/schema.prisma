@@ -218,6 +218,10 @@ model Product {
   nutrients         Json?
   imageUrl          String?
   externalId        String?
+  ciqualCode        String?
+  ciqualName        String?
+  nutritionSource   String?
+  nutritionSourceVersion String?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime
   ingredients       String?
@@ -230,6 +234,7 @@ model Product {
 
   @@index([brand])
   @@index([name])
+  @@index([ciqualCode])
 }
 
 model Invoice {
@@ -307,6 +312,10 @@ model InvoiceItem {
   externalProductStatus   String?
   externalProductData     Json?
   externalProductError    String?
+  ciqualCode              String?
+  ciqualName              String?
+  ciqualMatchConfidence   Float?
+  ciqualNutrients         Json?
   expiryDate              DateTime?
   storageLocation         String?
   notes                   String?

@@ -19,6 +19,8 @@ interface NutritionInfoCardProps {
 	unitType?: string;
 	className?: string;
 	compact?: boolean;
+	source?: string;
+	sourceVersion?: string;
 }
 
 interface NutrientConfig {
@@ -49,6 +51,8 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
 	unitType = 'G',
 	className,
 	compact = false,
+	source,
+	sourceVersion,
 }) => {
 	const availableNutrients = NUTRIENT_CONFIG.filter(
 		(config) => nutrients[config.key] !== undefined && nutrients[config.key] !== null
@@ -104,6 +108,12 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
 					))}
 				</tbody>
 			</table>
+			{source && (
+				<p className='mt-3 text-xs text-neutral-600'>
+					Valeurs moyennes pour 100 {referenceUnit} · Source : {source}
+					{sourceVersion ? ` (${sourceVersion})` : ''}
+				</p>
+			)}
 		</WidgetCard>
 	);
 };

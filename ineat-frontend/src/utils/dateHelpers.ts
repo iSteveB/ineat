@@ -52,8 +52,11 @@ export const formatRelativeDate = (date: string | null | undefined): string => {
  * @param date - Date à formater
  * @returns « Périmé », « Aujourd'hui », « Demain », « Dans 3 jours », « Dans 2 mois »…
  */
-export const formatExpiryLabel = (date: string | null | undefined): string => {
-	if (!date) return 'Pas de date';
+export const formatExpiryLabel = (
+	date: string | null | undefined,
+	categorySlug?: string | null
+): string => {
+	if (!date) return categorySlug === 'fruits-et-legumes' ? 'Selon maturité' : 'Pas de date';
 
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);

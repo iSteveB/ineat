@@ -57,6 +57,7 @@ describe('formatExpiryLabel', () => {
 
 	it('handles missing or invalid dates', () => {
 		expect(formatExpiryLabel(null)).toBe('Pas de date');
+		expect(formatExpiryLabel(null, 'fruits-et-legumes')).toBe('Selon maturité');
 		expect(formatExpiryLabel('pas une date')).toBe('Pas de date');
 	});
 });

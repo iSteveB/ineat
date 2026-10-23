@@ -36,6 +36,10 @@ export type ProductMinAggregateOutputType = {
   unitType: $Enums.UnitType | null
   imageUrl: string | null
   externalId: string | null
+  ciqualCode: string | null
+  ciqualName: string | null
+  nutritionSource: string | null
+  nutritionSourceVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
   ingredients: string | null
@@ -53,6 +57,10 @@ export type ProductMaxAggregateOutputType = {
   unitType: $Enums.UnitType | null
   imageUrl: string | null
   externalId: string | null
+  ciqualCode: string | null
+  ciqualName: string | null
+  nutritionSource: string | null
+  nutritionSourceVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
   ingredients: string | null
@@ -71,6 +79,10 @@ export type ProductCountAggregateOutputType = {
   nutrients: number
   imageUrl: number
   externalId: number
+  ciqualCode: number
+  ciqualName: number
+  nutritionSource: number
+  nutritionSourceVersion: number
   createdAt: number
   updatedAt: number
   ingredients: number
@@ -90,6 +102,10 @@ export type ProductMinAggregateInputType = {
   unitType?: true
   imageUrl?: true
   externalId?: true
+  ciqualCode?: true
+  ciqualName?: true
+  nutritionSource?: true
+  nutritionSourceVersion?: true
   createdAt?: true
   updatedAt?: true
   ingredients?: true
@@ -107,6 +123,10 @@ export type ProductMaxAggregateInputType = {
   unitType?: true
   imageUrl?: true
   externalId?: true
+  ciqualCode?: true
+  ciqualName?: true
+  nutritionSource?: true
+  nutritionSourceVersion?: true
   createdAt?: true
   updatedAt?: true
   ingredients?: true
@@ -125,6 +145,10 @@ export type ProductCountAggregateInputType = {
   nutrients?: true
   imageUrl?: true
   externalId?: true
+  ciqualCode?: true
+  ciqualName?: true
+  nutritionSource?: true
+  nutritionSourceVersion?: true
   createdAt?: true
   updatedAt?: true
   ingredients?: true
@@ -216,6 +240,10 @@ export type ProductGroupByOutputType = {
   nutrients: runtime.JsonValue | null
   imageUrl: string | null
   externalId: string | null
+  ciqualCode: string | null
+  ciqualName: string | null
+  nutritionSource: string | null
+  nutritionSourceVersion: string | null
   createdAt: Date
   updatedAt: Date
   ingredients: string | null
@@ -255,6 +283,10 @@ export type ProductWhereInput = {
   nutrients?: Prisma.JsonNullableFilter<"Product">
   imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   externalId?: Prisma.StringNullableFilter<"Product"> | string | null
+  ciqualCode?: Prisma.StringNullableFilter<"Product"> | string | null
+  ciqualName?: Prisma.StringNullableFilter<"Product"> | string | null
+  nutritionSource?: Prisma.StringNullableFilter<"Product"> | string | null
+  nutritionSourceVersion?: Prisma.StringNullableFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   ingredients?: Prisma.StringNullableFilter<"Product"> | string | null
@@ -279,6 +311,10 @@ export type ProductOrderByWithRelationInput = {
   nutrients?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   externalId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ciqualCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  ciqualName?: Prisma.SortOrderInput | Prisma.SortOrder
+  nutritionSource?: Prisma.SortOrderInput | Prisma.SortOrder
+  nutritionSourceVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ingredients?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -306,6 +342,10 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   nutrients?: Prisma.JsonNullableFilter<"Product">
   imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   externalId?: Prisma.StringNullableFilter<"Product"> | string | null
+  ciqualCode?: Prisma.StringNullableFilter<"Product"> | string | null
+  ciqualName?: Prisma.StringNullableFilter<"Product"> | string | null
+  nutritionSource?: Prisma.StringNullableFilter<"Product"> | string | null
+  nutritionSourceVersion?: Prisma.StringNullableFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   ingredients?: Prisma.StringNullableFilter<"Product"> | string | null
@@ -330,6 +370,10 @@ export type ProductOrderByWithAggregationInput = {
   nutrients?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   externalId?: Prisma.SortOrderInput | Prisma.SortOrder
+  ciqualCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  ciqualName?: Prisma.SortOrderInput | Prisma.SortOrder
+  nutritionSource?: Prisma.SortOrderInput | Prisma.SortOrder
+  nutritionSourceVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ingredients?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -354,6 +398,10 @@ export type ProductScalarWhereWithAggregatesInput = {
   nutrients?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   externalId?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  ciqualCode?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  ciqualName?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  nutritionSource?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  nutritionSourceVersion?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Product"> | Date | string
   ingredients?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
@@ -371,6 +419,10 @@ export type ProductCreateInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -395,6 +447,10 @@ export type ProductUncheckedCreateInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -417,6 +473,10 @@ export type ProductUpdateInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -441,6 +501,10 @@ export type ProductUncheckedUpdateInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -464,6 +528,10 @@ export type ProductCreateManyInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -481,6 +549,10 @@ export type ProductUpdateManyMutationInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -499,6 +571,10 @@ export type ProductUncheckedUpdateManyInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -532,6 +608,10 @@ export type ProductCountOrderByAggregateInput = {
   nutrients?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
+  ciqualCode?: Prisma.SortOrder
+  ciqualName?: Prisma.SortOrder
+  nutritionSource?: Prisma.SortOrder
+  nutritionSourceVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ingredients?: Prisma.SortOrder
@@ -549,6 +629,10 @@ export type ProductMaxOrderByAggregateInput = {
   unitType?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
+  ciqualCode?: Prisma.SortOrder
+  ciqualName?: Prisma.SortOrder
+  nutritionSource?: Prisma.SortOrder
+  nutritionSourceVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ingredients?: Prisma.SortOrder
@@ -566,6 +650,10 @@ export type ProductMinOrderByAggregateInput = {
   unitType?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   externalId?: Prisma.SortOrder
+  ciqualCode?: Prisma.SortOrder
+  ciqualName?: Prisma.SortOrder
+  nutritionSource?: Prisma.SortOrder
+  nutritionSourceVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   ingredients?: Prisma.SortOrder
@@ -722,6 +810,10 @@ export type ProductCreateWithoutCategoryInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -744,6 +836,10 @@ export type ProductUncheckedCreateWithoutCategoryInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -796,6 +892,10 @@ export type ProductScalarWhereInput = {
   nutrients?: Prisma.JsonNullableFilter<"Product">
   imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   externalId?: Prisma.StringNullableFilter<"Product"> | string | null
+  ciqualCode?: Prisma.StringNullableFilter<"Product"> | string | null
+  ciqualName?: Prisma.StringNullableFilter<"Product"> | string | null
+  nutritionSource?: Prisma.StringNullableFilter<"Product"> | string | null
+  nutritionSourceVersion?: Prisma.StringNullableFilter<"Product"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Product"> | Date | string
   ingredients?: Prisma.StringNullableFilter<"Product"> | string | null
@@ -813,6 +913,10 @@ export type ProductCreateWithoutInventoryItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -836,6 +940,10 @@ export type ProductUncheckedCreateWithoutInventoryItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -873,6 +981,10 @@ export type ProductUpdateWithoutInventoryItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -896,6 +1008,10 @@ export type ProductUncheckedUpdateWithoutInventoryItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -917,6 +1033,10 @@ export type ProductCreateWithoutInventoryFavoriteInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -940,6 +1060,10 @@ export type ProductUncheckedCreateWithoutInventoryFavoriteInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -977,6 +1101,10 @@ export type ProductUpdateWithoutInventoryFavoriteInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1000,6 +1128,10 @@ export type ProductUncheckedUpdateWithoutInventoryFavoriteInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1021,6 +1153,10 @@ export type ProductCreateWithoutInvoiceItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1044,6 +1180,10 @@ export type ProductUncheckedCreateWithoutInvoiceItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1081,6 +1221,10 @@ export type ProductUpdateWithoutInvoiceItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1104,6 +1248,10 @@ export type ProductUncheckedUpdateWithoutInvoiceItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1125,6 +1273,10 @@ export type ProductCreateWithoutReceiptItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1148,6 +1300,10 @@ export type ProductUncheckedCreateWithoutReceiptItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1185,6 +1341,10 @@ export type ProductUpdateWithoutReceiptItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1208,6 +1368,10 @@ export type ProductUncheckedUpdateWithoutReceiptItemInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1229,6 +1393,10 @@ export type ProductCreateWithoutRecipeIngredientInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1252,6 +1420,10 @@ export type ProductUncheckedCreateWithoutRecipeIngredientInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1289,6 +1461,10 @@ export type ProductUpdateWithoutRecipeIngredientInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1312,6 +1488,10 @@ export type ProductUncheckedUpdateWithoutRecipeIngredientInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1333,6 +1513,10 @@ export type ProductCreateManyCategoryInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: string | null
   externalId?: string | null
+  ciqualCode?: string | null
+  ciqualName?: string | null
+  nutritionSource?: string | null
+  nutritionSourceVersion?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
   ingredients?: string | null
@@ -1350,6 +1534,10 @@ export type ProductUpdateWithoutCategoryInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1372,6 +1560,10 @@ export type ProductUncheckedUpdateWithoutCategoryInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1394,6 +1586,10 @@ export type ProductUncheckedUpdateManyWithoutCategoryInput = {
   nutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ciqualName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSource?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nutritionSourceVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ingredients?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1479,6 +1675,10 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   nutrients?: boolean
   imageUrl?: boolean
   externalId?: boolean
+  ciqualCode?: boolean
+  ciqualName?: boolean
+  nutritionSource?: boolean
+  nutritionSourceVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ingredients?: boolean
@@ -1504,6 +1704,10 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   nutrients?: boolean
   imageUrl?: boolean
   externalId?: boolean
+  ciqualCode?: boolean
+  ciqualName?: boolean
+  nutritionSource?: boolean
+  nutritionSourceVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ingredients?: boolean
@@ -1523,6 +1727,10 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   nutrients?: boolean
   imageUrl?: boolean
   externalId?: boolean
+  ciqualCode?: boolean
+  ciqualName?: boolean
+  nutritionSource?: boolean
+  nutritionSourceVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ingredients?: boolean
@@ -1542,12 +1750,16 @@ export type ProductSelectScalar = {
   nutrients?: boolean
   imageUrl?: boolean
   externalId?: boolean
+  ciqualCode?: boolean
+  ciqualName?: boolean
+  nutritionSource?: boolean
+  nutritionSourceVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   ingredients?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "barcode" | "name" | "brand" | "categoryId" | "nutriscore" | "ecoscore" | "novascore" | "unitType" | "nutrients" | "imageUrl" | "externalId" | "createdAt" | "updatedAt" | "ingredients", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "barcode" | "name" | "brand" | "categoryId" | "nutriscore" | "ecoscore" | "novascore" | "unitType" | "nutrients" | "imageUrl" | "externalId" | "ciqualCode" | "ciqualName" | "nutritionSource" | "nutritionSourceVersion" | "createdAt" | "updatedAt" | "ingredients", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   InventoryItem?: boolean | Prisma.Product$InventoryItemArgs<ExtArgs>
   InventoryFavorite?: boolean | Prisma.Product$InventoryFavoriteArgs<ExtArgs>
@@ -1587,6 +1799,10 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     nutrients: runtime.JsonValue | null
     imageUrl: string | null
     externalId: string | null
+    ciqualCode: string | null
+    ciqualName: string | null
+    nutritionSource: string | null
+    nutritionSourceVersion: string | null
     createdAt: Date
     updatedAt: Date
     ingredients: string | null
@@ -2031,6 +2247,10 @@ export interface ProductFieldRefs {
   readonly nutrients: Prisma.FieldRef<"Product", 'Json'>
   readonly imageUrl: Prisma.FieldRef<"Product", 'String'>
   readonly externalId: Prisma.FieldRef<"Product", 'String'>
+  readonly ciqualCode: Prisma.FieldRef<"Product", 'String'>
+  readonly ciqualName: Prisma.FieldRef<"Product", 'String'>
+  readonly nutritionSource: Prisma.FieldRef<"Product", 'String'>
+  readonly nutritionSourceVersion: Prisma.FieldRef<"Product", 'String'>
   readonly createdAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Product", 'DateTime'>
   readonly ingredients: Prisma.FieldRef<"Product", 'String'>

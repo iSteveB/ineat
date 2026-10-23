@@ -8,6 +8,7 @@ import { InvoiceUploadService } from './services/invoice-upload.service';
 import { OpenFoodFactsInvoiceEnrichmentService } from './services/openfoodfacts-invoice-enrichment.service';
 import { MockInvoiceAnalysisProvider } from './services/providers/mock-invoice-analysis.provider';
 import { OpenAIInvoiceAnalysisProvider } from './services/providers/openai-invoice-analysis.provider';
+import { CiqualReferenceService } from '../ciqual/ciqual-reference.service';
 
 @Module({
   controllers: [InvoiceController],
@@ -18,6 +19,7 @@ import { OpenAIInvoiceAnalysisProvider } from './services/providers/openai-invoi
     InvoiceProductResolverService,
     InvoiceProcessingStateService,
     OpenFoodFactsInvoiceEnrichmentService,
+    CiqualReferenceService,
     MockInvoiceAnalysisProvider,
     OpenAIInvoiceAnalysisProvider,
   ],

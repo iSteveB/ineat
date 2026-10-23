@@ -7,6 +7,7 @@ import NutriScore from '@/components/common/NutriScore';
 import ScoreBadge from '@/components/common/ScoreBadge';
 import type { ExpiryStatus, InventoryItem } from '@/schemas';
 import { formatExpiryLabel } from '@/utils/dateHelpers';
+import { getProductImageUrl } from '@/utils/productPresentation';
 
 interface InventoryItemWithStatus extends InventoryItem {
 	expiryStatus: ExpiryStatus;
@@ -51,6 +52,7 @@ const ProductItem: FC<ProductItemProps> = ({
 		.filter(Boolean)
 		.join(' · ');
 	const isEstimated = item.expiryDateSource === 'ESTIMATED';
+	const imageUrl = getProductImageUrl(item.product);
 
 	return (
 		<Link
@@ -58,8 +60,8 @@ const ProductItem: FC<ProductItemProps> = ({
 			params={{ productId: item.id }}
 			className='group flex items-center gap-3 rounded-md py-3 transition-colors hover:bg-neutral-50 sm:px-2'>
 			<span className='flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md bg-brand-50 text-brand-800'>
-				{item.product.imageUrl ? (
-					<img src={item.product.imageUrl} alt='' className='size-full object-cover' />
+				{imageUrl ? (
+					<img src={imageUrl} alt='' className='size-full object-cover' />
 				) : (
 					<Package className='size-5' aria-hidden='true' />
 				)}
@@ -72,7 +74,7 @@ const ProductItem: FC<ProductItemProps> = ({
 
 			<span className='flex shrink-0 flex-col items-end gap-1.5'>
 				<ExpiryBadge status={item.expiryStatus}>
-					{formatExpiryLabel(item.expiryDate)}
+					{formatExpiryLabel(item.expiryDate, item.product.category.slug)}
 					{isEstimated && <span className='sr-only'> (date estimée)</span>}
 				</ExpiryBadge>
 				{isEstimated && (

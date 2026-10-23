@@ -53,6 +53,10 @@ export interface AnalyzedInvoiceItem {
   externalProductStatus?: InvoiceExternalProductStatus | null;
   externalProductData?: InvoiceExternalProductData | null;
   externalProductError?: string | null;
+  ciqualCode?: string | null;
+  ciqualName?: string | null;
+  ciqualMatchConfidence?: number | null;
+  ciqualNutrients?: InvoiceExternalProductData['nutrients'];
 }
 
 export interface AnalyzedInvoice {

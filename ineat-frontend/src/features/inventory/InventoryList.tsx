@@ -30,6 +30,7 @@ import {
 	formatPrice,
 	getExpiryStatusTextColor,
 } from '@/utils/ui-utils';
+import { getProductImageUrl } from '@/utils/productPresentation';
 
 // ===== CONSTANTES =====
 const INVENTORY_CATEGORIES = [
@@ -579,9 +580,9 @@ export function InventoryItemCard({
 
 						{/* ===== IMAGE DU PRODUIT ===== */}
 						<div className='size-12 bg-neutral-50 rounded-lg flex items-center justify-center overflow-hidden'>
-							{item.product.imageUrl ? (
+							{getProductImageUrl(item.product) ? (
 								<img
-									src={item.product.imageUrl}
+									src={getProductImageUrl(item.product) ?? undefined}
 									alt={item.product.name}
 									className='size-full object-cover'
 								/>
@@ -628,7 +629,9 @@ export function InventoryItemCard({
 												<span className='text-neutral-500'>
 													{lot.expiryDate
 														? formatRelativeDate(lot.expiryDate)
-														: 'Sans date de péremption'}
+												: item.product.category.slug === 'fruits-et-legumes'
+													? 'Selon maturité'
+													: 'Sans date de péremption'}
 												</span>
 											</div>
 										))}
@@ -655,14 +658,14 @@ export function InventoryItemCard({
 					{/* ===== INFORMATIONS D'EXPIRATION ===== */}
 					<div className='mt-3 flex items-center justify-between'>
 						<div className='text-sm'>
-							{item.expiryDate && (
+							{(item.expiryDate || item.product.category.slug === 'fruits-et-legumes') && (
 								<div className='flex items-center gap-2'>
 									<span
 										className={`font-medium ${getExpiryStatusTextColor(
 											expiryStatus,
 										)}`}
 									>
-										{formatRelativeDate(item.expiryDate)}
+									{item.expiryDate ? formatRelativeDate(item.expiryDate) : 'Selon maturité'}
 									</span>
 									{item.expiryDateSource === 'ESTIMATED' && (
 										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>

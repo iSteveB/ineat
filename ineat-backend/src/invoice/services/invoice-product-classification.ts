@@ -31,6 +31,8 @@ const CATEGORY_ALIASES: Record<string, (typeof INVOICE_CATEGORY_SLUGS)[number]> 
   poisson: 'viandes-et-poissons',
   poissons: 'viandes-et-poissons',
   charcuterie: 'viandes-et-poissons',
+  oeuf: 'viandes-et-poissons',
+  oeufs: 'viandes-et-poissons',
   lait: 'produits-laitiers',
   laitage: 'produits-laitiers',
   laitages: 'produits-laitiers',

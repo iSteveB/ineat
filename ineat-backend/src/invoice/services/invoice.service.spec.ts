@@ -80,6 +80,12 @@ describe('InvoiceService', () => {
     enrichItems: jest.fn(),
   };
 
+  const ciqualReferenceService = {
+    enrichItem: jest.fn((item) => item),
+    matchInvoiceItem: jest.fn(() => null),
+    source: jest.fn(() => ({ name: 'Anses CIQUAL', version: '2025-11-03' })),
+  };
+
   const usageQuotaService = {
     assertCanConsume: jest.fn(),
     recordSuccessfulUsage: jest.fn(),
@@ -183,6 +189,7 @@ describe('InvoiceService', () => {
       invoiceProductResolverService as any,
       invoiceProcessingStateService as any,
       openFoodFactsInvoiceEnrichmentService as any,
+      ciqualReferenceService as any,
       usageQuotaService as any,
       queues as any,
       config as any,
