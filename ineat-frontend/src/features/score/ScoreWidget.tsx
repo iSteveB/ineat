@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Activity, Leaf, Beaker } from 'lucide-react';
+import { Beaker, Leaf, Lightbulb } from 'lucide-react';
 import {
 	type NutriScore,
 	type Ecoscore,
@@ -9,19 +9,21 @@ import {
 	numberToNutriScore,
 } from '@/schemas';
 import {
-	getScoreBackgroundColor,
 	ecoscoreToNumber,
 	novascoreToNumber,
 	numberToNovascore,
 	numberToEcoscore,
 } from '@/utils/ui-utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import NutriScoreScale from '@/components/common/NutriScore';
+import ScoreBadge from '@/components/common/ScoreBadge';
+import WidgetCard from '@/components/common/WidgetCard';
 
 interface ScoreWidgetProps {
 	inventory: InventoryItem[];
 }
 
 interface ScoreData {
+	counts: { nutri: number; eco: number; nova: number };
 	nutriScore: {
 		average: number;
 		letter: NutriScore;
@@ -83,6 +85,11 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 				: 0;
 
 		return {
+			counts: {
+				nutri: productsWithNutriscore.length,
+				eco: productsWithEcoscore.length,
+				nova: productsWithNovascore.length,
+			},
 			nutriScore: {
 				average: avgNutriscore,
 				letter: numberToNutriScore(avgNutriscore),
@@ -154,43 +161,6 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 		}
 	};
 
-	// Convertir le Novascore en lettre pour l'affichage
-	const novascoreToLetter = (score: Novascore): string => {
-		const mapping = {
-			GROUP_1: '1',
-			GROUP_2: '2',
-			GROUP_3: '3',
-			GROUP_4: '4',
-		};
-		return mapping[score];
-	};
-
-	// Obtenir les classes CSS pour le badge de score (Nutriscore et Ecoscore)
-	const getScoreBadgeClasses = (letter: string): string => {
-		return `
-			relative font-bold rounded-2xl size-16 flex items-center justify-center text-2xl
-			${getScoreBackgroundColor(letter as 'A' | 'B' | 'C' | 'D' | 'E')} 
-			text-surface shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105
-			before:absolute before:inset-0 before:rounded-2xl before:bg-surface/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
-		`;
-	};
-
-	// Obtenir les classes CSS pour le badge Novascore (avec couleurs basées sur le groupe)
-	const getNovascoreBadgeClasses = (group: Novascore): string => {
-		const colorMap = {
-			GROUP_1: 'bg-nutri-a',
-			GROUP_2: 'bg-nutri-b',
-			GROUP_3: 'bg-nutri-d',
-			GROUP_4: 'bg-nutri-e',
-		};
-		return `
-			relative font-bold rounded-2xl size-16 flex items-center justify-center text-2xl
-			${colorMap[group]} 
-			text-surface shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105
-			before:absolute before:inset-0 before:rounded-2xl before:bg-surface/20 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-300
-		`;
-	};
-
 	// Obtenir le conseil selon le score
 	const getAdvice = (
 		nutriLetter: NutriScore,
@@ -222,159 +192,67 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 		)}.`;
 	};
 
+	const hasScores = scores.counts.nutri + scores.counts.eco + scores.counts.nova > 0;
+
+	if (!hasScores) {
+		return (
+			<WidgetCard title='Qualité de votre stock'>
+				<p className='rounded-md bg-neutral-50 p-4 text-sm text-neutral-700'>
+					Scannez des produits pour voir la qualité nutritionnelle de votre stock.
+				</p>
+			</WidgetCard>
+		);
+	}
+
 	return (
-		<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl hover:shadow-2xl transition-all duration-300'>
-			{/* Effet de brillance en arrière-plan */}
-			<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
-
-			<CardHeader className='pb-4'>
-				<CardTitle className='flex items-center gap-2 text-gray-800'>
-					<Activity className='size-5 text-blue-600' />
-					<span className='font-semibold'>Scores globaux</span>
-				</CardTitle>
-			</CardHeader>
-
-			<CardContent className='space-y-6'>
-				{/* ===== GRILLE DES TROIS SCORES ===== */}
-				<div className='grid grid-cols-3 gap-4'>
-					{/* Nutriscore */}
-					<div className='flex flex-col items-center gap-2'>
-						<div
-							className={getScoreBadgeClasses(
-								scores.nutriScore.letter
-							)}>
-							{scores.nutriScore.letter}
-							{/* Effet de lueur */}
-							<div className='absolute inset-0 rounded-2xl bg-current opacity-20 blur-md' />
-						</div>
-						<div className='text-center'>
-							<p className='text-xs font-semibold text-gray-700'>
-								Nutriscore
-							</p>
-							<p className='text-lg font-bold text-gray-900'>
-								{scores.nutriScore.average.toFixed(1)}/5
-							</p>
-						</div>
-					</div>
-
-					{/* Ecoscore */}
-					<div className='flex flex-col items-center gap-2'>
-						<div
-							className={getScoreBadgeClasses(
-								scores.ecoScore.letter
-							)}>
-							{scores.ecoScore.letter}
-							{/* Effet de lueur */}
-							<div className='absolute inset-0 rounded-2xl bg-current opacity-20 blur-md' />
-						</div>
-						<div className='text-center'>
-							<p className='text-xs font-semibold text-gray-700'>
-								Ecoscore
-							</p>
-							<p className='text-lg font-bold text-gray-900'>
-								{scores.ecoScore.average.toFixed(1)}/5
-							</p>
-						</div>
-					</div>
-
-					{/* Novascore */}
-					<div className='flex flex-col items-center gap-2'>
-						<div
-							className={getNovascoreBadgeClasses(
-								scores.novaScore.letter
-							)}>
-							{novascoreToLetter(scores.novaScore.letter)}
-							{/* Effet de lueur */}
-							<div className='absolute inset-0 rounded-2xl bg-current opacity-20 blur-md' />
-						</div>
-						<div className='text-center'>
-							<p className='text-xs font-semibold text-gray-700'>
-								Novascore
-							</p>
-							<p className='text-lg font-bold text-gray-900'>
-								{scores.novaScore.average.toFixed(1)}/4
-							</p>
-						</div>
-					</div>
+		<WidgetCard
+			title='Qualité de votre stock'
+			subtitle='Moyenne des produits notés de votre inventaire.'>
+			{scores.counts.nutri > 0 && (
+				<div className='flex items-center gap-4'>
+					<NutriScoreScale score={scores.nutriScore.letter} />
+					<p className='text-sm text-neutral-700'>
+						{getNutriscoreMessage(scores.nutriScore.letter)}
+						<span className='block text-neutral-600'>
+							Sur {scores.counts.nutri} produit{scores.counts.nutri > 1 ? 's' : ''} noté
+							{scores.counts.nutri > 1 ? 's' : ''}.
+						</span>
+					</p>
 				</div>
+			)}
 
-				{/* ===== DESCRIPTIONS DES SCORES ===== */}
-				<div className='space-y-3'>
-					{/* Nutriscore */}
-					<div className='flex items-start gap-3 p-3 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 rounded-lg border border-blue-100/50'>
-						<div className='flex-shrink-0 size-8 bg-blue-100 rounded-lg flex items-center justify-center'>
-							<Activity className='size-4 text-blue-600' />
-						</div>
-						<div className='flex-1 min-w-0'>
-							<p className='text-xs font-semibold text-gray-700 mb-0.5'>
-								Nutrition
-							</p>
-							<p className='text-sm text-gray-600 leading-tight'>
-								{getNutriscoreMessage(scores.nutriScore.letter)}
-							</p>
-						</div>
-					</div>
-
-					{/* Ecoscore */}
-					<div className='flex items-start gap-3 p-3 bg-gradient-to-r from-green-50/50 to-emerald-50/50 rounded-lg border border-green-100/50'>
-						<div className='flex-shrink-0 size-8 bg-green-100 rounded-lg flex items-center justify-center'>
-							<Leaf className='size-4 text-green-600' />
-						</div>
-						<div className='flex-1 min-w-0'>
-							<p className='text-xs font-semibold text-gray-700 mb-0.5'>
-								Environnement
-							</p>
-							<p className='text-sm text-gray-600 leading-tight'>
+			<ul className='mt-4 divide-y divide-neutral-200 border-t border-neutral-200'>
+				{scores.counts.eco > 0 && (
+					<li className='flex items-center gap-3 py-3'>
+						<Leaf className='size-5 shrink-0 text-accent-700' aria-hidden='true' />
+						<div className='min-w-0 flex-1'>
+							<p className='font-medium text-neutral-900'>Environnement</p>
+							<p className='text-sm text-neutral-600'>
 								{getEcoscoreMessage(scores.ecoScore.letter)}
 							</p>
 						</div>
-					</div>
-
-					{/* Novascore */}
-					<div className='flex items-start gap-3 p-3 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-lg border border-purple-100/50'>
-						<div className='flex-shrink-0 size-8 bg-purple-100 rounded-lg flex items-center justify-center'>
-							<Beaker className='size-4 text-purple-600' />
-						</div>
-						<div className='flex-1 min-w-0'>
-							<p className='text-xs font-semibold text-gray-700 mb-0.5'>
-								Transformation
-							</p>
-							<p className='text-sm text-gray-600 leading-tight'>
+						<ScoreBadge type='eco' score={scores.ecoScore.letter} size='md' />
+					</li>
+				)}
+				{scores.counts.nova > 0 && (
+					<li className='flex items-center gap-3 py-3'>
+						<Beaker className='size-5 shrink-0 text-accent-700' aria-hidden='true' />
+						<div className='min-w-0 flex-1'>
+							<p className='font-medium text-neutral-900'>Transformation</p>
+							<p className='text-sm text-neutral-600'>
 								{getNovascoreMessage(scores.novaScore.letter)}
 							</p>
 						</div>
-					</div>
-				</div>
+						<ScoreBadge type='nova' score={scores.novaScore.letter} size='md' />
+					</li>
+				)}
+			</ul>
 
-				{/* ===== CONSEIL GLOBAL ===== */}
-				<div className='bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-4'>
-					<div className='flex items-start gap-3'>
-						<div className='flex-shrink-0 size-8 bg-blue-100 rounded-lg flex items-center justify-center'>
-							{scores.nutriScore.letter === 'A' &&
-							scores.ecoScore.letter === 'A' &&
-							scores.novaScore.letter === 'GROUP_1' ? (
-								<span className='text-lg'>🎉</span>
-							) : scores.nutriScore.letter === 'C' ||
-							  scores.ecoScore.letter === 'C' ||
-							  scores.novaScore.letter === 'GROUP_3' ? (
-								<span className='text-lg'>💡</span>
-							) : (
-								<span className='text-lg'>⚠️</span>
-							)}
-						</div>
-						<div className='flex-1'>
-							<p className='text-sm font-medium text-gray-800 leading-relaxed'>
-								{getAdvice(
-									scores.nutriScore.letter,
-									scores.ecoScore.letter,
-									scores.novaScore.letter
-								)}
-							</p>
-						</div>
-					</div>
-				</div>
-			</CardContent>
-		</Card>
+			<p className='mt-1 flex items-start gap-2 rounded-md bg-accent-50 p-3 text-sm text-accent-800'>
+				<Lightbulb className='mt-0.5 size-4 shrink-0' aria-hidden='true' />
+				{getAdvice(scores.nutriScore.letter, scores.ecoScore.letter, scores.novaScore.letter)}
+			</p>
+		</WidgetCard>
 	);
 };
 

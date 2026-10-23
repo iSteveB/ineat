@@ -1,12 +1,13 @@
 import { Link } from '@tanstack/react-router';
 
 const Logo = () => (
-	<Link to='/app'>
+	<Link to='/app' aria-label='InEat, accueil' className='rounded-md'>
 		<svg
 			xmlns='http://www.w3.org/2000/svg'
 			width='139'
 			height='168'
-      className='size-12'
+			className='size-12'
+			aria-hidden='true'
 			fill='none'
 			viewBox='0 0 139 168'>
 			<path fill='#F4BB5F' d='m63 21 6.474-7L76 21l-6.526 6.61z'></path>

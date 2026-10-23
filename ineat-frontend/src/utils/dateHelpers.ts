@@ -64,6 +64,38 @@ export const formatRelativeDate = (date: string | null | undefined): string => {
 };
 
 /**
+ * Libellé de péremption lisible seul, utilisé dans les pastilles du design system.
+ * @param date - Date à formater
+ * @returns « Périmé », « Aujourd'hui », « Demain », « Dans 3 jours », « Dans 2 mois »…
+ */
+export const formatExpiryLabel = (date: string | null | undefined): string => {
+	if (!date) return 'Pas de date';
+
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+
+	const targetDate = new Date(date);
+	if (Number.isNaN(targetDate.getTime())) return 'Pas de date';
+
+	targetDate.setHours(0, 0, 0, 0);
+
+	const diffDays = Math.ceil(
+		(targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+	);
+
+	if (diffDays < 0) return 'Périmé';
+	if (diffDays === 0) return "Aujourd'hui";
+	if (diffDays === 1) return 'Demain';
+	if (diffDays <= 30) return `Dans ${diffDays} jours`;
+	if (diffDays <= 365) {
+		const months = Math.max(1, Math.round(diffDays / 30.44));
+		return months === 1 ? 'Dans 1 mois' : `Dans ${months} mois`;
+	}
+	const years = Math.max(1, Math.round(diffDays / 365.25));
+	return years === 1 ? 'Dans 1 an' : `Dans ${years} ans`;
+};
+
+/**
  * Formate une date au format français
  * @param date - Date à formater
  * @returns Date formatée (ex: "25/12/2024")

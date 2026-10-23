@@ -9,54 +9,18 @@ interface ScoreBadgeProps {
 	className?: string;
 }
 
-// Configuration unifiée des couleurs pour tous les scores
+// Couleurs officielles du Nutri-Score (tokens nutri-*). Lettre foncée sur les fonds clairs pour rester lisible.
 const SCORE_COLORS = {
-	A: {
-		bg: 'bg-[#2E7D32]', // Vert foncé
-		text: 'text-surface',
-		border: 'border-[#2E7D32]',
-	},
-	B: {
-		bg: 'bg-[#689F38]', // Vert moyen
-		text: 'text-surface',
-		border: 'border-[#689F38]',
-	},
-	C: {
-		bg: 'bg-[#FDBF26]', // Jaune
-		text: 'text-surface',
-		border: 'border-[#FDBF26]',
-	},
-	D: {
-		bg: 'bg-[#ED661C]', // Orange
-		text: 'text-surface',
-		border: 'border-[#ED661C]',
-	},
-	E: {
-		bg: 'bg-[#DC0B13]', // Rouge
-		text: 'text-surface',
-		border: 'border-[#DC0B13]',
-	},
+	A: { bg: 'bg-nutri-a', text: 'text-surface', border: 'border-nutri-a' },
+	B: { bg: 'bg-nutri-b', text: 'text-neutral-900', border: 'border-nutri-b' },
+	C: { bg: 'bg-nutri-c', text: 'text-neutral-900', border: 'border-nutri-c' },
+	D: { bg: 'bg-nutri-d', text: 'text-neutral-900', border: 'border-nutri-d' },
+	E: { bg: 'bg-nutri-e', text: 'text-surface', border: 'border-nutri-e' },
 	// Mapping pour Novascore
-	GROUP_1: {
-		bg: 'bg-[#2E7D32]', // Vert foncé
-		text: 'text-surface',
-		border: 'border-[#2E7D32]',
-	},
-	GROUP_2: {
-		bg: 'bg-[#689F38]', // Vert moyen
-		text: 'text-surface',
-		border: 'border-[#689F38]',
-	},
-	GROUP_3: {
-		bg: 'bg-[#ED661C]', // Orange
-		text: 'text-surface',
-		border: 'border-[#ED661C]',
-	},
-	GROUP_4: {
-		bg: 'bg-[#DC0B13]', // Rouge
-		text: 'text-surface',
-		border: 'border-[#DC0B13]',
-	},
+	GROUP_1: { bg: 'bg-nutri-a', text: 'text-surface', border: 'border-nutri-a' },
+	GROUP_2: { bg: 'bg-nutri-b', text: 'text-neutral-900', border: 'border-nutri-b' },
+	GROUP_3: { bg: 'bg-nutri-d', text: 'text-neutral-900', border: 'border-nutri-d' },
+	GROUP_4: { bg: 'bg-nutri-e', text: 'text-surface', border: 'border-nutri-e' },
 } as const;
 
 // Configuration des types de scores
@@ -134,7 +98,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 					className={cn(
 						// Styles de base avec fond gris pour score inconnu
 						'rounded-lg flex flex-col items-center justify-center font-bold border-2',
-						'bg-gray-400 border-gray-400',
+						'bg-neutral-100 border-neutral-300',
 						// Styles de taille
 						sizeStyle.container,
 						sizeStyle.padding,
@@ -146,7 +110,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 					{/* Point d'interrogation pour score inconnu */}
 					<span
 						className={cn(
-							'text-surface font-bold leading-none',
+							'text-neutral-700 font-bold leading-none',
 							sizeStyle.scoreText
 						)}>
 						?
@@ -177,7 +141,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 					className={cn(
 						// Styles de base avec fond gris pour score invalide
 						'rounded-lg flex flex-col items-center justify-center font-bold border-2',
-						'bg-gray-400 border-gray-400',
+						'bg-neutral-100 border-neutral-300',
 						// Styles de taille
 						sizeStyle.container,
 						sizeStyle.padding,
@@ -189,7 +153,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 					{/* Point d'interrogation pour score invalide */}
 					<span
 						className={cn(
-							'text-surface font-bold leading-none',
+							'text-neutral-700 font-bold leading-none',
 							sizeStyle.scoreText
 						)}>
 						?

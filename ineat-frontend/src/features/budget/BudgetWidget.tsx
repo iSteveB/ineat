@@ -1,19 +1,11 @@
 import { type FC, useEffect, useState } from 'react';
+import { CircleAlert, Loader2 } from 'lucide-react';
 
+import WidgetCard from '@/components/common/WidgetCard';
 import BudgetOnboardingCard from '@/features/budget/BudgetOnboardingCard';
 import BudgetSummary from '@/features/budget/BudgetSummary';
-
-import { useBudgetStore, useHasBudget } from '@/stores/budgetStore';
-import {
-	Card,
-	CardContent,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-	Loader2,
-	AlertTriangle,
-} from 'lucide-react';
+import { useBudgetStore, useHasBudget } from '@/stores/budgetStore';
 
 export const BudgetWidget: FC = () => {
 	const hasBudget = useHasBudget();
@@ -31,51 +23,36 @@ export const BudgetWidget: FC = () => {
 
 	if (isLoading) {
 		return (
-			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
-				<CardContent className='flex items-center justify-center py-12'>
-					<div className='text-center space-y-4'>
-						<div className='relative'>
-							<Loader2 className='size-12 animate-spin text-blue-600 mx-auto' />
-							<div className='absolute inset-0 size-12 border-4 border-blue-200 rounded-full animate-pulse mx-auto' />
-						</div>
-						<div className='space-y-2'>
-							<p className='text-gray-700 font-medium'>
-								Vérification du budget...
-							</p>
-							<p className='text-sm text-gray-500'>
-								Analyse de vos données financières
-							</p>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
+			<WidgetCard title='Budget'>
+				<p role='status' className='flex items-center gap-2 py-4 text-sm text-neutral-600'>
+					<Loader2 className='size-5 animate-spin text-accent-600' aria-hidden='true' />
+					Chargement du budget…
+				</p>
+			</WidgetCard>
 		);
 	}
 
 	if (error) {
 		return (
-			<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-red-50/50 shadow-xl'>
-				<CardContent className='py-6'>
-					<Alert className='border-red-200 bg-red-50'>
-						<AlertTriangle className='size-4 text-red-600' />
-						<AlertDescription className='flex justify-between items-center'>
-							<span className='text-red-800 font-medium'>
-								{error}
-							</span>
-							<Button
-								variant='outline'
-								size='sm'
-								onClick={() => {
-									clearError();
-									fetchCurrentBudget(true);
-								}}
-								className='border-red-200 text-red-700 hover:bg-red-100'>
-								Réessayer
-							</Button>
-						</AlertDescription>
-					</Alert>
-				</CardContent>
-			</Card>
+			<WidgetCard title='Budget'>
+				<div
+					role='alert'
+					className='flex flex-wrap items-center justify-between gap-3 rounded-md bg-danger-50 p-3'>
+					<p className='flex items-center gap-2 text-sm font-medium text-danger-700'>
+						<CircleAlert className='size-4 shrink-0' aria-hidden='true' />
+						{error}
+					</p>
+					<Button
+						variant='secondary'
+						size='sm'
+						onClick={() => {
+							clearError();
+							fetchCurrentBudget(true);
+						}}>
+						Réessayer
+					</Button>
+				</div>
+			</WidgetCard>
 		);
 	}
 

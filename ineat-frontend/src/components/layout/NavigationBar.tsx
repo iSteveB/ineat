@@ -1,75 +1,45 @@
 import type { FC } from 'react';
-import { useNavigate, useLocation } from '@tanstack/react-router';
-import { Home, Package, Plus, BookOpen, Settings } from 'lucide-react';
-import NavigationItem from '../common/NavigationItem';
+import { Link, useLocation } from '@tanstack/react-router';
+import { Plus } from 'lucide-react';
 
+import NavigationItem from '../common/NavigationItem';
+import { navigationEntries } from './navigation';
+
+/** Navigation basse mobile : quatre destinations et le bouton d'ajout central. Masquée à partir de 1024px. */
 const NavigationBar: FC = () => {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const pathname = location.pathname;
+	const { pathname } = useLocation();
+	const [first, second, ...rest] = navigationEntries;
+
+	const renderItem = (entry: (typeof navigationEntries)[number]) => {
+		const Icon = entry.icon;
+
+		return (
+			<NavigationItem
+				key={entry.to}
+				icon={<Icon className='size-5' aria-hidden='true' />}
+				to={entry.to}
+				label={entry.label}
+				isActive={entry.isActive(pathname)}
+			/>
+		);
+	};
 
 	return (
-		<div className='fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2'>
-			{/* Backdrop blur effect */}
-			<div className='absolute inset-0  backdrop-blur-xl border-t border-gray-200/50' />
-
-			{/* Navigation container */}
-			<div className='relative mx-auto max-w-md'>
-				{/* Background */}
-				<div className='bg-surface/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 px-6 py-3'>
-					<div className='flex justify-between items-center'>
-						<NavigationItem
-							icon={<Home size={22} />}
-							label='Accueil'
-							to='/app'
-							isActive={
-								pathname === '/app' || pathname === '/app/'
-							}
-						/>
-						<NavigationItem
-							icon={<Package size={22} />}
-							to='/app/inventory'
-							label='Inventaire'
-							isActive={pathname.startsWith('/app/inventory')}
-						/>
-
-						{/* Central action button */}
-						<div className='relative -mt-8'>
-							<button
-								onClick={() =>
-									navigate({ to: '/app/inventory/add' })
-								}
-								className='group relative size-14 bg-gradient-to-r from-accent-600 to-emerald-700 rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer'
-								aria-label='Ajouter un produit'>
-								<Plus
-									size={24}
-									className='text-surface transition-transform duration-300 group-hover:rotate-90'
-								/>
-
-								{/* Glow effect */}
-								<div className='absolute inset-0 bg-gradient-to-r from-accent-600 to-emerald-700 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity duration-300' />
-							</button>
-						</div>
-
-						<NavigationItem
-							icon={<BookOpen size={22} />}
-							to='/app/recipes'
-							label='Recette'
-							isActive={pathname.startsWith('/app/recipes')}
-						/>
-						<NavigationItem
-							icon={<Settings size={22} />}
-							to='/app/settings'
-							label='Paramètre'
-							isActive={
-								pathname.startsWith('/app/profile/settings') ||
-								pathname.startsWith('/app/settings')
-							}
-						/>
-					</div>
-				</div>
+		<nav
+			aria-label='Navigation principale'
+			className='fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden'>
+			<div className='mx-auto flex max-w-md items-center justify-between rounded-xl border border-neutral-200 bg-surface px-2 py-2 shadow-lg'>
+				{renderItem(first)}
+				{renderItem(second)}
+				<Link
+					to='/app/inventory/add'
+					aria-label='Ajouter un produit'
+					className='-mt-7 flex size-14 shrink-0 items-center justify-center rounded-lg bg-accent-600 text-surface shadow-md transition-colors hover:bg-accent-700'>
+					<Plus className='size-6' aria-hidden='true' />
+				</Link>
+				{rest.map(renderItem)}
 			</div>
-		</div>
+		</nav>
 	);
 };
 

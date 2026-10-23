@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { formatRelativeDate } from './dateHelpers';
+import { formatExpiryLabel, formatRelativeDate } from './dateHelpers';
 
 describe('formatRelativeDate', () => {
 	beforeEach(() => {
@@ -30,5 +30,33 @@ describe('formatRelativeDate', () => {
 	it('keeps expired and missing date labels', () => {
 		expect(formatRelativeDate('2026-06-30')).toBe('Expiré');
 		expect(formatRelativeDate(null)).toBe('Pas de date');
+	});
+});
+
+describe('formatExpiryLabel', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-07-01T10:00:00.000Z'));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('uses relative words for the next days', () => {
+		expect(formatExpiryLabel('2026-06-30')).toBe('Périmé');
+		expect(formatExpiryLabel('2026-07-01')).toBe("Aujourd'hui");
+		expect(formatExpiryLabel('2026-07-02')).toBe('Demain');
+		expect(formatExpiryLabel('2026-07-04')).toBe('Dans 3 jours');
+	});
+
+	it('switches to months and years for distant dates', () => {
+		expect(formatExpiryLabel('2026-09-15')).toBe('Dans 2 mois');
+		expect(formatExpiryLabel('2027-08-01')).toBe('Dans 1 an');
+	});
+
+	it('handles missing or invalid dates', () => {
+		expect(formatExpiryLabel(null)).toBe('Pas de date');
+		expect(formatExpiryLabel('pas une date')).toBe('Pas de date');
 	});
 });

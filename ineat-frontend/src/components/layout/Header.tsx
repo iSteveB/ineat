@@ -5,26 +5,29 @@ import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export function Header() {
 	const location = useLocation();
+	const path = location.pathname;
+	const isDashboard = path === '/app' || path === '/app/';
 
-	// Déterminer le titre de la page en fonction de l'URL actuelle
+	// Titre de section ; chaque page porte son propre <h1>.
 	const getPageTitle = (): string => {
-		const path = location.pathname;
-
 		switch (true) {
-			case path === '/app/':
-				return 'Tableau de bord';
 			case path.startsWith('/app/inventory'):
 				return 'Inventaire';
 			case path.startsWith('/app/shopping'):
 				return 'Liste de courses';
 			case path.startsWith('/app/recipes'):
 				return 'Recettes';
+			case path.startsWith('/app/budget'):
+				return 'Budget';
 			case path.startsWith('/app/planning'):
 				return 'Planification';
+			case path.startsWith('/app/settings'):
 			case path.startsWith('/app/profile/settings'):
 				return 'Paramètres';
 			case path.startsWith('/app/profile'):
 				return 'Profil';
+			case path.startsWith('/app/notifications'):
+				return 'Notifications';
 			case path.startsWith('/app/help'):
 				return 'Aide & FAQ';
 			default:
@@ -33,23 +36,19 @@ export function Header() {
 	};
 
 	return (
-		<header className='bg-canvas border-neutral-200 h-18 px-4 flex items-center justify-between lg:max-w-1/3 2xl:min-w-1/2 2xl:max-w-1/2 lg:m-auto lg:min-w-2/3'>
-			<div className='flex items-center mr-3 size-10'>
-				<Logo />
-			</div>
-			{/* Titre de la page */}
-			<div className='flex-1'>
-				<h1 className='text-2xl font-semibold text-text-primary'>
-					{getPageTitle()}
-				</h1>
-			</div>
+		<header className='sticky top-0 z-20 border-b border-neutral-200 bg-surface/95 backdrop-blur lg:border-b-0 lg:bg-canvas/95'>
+			<div className='mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-4 sm:px-6 lg:px-12'>
+				<div className='flex size-10 shrink-0 items-center lg:hidden [&_svg]:size-10'>
+					<Logo />
+				</div>
+				<p className='min-w-0 flex-1 truncate font-display text-lg font-bold text-neutral-900'>
+					{isDashboard ? <span className='lg:sr-only'>InEat</span> : getPageTitle()}
+				</p>
 
-			{/* Actions rapides */}
-			<div className='flex items-center space-x-2'>
-				<NotificationBell />
-
-				{/* Menu utilisateur */}
-				<UserMenu />
+				<div className='flex items-center gap-1'>
+					<NotificationBell />
+					<UserMenu />
+				</div>
 			</div>
 		</header>
 	);
