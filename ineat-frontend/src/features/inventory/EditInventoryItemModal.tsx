@@ -20,6 +20,7 @@ import {
 import { Loader2, Package, Calendar, MapPin, FileText } from 'lucide-react';
 import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import { formatDate as formatFrenchDate } from '@/utils/dateHelpers';
 import {
 	getProductStateOptions,
 	PackageStatus,
@@ -198,7 +199,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			<DialogContent className='max-w-md'>
 				<DialogHeader>
 					<DialogTitle className='flex items-center gap-2'>
-						<Package className='size-5 text-accent-700' />
+						<Package className='size-5 text-accent-700' aria-hidden='true' />
 						Modifier le produit
 					</DialogTitle>
 				</DialogHeader>
@@ -222,7 +223,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 					{/* Quantité */}
 					<div>
 						<Label htmlFor='quantity' className='flex items-center gap-2'>
-							<Package className='size-4' />
+							<Package className='size-4' aria-hidden='true' />
 							Quantité
 						</Label>
 						<Input
@@ -236,7 +237,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							required
 							className='mt-1'
 						/>
-						<p className='text-xs text-neutral-600 mt-1'>
+						<p className='text-sm text-neutral-600 mt-1'>
 							Unité :{' '}
 							{item.product.unitType === 'UNIT'
 								? 'Unité(s)'
@@ -250,7 +251,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							htmlFor='storageLocation'
 							className='flex items-center gap-2'
 						>
-							<MapPin className='size-4' />
+							<MapPin className='size-4' aria-hidden='true' />
 							Lieu de stockage
 						</Label>
 						<Select value={storageLocation} onValueChange={setStorageLocation}>
@@ -270,7 +271,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 					{/* Date de péremption */}
 					<div>
 						<Label htmlFor='expiryDate' className='flex items-center gap-2'>
-							<Calendar className='size-4' />
+							<Calendar className='size-4' aria-hidden='true' />
 							Date de péremption
 						</Label>
 						<Input
@@ -281,15 +282,15 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							className='mt-1'
 						/>
 						{expiryDateSource === 'ESTIMATED' && expiryDate && (
-							<p className='text-xs text-neutral-600 mt-1'>
-								Date estimée recalculée : {expiryDate}
+							<p className='text-sm text-neutral-600 mt-1'>
+								Date estimée : {formatFrenchDate(expiryDate)}
 								{expirySuggestion?.reason
 									? ` (${expirySuggestion.reason})`
 									: ''}
 							</p>
 						)}
 						{expiryDateSource === 'MANUAL' && expiryDate && (
-							<p className='text-xs text-neutral-600 mt-1'>
+							<p className='text-sm text-neutral-600 mt-1'>
 								Date manuelle conservée. Les changements de contexte ne
 								l’écraseront pas.
 							</p>
@@ -299,7 +300,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 					{/* Date d'achat */}
 					<div>
 						<Label htmlFor='purchaseDate' className='flex items-center gap-2'>
-							<Calendar className='size-4' />
+							<Calendar className='size-4' aria-hidden='true' />
 							Date d'achat
 						</Label>
 						<Input
@@ -324,7 +325,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 					{/* Notes */}
 					<div>
 						<Label htmlFor='notes' className='flex items-center gap-2'>
-							<FileText className='size-4' />
+							<FileText className='size-4' aria-hidden='true' />
 							Notes
 						</Label>
 						<Textarea
@@ -341,7 +342,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 					<DialogFooter className='gap-2'>
 						<Button
 							type='button'
-							variant='outline'
+							variant='secondary'
 							onClick={onClose}
 							disabled={isSubmitting}
 						>
@@ -350,12 +351,11 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 						<Button
 							type='submit'
 							disabled={isSubmitting}
-							className='bg-accent-600 hover:bg-accent-600/80'
 						>
 							{isSubmitting ? (
 								<>
-									<Loader2 className='size-4 mr-2 animate-spin' />
-									Modification...
+									<Loader2 className='animate-spin' aria-hidden='true' />
+									Enregistrement…
 								</>
 							) : (
 								'Enregistrer'

@@ -81,17 +81,13 @@ describe('InventoryPage favorites filter', () => {
 		expect(screen.getByText('Yaourt favori')).toBeInTheDocument();
 		expect(screen.getByText('Pommes')).toBeInTheDocument();
 
-		const favoriteButton = screen.getByRole('button', {
-			name: 'Afficher les favoris',
-		});
+		const favoriteButton = screen.getByRole('button', { name: 'Favoris' });
 		expect(favoriteButton).toHaveAttribute('aria-pressed', 'false');
 		await user.click(favoriteButton);
 
 		expect(screen.getByText('Yaourt favori')).toBeInTheDocument();
 		expect(screen.queryByText('Pommes')).not.toBeInTheDocument();
-		expect(
-			screen.getByRole('button', { name: 'Afficher tout l’inventaire' }),
-		).toHaveAttribute('aria-pressed', 'true');
+		expect(favoriteButton).toHaveAttribute('aria-pressed', 'true');
 	});
 
 	it('affiche un état vide dédié quand aucun favori n’existe', async () => {
@@ -99,9 +95,7 @@ describe('InventoryPage favorites filter', () => {
 		const user = userEvent.setup();
 		render(<InventoryPage />);
 
-		await user.click(
-			screen.getByRole('button', { name: 'Afficher les favoris' }),
-		);
+		await user.click(screen.getByRole('button', { name: 'Favoris' }));
 
 		expect(screen.getByText('Aucun produit favori')).toBeInTheDocument();
 	});

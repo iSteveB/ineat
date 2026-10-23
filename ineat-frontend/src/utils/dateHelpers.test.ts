@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { formatExpiryLabel, formatRelativeDate } from './dateHelpers';
+import { calculateExpiryStatus, formatExpiryLabel, formatRelativeDate } from './dateHelpers';
 
 describe('formatRelativeDate', () => {
 	beforeEach(() => {
@@ -58,5 +58,27 @@ describe('formatExpiryLabel', () => {
 	it('handles missing or invalid dates', () => {
 		expect(formatExpiryLabel(null)).toBe('Pas de date');
 		expect(formatExpiryLabel('pas une date')).toBe('Pas de date');
+	});
+});
+
+describe('calculateExpiryStatus', () => {
+	beforeEach(() => {
+		vi.useFakeTimers();
+		// En fin de journée : un calcul en millisecondes classerait le jour même comme périmé
+		vi.setSystemTime(new Date(2026, 6, 1, 21, 30));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('compte en jours calendaires, indépendamment de l’heure', () => {
+		expect(calculateExpiryStatus(new Date(2026, 5, 30).toISOString())).toBe('EXPIRED');
+		expect(calculateExpiryStatus(new Date(2026, 6, 1).toISOString())).toBe('CRITICAL');
+		expect(calculateExpiryStatus(new Date(2026, 6, 3).toISOString())).toBe('CRITICAL');
+		expect(calculateExpiryStatus(new Date(2026, 6, 4).toISOString())).toBe('WARNING');
+		expect(calculateExpiryStatus(new Date(2026, 6, 6).toISOString())).toBe('WARNING');
+		expect(calculateExpiryStatus(new Date(2026, 6, 7).toISOString())).toBe('GOOD');
+		expect(calculateExpiryStatus(null)).toBe('UNKNOWN');
 	});
 });

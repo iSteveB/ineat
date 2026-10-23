@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ProductDetailPage from './ProductDetailPage';
@@ -38,6 +39,9 @@ const inventoryItem = {
 };
 
 vi.mock('@tanstack/react-router', () => ({
+	Link: ({ children, to }: { children: ReactNode; to: string }) => (
+		<a href={to}>{children}</a>
+	),
 	useParams: () => ({ productId: inventoryItem.id }),
 	useNavigate: () => mocks.navigate,
 }));
@@ -79,9 +83,7 @@ describe('ProductDetailPage favorites', () => {
 		const user = userEvent.setup();
 		render(<ProductDetailPage />);
 
-		const favoriteButton = screen.getByRole('button', {
-			name: 'Ajouter aux favoris',
-		});
+		const favoriteButton = screen.getByRole('button', { name: 'Favori' });
 		expect(favoriteButton).toHaveAttribute('aria-pressed', 'false');
 
 		await user.click(favoriteButton);

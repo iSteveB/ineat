@@ -1,15 +1,17 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import {
 	Search,
-	Filter,
+	SlidersHorizontal,
 	X,
 	Plus,
 	Package,
-	Grid3X3,
+	LayoutGrid,
 	List,
 	Trash2,
 	Heart,
+	Loader2,
+	Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from '@tanstack/react-router';
@@ -24,7 +26,19 @@ import {
 	useInventoryActions,
 } from '@/stores/inventoryStore';
 import { useCategories } from '@/hooks/useCategories';
-import { getInitials } from '@/utils/ui-utils';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
 
 const CATEGORY_TO_STORAGE_MAPPING: Record<StorageLocationFilter, string[]> = {
 	ALL: [],
@@ -45,6 +59,8 @@ const InventoryPage: React.FC = () => {
 	const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
 		() => new Set()
 	);
+	const [isConfirmingRemoval, setIsConfirmingRemoval] = useState(false);
+	const filtersPanelId = useId();
 
 	const items = useInventoryItems(); // Items déjà enrichis avec expiryStatus par le store
 	const isLoading = useInventoryLoading();
@@ -204,18 +220,12 @@ const InventoryPage: React.FC = () => {
 			return;
 		}
 
-		const productLabel = selectedCount > 1 ? 'produits' : 'produit';
-		if (
-			window.confirm(
-				`Êtes-vous sûr de vouloir supprimer ${selectedCount} ${productLabel} de votre inventaire ?`
-			)
-		) {
-			try {
-				await removeInventoryItems([...selectedItemIds]);
-				closeSelectionMode();
-			} catch {
-				toast.error('Erreur lors de la suppression des produits');
-			}
+		try {
+			await removeInventoryItems([...selectedItemIds]);
+			setIsConfirmingRemoval(false);
+			closeSelectionMode();
+		} catch {
+			toast.error('Erreur lors de la suppression des produits');
 		}
 	};
 
@@ -233,414 +243,336 @@ const InventoryPage: React.FC = () => {
 		return category?.name || 'Catégorie inconnue';
 	};
 
-	return (
-		<div className='flex flex-col h-full bg-gradient-to-br from-gray-50 to-blue-50/30'>
-			<div className='relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm'>
-				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+	const productLabel = (count: number) => `produit${count > 1 ? 's' : ''}`;
 
-				<div className='relative px-6 py-4 flex items-center gap-4'>
-					<div className='relative'>
-						<div className='size-14 rounded-2xl bg-gradient-to-br from-brand-300/50 to-brand-300 overflow-hidden shadow-lg'>
-							{user?.avatarUrl ? (
-								<img
-									src={user.avatarUrl}
-									alt='Avatar utilisateur'
-									className='size-full object-cover'
-								/>
-							) : (
-								<div className='flex items-center justify-center size-full text-surface text-4xl'>
-									{getInitials(
-										user?.firstName || '',
-										user?.lastName || ''
-									)}
-								</div>
-							)}
-						</div>
-					</div>
-					<div className='flex-1'>
-						<h1 className='text-2xl font-bold text-gray-900 mb-1'>
-							Mon Inventaire
-						</h1>
-						<p className='text-gray-600 text-sm'>
-							{items.length} produit
-							{items.length > 1 ? 's' : ''} dans votre inventaire
-							{' '}sur {inventoryLimit}
-						</p>
-					</div>
-					<Link
-						to={
-							hasReachedInventoryLimit
-								? '/app/subscription'
-								: '/app/inventory/add'
-						}
-						className='flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-600 to-emerald-700 text-surface rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105'>
-						<Plus className='size-4' />
-						<span className='font-semibold'>
-							{hasReachedInventoryLimit ? 'Débloquer' : 'Ajouter'}
-						</span>
+	return (
+		<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
+			<header className='flex flex-wrap items-end justify-between gap-3'>
+				<div>
+					<h1 className='type-h1 text-neutral-900'>Inventaire</h1>
+					<p className='text-sm text-neutral-600'>
+						{items.length} {productLabel(items.length)} sur {inventoryLimit}
+					</p>
+				</div>
+				<Button
+					asChild
+					variant={hasReachedInventoryLimit ? 'brand' : 'primary'}
+					className={cn(!hasReachedInventoryLimit && 'hidden sm:inline-flex')}>
+					<Link to={hasReachedInventoryLimit ? '/app/subscription' : '/app/inventory/add'}>
+						{hasReachedInventoryLimit ? (
+							<Sparkles aria-hidden='true' />
+						) : (
+							<Plus aria-hidden='true' />
+						)}
+						{hasReachedInventoryLimit ? 'Passer Premium' : 'Ajouter un produit'}
 					</Link>
-				</div>
-			</div>
+				</Button>
+			</header>
+
 			{hasReachedInventoryLimit && (
-				<div className='px-6 pt-4'>
-					<div className='rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800'>
-						{hasExceededInventoryLimit && isFreeLimit
-							? 'Votre inventaire dépasse la limite Free de 50 articles. Supprimez des articles ou passez Premium pour en ajouter.'
-							: `Limite d’inventaire atteinte: ${inventoryLimit} articles. Passez Premium pour en ajouter.`}
-					</div>
-				</div>
+				<p role='status' className='rounded-lg bg-warning-50 px-4 py-3 text-sm text-warning-700'>
+					{hasExceededInventoryLimit && isFreeLimit
+						? 'Votre inventaire dépasse la limite Free de 50 articles. Supprimez des articles ou passez Premium pour en ajouter.'
+						: `Limite d’inventaire atteinte : ${inventoryLimit} articles. Passez Premium pour en ajouter.`}
+				</p>
 			)}
 
-			{/* ===== BARRE DE RECHERCHE ===== */}
-			<div className='px-6 py-5'>
-				<div className='relative'>
-					<div className='absolute inset-y-0 left-4 flex items-center pointer-events-none'>
-						<Search className='size-5 text-gray-400' />
-					</div>
-					<input
-						type='text'
-						placeholder='Rechercher un produit ou une marque...'
-						className='w-full pl-12 pr-4 py-4 bg-surface border border-gray-200 rounded-2xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none transition-all duration-300'
-						value={searchQuery}
-						onChange={(e) => setSearchQuery(e.target.value)}
-					/>
-					{searchQuery && (
-						<button
-							onClick={() => setSearchQuery('')}
-							className='absolute inset-y-0 right-4 flex items-center text-gray-400 hover:text-gray-600'>
-							<X className='size-5' />
-						</button>
-					)}
-				</div>
+			{/* ===== RECHERCHE ===== */}
+			<div className='relative'>
+				<label htmlFor='inventory-search' className='sr-only'>
+					Rechercher un produit ou une marque
+				</label>
+				<Search
+					className='pointer-events-none absolute left-3.5 top-1/2 size-5 -translate-y-1/2 text-neutral-600'
+					aria-hidden='true'
+				/>
+				<Input
+					id='inventory-search'
+					type='search'
+					placeholder='Rechercher un produit ou une marque…'
+					className='h-12 bg-surface pl-11 pr-12'
+					value={searchQuery}
+					onChange={(e) => setSearchQuery(e.target.value)}
+				/>
+				{searchQuery && (
+					<button
+						type='button'
+						onClick={() => setSearchQuery('')}
+						aria-label='Effacer la recherche'
+						className='absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'>
+						<X className='size-5' aria-hidden='true' />
+					</button>
+				)}
 			</div>
 
-			{/* ===== FILTRES ET CONTRÔLES ===== */}
-			<div className='px-6 space-y-5'>
-				{/* Filtres par lieu de stockage */}
-				<CategoryFilter
-					activeCategory={activeStorageCategory}
-					onCategoryChange={setActiveStorageCategory}
-				/>
+			<CategoryFilter
+				activeCategory={activeStorageCategory}
+				onCategoryChange={setActiveStorageCategory}
+			/>
 
-				{/* Contrôles avancés */}
-				<div className='flex items-center justify-between pb-2'>
-					<div className='flex items-center gap-2'>
+			{/* ===== OUTILS ===== */}
+			<div className='flex flex-wrap items-center gap-2'>
+				<Button
+					variant='secondary'
+					onClick={() => setShowFilters(!showFilters)}
+					aria-expanded={showFilters}
+					aria-controls={filtersPanelId}
+					className={cn(selectedCategoryId && 'border-accent-600 text-accent-700')}>
+					<SlidersHorizontal aria-hidden='true' />
+					Filtres
+					{selectedCategoryId && (
+						<span className='rounded-full bg-accent-600 px-1.5 text-xs font-semibold text-surface'>
+							1
+						</span>
+					)}
+				</Button>
+				<Button
+					variant='secondary'
+					onClick={() => setShowFavoritesOnly((current) => !current)}
+					aria-pressed={showFavoritesOnly}
+					className={cn(showFavoritesOnly && 'border-danger-600 bg-danger-50 text-danger-700 hover:bg-danger-50')}>
+					<Heart className={cn(showFavoritesOnly && 'fill-current')} aria-hidden='true' />
+					Favoris
+				</Button>
+
+				<div className='ml-auto flex items-center gap-2'>
+					{isSelectionMode && sortedItems.length > 0 ? (
+						<label className='inline-flex h-11 cursor-pointer items-center gap-2 rounded-md border border-neutral-300 bg-surface px-3 text-sm font-medium text-neutral-900'>
+							<input
+								type='checkbox'
+								checked={areAllVisibleItemsSelected}
+								onChange={toggleSelectAllVisibleItems}
+								disabled={isLoading}
+								className='size-4 accent-accent-600'
+							/>
+							Tout sélectionner
+						</label>
+					) : sortedItems.length > 0 ? (
+						<Button
+							variant='secondary'
+							size='icon'
+							onClick={openSelectionMode}
+							disabled={isLoading}
+							aria-label='Supprimer des produits'>
+							<Trash2 aria-hidden='true' />
+						</Button>
+					) : null}
+
+					<div role='group' aria-label='Affichage' className='hidden items-center rounded-md border border-neutral-300 bg-surface p-0.5 md:flex'>
 						<button
-							onClick={() => setShowFilters(!showFilters)}
-							aria-label='Afficher les filtres'
-							className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all cursor-pointer duration-300 ${
-								searchQuery ||
-								activeStorageCategory !== 'ALL' ||
-								selectedCategoryId
-									? 'bg-blue-500 text-surface border-blue-500 shadow-lg'
-									: 'bg-surface text-gray-600 border-gray-200 hover:border-blue-500 hover:shadow-md'
-							}`}>
-							<Filter className='size-4' />
-
-							{(searchQuery ||
-								activeStorageCategory !== 'ALL' ||
-								selectedCategoryId) && (
-								<span className='bg-surface/20 text-xs px-2 py-0.5 rounded-full font-semibold'>
-									{(searchQuery ? 1 : 0) +
-										(activeStorageCategory !== 'ALL' ? 1 : 0) +
-										(selectedCategoryId ? 1 : 0)}
-								</span>
-							)}
+							type='button'
+							onClick={() => setViewMode('grid')}
+							aria-pressed={viewMode === 'grid'}
+							aria-label='Affichage en grille'
+							className={cn(
+								'flex size-9 cursor-pointer items-center justify-center rounded-sm transition-colors',
+								viewMode === 'grid' ? 'bg-accent-50 text-accent-800' : 'text-neutral-600 hover:text-neutral-900'
+							)}>
+							<LayoutGrid className='size-4' aria-hidden='true' />
 						</button>
 						<button
 							type='button'
-							onClick={() => setShowFavoritesOnly((current) => !current)}
-							aria-label={
-								showFavoritesOnly
-									? 'Afficher tout l’inventaire'
-									: 'Afficher les favoris'
-							}
-							aria-pressed={showFavoritesOnly}
-							title='Favoris'
-							className={`inline-flex size-11 cursor-pointer items-center justify-center rounded-xl border transition-all duration-300 ${
-								showFavoritesOnly
-									? 'border-red-500 bg-red-50 text-red-500 shadow-md'
-									: 'border-gray-200 bg-surface text-gray-600 hover:border-red-300 hover:text-red-500'
-							}`}>
-							<Heart
-								className={`size-4 ${showFavoritesOnly ? 'fill-current' : ''}`}
-							/>
+							onClick={() => setViewMode('list')}
+							aria-pressed={viewMode === 'list'}
+							aria-label='Affichage en liste'
+							className={cn(
+								'flex size-9 cursor-pointer items-center justify-center rounded-sm transition-colors',
+								viewMode === 'list' ? 'bg-accent-50 text-accent-800' : 'text-neutral-600 hover:text-neutral-900'
+							)}>
+							<List className='size-4' aria-hidden='true' />
 						</button>
 					</div>
+				</div>
+			</div>
 
-					<div className='flex items-center gap-2'>
-						{isSelectionMode && sortedItems.length > 0 ? (
-							<label className='flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-surface text-sm font-semibold text-gray-600'>
-								<input
-									type='checkbox'
-									checked={areAllVisibleItemsSelected}
-									onChange={toggleSelectAllVisibleItems}
-									disabled={isLoading}
-									className='size-4 rounded border-gray-300 text-accent-700 focus:ring-accent-600'
-								/>
-								Tout sélectionner
-							</label>
-						) : sortedItems.length > 0 ? (
+			{/* ===== PANNEAU FILTRES ===== */}
+			{showFilters && (
+				<section id={filtersPanelId} aria-label='Filtres' className='card flex flex-col gap-4 p-4 sm:flex-row sm:items-end'>
+					<div className='flex flex-1 flex-col gap-1.5'>
+						<label htmlFor='inventory-category' className='text-sm font-medium text-neutral-900'>
+							Catégorie de produit
+						</label>
+						{categoriesLoading ? (
+							<p className='text-sm text-neutral-600'>Chargement des catégories…</p>
+						) : (
+							<select
+								id='inventory-category'
+								value={selectedCategoryId}
+								onChange={(e) => setSelectedCategoryId(e.target.value)}
+								className='h-11 w-full cursor-pointer rounded-md border border-input bg-surface px-3 text-neutral-900'>
+								<option value=''>Toutes les catégories</option>
+								{categories.map((category) => (
+									<option key={category.id} value={category.id}>
+										{category.name}
+									</option>
+								))}
+							</select>
+						)}
+					</div>
+					<div className='flex gap-2'>
+						<Button variant='ghost' onClick={clearAllFilters}>
+							Tout effacer
+						</Button>
+						<Button onClick={() => setShowFilters(false)}>Fermer</Button>
+					</div>
+				</section>
+			)}
+
+			{/* ===== FILTRES ACTIFS ===== */}
+			{hasActiveFilters && (
+				<ul aria-label='Filtres actifs' className='flex flex-wrap gap-2'>
+					{searchQuery && (
+						<li className='inline-flex items-center gap-1 rounded-full bg-accent-50 py-1 pl-3 pr-1 text-sm font-medium text-accent-800'>
+							Recherche : « {searchQuery} »
 							<button
 								type='button'
-								onClick={openSelectionMode}
-								disabled={isLoading}
-								aria-label='Supprimer des produits'
-								className='inline-flex cursor-pointer items-center justify-center p-2.5 rounded-xl border border-red-200 bg-surface text-red-600 transition-all hover:border-red-500 hover:bg-red-50 disabled:opacity-50'>
-								<Trash2 className='size-4' />
+								onClick={() => setSearchQuery('')}
+								aria-label='Retirer la recherche'
+								className='flex size-7 cursor-pointer items-center justify-center rounded-full hover:bg-accent-100'>
+								<X className='size-4' aria-hidden='true' />
 							</button>
-						) : null}
-					</div>
-
-					<div className='items-center gap-2 hidden md:flex'>
-						<button
-							onClick={() => setViewMode('grid')}
-							className={`p-2 rounded-lg transition-colors ${
-								viewMode === 'grid'
-									? 'bg-blue-100 text-blue-600'
-									: 'text-gray-400 hover:text-gray-600'
-							}`}>
-							<Grid3X3 className='size-4' />
-						</button>
-						<button
-							onClick={() => setViewMode('list')}
-							className={`p-2 rounded-lg transition-colors ${
-								viewMode === 'list'
-									? 'bg-blue-100 text-blue-600'
-									: 'text-gray-400 hover:text-gray-600'
-							}`}>
-							<List className='size-4' />
-						</button>
-					</div>
-				</div>
-			</div>
-
-			{/* ===== PANNEAU FILTRES AVANCÉS ===== */}
-			{showFilters && (
-				<div className='px-6 py-5'>
-					<div className='bg-surface rounded-2xl p-6 shadow-lg border border-gray-200'>
-						<div className='flex items-center justify-between mb-5'>
-							<h3 className='text-lg font-bold text-gray-900'>
-								Filtres
-							</h3>
+						</li>
+					)}
+					{selectedCategoryId && (
+						<li className='inline-flex items-center gap-1 rounded-full bg-accent-50 py-1 pl-3 pr-1 text-sm font-medium text-accent-800'>
+							Catégorie : {getSelectedCategoryName()}
 							<button
-								onClick={() => setShowFilters(false)}
-								className='p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors'>
-								<X className='size-5' />
+								type='button'
+								onClick={() => setSelectedCategoryId('')}
+								aria-label='Retirer le filtre de catégorie'
+								className='flex size-7 cursor-pointer items-center justify-center rounded-full hover:bg-accent-100'>
+								<X className='size-4' aria-hidden='true' />
 							</button>
-						</div>
-
-						<div className='space-y-4'>
-							<div>
-								<label className='block text-sm font-semibold text-gray-700 mb-2'>
-									Catégorie de produit
-								</label>
-								{categoriesLoading ? (
-									<div className='text-sm text-gray-500 p-3 bg-gray-50 rounded-lg'>
-										Chargement des catégories...
-									</div>
-								) : (
-									<select
-										value={selectedCategoryId}
-										onChange={(e) =>
-											setSelectedCategoryId(
-												e.target.value
-											)
-										}
-										className='w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300'>
-										<option value=''>
-											Toutes les catégories
-										</option>
-										{categories.map((category) => (
-											<option
-												key={category.id}
-												value={category.id}>
-												{category.name}
-											</option>
-										))}
-									</select>
-								)}
-							</div>
-
-							<div className='flex justify-between pt-5 border-t border-gray-200'>
-								<button
-									onClick={clearAllFilters}
-									className='text-gray-600 hover:text-gray-900 font-medium cursor-pointer transition-colors'>
-									Effacer tous les filtres
-								</button>
-								<button
-									onClick={() => setShowFilters(false)}
-									className='bg-accent-600 text-surface px-6 py-2 rounded-xl hover:bg-accent-600/80 cursor-pointer transition-colors font-semibold shadow-lg hover:shadow-xl'>
-									Appliquer
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* ===== FILTRES ACTIFS (TAGS) ===== */}
-			{hasActiveFilters && (
-				<div className='px-6 py-3'>
-					<div className='flex flex-wrap gap-2'>
-						{searchQuery && (
-							<div className='flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-xl text-sm font-medium cursor-pointer'>
-								<span>Recherche: "{searchQuery}"</span>
-								<button
-									onClick={() => setSearchQuery('')}
-									className='hover:bg-blue-200 rounded-full p-0.5 transition-colors cursor-pointer'>
-									<X className='size-3' />
-								</button>
-							</div>
-						)}
-
-						{selectedCategoryId && (
-							<div className='flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-1.5 rounded-xl text-sm font-medium'>
-								<span>
-									Catégorie: {getSelectedCategoryName()}
-								</span>
-								<button
-									onClick={() => setSelectedCategoryId('')}
-									className='hover:bg-blue-200 rounded-full p-0.5 transition-colors'>
-									<X className='size-3' />
-								</button>
-							</div>
-						)}
-						{showFavoritesOnly && (
-							<div className='flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 rounded-xl text-sm font-medium'>
-								<span>Favoris</span>
-								<button
-									onClick={() => setShowFavoritesOnly(false)}
-									aria-label='Retirer le filtre favoris'
-									className='hover:bg-red-100 rounded-full p-0.5 transition-colors'>
-									<X className='size-3' />
-								</button>
-							</div>
-						)}
-					</div>
-				</div>
-			)}
-
-			{/* ===== LISTE DES PRODUITS ===== */}
-			<div className='flex-1 pb-28 overflow-auto'>
-				<div className='px-4 sm:px-6'>
-					{isSelectionMode && (
-						<div className='mb-4 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-surface p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between'>
-							<p className='text-sm font-semibold text-gray-800'>
-								{selectedCount > 0
-									? `${selectedCount} produit${
-											selectedCount > 1 ? 's' : ''
-									  } sélectionné${selectedCount > 1 ? 's' : ''}`
-									: 'Sélectionnez les produits à supprimer'}
-							</p>
-							<div className='flex items-center gap-2'>
-								<button
-									type='button'
-									onClick={closeSelectionMode}
-									disabled={isLoading}
-									className='inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50'>
-									<X className='size-4' />
-									Annuler
-								</button>
-								<button
-									type='button'
-									onClick={handleRemoveSelectedItems}
-									disabled={isLoading || selectedCount === 0}
-									className='inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-surface transition-colors hover:bg-red-700 disabled:opacity-50'>
-									<Trash2 className='size-4' />
-									{isLoading ? 'Suppression...' : 'Supprimer'}
-								</button>
-							</div>
-						</div>
+						</li>
 					)}
+					{showFavoritesOnly && (
+						<li className='inline-flex items-center gap-1 rounded-full bg-danger-50 py-1 pl-3 pr-1 text-sm font-medium text-danger-700'>
+							Favoris
+							<button
+								type='button'
+								onClick={() => setShowFavoritesOnly(false)}
+								aria-label='Retirer le filtre favoris'
+								className='flex size-7 cursor-pointer items-center justify-center rounded-full hover:bg-surface'>
+								<X className='size-4' aria-hidden='true' />
+							</button>
+						</li>
+					)}
+				</ul>
+			)}
 
-					{isLoading ? (
-						// ===== ÉTAT DE CHARGEMENT =====
-						<div className='flex flex-col justify-center items-center h-64'>
-							<div className='relative'>
-								<div className='size-16 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600' />
-								<div className='absolute inset-0 size-16 border-4 border-transparent rounded-full animate-pulse border-t-blue-400' />
-							</div>
-							<div className='mt-6 text-center'>
-								<p className='text-gray-700 font-medium'>
-									Chargement de votre inventaire...
-								</p>
-								<p className='text-sm text-gray-500 mt-1'>
-									Analyse de vos produits en cours
-								</p>
-							</div>
-						</div>
-					) : sortedItems.length > 0 ? (
-						// ===== LISTE DES PRODUITS =====
-						<div
-							className={
-								viewMode === 'grid'
-									? 'grid gap-3 lg:gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
-									: 'space-y-3 lg:space-y-4'
-							}>
-							{sortedItems.map((item, index) => (
-								<div
-									key={item.id}
-									className='w-full overflow-hidden'
-									style={{
-										animationDelay: `${index * 50}ms`,
-									}}>
-									<ProductCard
-										item={item}
-										isSelectionMode={isSelectionMode}
-										isSelected={selectedItemIds.has(item.id)}
-										onToggleSelection={() =>
-											toggleItemSelection(item.id)
-										}
-									/>
-								</div>
-							))}
-						</div>
+			{/* ===== SÉLECTION ===== */}
+			{isSelectionMode && (
+				<div className='card flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between'>
+					<p aria-live='polite' className='font-medium text-neutral-900'>
+						{selectedCount > 0
+							? `${selectedCount} ${productLabel(selectedCount)} sélectionné${selectedCount > 1 ? 's' : ''}`
+							: 'Sélectionnez les produits à supprimer'}
+					</p>
+					<div className='flex gap-2'>
+						<Button variant='secondary' onClick={closeSelectionMode} disabled={isLoading}>
+							Annuler
+						</Button>
+						<Button
+							variant='error'
+							onClick={() => setIsConfirmingRemoval(true)}
+							disabled={isLoading || selectedCount === 0}>
+							<Trash2 aria-hidden='true' />
+							Supprimer
+						</Button>
+					</div>
+				</div>
+			)}
+
+			{/* ===== LISTE ===== */}
+			<p aria-live='polite' className='sr-only'>
+				{isLoading ? '' : `${sortedItems.length} ${productLabel(sortedItems.length)} affiché${sortedItems.length > 1 ? 's' : ''}`}
+			</p>
+
+			{isLoading ? (
+				<p role='status' className='flex items-center justify-center gap-3 py-16 text-neutral-600'>
+					<Loader2 className='size-6 animate-spin text-accent-600' aria-hidden='true' />
+					Chargement de votre inventaire…
+				</p>
+			) : sortedItems.length > 0 ? (
+				<ul
+					className={cn(
+						'grid gap-3 lg:gap-4',
+						viewMode === 'grid' ? 'grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3' : 'grid-cols-1'
+					)}>
+					{sortedItems.map((item) => (
+						<li key={item.id} className='min-w-0'>
+							<ProductCard
+								item={item}
+								isSelectionMode={isSelectionMode}
+								isSelected={selectedItemIds.has(item.id)}
+								onToggleSelection={() => toggleItemSelection(item.id)}
+							/>
+						</li>
+					))}
+				</ul>
+			) : (
+				<div className='card flex flex-col items-center gap-3 px-6 py-12 text-center'>
+					<span className='flex size-14 items-center justify-center rounded-lg bg-brand-50 text-brand-800'>
+						{showFavoritesOnly ? (
+							<Heart className='size-7' aria-hidden='true' />
+						) : (
+							<Package className='size-7' aria-hidden='true' />
+						)}
+					</span>
+					<h2 className='type-h2 text-neutral-900'>
+						{showFavoritesOnly
+							? 'Aucun produit favori'
+							: hasActiveFilters
+								? 'Aucun produit trouvé'
+								: 'Votre inventaire est vide'}
+					</h2>
+					<p className='max-w-md text-neutral-700'>
+						{showFavoritesOnly
+							? 'Ajoutez des produits à vos favoris depuis leur fiche pour les retrouver ici.'
+							: hasActiveFilters
+								? 'Aucun produit ne correspond à vos critères. Essayez de modifier vos filtres.'
+								: 'Ajoutez vos premiers produits pour suivre leurs dates de péremption.'}
+					</p>
+					{hasActiveFilters ? (
+						<Button variant='secondary' onClick={clearAllFilters} className='mt-2'>
+							Effacer les filtres
+						</Button>
 					) : (
-						// ===== ÉTAT VIDE  =====
-						<div className='flex flex-col items-center justify-center h-64 text-center pt-22'>
-							<div className='relative mb-8'>
-								<div className='size-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center'>
-									<Package className='size-10 text-gray-400' />
-								</div>
-								<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg'>
-									<Plus className='size-4 text-surface' />
-								</div>
-							</div>
-							<div className='space-y-3'>
-								<h3 className='text-xl font-bold text-gray-900'>
-									{showFavoritesOnly
-										? 'Aucun produit favori'
-										: hasActiveFilters
-										? 'Aucun produit trouvé'
-										: 'Votre inventaire est vide'}
-								</h3>
-								<p className='text-gray-600 max-w-md'>
-									{showFavoritesOnly
-										? 'Ajoutez des produits à vos favoris depuis leur fiche pour les retrouver ici.'
-										: hasActiveFilters
-										? 'Aucun produit ne correspond à vos critères de recherche. Essayez de modifier vos filtres.'
-										: 'Commencez par ajouter des produits à votre inventaire pour mieux gérer vos stocks.'}
-								</p>
-								{hasActiveFilters ? (
-									<button
-										onClick={clearAllFilters}
-										className='mt-8 px-8 py-3 rounded-xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors shadow-md hover:shadow-lg cursor-pointer'>
-										Effacer les filtres
-									</button>
-								) : (
-									<Link
-										to='/app/inventory/add'
-										className='inline-flex items-center gap-2 mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 text-surface font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105'>
-										<Plus className='size-5' />
-										Ajouter un produit
-									</Link>
-								)}
-							</div>
-						</div>
+						<Button asChild className='mt-2'>
+							<Link to='/app/inventory/add'>
+								<Plus aria-hidden='true' />
+								Ajouter un produit
+							</Link>
+						</Button>
 					)}
 				</div>
-			</div>
+			)}
+
+			<AlertDialog open={isConfirmingRemoval} onOpenChange={setIsConfirmingRemoval}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Supprimer {selectedCount} {productLabel(selectedCount)} ?
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{selectedCount > 1 ? 'Ces produits seront retirés' : 'Ce produit sera retiré'} de
+							votre inventaire. Cette action est définitive.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogAction
+							className={buttonVariants({ variant: 'error' })}
+							onClick={(event) => {
+								event.preventDefault();
+								void handleRemoveSelectedItems();
+							}}
+							disabled={isLoading}>
+							{isLoading ? 'Suppression…' : 'Supprimer'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 };

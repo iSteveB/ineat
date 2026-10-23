@@ -1,16 +1,15 @@
 import { useEffect, useState, type FC } from 'react';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { Link, useNavigate, useParams } from '@tanstack/react-router';
 import {
 	ArrowLeft,
-	Package,
+	Beaker,
+	Leaf,
+	Loader2,
 	MapPin,
-	Calendar,
-	ShoppingCart,
+	Package,
+	PencilLine,
+	SearchX,
 	Trash2,
-	Edit3,
-	AlertTriangle,
-	CheckCircle2,
-	Clock,
 	Heart,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,13 +21,26 @@ import {
 import {
 	calculateExpiryStatus,
 	formatDate,
-	formatRelativeDate,
+	formatExpiryLabel,
 } from '@/utils/dateHelpers';
 import { NutritionInfoCard } from '@/features/product/NutritionInfoCard';
 import { IngredientsCard } from '@/features/product/IngredientsCard';
 import { EditInventoryItemModal } from '@/features/inventory/EditInventoryItemModal';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button, buttonVariants } from '@/components/ui/button';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import ExpiryBadge from '@/components/common/ExpiryBadge';
+import NutriScore from '@/components/common/NutriScore';
+import ScoreBadge from '@/components/common/ScoreBadge';
+import WidgetCard from '@/components/common/WidgetCard';
 import { UpdateInventoryItemData } from '@/schemas';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 
@@ -48,6 +60,8 @@ const ProductDetailPage: FC = () => {
 	const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
 	const [isUpdating, setIsUpdating] = useState<boolean>(false);
 	const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false);
+	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+	const [isDeleting, setIsDeleting] = useState(false);
 
 	// Charger les données au montage du composant si elles ne sont pas déjà chargées
 	useEffect(() => {
@@ -60,92 +74,7 @@ const ProductDetailPage: FC = () => {
 	const inventoryItem = items.find((item) => item.id === productId);
 
 	// Calculer le statut d'expiration
-	const expiryStatus = inventoryItem?.expiryDate
-		? calculateExpiryStatus(inventoryItem.expiryDate)
-		: 'Inconnu';
-
-	// Obtenir les couleurs selon le statut d'expiration
-	const getExpiryColors = (status: string) => {
-		switch (status) {
-			case 'EXPIRED':
-				return {
-					bg: 'bg-gradient-to-r from-red-500 to-red-600',
-					text: 'text-surface',
-					icon: <AlertTriangle className='size-5' />,
-					badge: 'bg-red-100 text-red-800 border-red-200',
-				};
-			case 'CRITICAL':
-				return {
-					bg: 'bg-gradient-to-r from-orange-500 to-orange-600',
-					text: 'text-surface',
-					icon: <Clock className='size-5' />,
-					badge: 'bg-orange-100 text-orange-800 border-orange-200',
-				};
-			case 'WARNING':
-				return {
-					bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-					text: 'text-surface',
-					icon: <Clock className='size-5' />,
-					badge: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-				};
-			case 'GOOD':
-				return {
-					bg: 'bg-gradient-to-r from-emerald-500 to-green-600',
-					text: 'text-surface',
-					icon: <CheckCircle2 className='size-5' />,
-					badge: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-				};
-			default:
-				return {
-					bg: 'bg-gradient-to-r from-gray-500 to-gray-600',
-					text: 'text-surface',
-					icon: <Clock className='size-5' />,
-					badge: 'bg-gray-100 text-gray-800 border-gray-200',
-				};
-		}
-	};
-
-	const getScoreColors = (score: string | undefined) => {
-		switch (score) {
-			case 'A':
-				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-surface';
-			case 'B':
-				return 'bg-gradient-to-br from-lime-500 to-green-500 text-surface';
-			case 'C':
-				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
-			case 'D':
-				return 'bg-gradient-to-br from-orange-500 to-red-500 text-surface';
-			case 'E':
-				return 'bg-gradient-to-br from-red-500 to-red-600 text-surface';
-			default:
-				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-surface';
-		}
-	};
-
-	const getGroupColor = (group: string | undefined) => {
-		switch (group) {
-			case 'GROUP_1':
-				return 'bg-gradient-to-br from-emerald-500 to-green-600 text-surface';
-			case 'GROUP_2':
-				return 'bg-gradient-to-br from-lime-500 to-green-500 text-surface';
-			case 'GROUP_3':
-				return 'bg-gradient-to-br from-yellow-400 to-orange-400 text-gray-800';
-			case 'GROUP_4':
-				return 'bg-gradient-to-br from-orange-500 to-red-500 text-surface';
-			default:
-				return 'bg-gradient-to-br from-gray-400 to-gray-500 text-surface';
-		}
-	};
-
-	const getGroupScore = (group: string | undefined): string => {
-		const descriptions: Record<string, string> = {
-			GROUP_1: '1',
-			GROUP_2: '2',
-			GROUP_3: '3',
-			GROUP_4: '4',
-		};
-		return descriptions[group || ''] || '?';
-	};
+	const expiryStatus = calculateExpiryStatus(inventoryItem?.expiryDate);
 
 	// Obtenir le texte descriptif du Nutriscore
 	const getNutriscoreText = (score: string | undefined): string => {
@@ -233,27 +162,25 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
-	// Supprimer le produit
+	// Supprimer le produit (après confirmation dans la boîte de dialogue)
 	const handleDelete = async (): Promise<void> => {
 		if (!inventoryItem) return;
 
-		if (
-			confirm(
-				'Êtes-vous sûr de vouloir supprimer ce produit de votre inventaire ?',
-			)
-		) {
-			try {
-				await removeInventoryItem(inventoryItem.id);
-				toast.success("Produit supprimé de l'inventaire");
-				navigate({ to: '/app/inventory' });
-			} catch (error) {
-				toast.error(
-					getUserFacingErrorMessage(
-						error,
-						'Impossible de supprimer le produit. Veuillez réessayer.',
-					),
-				);
-			}
+		setIsDeleting(true);
+		try {
+			await removeInventoryItem(inventoryItem.id);
+			toast.success("Produit supprimé de l'inventaire");
+			navigate({ to: '/app/inventory' });
+		} catch (error) {
+			toast.error(
+				getUserFacingErrorMessage(
+					error,
+					'Impossible de supprimer le produit. Veuillez réessayer.',
+				),
+			);
+		} finally {
+			setIsDeleting(false);
+			setIsConfirmingDelete(false);
 		}
 	};
 
@@ -280,34 +207,28 @@ const ProductDetailPage: FC = () => {
 		}
 	};
 
+	const backLink = (
+		<Button asChild variant='ghost' className='-ml-3 self-start'>
+			<Link to='/app/inventory'>
+				<ArrowLeft aria-hidden='true' />
+				Inventaire
+			</Link>
+		</Button>
+	);
+
 	// S'il n'y a pas d'élément trouvé et qu'on n'est pas en train de charger
 	if (!inventoryItem && !isLoading) {
 		return (
-			<div className='flex flex-col items-center justify-center h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 p-6'>
-				<div className='text-center space-y-6'>
-					<div className='relative'>
-						<div className='size-24 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center'>
-							<Package className='size-12 text-gray-400' />
-						</div>
-						<div className='absolute -top-2 -right-2 size-8 bg-gradient-to-r from-red-400 to-red-500 rounded-full flex items-center justify-center shadow-lg'>
-							<AlertTriangle className='size-4 text-surface' />
-						</div>
-					</div>
-					<div className='space-y-3'>
-						<h2 className='text-2xl font-bold text-gray-900'>
-							Produit non trouvé
-						</h2>
-						<p className='text-gray-600 max-w-md'>
-							Ce produit n'existe pas ou a été supprimé de votre inventaire.
-						</p>
-					</div>
-					<Button
-						onClick={() => navigate({ to: '/app/inventory' })}
-						className='flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-surface shadow-lg hover:shadow-xl transition-all duration-300'
-					>
-						<ArrowLeft className='size-4' />
-						Retour à l'inventaire
-					</Button>
+			<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
+				{backLink}
+				<div className='card flex flex-col items-center gap-3 px-6 py-12 text-center'>
+					<span className='flex size-14 items-center justify-center rounded-lg bg-neutral-100 text-neutral-700'>
+						<SearchX className='size-7' aria-hidden='true' />
+					</span>
+					<h1 className='type-h2 text-neutral-900'>Produit introuvable</h1>
+					<p className='max-w-md text-neutral-700'>
+						Ce produit n'existe pas ou a été supprimé de votre inventaire.
+					</p>
 				</div>
 			</div>
 		);
@@ -316,26 +237,13 @@ const ProductDetailPage: FC = () => {
 	// Afficher un état de chargement
 	if (isLoading || !inventoryItem) {
 		return (
-			<div className='flex flex-col justify-center items-center h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
-				<div className='text-center space-y-6'>
-					<div className='relative'>
-						<div className='size-20 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600' />
-						<div className='absolute inset-0 size-20 border-4 border-transparent rounded-full animate-pulse border-t-blue-400' />
-					</div>
-					<div className='space-y-2'>
-						<p className='text-gray-700 font-medium'>
-							Chargement du produit...
-						</p>
-						<p className='text-sm text-gray-500'>
-							Récupération des informations détaillées
-						</p>
-					</div>
-				</div>
-			</div>
+			<p role='status' className='flex min-h-[60vh] items-center justify-center gap-3 text-neutral-600'>
+				<Loader2 className='size-6 animate-spin text-accent-600' aria-hidden='true' />
+				Chargement du produit…
+			</p>
 		);
 	}
 
-	const expiryColors = getExpiryColors(expiryStatus);
 	const purchaseLots =
 		inventoryItem.lots && inventoryItem.lots.length > 0
 			? inventoryItem.lots
@@ -360,402 +268,182 @@ const ProductDetailPage: FC = () => {
 		0,
 	);
 	const hasSeveralLots = purchaseLots.length > 1;
+	const { product } = inventoryItem;
+	const isEstimated = inventoryItem.expiryDateSource === 'ESTIMATED';
+	const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-	const formatPurchasePrice = (price?: number): string =>
-		price !== undefined ? `${price.toFixed(2)} €` : 'Prix non renseigné';
+	const formatPrice = (price: number): string =>
+		new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
-			{/* ===== HEADER ===== */}
-			<div className='relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm'>
-				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
-
-				<div className='relative px-6 py-4 flex items-center justify-between'>
-					<div className='flex items-center gap-4'>
-						<Button
-							variant='ghost'
-							size='sm'
-							onClick={() => navigate({ to: '/app/inventory' })}
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
-						>
-							<ArrowLeft className='size-5' />
-						</Button>
-						<div>
-							<h1 className='text-2xl font-bold text-gray-900'>
-								Détail du produit
-							</h1>
-							<p className='text-sm text-gray-600'>Informations complètes</p>
-						</div>
-					</div>
-
-					<div className='flex items-center gap-2'>
-						<Button
-							variant='ghost'
-							size='sm'
-							onClick={handleToggleFavorite}
-							disabled={isUpdatingFavorite}
-							aria-label={
-								inventoryItem.isFavorite
-									? 'Retirer des favoris'
-									: 'Ajouter aux favoris'
-							}
-							aria-pressed={inventoryItem.isFavorite}
-							className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'
-						>
-							<Heart
-								className={`size-4 text-red-500 ${
-									inventoryItem.isFavorite ? 'fill-current' : ''
-								}`}
-							/>
-						</Button>
-					</div>
-				</div>
+		<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-6 lg:px-12 lg:py-6'>
+			<div className='flex items-center justify-between gap-3'>
+				{backLink}
+				<Button
+					variant='secondary'
+					size='icon'
+					onClick={handleToggleFavorite}
+					disabled={isUpdatingFavorite}
+					aria-label='Favori'
+					aria-pressed={inventoryItem.isFavorite}
+					className={inventoryItem.isFavorite ? 'border-danger-600 text-danger-600' : undefined}>
+					<Heart
+						className={inventoryItem.isFavorite ? 'fill-current' : undefined}
+						aria-hidden='true'
+					/>
+				</Button>
 			</div>
 
-			<div className='px-6 py-6 space-y-6'>
-				{/* ===== IMAGE ET INFORMATIONS PRINCIPALES ===== */}
-				<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-gray-50/50 shadow-xl'>
-					<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+			{/* ===== EN-TÊTE PRODUIT ===== */}
+			<section aria-labelledby='product-title' className='card flex flex-col gap-4 p-4 sm:flex-row sm:p-5'>
+				<span className='flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-brand-50 text-brand-800 sm:size-32'>
+					{product.imageUrl ? (
+						<img src={product.imageUrl} alt='' className='size-full object-cover' />
+					) : (
+						<Package className='size-12' aria-hidden='true' />
+					)}
+				</span>
+				<div className='flex min-w-0 flex-1 flex-col gap-3'>
+					<div>
+						<h1 id='product-title' className='type-h1 text-neutral-900'>
+							{product.name}
+						</h1>
+						{product.brand && <p className='text-neutral-600'>{product.brand}</p>}
+					</div>
 
-					<CardContent className='p-6'>
-						<div className='flex flex-col gap-6'>
-							{/* Image du produit */}
-							<div className='flex-shrink-0'>
-								<div className='relative'>
-									<div className='size-48 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-lg'>
-										{inventoryItem.product.imageUrl ? (
-											<img
-												src={
-													inventoryItem.product.imageUrl || '/placeholder.svg'
-												}
-												alt={inventoryItem.product.name}
-												className='size-full object-cover'
-											/>
-										) : (
-											<div className='size-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100'>
-												<Package className='size-16 text-blue-600' />
-											</div>
-										)}
-									</div>
+					<ul className='flex flex-wrap gap-2 text-sm'>
+						<li className='inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-900'>
+							<Package className='size-4' aria-hidden='true' />
+							{formatUnit(inventoryItem.quantity, product.unitType)}
+						</li>
+						{inventoryItem.storageLocation && (
+							<li className='inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-900'>
+								<MapPin className='size-4' aria-hidden='true' />
+								{capitalize(inventoryItem.storageLocation)}
+							</li>
+						)}
+					</ul>
 
-									{/* Badge de statut d'expiration */}
-									<div className='absolute -top-2 -right-2'>
-										<div
-											className={`size-6 rounded-full ${expiryColors.bg} shadow-lg animate-pulse`}
-										/>
-									</div>
-								</div>
-							</div>
+					<div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
+						<ExpiryBadge status={expiryStatus}>
+							{formatExpiryLabel(inventoryItem.expiryDate)}
+						</ExpiryBadge>
+						{inventoryItem.expiryDate && (
+							<p className='text-sm text-neutral-700'>
+								Péremption le {formatDate(inventoryItem.expiryDate)}
+								{isEstimated && <span className='text-neutral-600'> · date estimée</span>}
+							</p>
+						)}
+					</div>
+				</div>
+			</section>
 
-							{/* Informations principales (Titre, Marque) */}
-							<div className='flex-1 space-y-4'>
-								<div>
-									<h2 className='text-3xl font-bold text-gray-900 mb-2'>
-										{inventoryItem.product.name}
-									</h2>
-									{inventoryItem.product.brand && (
-										<p className='text-lg font-medium text-gray-600'>
-											{inventoryItem.product.brand}
-										</p>
-									)}
-								</div>
-							</div>
-
-							{/* Quantité et lieu de stockage */}
-							<div className='flex flex-wrap gap-4'>
-								<div className='flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-xl'>
-									<Package className='size-4 text-blue-600' />
-									<span className='font-semibold text-blue-800'>
-										{formatUnit(
-											inventoryItem.quantity,
-											inventoryItem.product.unitType,
-										)}
+			<div className='grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-6'>
+				<div className='flex min-w-0 flex-col gap-4 lg:gap-6'>
+					{/* ===== SCORES ===== */}
+					<WidgetCard title='Scores'>
+						<ul className='divide-y divide-neutral-200'>
+							<li className='flex items-center gap-4 pb-3'>
+								{product.nutriscore ? (
+									<NutriScore score={product.nutriscore} />
+								) : (
+									<span className='rounded-md bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700'>
+										Nutri-Score inconnu
 									</span>
-								</div>
-
-								{inventoryItem.storageLocation && (
-									<div className='flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-xl'>
-										<MapPin className='size-4 text-green-600' />
-										<span className='font-semibold text-green-800'>
-											{inventoryItem.storageLocation.charAt(0).toUpperCase() +
-												inventoryItem.storageLocation.slice(1)}
-										</span>
-									</div>
 								)}
-							</div>
-
-							{/* Date d'expiration */}
-							{inventoryItem.expiryDate && (
-								<div className='space-y-3'>
-									<div className='flex items-center gap-2'>
-										<Calendar className='size-4 text-gray-600' />
-										<span className='text-sm font-medium text-gray-600'>
-											Date de péremption
-										</span>
-									</div>
-									<div className='flex items-center gap-4'>
-										<span className='text-lg font-bold text-gray-900'>
-											{formatDate(inventoryItem.expiryDate)}
-										</span>
-										{inventoryItem.expiryDateSource === 'ESTIMATED' && (
-											<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
-												date estimée
-											</span>
-										)}
-										<div
-											className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border ${expiryColors.badge}`}
-										>
-											{expiryColors.icon}
-											<span className='font-semibold text-sm'>
-												{formatRelativeDate(inventoryItem.expiryDate)}
-											</span>
-										</div>
-									</div>
+								<p className='text-sm text-neutral-700'>{getNutriscoreText(product.nutriscore)}</p>
+							</li>
+							<li className='flex items-center gap-3 py-3'>
+								<Leaf className='size-5 shrink-0 text-accent-700' aria-hidden='true' />
+								<div className='min-w-0 flex-1'>
+									<p className='font-medium text-neutral-900'>Environnement</p>
+									<p className='text-sm text-neutral-600'>{getEcoscoreText(product.ecoscore)}</p>
 								</div>
-							)}
-						</div>
-					</CardContent>
-				</Card>
-
-				{/* ===== SCORES NUTRITIONNELS ===== */}
-				<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-					{/* Nutriscore */}
-					<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-green-50/50 shadow-xl'>
-						<div className='absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100/30 to-emerald-100/30 rounded-full blur-2xl -translate-y-8 translate-x-8' />
-
-						<CardContent className='p-6'>
-							<div className='flex items-center gap-4'>
-								<div className='relative'>
-									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
-											inventoryItem.product.nutriscore,
-										)}`}
-									>
-										{inventoryItem.product.nutriscore || '?'}
-									</div>
+								<ScoreBadge type='eco' score={product.ecoscore ?? ''} size='md' />
+							</li>
+							<li className='flex items-center gap-3 pt-3'>
+								<Beaker className='size-5 shrink-0 text-accent-700' aria-hidden='true' />
+								<div className='min-w-0 flex-1'>
+									<p className='font-medium text-neutral-900'>Transformation (NOVA)</p>
+									<p className='text-sm text-neutral-600'>{getNovascoreText(product.novascore)}</p>
 								</div>
-								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>Nutri-score</h3>
-									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNutriscoreText(inventoryItem.product.nutriscore)}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+								<ScoreBadge type='nova' score={product.novascore ?? ''} size='md' />
+							</li>
+						</ul>
+					</WidgetCard>
 
-					{/* Eco-score */}
-					<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-emerald-50/50 shadow-xl'>
-						<div className='absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-emerald-100/30 to-green-100/30 rounded-full blur-2xl -translate-y-8 translate-x-8' />
+					{product.nutrients && (
+						<NutritionInfoCard nutrients={product.nutrients} unitType={product.unitType} />
+					)}
 
-						<CardContent className='p-6'>
-							<div className='flex items-center gap-4'>
-								<div className='relative'>
-									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getScoreColors(
-											inventoryItem.product.ecoscore,
-										)}`}
-									>
-										{inventoryItem.product.ecoscore || '?'}
-									</div>
-								</div>
-								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>Eco-score</h3>
-									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getEcoscoreText(inventoryItem.product.ecoscore)}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-
-					{/* Nova-Group */}
-					<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-yellow-50/50 shadow-xl'>
-						<div className='absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-yellow-100/30 to-orange-100/30 rounded-full blur-2xl -translate-y-8 translate-x-8' />
-
-						<CardContent className='p-6'>
-							<div className='flex items-center gap-4'>
-								<div className='relative'>
-									<div
-										className={`size-16 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-lg hover:shadow-xl transition-all duration-300 ${getGroupColor(
-											inventoryItem.product.novascore,
-										)}`}
-									>
-										{getGroupScore(inventoryItem.product.novascore)}
-									</div>
-								</div>
-								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-1'>Groupe NOVA</h3>
-									<p className='text-sm text-gray-600 leading-relaxed'>
-										{getNovascoreText(inventoryItem.product.novascore)}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+					{product.ingredients && <IngredientsCard ingredients={product.ingredients} />}
 				</div>
 
-				{/* ===== INFORMATIONS NUTRITIONNELLES ===== */}
-				{inventoryItem.product.nutrients && (
-					<NutritionInfoCard
-						nutrients={inventoryItem.product.nutrients}
-						unitType={inventoryItem.product.unitType}
-					/>
-				)}
-
-				{/* ===== LISTE DES INGRÉDIENTS ===== */}
-				{inventoryItem.product.ingredients && (
-					<IngredientsCard ingredients={inventoryItem.product.ingredients} />
-				)}
-
-				{/* ===== INFORMATIONS D'ACHAT ===== */}
-				<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-blue-50/50 shadow-xl'>
-					<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-indigo-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
-
-					<CardContent className='p-6'>
-						<div className='flex items-center gap-3 mb-6'>
-							<div className='p-2 rounded-xl bg-blue-50 border border-blue-200'>
-								<ShoppingCart className='size-5 text-blue-600' />
-							</div>
-							<div>
-								<h3 className='font-bold text-gray-900'>
-									Informations d'achat
-								</h3>
-								<p className='text-sm text-gray-600'>Détails de votre achat</p>
-							</div>
-						</div>
-
-						<div className='space-y-4'>
-							{hasSeveralLots && (
-								<div className='flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3'>
-									<div>
-										<p className='text-sm font-semibold text-gray-900'>
-											{purchaseLots.length} lots en stock
-										</p>
-										<p className='text-xs text-gray-500'>
-											Quantité totale :{' '}
-											{formatUnit(
-												inventoryItem.quantity,
-												inventoryItem.product.unitType,
+				<div className='flex min-w-0 flex-col gap-4 lg:gap-6'>
+					{/* ===== ACHATS ===== */}
+					<WidgetCard
+						title='Achats'
+						subtitle={
+							hasSeveralLots
+								? `${purchaseLots.length} lots · ${formatUnit(inventoryItem.quantity, product.unitType)} au total${
+										totalPurchasePrice > 0 ? ` · ${formatPrice(totalPurchasePrice)}` : ''
+									}`
+								: undefined
+						}>
+						<ul className='flex flex-col gap-3'>
+							{purchaseLots.map((lot, index) => (
+								<li key={lot.id} className='rounded-md border border-neutral-200 p-3'>
+									<div className='flex items-baseline justify-between gap-3'>
+										<p className='font-medium text-neutral-900'>
+											{hasSeveralLots ? `Lot ${index + 1}` : formatUnit(lot.quantity, product.unitType)}
+											{hasSeveralLots && (
+												<span className='font-normal text-neutral-600'>
+													{' '}· {formatUnit(lot.quantity, product.unitType)}
+												</span>
 											)}
 										</p>
+										<p className='text-sm font-medium text-neutral-900'>
+											{lot.purchasePrice !== undefined && lot.purchasePrice !== null
+												? formatPrice(lot.purchasePrice)
+												: 'Prix non renseigné'}
+										</p>
 									</div>
-									{totalPurchasePrice > 0 && (
-										<span className='text-sm font-bold text-green-700'>
-											Total {totalPurchasePrice.toFixed(2)} €
-										</span>
-									)}
-								</div>
-							)}
-
-							<div className='space-y-3'>
-								{purchaseLots.map((lot, index) => (
-									<div
-										key={lot.id}
-										className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm'
-									>
-										<div className='mb-3 flex items-center justify-between gap-3'>
-											<div>
-												<p className='font-semibold text-gray-900'>
-													{hasSeveralLots ? `Lot ${index + 1}` : 'Lot'}
-												</p>
-												<p className='text-sm text-gray-500'>
-													{formatUnit(
-														lot.quantity,
-														inventoryItem.product.unitType,
-													)}
-												</p>
-											</div>
-											<span className='rounded-full bg-green-50 px-3 py-1 text-sm font-bold text-green-700'>
-												{formatPurchasePrice(lot.purchasePrice)}
-											</span>
-										</div>
-
-										<div className='grid gap-3 sm:grid-cols-2'>
-											<div className='flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-2'>
-												<div className='flex items-center gap-2'>
-													<Calendar className='size-4 text-blue-600' />
-													<span className='text-sm font-medium text-gray-700'>
-														Acheté le
-													</span>
-												</div>
-												<span className='text-sm font-bold text-gray-900'>
-													{formatDate(lot.purchaseDate)}
-												</span>
-											</div>
-
-											<div className='flex items-center justify-between rounded-lg bg-gradient-to-r from-orange-50 to-amber-50 px-3 py-2'>
-												<div className='flex items-center gap-2'>
-													<Calendar className='size-4 text-orange-600' />
-													<span className='text-sm font-medium text-gray-700'>
-														Péremption
-													</span>
-												</div>
-												<span className='text-sm font-bold text-gray-900'>
-													{lot.expiryDate
-														? formatDate(lot.expiryDate)
-														: 'Non renseignée'}
-												</span>
-											</div>
-										</div>
-
+									<dl className='mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm'>
+										<dt className='text-neutral-600'>Acheté le</dt>
+										<dd className='text-neutral-900'>{formatDate(lot.purchaseDate)}</dd>
+										<dt className='text-neutral-600'>Péremption</dt>
+										<dd className='text-neutral-900'>
+											{lot.expiryDate ? formatDate(lot.expiryDate) : 'Non renseignée'}
+										</dd>
 										{lot.storageLocation && (
-											<div className='mt-3 flex items-center gap-2 text-sm text-gray-600'>
-												<MapPin className='size-4 text-green-600' />
-												<span>
-													{lot.storageLocation.charAt(0).toUpperCase() +
-														lot.storageLocation.slice(1)}
-												</span>
-											</div>
+											<>
+												<dt className='text-neutral-600'>Rangement</dt>
+												<dd className='text-neutral-900'>{capitalize(lot.storageLocation)}</dd>
+											</>
 										)}
-									</div>
-								))}
-							</div>
-						</div>
-					</CardContent>
-				</Card>
+									</dl>
+								</li>
+							))}
+						</ul>
+					</WidgetCard>
 
-				{/* ===== NOTES ===== */}
-				{inventoryItem.notes && (
-					<Card className='relative overflow-hidden border-0 bg-gradient-to-br from-white to-purple-50/50 shadow-xl'>
-						<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100/30 to-pink-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+					{inventoryItem.notes && (
+						<WidgetCard title='Notes'>
+							<p className='whitespace-pre-line text-neutral-700'>{inventoryItem.notes}</p>
+						</WidgetCard>
+					)}
 
-						<CardContent className='p-6'>
-							<div className='flex items-start gap-3'>
-								<div className='p-2 rounded-xl bg-purple-50 border border-purple-200'>
-									<Edit3 className='size-5 text-purple-600' />
-								</div>
-								<div className='flex-1'>
-									<h3 className='font-bold text-gray-900 mb-2'>
-										Notes personnelles
-									</h3>
-									<p className='text-gray-700 leading-relaxed bg-purple-50 border border-purple-100 rounded-xl p-4'>
-										{inventoryItem.notes}
-									</p>
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-				)}
-
-				{/* ===== ACTIONS ===== */}
-				<div className='flex gap-4 pb-8'>
-					<Button
-						onClick={handleOpenEditModal}
-						variant='outline'
-						className='flex-1 h-12 border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 bg-transparent'
-					>
-						<Edit3 className='size-4 mr-2' />
-						Modifier
-					</Button>
-
-					<Button
-						onClick={handleDelete}
-						className='flex-1 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-surface shadow-lg hover:shadow-xl transition-all duration-300'
-					>
-						<Trash2 className='size-4 mr-2' />
-						Supprimer
-					</Button>
+					{/* ===== ACTIONS ===== */}
+					<div className='flex gap-3'>
+						<Button variant='secondary' onClick={handleOpenEditModal} className='flex-1'>
+							<PencilLine aria-hidden='true' />
+							Modifier
+						</Button>
+						<Button variant='error' onClick={() => setIsConfirmingDelete(true)} className='flex-1'>
+							<Trash2 aria-hidden='true' />
+							Supprimer
+						</Button>
+					</div>
 				</div>
 			</div>
 
@@ -767,6 +455,29 @@ const ProductDetailPage: FC = () => {
 				onSubmit={handleUpdateProduct}
 				isSubmitting={isUpdating}
 			/>
+
+			<AlertDialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Supprimer {product.name} ?</AlertDialogTitle>
+						<AlertDialogDescription>
+							Ce produit sera retiré de votre inventaire. Cette action est définitive.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Annuler</AlertDialogCancel>
+						<AlertDialogAction
+							className={buttonVariants({ variant: 'error' })}
+							disabled={isDeleting}
+							onClick={(event) => {
+								event.preventDefault();
+								void handleDelete();
+							}}>
+							{isDeleting ? 'Suppression…' : 'Supprimer'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 };

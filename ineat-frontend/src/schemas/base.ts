@@ -158,9 +158,14 @@ export const calculateExpiryStatus = (
 		typeof expiryDate === 'string' ? new Date(expiryDate) : expiryDate;
 	if (Number.isNaN(expiry.getTime())) return 'UNKNOWN';
 
+	// Comparaison en jours calendaires : un produit qui expire aujourd'hui n'est pas encore périmé
 	const today = new Date();
-	const diffInMs = expiry.getTime() - today.getTime();
-	const daysRemaining = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+	today.setHours(0, 0, 0, 0);
+	const expiryDay = new Date(expiry);
+	expiryDay.setHours(0, 0, 0, 0);
+	const daysRemaining = Math.round(
+		(expiryDay.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+	);
 
 	if (daysRemaining < 0) return 'EXPIRED';
 	if (daysRemaining <= 2) return 'CRITICAL';

@@ -1,31 +1,15 @@
-import { ExpiryStatus } from '@/schemas';
+import {
+	calculateExpiryStatus as calculateSchemaExpiryStatus,
+	type ExpiryStatus,
+} from '@/schemas';
 
 /**
- * Calcule le statut d'expiration d'un produit
- * @param expiryDate - Date d'expiration au format string ISO ou null
- * @returns Le statut d'expiration
+ * Calcule le statut d'expiration d'un produit (jours calendaires).
+ * Source unique : la fonction du schéma, réexportée ici pour les composants.
  */
 export const calculateExpiryStatus = (
 	expiryDate: string | null | undefined
-): ExpiryStatus => {
-	if (!expiryDate) return 'UNKNOWN';
-
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-
-	const expiry = new Date(expiryDate);
-	if (Number.isNaN(expiry.getTime())) return 'UNKNOWN';
-
-	expiry.setHours(0, 0, 0, 0);
-
-	const diffTime = expiry.getTime() - today.getTime();
-	const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-	if (diffDays < 0) return 'EXPIRED';
-	if (diffDays <= 2) return 'CRITICAL';
-	if (diffDays <= 5) return 'WARNING';
-	return 'GOOD';
-};
+): ExpiryStatus => calculateSchemaExpiryStatus(expiryDate);
 
 /**
  * Formate une date en format relatif compact.

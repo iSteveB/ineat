@@ -1,17 +1,13 @@
 import type React from 'react';
 import { Link } from '@tanstack/react-router';
+import { ChevronRight, Heart, Package, StickyNote } from 'lucide-react';
+
+import ExpiryBadge from '@/components/common/ExpiryBadge';
+import NutriScore from '@/components/common/NutriScore';
+import { cn } from '@/lib/utils';
 import type { InventoryItemWithStatus } from '@/schemas';
-import { formatRelativeDate, formatQuantity } from '@/utils/ui-utils';
-import {
-	MapPin,
-	Package,
-	ArrowRight,
-	AlertTriangle,
-	CheckCircle2,
-	Clock,
-	StickyNote,
-} from 'lucide-react';
-import ScoreBadge from '../../components/common/ScoreBadge';
+import { formatExpiryLabel } from '@/utils/dateHelpers';
+import { formatQuantity } from '@/utils/ui-utils';
 
 interface ProductCardProps {
 	item: InventoryItemWithStatus;
@@ -20,235 +16,96 @@ interface ProductCardProps {
 	onToggleSelection?: () => void;
 }
 
+const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
+
+/** Carte produit de l'inventaire : vignette, nom, méta, péremption et Nutri-Score. */
 const ProductCard: React.FC<ProductCardProps> = ({
 	item,
 	isSelectionMode = false,
 	isSelected = false,
 	onToggleSelection,
 }) => {
-	// Obtenir les couleurs selon le statut d'expiration
-	const getExpiryColors = (status: string) => {
-		switch (status) {
-			case 'EXPIRED':
-				return {
-					bg: 'bg-gradient-to-r from-red-500 to-red-600',
-					text: 'text-surface',
-					icon: <AlertTriangle className='size-4' />,
-					bar: 'bg-red-500',
-				};
-			case 'CRITICAL':
-				return {
-					bg: 'bg-gradient-to-r from-orange-500 to-orange-600',
-					text: 'text-surface',
-					icon: <Clock className='size-4' />,
-					bar: 'bg-orange-500',
-				};
-			case 'WARNING':
-				return {
-					bg: 'bg-gradient-to-r from-yellow-500 to-yellow-600',
-					text: 'text-surface',
-					icon: <Clock className='size-4' />,
-					bar: 'bg-yellow-500',
-				};
-			case 'GOOD':
-				return {
-					bg: 'bg-gradient-to-r from-emerald-500 to-green-600',
-					text: 'text-surface',
-					icon: <CheckCircle2 className='size-4' />,
-					bar: 'bg-emerald-500',
-				};
-			default:
-				return {
-					bg: 'bg-gradient-to-r from-gray-500 to-gray-600',
-					text: 'text-surface',
-					icon: <Clock className='size-4' />,
-					bar: 'bg-gray-500',
-				};
-		}
-	};
+	const meta = [
+		formatQuantity(item.quantity, item.product.unitType),
+		item.storageLocation ? capitalize(item.storageLocation) : null,
+		item.product.brand,
+	]
+		.filter(Boolean)
+		.join(' · ');
+	const isEstimated = item.expiryDateSource === 'ESTIMATED';
 
-	const expiryColors = getExpiryColors(item.expiryStatus);
-
-	const cardContent = (
-		<div className='relative'>
+	const content = (
+		<>
 			{isSelectionMode && (
-				<div className='absolute left-3 top-3 z-10'>
-					<input
-						type='checkbox'
-						checked={isSelected}
-						onClick={(event) => event.stopPropagation()}
-						onChange={onToggleSelection}
-						aria-label={`Sélectionner ${item.product.name}`}
-						className='size-5 rounded border-gray-300 text-accent-700 shadow-sm focus:ring-accent-600'
-					/>
-				</div>
+				<input
+					type='checkbox'
+					checked={isSelected}
+					onChange={onToggleSelection}
+					aria-label={`Sélectionner ${item.product.name}`}
+					className='size-5 shrink-0 cursor-pointer accent-accent-600'
+				/>
 			)}
 
-			<div
-				className={`relative overflow-hidden bg-surface border rounded-2xl shadow-sm transition-all duration-300 ${
-					isSelected
-						? 'border-accent-600 ring-2 ring-accent-600'
-						: 'border-gray-200 group-hover:border-gray-300'
-				} ${
-					isSelectionMode
-						? 'hover:shadow-lg'
-						: 'hover:shadow-xl group-hover:scale-[1.02]'
-				}`}
-			>
-				{/* Effet de brillance en arrière-plan */}
-				<div className='absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+			<span className='flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-brand-50 text-brand-800'>
+				{item.product.imageUrl ? (
+					<img src={item.product.imageUrl} alt='' className='size-full object-cover' />
+				) : (
+					<Package className='size-6' aria-hidden='true' />
+				)}
+			</span>
 
-				<div className='p-4'>
-					<div className='flex items-start gap-4'>
-						{/* ===== IMAGE DU PRODUIT ===== */}
-						<div className='relative flex-shrink-0'>
-							<div className='size-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300'>
-								{item.product.imageUrl ? (
-									<img
-										src={item.product.imageUrl}
-										alt={item.product.name}
-										className='size-full object-cover group-hover:scale-110 transition-transform duration-300'
-									/>
-								) : (
-									<div className='size-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100'>
-										<Package className='size-8 text-blue-600' />
-									</div>
-								)}
-							</div>
+			<span className='min-w-0 flex-1'>
+				<span className='flex items-center gap-1.5'>
+					<span className='truncate font-medium text-neutral-900'>{item.product.name}</span>
+					{item.isFavorite && (
+						<Heart className='size-4 shrink-0 fill-current text-danger-600' aria-label='Favori' />
+					)}
+				</span>
+				<span className='block truncate text-sm text-neutral-600'>{meta}</span>
+				{item.notes && (
+					<span className='mt-1 flex items-center gap-1 truncate text-sm text-neutral-600'>
+						<StickyNote className='size-3.5 shrink-0' aria-hidden='true' />
+						<span className='truncate'>{item.notes}</span>
+					</span>
+				)}
+			</span>
 
-							{/* Badge de quantité */}
-							<div className='absolute -bottom-2 -right-2 px-2 py-1 bg-surface border border-gray-200 rounded-lg shadow-md text-xs font-semibold text-gray-700'>
-								{formatQuantity(item.quantity, item.product.unitType)}
-							</div>
-						</div>
+			<span className='flex shrink-0 flex-col items-end gap-1.5'>
+				{item.expiryDate && (
+					<ExpiryBadge status={item.expiryStatus}>
+						{formatExpiryLabel(item.expiryDate)}
+						{isEstimated && <span className='sr-only'> (date estimée)</span>}
+					</ExpiryBadge>
+				)}
+				{isEstimated && (
+					<span aria-hidden='true' className='text-xs text-neutral-600'>
+						Date estimée
+					</span>
+				)}
+				{item.product.nutriscore && <NutriScore score={item.product.nutriscore} size='sm' />}
+			</span>
 
-						{/* ===== INFORMATIONS DU PRODUIT ===== */}
-						<div className='flex-1 min-w-0 space-y-2'>
-							<div className='flex items-start justify-between gap-2'>
-								<div className='flex-1 min-w-0'>
-									<h3 className='font-bold text-gray-900 truncate group-hover:text-blue-600 transition-colors duration-300'>
-										{item.product.name}
-									</h3>
-									{item.product.brand && (
-										<p className='text-sm font-medium text-gray-600 truncate'>
-											{item.product.brand}
-										</p>
-									)}
-								</div>
+			{!isSelectionMode && (
+				<ChevronRight
+					className='hidden size-4 shrink-0 text-neutral-500 group-hover:text-accent-700 sm:block'
+					aria-hidden='true'
+				/>
+			)}
+		</>
+	);
 
-								{/* ===== SCORES NUTRITIONNELS ===== */}
-								<div className='flex gap-2'>
-									{item.product.nutriscore && (
-										<ScoreBadge
-											type='nutri'
-											score={item.product.nutriscore}
-											size='md'
-										/>
-									)}
-									{item.product.ecoscore && (
-										<ScoreBadge
-											type='eco'
-											score={item.product.ecoscore}
-											size='md'
-										/>
-									)}
-									{item.product.novascore && (
-										<ScoreBadge
-											type='nova'
-											score={item.product.novascore}
-											size='md'
-										/>
-									)}
-								</div>
-							</div>
-
-							{/* ===== DATE D'EXPIRATION ===== */}
-							{item.expiryDate && (
-								<div className='flex flex-wrap items-center gap-2'>
-									<div
-										className={`
-                    inline-flex items-center gap-2 px-3 py-1.5 rounded-xl font-semibold text-sm
-                    ${expiryColors.bg} ${expiryColors.text} shadow-lg
-                    hover:shadow-xl transition-all duration-300
-                  `}
-									>
-										{expiryColors.icon}
-										<span>{formatRelativeDate(item.expiryDate)}</span>
-									</div>
-									{item.expiryDateSource === 'ESTIMATED' && (
-										<span className='text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100'>
-											estimée
-										</span>
-									)}
-								</div>
-							)}
-
-							{/* ===== LIEU DE STOCKAGE ===== */}
-							{item.storageLocation && (
-								<div className='flex items-center gap-2'>
-									<div className='p-1 bg-blue-50 rounded-lg'>
-										<MapPin className='size-3 text-blue-600' />
-									</div>
-									<span className='text-sm font-medium text-gray-600'>
-										{item.storageLocation.charAt(0).toUpperCase() +
-											item.storageLocation.slice(1)}
-									</span>
-								</div>
-							)}
-
-							{/* ===== NOTES ===== */}
-							{item.notes && (
-								<div className='flex items-start gap-2 p-2 bg-gray-50 rounded-lg'>
-									<div className='p-1 bg-gray-100 rounded'>
-										<StickyNote className='size-3 text-gray-600' />
-									</div>
-									<span className='text-xs text-gray-600 italic leading-relaxed'>
-										{item.notes}
-									</span>
-								</div>
-							)}
-						</div>
-
-						{/* Flèche d'action */}
-							{!isSelectionMode && (
-								<div className='flex-shrink-0 self-center'>
-									<div className='p-2 bg-gray-50 rounded-lg group-hover:bg-blue-50 transition-colors duration-300'>
-										<ArrowRight className='size-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300' />
-									</div>
-								</div>
-							)}
-					</div>
-				</div>
-			</div>
-		</div>
+	const className = cn(
+		'card group flex items-center gap-3 p-3 transition-[box-shadow,border-color]',
+		isSelected ? 'border-accent-600 ring-2 ring-accent-600' : 'hover:shadow-md'
 	);
 
 	if (isSelectionMode) {
-		return (
-			<div
-				role='button'
-				tabIndex={0}
-				onClick={onToggleSelection}
-				onKeyDown={(event) => {
-					if (event.key === 'Enter' || event.key === ' ') {
-						event.preventDefault();
-						onToggleSelection?.();
-					}
-				}}
-				className='block w-full text-left group cursor-pointer'
-			>
-				{cardContent}
-			</div>
-		);
+		return <label className={cn(className, 'cursor-pointer')}>{content}</label>;
 	}
 
 	return (
-		<Link
-			to='/app/inventory/$productId'
-			params={{ productId: item.id }}
-			className='block group'
-		>
-			{cardContent}
+		<Link to='/app/inventory/$productId' params={{ productId: item.id }} className={className}>
+			{content}
 		</Link>
 	);
 };
