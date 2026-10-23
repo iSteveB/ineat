@@ -34,6 +34,20 @@ describe('TrialEmailService', () => {
     process.env.FRONTEND_URL = 'https://frontend.test/';
   });
 
+  it('uses a daily billing email interval by default', () => {
+    const previousValue = process.env.BILLING_EMAIL_INTERVAL_MS;
+    delete process.env.BILLING_EMAIL_INTERVAL_MS;
+    const { service } = createService();
+
+    expect((service as any).getIntervalMs()).toBe(24 * 60 * 60 * 1000);
+
+    if (previousValue === undefined) {
+      delete process.env.BILLING_EMAIL_INTERVAL_MS;
+    } else {
+      process.env.BILLING_EMAIL_INTERVAL_MS = previousValue;
+    }
+  });
+
   afterAll(() => {
     if (originalFrontendUrl === undefined) {
       delete process.env.FRONTEND_URL;

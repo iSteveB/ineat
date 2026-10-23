@@ -12,7 +12,8 @@ import { ObservabilityService } from '../observability/observability.service';
 import { WeeklyProductDigestService } from './weekly-product-digest.service';
 import { DailyProductDigestService } from './daily-product-digest.service';
 
-const DEFAULT_INTERVAL_MS = 60 * 60 * 1000;
+const DEFAULT_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const DELIVERY_RETRY_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const USER_BATCH_SIZE = 100;
 
 @Injectable()
@@ -21,6 +22,7 @@ export class NotificationSchedulerService
 {
   private readonly logger = new Logger(NotificationSchedulerService.name);
   private timer?: NodeJS.Timeout;
+  private deliveryRetryTimer?: NodeJS.Timeout;
   private isRunning = false;
 
   constructor(
@@ -45,12 +47,23 @@ export class NotificationSchedulerService
     this.timer = setInterval(() => void this.synchronizeAllUsers(), intervalMs);
     this.timer.unref();
 
+    if (this.deliveries) {
+      this.deliveryRetryTimer = setInterval(
+        () => void this.retryPendingDeliveries(),
+        DELIVERY_RETRY_INTERVAL_MS,
+      );
+      this.deliveryRetryTimer.unref();
+    }
+
     setImmediate(() => void this.synchronizeAllUsers());
   }
 
   onModuleDestroy(): void {
     if (this.timer) {
       clearInterval(this.timer);
+    }
+    if (this.deliveryRetryTimer) {
+      clearInterval(this.deliveryRetryTimer);
     }
   }
 
@@ -101,7 +114,6 @@ export class NotificationSchedulerService
         'notifications.synchronization.failures',
         failedUsers,
       );
-      await this.deliveries?.retryPendingDeliveries();
       await this.weeklyDigests?.sendDueDigests();
       await this.dailyDigests?.sendDueDigests();
       const purged = await this.notifications.purgeExpiredNotifications();
@@ -121,6 +133,14 @@ export class NotificationSchedulerService
       this.logger.error('Notification synchronization failed', error);
     } finally {
       this.isRunning = false;
+    }
+  }
+
+  private async retryPendingDeliveries(): Promise<void> {
+    try {
+      await this.deliveries?.retryPendingDeliveries();
+    } catch (error) {
+      this.logger.error('Pending email delivery retry failed', error);
     }
   }
 

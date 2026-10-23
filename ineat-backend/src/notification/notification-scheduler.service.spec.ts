@@ -63,4 +63,21 @@ describe('NotificationSchedulerService', () => {
 
     expect(prisma.user.findMany).toHaveBeenCalledTimes(1);
   });
+
+  it('uses a daily synchronization interval by default', () => {
+    const previousValue = process.env.NOTIFICATION_SYNC_INTERVAL_MS;
+    delete process.env.NOTIFICATION_SYNC_INTERVAL_MS;
+    const service = new NotificationSchedulerService(
+      prisma as any,
+      notifications as any,
+    );
+
+    expect((service as any).getIntervalMs()).toBe(24 * 60 * 60 * 1000);
+
+    if (previousValue === undefined) {
+      delete process.env.NOTIFICATION_SYNC_INTERVAL_MS;
+    } else {
+      process.env.NOTIFICATION_SYNC_INTERVAL_MS = previousValue;
+    }
+  });
 });

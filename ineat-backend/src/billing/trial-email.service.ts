@@ -11,7 +11,7 @@ import {
 import { EmailService } from '../email/email.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-const DEFAULT_INTERVAL_MS = 60 * 60 * 1000;
+const DEFAULT_INTERVAL_MS = 24 * 60 * 60 * 1000;
 const REMINDER_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 @Injectable()

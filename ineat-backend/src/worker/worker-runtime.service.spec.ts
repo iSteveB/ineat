@@ -83,8 +83,26 @@ describe('WorkerRuntimeService', () => {
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.notificationsSync,
       'notifications-hourly',
-      { pattern: '0 * * * *' },
+      { every: 24 * 60 * 60_000 },
       { name: 'fan-out', data: {} },
+    );
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.notificationDelivery,
+      'notification-delivery-retry',
+      { every: 6 * 60 * 60_000 },
+      { name: 'retry-pending', data: {} },
+    );
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.dailyDigest,
+      'daily-digest-hourly',
+      { every: 24 * 60 * 60_000 },
+      { name: 'send-due', data: {} },
+    );
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.weeklyDigest,
+      'weekly-digest-hourly',
+      { every: 24 * 60 * 60_000 },
+      { name: 'send-due', data: {} },
     );
     expect(queues.add).toHaveBeenCalledTimes(4);
   });

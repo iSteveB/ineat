@@ -313,29 +313,34 @@ export class WorkerRuntimeService
   }
 
   private async registerSchedulers(): Promise<void> {
+    const sixHoursMs = 6 * 60 * 60_000;
+    const oneDayMs = 24 * 60 * 60_000;
+
     await Promise.all([
       this.queues.upsertScheduler(
         QUEUE_NAMES.notificationsSync,
+        // Keep the existing scheduler id so BullMQ updates it instead of
+        // leaving the former hourly scheduler active in Redis.
         'notifications-hourly',
-        { pattern: '0 * * * *' },
+        { every: oneDayMs },
         { name: 'fan-out', data: {} },
       ),
       this.queues.upsertScheduler(
         QUEUE_NAMES.notificationDelivery,
         'notification-delivery-retry',
-        { every: 5 * 60_000 },
+        { every: sixHoursMs },
         { name: 'retry-pending', data: {} },
       ),
       this.queues.upsertScheduler(
         QUEUE_NAMES.dailyDigest,
         'daily-digest-hourly',
-        { pattern: '5 * * * *' },
+        { every: oneDayMs },
         { name: 'send-due', data: {} },
       ),
       this.queues.upsertScheduler(
         QUEUE_NAMES.weeklyDigest,
         'weekly-digest-hourly',
-        { pattern: '10 * * * *' },
+        { every: oneDayMs },
         { name: 'send-due', data: {} },
       ),
       this.queues.upsertScheduler(
