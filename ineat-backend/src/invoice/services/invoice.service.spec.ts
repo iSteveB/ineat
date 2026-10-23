@@ -875,7 +875,7 @@ describe('InvoiceService', () => {
     });
   });
 
-  it("crée l'inventaire sans dépense lorsqu'aucun budget de référence n'existe", async () => {
+  it("crée une dépense en attente lorsqu'aucun budget de référence n'existe", async () => {
     tx.budget.findFirst.mockResolvedValue(null);
 
     const result = await service.validateInvoiceForUser('user-1', 'invoice-1', {
@@ -883,12 +883,21 @@ describe('InvoiceService', () => {
     });
 
     expect(tx.inventoryItem.create).toHaveBeenCalledTimes(1);
-    expect(tx.expense.create).not.toHaveBeenCalled();
+    expect(tx.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        budgetId: null,
+        status: 'PENDING_BUDGET',
+        amount: 4.5,
+      }),
+    });
     expect(result).toMatchObject({
       validatedItemCount: 1,
       inventoryItemCount: 1,
       expenseCount: 0,
       totalBudgetAmount: 0,
+      pendingExpenseCount: 1,
+      pendingBudgetAmount: 4.5,
+      requiresBudget: true,
     });
   });
 

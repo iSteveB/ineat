@@ -9,6 +9,15 @@
 * 🟢 You can import this file directly.
 */
 
+export const ExpenseStatus = {
+  PENDING_BUDGET: 'PENDING_BUDGET',
+  ATTACHED: 'ATTACHED',
+  EXCLUDED: 'EXCLUDED'
+} as const
+
+export type ExpenseStatus = (typeof ExpenseStatus)[keyof typeof ExpenseStatus]
+
+
 export const ExpiryDateSource = {
   MANUAL: 'MANUAL',
   ESTIMATED: 'ESTIMATED'

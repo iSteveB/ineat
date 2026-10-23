@@ -7,10 +7,11 @@ import { isValidBudget } from "@/schemas/budget";
 import { budgetService } from "@/services/budgetService";
 import useBudgetStore from "@/stores/budgetStore";
 import { Loader2, Edit, Plus, Info, AlertTriangle } from "lucide-react";
-import { FC, useState, useMemo, useEffect } from "react";
+import { FC, useState, useMemo, useEffect, useCallback } from "react";
 
-const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
+const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 	onBudgetCreated,
+	month,
 }) => {
 	const [amount, setAmount] = useState<string>('');
 	const [isCreating, setIsCreating] = useState(false);
@@ -31,11 +32,11 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 		}
 	}, [existingBudget]);
 
-	const checkExistingBudget = async () => {
+	const checkExistingBudget = useCallback(async () => {
 		setIsCheckingExisting(true);
 		try {
-			const response = await budgetService.getCurrentBudget();
-			if (response.budget && isValidBudget(response.budget)) {
+			const response = await budgetService.getBudgetByMonth(month);
+			if (response?.budget && isValidBudget(response.budget)) {
 				setExistingBudget(response.budget);
 				setAmount(response.budget.amount.toString());
 			}
@@ -44,11 +45,11 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 		} finally {
 			setIsCheckingExisting(false);
 		}
-	};
+	}, [month]);
 
 	useEffect(() => {
 		checkExistingBudget();
-	}, []);
+	}, [checkExistingBudget]);
 
 	const handleCreateOrUpdateBudget = async () => {
 		const budgetAmount = parseFloat(amount);
@@ -65,7 +66,11 @@ const CreateBudget: FC<{ onBudgetCreated: () => void }> = ({
 			if (existingBudget) {
 				await updateBudget(existingBudget.id, { amount: budgetAmount });
 			} else {
-				await createMonthlyBudget(budgetAmount);
+				const [year, monthNumber] = month.split('-').map(Number);
+				await createMonthlyBudget(budgetAmount, {
+					year,
+					month: monthNumber - 1,
+				});
 			}
 
 			setAmount('');

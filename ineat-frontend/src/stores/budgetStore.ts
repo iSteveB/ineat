@@ -36,7 +36,10 @@ interface BudgetPageState {
 interface BudgetActions {
 	fetchCurrentBudget: (force?: boolean) => Promise<void>;
 	checkBudgetExists: () => Promise<boolean>;
-	createMonthlyBudget: (amount: number) => Promise<Budget>;
+	createMonthlyBudget: (
+		amount: number,
+		period?: { year: number; month: number }
+	) => Promise<Budget>;
 	updateBudget: (budgetId: string, data: UpdateBudgetData) => Promise<Budget>;
 	fetchBudgetByMonth: (month: string) => Promise<void>;
 	fetchBudgetHistory: () => Promise<void>;
@@ -146,7 +149,10 @@ export const useBudgetStore = create<BudgetStore>()(
 			/**
 			 * Crée un budget mensuel automatique
 			 */
-			createMonthlyBudget: async (amount: number) => {
+			createMonthlyBudget: async (
+				amount: number,
+				period?: { year: number; month: number }
+			) => {
 				const state = get();
 
 				if (state.isLoading) {
@@ -156,17 +162,27 @@ export const useBudgetStore = create<BudgetStore>()(
 				set({ isLoading: true, error: null });
 
 				try {
-					await budgetService.createMonthlyBudget(amount);
-					await get().fetchCurrentBudget(true);
+					const createdBudget = await budgetService.createMonthlyBudget(
+						amount,
+						period
+					);
 
-					const { currentBudget } = get();
+					if (period) {
+						await get().fetchBudgetByMonth(
+							`${period.year}-${String(period.month + 1).padStart(2, '0')}`
+						);
+					} else {
+						await get().fetchCurrentBudget(true);
+					}
 
-					if (!currentBudget) {
+					const budget = period ? createdBudget : get().currentBudget;
+
+					if (!budget) {
 						throw new Error('Budget créé mais non récupéré');
 					}
 
 					set({ isLoading: false });
-					return currentBudget;
+					return budget;
 				} catch (error) {
 					set({
 						isLoading: false,

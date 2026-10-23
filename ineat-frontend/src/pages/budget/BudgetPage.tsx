@@ -78,8 +78,8 @@ export const BudgetPage: FC = () => {
 	}, [selectedBudget]);
 
 	const handleBudgetCreated = useCallback(() => {
-		setSelectedMonth(currentMonth);
-	}, [currentMonth, setSelectedMonth]);
+		setSelectedMonth(displayedMonth);
+	}, [displayedMonth, setSelectedMonth]);
 
 	useEffect(() => {
 		setSelectedMonth(displayedMonth);
@@ -187,20 +187,10 @@ export const BudgetPage: FC = () => {
 				) : !selectedBudget ||
 				  !selectedBudgetStats ||
 				  !isValidBudget(selectedBudget) ? (
-					isCurrentMonth ? (
-						<CreateBudget onBudgetCreated={handleBudgetCreated} />
-					) : (
-						<Card>
-							<CardContent className='py-12 text-center space-y-2'>
-								<h2 className='text-lg font-semibold text-gray-900'>
-									Aucun budget enregistré en {formatMonth(displayedMonth).toLowerCase()}
-								</h2>
-								<p className='text-sm text-gray-600'>
-									Vous pouvez consulter un autre mois ou revenir au mois courant.
-								</p>
-							</CardContent>
-						</Card>
-					)
+					<CreateBudget
+						onBudgetCreated={handleBudgetCreated}
+						month={displayedMonth}
+					/>
 				) : (
 					<div className='space-y-6'>
 						{isCurrentMonth && <BudgetAlerts alerts={selectedAlerts} />}

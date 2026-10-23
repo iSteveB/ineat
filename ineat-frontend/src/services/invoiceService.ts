@@ -135,6 +135,9 @@ export interface ValidateInvoiceResponse {
 	inventoryItemCount: number;
 	expenseCount: number;
 	totalBudgetAmount: number;
+	pendingExpenseCount: number;
+	pendingBudgetAmount: number;
+	requiresBudget: boolean;
 	message: string;
 }
 

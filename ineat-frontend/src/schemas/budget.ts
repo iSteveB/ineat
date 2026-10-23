@@ -349,7 +349,10 @@ export interface BudgetActions {
 	// Actions budget
 	fetchCurrentBudget: () => Promise<void>;
 	checkBudgetExists: () => Promise<boolean>;
-	createMonthlyBudget: (amount: number) => Promise<Budget>;
+	createMonthlyBudget: (
+		amount: number,
+		period?: { year: number; month: number }
+	) => Promise<Budget>;
 	updateBudget: (budgetId: string, data: UpdateBudgetData) => Promise<Budget>;
 
 	// Actions page budget

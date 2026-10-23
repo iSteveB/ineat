@@ -42,28 +42,26 @@ export class ExpenseService {
   ): Promise<Expense> {
     let budgetId = data.budgetId;
 
-    // Si pas de budget spécifié, chercher le budget du mois correspondant à la date
+    // Si pas de budget spécifié, chercher le budget du mois correspondant à la date.
+    // En son absence, la dépense reste en attente jusqu'à la création d'un budget.
     if (!budgetId) {
       const expenseDate = new Date(data.date);
       budgetId = await this.findBudgetForDate(userId, expenseDate);
+    }
 
-      if (!budgetId) {
+    if (budgetId) {
+      const budget = await this.budgetService.getBudgetById(budgetId, userId);
+      if (!budget) {
         throw new BudgetNotFoundForExpenseError(userId, data.date);
       }
-    }
 
-    // Valider que la dépense peut être ajoutée au budget
-    const budget = await this.budgetService.getBudgetById(budgetId, userId);
-    if (!budget) {
-      throw new BudgetNotFoundForExpenseError(userId, data.date);
-    }
-
-    const validation = validateExpenseForBudget(data, budget);
-    if (!validation.isValid) {
-      throw new InvalidExpenseDateError(data.date, {
-        start: budget.periodStart,
-        end: budget.periodEnd,
-      });
+      const validation = validateExpenseForBudget(data, budget);
+      if (!validation.isValid) {
+        throw new InvalidExpenseDateError(data.date, {
+          start: budget.periodStart,
+          end: budget.periodEnd,
+        });
+      }
     }
 
     // Créer la dépense
@@ -71,7 +69,8 @@ export class ExpenseService {
       data: {
         id: randomUUID(),
         userId,
-        budgetId,
+        budgetId: budgetId ?? null,
+        status: budgetId ? 'ATTACHED' : 'PENDING_BUDGET',
         amount: data.amount,
         date: new Date(data.date),
         source: data.source,
@@ -150,11 +149,32 @@ export class ExpenseService {
       };
     }
 
+    const category = options.autoDetectCategory
+      ? (autoDetectCategory(data.productName) ?? data.notes)
+      : undefined;
+    const pendingExpense = await this.prisma.expense.create({
+      data: {
+        id: randomUUID(),
+        userId,
+        budgetId: null,
+        status: 'PENDING_BUDGET',
+        amount: data.amount,
+        date: expenseDate,
+        source: data.source,
+        category,
+        notes: data.notes
+          ? `${data.productName} - ${data.notes}`
+          : data.productName,
+        inventoryItemId: data.inventoryItemId,
+        updatedAt: new Date(),
+      },
+    });
+
     return {
-      expense: null,
-      budgetId,
+      expense: pendingExpense,
+      budgetId: null,
       budgetUpdated: false,
-      message: `Impossible d'ajouter la dépense pour "${data.productName}" (aucun budget disponible)`,
+      message: `Dépense de ${data.amount.toFixed(2)}€ enregistrée en attente d'un budget pour "${data.productName}"`,
     };
   }
 

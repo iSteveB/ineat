@@ -1340,10 +1340,32 @@ function DriveInvoiceImportPage() {
 									value={String(result.skippedItemCount)}
 								/>
 								<SummaryCell
-									label="Budget"
+									label="Rattaché au budget"
 									value={formatCurrency(result.totalBudgetAmount)}
 								/>
 							</div>}
+							{result?.requiresBudget && (
+								<Alert className="border-warning-200 bg-warning-50">
+									<AlertTriangle className="size-4 text-warning-700" />
+									<AlertDescription className="space-y-3 text-warning-900">
+										<p>
+											{result.pendingExpenseCount} dépense{result.pendingExpenseCount > 1 ? 's' : ''}, soit{' '}
+											{formatCurrency(result.pendingBudgetAmount)}, {result.pendingExpenseCount > 1 ? 'sont enregistrées' : 'est enregistrée'} en attente.
+											{' '}Créez un budget couvrant la date d’achat pour {result.pendingExpenseCount > 1 ? 'les y rattacher' : 'l’y rattacher'} automatiquement.
+										</p>
+										<Button asChild size="sm">
+											<Link
+												to="/app/budget"
+												search={invoice?.purchaseDate
+													? { month: invoice.purchaseDate.slice(0, 7) }
+													: {}}
+											>
+												Créer mon budget
+											</Link>
+										</Button>
+									</AlertDescription>
+								</Alert>
+							)}
 							<div className="flex flex-col gap-3 sm:flex-row">
 								<Button onClick={() => navigate({ to: '/app/inventory' })}>
 									Retour à l’inventaire

@@ -122,7 +122,7 @@ describe('BudgetPage monthly navigation', () => {
 		});
 	});
 
-	it('shows an historical empty state without offering budget creation', () => {
+	it('offers budget creation for an historical month without a budget', () => {
 		search = { month: '2026-04' };
 		budgetState = {
 			...budgetState,
@@ -132,10 +132,7 @@ describe('BudgetPage monthly navigation', () => {
 
 		render(<BudgetPage />);
 
-		expect(
-			screen.getByText('Aucun budget enregistré en avril 2026')
-		).toBeInTheDocument();
-		expect(screen.queryByTestId('create-budget')).not.toBeInTheDocument();
+		expect(screen.getByTestId('create-budget')).toBeInTheDocument();
 		expect(
 			screen.getByRole('button', { name: 'Revenir au mois courant' })
 		).toBeInTheDocument();

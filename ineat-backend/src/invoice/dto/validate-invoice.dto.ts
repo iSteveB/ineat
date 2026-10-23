@@ -38,5 +38,14 @@ export class ValidateInvoiceResponseDto {
   totalBudgetAmount: number;
 
   @ApiProperty()
+  pendingExpenseCount: number;
+
+  @ApiProperty()
+  pendingBudgetAmount: number;
+
+  @ApiProperty()
+  requiresBudget: boolean;
+
+  @ApiProperty()
   message: string;
 }

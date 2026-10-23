@@ -88,8 +88,16 @@ describe('ExpenseService', () => {
     });
   });
 
-  it('does not create a product expense when no budget exists for the purchase date', async () => {
+  it('creates a pending product expense when no budget exists for the purchase date', async () => {
     prisma.budget.findFirst.mockResolvedValue(null);
+    const pendingExpense = {
+      id: 'expense-pending',
+      userId: 'user-1',
+      budgetId: null,
+      status: 'PENDING_BUDGET',
+      amount: 2.1,
+    };
+    prisma.expense.create.mockResolvedValue(pendingExpense);
 
     const result = await service.createExpenseFromProduct(
       'user-1',
@@ -102,13 +110,20 @@ describe('ExpenseService', () => {
       { findOrCreateBudget: false },
     );
 
-    expect(prisma.expense.create).not.toHaveBeenCalled();
+    expect(prisma.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        userId: 'user-1',
+        budgetId: null,
+        status: 'PENDING_BUDGET',
+        amount: 2.1,
+      }),
+    });
     expect(result).toEqual({
-      expense: null,
+      expense: pendingExpense,
       budgetId: null,
       budgetUpdated: false,
       message:
-        'Impossible d\'ajouter la dépense pour "Pâtes" (aucun budget disponible)',
+        'Dépense de 2.10€ enregistrée en attente d\'un budget pour "Pâtes"',
     });
   });
 });

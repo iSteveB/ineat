@@ -195,13 +195,16 @@ export const budgetService = {
 	},
 
 	// Fonction corrigée pour créer un budget mensuel
-	async createMonthlyBudget(amount: number): Promise<Budget> {
+	async createMonthlyBudget(
+		amount: number,
+		period?: { year: number; month: number }
+	): Promise<Budget> {
 		const today = new Date();
 
 		const budgetData: CreateMonthlyBudgetData = {
 			amount,
-			year: today.getFullYear(),
-			month: today.getMonth(),
+			year: period?.year ?? today.getFullYear(),
+			month: period?.month ?? today.getMonth(),
 		};
 
 		const response = await apiClient.post<CreateBudgetApiResponse>(

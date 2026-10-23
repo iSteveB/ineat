@@ -35,29 +35,39 @@ model Category {
 }
 
 model Expense {
-  id            String       @id
-  userId        String
-  budgetId      String
-  amount        Float
-  date          DateTime
-  source        String?
-  receiptId     String?
-  invoiceId     String?
-  invoiceItemId String?      @unique
-  notes         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime
-  category      String?
-  Budget        Budget       @relation(fields: [budgetId], references: [id])
-  Invoice       Invoice?     @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
-  InvoiceItem   InvoiceItem? @relation(fields: [invoiceItemId], references: [id], onDelete: SetNull)
-  User          User         @relation(fields: [userId], references: [id])
+  id              String         @id
+  userId          String
+  budgetId        String?
+  status          ExpenseStatus  @default(PENDING_BUDGET)
+  amount          Float
+  date            DateTime
+  source          String?
+  receiptId       String?
+  invoiceId       String?
+  invoiceItemId   String?        @unique
+  inventoryItemId String?        @unique
+  notes           String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime
+  category        String?
+  Budget          Budget?        @relation(fields: [budgetId], references: [id])
+  Invoice         Invoice?       @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  InvoiceItem     InvoiceItem?   @relation(fields: [invoiceItemId], references: [id], onDelete: SetNull)
+  InventoryItem   InventoryItem? @relation(fields: [inventoryItemId], references: [id], onDelete: SetNull)
+  User            User           @relation(fields: [userId], references: [id])
 
   @@index([budgetId])
   @@index([category])
   @@index([date])
   @@index([invoiceId])
   @@index([userId])
+  @@index([userId, status, date])
+}
+
+enum ExpenseStatus {
+  PENDING_BUDGET
+  ATTACHED
+  EXCLUDED
 }
 
 model InventoryItem {
@@ -77,6 +87,7 @@ model InventoryItem {
   notes             String?
   Product           Product            @relation(fields: [productId], references: [id])
   User              User               @relation(fields: [userId], references: [id])
+  Expense           Expense?
 
   @@index([expiryDate])
   @@index([productId])

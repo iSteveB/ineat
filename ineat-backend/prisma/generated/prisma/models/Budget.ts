@@ -424,9 +424,9 @@ export type BudgetSumOrderByAggregateInput = {
   amount?: Prisma.SortOrder
 }
 
-export type BudgetScalarRelationFilter = {
-  is?: Prisma.BudgetWhereInput
-  isNot?: Prisma.BudgetWhereInput
+export type BudgetNullableScalarRelationFilter = {
+  is?: Prisma.BudgetWhereInput | null
+  isNot?: Prisma.BudgetWhereInput | null
 }
 
 export type BudgetListRelationFilter = {
@@ -465,10 +465,12 @@ export type BudgetCreateNestedOneWithoutExpenseInput = {
   connect?: Prisma.BudgetWhereUniqueInput
 }
 
-export type BudgetUpdateOneRequiredWithoutExpenseNestedInput = {
+export type BudgetUpdateOneWithoutExpenseNestedInput = {
   create?: Prisma.XOR<Prisma.BudgetCreateWithoutExpenseInput, Prisma.BudgetUncheckedCreateWithoutExpenseInput>
   connectOrCreate?: Prisma.BudgetCreateOrConnectWithoutExpenseInput
   upsert?: Prisma.BudgetUpsertWithoutExpenseInput
+  disconnect?: Prisma.BudgetWhereInput | boolean
+  delete?: Prisma.BudgetWhereInput | boolean
   connect?: Prisma.BudgetWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.BudgetUpdateToOneWithWhereWithoutExpenseInput, Prisma.BudgetUpdateWithoutExpenseInput>, Prisma.BudgetUncheckedUpdateWithoutExpenseInput>
 }

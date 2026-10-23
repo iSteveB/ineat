@@ -38,12 +38,14 @@ export type ExpenseMinAggregateOutputType = {
   id: string | null
   userId: string | null
   budgetId: string | null
+  status: $Enums.ExpenseStatus | null
   amount: number | null
   date: Date | null
   source: string | null
   receiptId: string | null
   invoiceId: string | null
   invoiceItemId: string | null
+  inventoryItemId: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -54,12 +56,14 @@ export type ExpenseMaxAggregateOutputType = {
   id: string | null
   userId: string | null
   budgetId: string | null
+  status: $Enums.ExpenseStatus | null
   amount: number | null
   date: Date | null
   source: string | null
   receiptId: string | null
   invoiceId: string | null
   invoiceItemId: string | null
+  inventoryItemId: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -70,12 +74,14 @@ export type ExpenseCountAggregateOutputType = {
   id: number
   userId: number
   budgetId: number
+  status: number
   amount: number
   date: number
   source: number
   receiptId: number
   invoiceId: number
   invoiceItemId: number
+  inventoryItemId: number
   notes: number
   createdAt: number
   updatedAt: number
@@ -96,12 +102,14 @@ export type ExpenseMinAggregateInputType = {
   id?: true
   userId?: true
   budgetId?: true
+  status?: true
   amount?: true
   date?: true
   source?: true
   receiptId?: true
   invoiceId?: true
   invoiceItemId?: true
+  inventoryItemId?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -112,12 +120,14 @@ export type ExpenseMaxAggregateInputType = {
   id?: true
   userId?: true
   budgetId?: true
+  status?: true
   amount?: true
   date?: true
   source?: true
   receiptId?: true
   invoiceId?: true
   invoiceItemId?: true
+  inventoryItemId?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -128,12 +138,14 @@ export type ExpenseCountAggregateInputType = {
   id?: true
   userId?: true
   budgetId?: true
+  status?: true
   amount?: true
   date?: true
   source?: true
   receiptId?: true
   invoiceId?: true
   invoiceItemId?: true
+  inventoryItemId?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -230,13 +242,15 @@ export type ExpenseGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type ExpenseGroupByOutputType = {
   id: string
   userId: string
-  budgetId: string
+  budgetId: string | null
+  status: $Enums.ExpenseStatus
   amount: number
   date: Date
   source: string | null
   receiptId: string | null
   invoiceId: string | null
   invoiceItemId: string | null
+  inventoryItemId: string | null
   notes: string | null
   createdAt: Date
   updatedAt: Date
@@ -269,33 +283,38 @@ export type ExpenseWhereInput = {
   NOT?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   id?: Prisma.StringFilter<"Expense"> | string
   userId?: Prisma.StringFilter<"Expense"> | string
-  budgetId?: Prisma.StringFilter<"Expense"> | string
+  budgetId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  status?: Prisma.EnumExpenseStatusFilter<"Expense"> | $Enums.ExpenseStatus
   amount?: Prisma.FloatFilter<"Expense"> | number
   date?: Prisma.DateTimeFilter<"Expense"> | Date | string
   source?: Prisma.StringNullableFilter<"Expense"> | string | null
   receiptId?: Prisma.StringNullableFilter<"Expense"> | string | null
   invoiceId?: Prisma.StringNullableFilter<"Expense"> | string | null
   invoiceItemId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  inventoryItemId?: Prisma.StringNullableFilter<"Expense"> | string | null
   notes?: Prisma.StringNullableFilter<"Expense"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
   category?: Prisma.StringNullableFilter<"Expense"> | string | null
-  Budget?: Prisma.XOR<Prisma.BudgetScalarRelationFilter, Prisma.BudgetWhereInput>
+  Budget?: Prisma.XOR<Prisma.BudgetNullableScalarRelationFilter, Prisma.BudgetWhereInput> | null
   Invoice?: Prisma.XOR<Prisma.InvoiceNullableScalarRelationFilter, Prisma.InvoiceWhereInput> | null
   InvoiceItem?: Prisma.XOR<Prisma.InvoiceItemNullableScalarRelationFilter, Prisma.InvoiceItemWhereInput> | null
+  InventoryItem?: Prisma.XOR<Prisma.InventoryItemNullableScalarRelationFilter, Prisma.InventoryItemWhereInput> | null
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type ExpenseOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  budgetId?: Prisma.SortOrder
+  budgetId?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   date?: Prisma.SortOrder
   source?: Prisma.SortOrderInput | Prisma.SortOrder
   receiptId?: Prisma.SortOrderInput | Prisma.SortOrder
   invoiceId?: Prisma.SortOrderInput | Prisma.SortOrder
   invoiceItemId?: Prisma.SortOrderInput | Prisma.SortOrder
+  inventoryItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -303,17 +322,20 @@ export type ExpenseOrderByWithRelationInput = {
   Budget?: Prisma.BudgetOrderByWithRelationInput
   Invoice?: Prisma.InvoiceOrderByWithRelationInput
   InvoiceItem?: Prisma.InvoiceItemOrderByWithRelationInput
+  InventoryItem?: Prisma.InventoryItemOrderByWithRelationInput
   User?: Prisma.UserOrderByWithRelationInput
 }
 
 export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   invoiceItemId?: string
+  inventoryItemId?: string
   AND?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   OR?: Prisma.ExpenseWhereInput[]
   NOT?: Prisma.ExpenseWhereInput | Prisma.ExpenseWhereInput[]
   userId?: Prisma.StringFilter<"Expense"> | string
-  budgetId?: Prisma.StringFilter<"Expense"> | string
+  budgetId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  status?: Prisma.EnumExpenseStatusFilter<"Expense"> | $Enums.ExpenseStatus
   amount?: Prisma.FloatFilter<"Expense"> | number
   date?: Prisma.DateTimeFilter<"Expense"> | Date | string
   source?: Prisma.StringNullableFilter<"Expense"> | string | null
@@ -323,22 +345,25 @@ export type ExpenseWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
   category?: Prisma.StringNullableFilter<"Expense"> | string | null
-  Budget?: Prisma.XOR<Prisma.BudgetScalarRelationFilter, Prisma.BudgetWhereInput>
+  Budget?: Prisma.XOR<Prisma.BudgetNullableScalarRelationFilter, Prisma.BudgetWhereInput> | null
   Invoice?: Prisma.XOR<Prisma.InvoiceNullableScalarRelationFilter, Prisma.InvoiceWhereInput> | null
   InvoiceItem?: Prisma.XOR<Prisma.InvoiceItemNullableScalarRelationFilter, Prisma.InvoiceItemWhereInput> | null
+  InventoryItem?: Prisma.XOR<Prisma.InventoryItemNullableScalarRelationFilter, Prisma.InventoryItemWhereInput> | null
   User?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-}, "id" | "invoiceItemId">
+}, "id" | "invoiceItemId" | "inventoryItemId">
 
 export type ExpenseOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  budgetId?: Prisma.SortOrder
+  budgetId?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   date?: Prisma.SortOrder
   source?: Prisma.SortOrderInput | Prisma.SortOrder
   receiptId?: Prisma.SortOrderInput | Prisma.SortOrder
   invoiceId?: Prisma.SortOrderInput | Prisma.SortOrder
   invoiceItemId?: Prisma.SortOrderInput | Prisma.SortOrder
+  inventoryItemId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -356,13 +381,15 @@ export type ExpenseScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ExpenseScalarWhereWithAggregatesInput | Prisma.ExpenseScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Expense"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Expense"> | string
-  budgetId?: Prisma.StringWithAggregatesFilter<"Expense"> | string
+  budgetId?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
+  status?: Prisma.EnumExpenseStatusWithAggregatesFilter<"Expense"> | $Enums.ExpenseStatus
   amount?: Prisma.FloatWithAggregatesFilter<"Expense"> | number
   date?: Prisma.DateTimeWithAggregatesFilter<"Expense"> | Date | string
   source?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
   receiptId?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
   invoiceId?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
   invoiceItemId?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
+  inventoryItemId?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Expense"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Expense"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Expense"> | Date | string
@@ -371,6 +398,7 @@ export type ExpenseScalarWhereWithAggregatesInput = {
 
 export type ExpenseCreateInput = {
   id: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
@@ -379,22 +407,25 @@ export type ExpenseCreateInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   category?: string | null
-  Budget: Prisma.BudgetCreateNestedOneWithoutExpenseInput
+  Budget?: Prisma.BudgetCreateNestedOneWithoutExpenseInput
   Invoice?: Prisma.InvoiceCreateNestedOneWithoutExpenseInput
   InvoiceItem?: Prisma.InvoiceItemCreateNestedOneWithoutExpenseInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedOneWithoutExpenseInput
   User: Prisma.UserCreateNestedOneWithoutExpenseInput
 }
 
 export type ExpenseUncheckedCreateInput = {
   id: string
   userId: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -403,6 +434,7 @@ export type ExpenseUncheckedCreateInput = {
 
 export type ExpenseUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -411,22 +443,25 @@ export type ExpenseUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  Budget?: Prisma.BudgetUpdateOneRequiredWithoutExpenseNestedInput
+  Budget?: Prisma.BudgetUpdateOneWithoutExpenseNestedInput
   Invoice?: Prisma.InvoiceUpdateOneWithoutExpenseNestedInput
   InvoiceItem?: Prisma.InvoiceItemUpdateOneWithoutExpenseNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateOneWithoutExpenseNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutExpenseNestedInput
 }
 
 export type ExpenseUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -436,13 +471,15 @@ export type ExpenseUncheckedUpdateInput = {
 export type ExpenseCreateManyInput = {
   id: string
   userId: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -451,6 +488,7 @@ export type ExpenseCreateManyInput = {
 
 export type ExpenseUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -464,13 +502,15 @@ export type ExpenseUpdateManyMutationInput = {
 export type ExpenseUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -491,12 +531,14 @@ export type ExpenseCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   budgetId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   date?: Prisma.SortOrder
   source?: Prisma.SortOrder
   receiptId?: Prisma.SortOrder
   invoiceId?: Prisma.SortOrder
   invoiceItemId?: Prisma.SortOrder
+  inventoryItemId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -511,12 +553,14 @@ export type ExpenseMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   budgetId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   date?: Prisma.SortOrder
   source?: Prisma.SortOrder
   receiptId?: Prisma.SortOrder
   invoiceId?: Prisma.SortOrder
   invoiceItemId?: Prisma.SortOrder
+  inventoryItemId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -527,12 +571,14 @@ export type ExpenseMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   budgetId?: Prisma.SortOrder
+  status?: Prisma.SortOrder
   amount?: Prisma.SortOrder
   date?: Prisma.SortOrder
   source?: Prisma.SortOrder
   receiptId?: Prisma.SortOrder
   invoiceId?: Prisma.SortOrder
   invoiceItemId?: Prisma.SortOrder
+  inventoryItemId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -588,6 +634,42 @@ export type ExpenseUncheckedUpdateManyWithoutBudgetNestedInput = {
   update?: Prisma.ExpenseUpdateWithWhereUniqueWithoutBudgetInput | Prisma.ExpenseUpdateWithWhereUniqueWithoutBudgetInput[]
   updateMany?: Prisma.ExpenseUpdateManyWithWhereWithoutBudgetInput | Prisma.ExpenseUpdateManyWithWhereWithoutBudgetInput[]
   deleteMany?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[]
+}
+
+export type EnumExpenseStatusFieldUpdateOperationsInput = {
+  set?: $Enums.ExpenseStatus
+}
+
+export type ExpenseCreateNestedOneWithoutInventoryItemInput = {
+  create?: Prisma.XOR<Prisma.ExpenseCreateWithoutInventoryItemInput, Prisma.ExpenseUncheckedCreateWithoutInventoryItemInput>
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutInventoryItemInput
+  connect?: Prisma.ExpenseWhereUniqueInput
+}
+
+export type ExpenseUncheckedCreateNestedOneWithoutInventoryItemInput = {
+  create?: Prisma.XOR<Prisma.ExpenseCreateWithoutInventoryItemInput, Prisma.ExpenseUncheckedCreateWithoutInventoryItemInput>
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutInventoryItemInput
+  connect?: Prisma.ExpenseWhereUniqueInput
+}
+
+export type ExpenseUpdateOneWithoutInventoryItemNestedInput = {
+  create?: Prisma.XOR<Prisma.ExpenseCreateWithoutInventoryItemInput, Prisma.ExpenseUncheckedCreateWithoutInventoryItemInput>
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutInventoryItemInput
+  upsert?: Prisma.ExpenseUpsertWithoutInventoryItemInput
+  disconnect?: Prisma.ExpenseWhereInput | boolean
+  delete?: Prisma.ExpenseWhereInput | boolean
+  connect?: Prisma.ExpenseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ExpenseUpdateToOneWithWhereWithoutInventoryItemInput, Prisma.ExpenseUpdateWithoutInventoryItemInput>, Prisma.ExpenseUncheckedUpdateWithoutInventoryItemInput>
+}
+
+export type ExpenseUncheckedUpdateOneWithoutInventoryItemNestedInput = {
+  create?: Prisma.XOR<Prisma.ExpenseCreateWithoutInventoryItemInput, Prisma.ExpenseUncheckedCreateWithoutInventoryItemInput>
+  connectOrCreate?: Prisma.ExpenseCreateOrConnectWithoutInventoryItemInput
+  upsert?: Prisma.ExpenseUpsertWithoutInventoryItemInput
+  disconnect?: Prisma.ExpenseWhereInput | boolean
+  delete?: Prisma.ExpenseWhereInput | boolean
+  connect?: Prisma.ExpenseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ExpenseUpdateToOneWithWhereWithoutInventoryItemInput, Prisma.ExpenseUpdateWithoutInventoryItemInput>, Prisma.ExpenseUncheckedUpdateWithoutInventoryItemInput>
 }
 
 export type ExpenseCreateNestedManyWithoutInvoiceInput = {
@@ -708,6 +790,7 @@ export type ExpenseUncheckedUpdateManyWithoutUserNestedInput = {
 
 export type ExpenseCreateWithoutBudgetInput = {
   id: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
@@ -718,18 +801,21 @@ export type ExpenseCreateWithoutBudgetInput = {
   category?: string | null
   Invoice?: Prisma.InvoiceCreateNestedOneWithoutExpenseInput
   InvoiceItem?: Prisma.InvoiceItemCreateNestedOneWithoutExpenseInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedOneWithoutExpenseInput
   User: Prisma.UserCreateNestedOneWithoutExpenseInput
 }
 
 export type ExpenseUncheckedCreateWithoutBudgetInput = {
   id: string
   userId: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -768,21 +854,24 @@ export type ExpenseScalarWhereInput = {
   NOT?: Prisma.ExpenseScalarWhereInput | Prisma.ExpenseScalarWhereInput[]
   id?: Prisma.StringFilter<"Expense"> | string
   userId?: Prisma.StringFilter<"Expense"> | string
-  budgetId?: Prisma.StringFilter<"Expense"> | string
+  budgetId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  status?: Prisma.EnumExpenseStatusFilter<"Expense"> | $Enums.ExpenseStatus
   amount?: Prisma.FloatFilter<"Expense"> | number
   date?: Prisma.DateTimeFilter<"Expense"> | Date | string
   source?: Prisma.StringNullableFilter<"Expense"> | string | null
   receiptId?: Prisma.StringNullableFilter<"Expense"> | string | null
   invoiceId?: Prisma.StringNullableFilter<"Expense"> | string | null
   invoiceItemId?: Prisma.StringNullableFilter<"Expense"> | string | null
+  inventoryItemId?: Prisma.StringNullableFilter<"Expense"> | string | null
   notes?: Prisma.StringNullableFilter<"Expense"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Expense"> | Date | string
   category?: Prisma.StringNullableFilter<"Expense"> | string | null
 }
 
-export type ExpenseCreateWithoutInvoiceInput = {
+export type ExpenseCreateWithoutInventoryItemInput = {
   id: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
@@ -791,20 +880,107 @@ export type ExpenseCreateWithoutInvoiceInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   category?: string | null
-  Budget: Prisma.BudgetCreateNestedOneWithoutExpenseInput
+  Budget?: Prisma.BudgetCreateNestedOneWithoutExpenseInput
+  Invoice?: Prisma.InvoiceCreateNestedOneWithoutExpenseInput
   InvoiceItem?: Prisma.InvoiceItemCreateNestedOneWithoutExpenseInput
+  User: Prisma.UserCreateNestedOneWithoutExpenseInput
+}
+
+export type ExpenseUncheckedCreateWithoutInventoryItemInput = {
+  id: string
+  userId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
+  amount: number
+  date: Date | string
+  source?: string | null
+  receiptId?: string | null
+  invoiceId?: string | null
+  invoiceItemId?: string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  category?: string | null
+}
+
+export type ExpenseCreateOrConnectWithoutInventoryItemInput = {
+  where: Prisma.ExpenseWhereUniqueInput
+  create: Prisma.XOR<Prisma.ExpenseCreateWithoutInventoryItemInput, Prisma.ExpenseUncheckedCreateWithoutInventoryItemInput>
+}
+
+export type ExpenseUpsertWithoutInventoryItemInput = {
+  update: Prisma.XOR<Prisma.ExpenseUpdateWithoutInventoryItemInput, Prisma.ExpenseUncheckedUpdateWithoutInventoryItemInput>
+  create: Prisma.XOR<Prisma.ExpenseCreateWithoutInventoryItemInput, Prisma.ExpenseUncheckedCreateWithoutInventoryItemInput>
+  where?: Prisma.ExpenseWhereInput
+}
+
+export type ExpenseUpdateToOneWithWhereWithoutInventoryItemInput = {
+  where?: Prisma.ExpenseWhereInput
+  data: Prisma.XOR<Prisma.ExpenseUpdateWithoutInventoryItemInput, Prisma.ExpenseUncheckedUpdateWithoutInventoryItemInput>
+}
+
+export type ExpenseUpdateWithoutInventoryItemInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  Budget?: Prisma.BudgetUpdateOneWithoutExpenseNestedInput
+  Invoice?: Prisma.InvoiceUpdateOneWithoutExpenseNestedInput
+  InvoiceItem?: Prisma.InvoiceItemUpdateOneWithoutExpenseNestedInput
+  User?: Prisma.UserUpdateOneRequiredWithoutExpenseNestedInput
+}
+
+export type ExpenseUncheckedUpdateWithoutInventoryItemInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
+  amount?: Prisma.FloatFieldUpdateOperationsInput | number
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type ExpenseCreateWithoutInvoiceInput = {
+  id: string
+  status?: $Enums.ExpenseStatus
+  amount: number
+  date: Date | string
+  source?: string | null
+  receiptId?: string | null
+  notes?: string | null
+  createdAt?: Date | string
+  updatedAt: Date | string
+  category?: string | null
+  Budget?: Prisma.BudgetCreateNestedOneWithoutExpenseInput
+  InvoiceItem?: Prisma.InvoiceItemCreateNestedOneWithoutExpenseInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedOneWithoutExpenseInput
   User: Prisma.UserCreateNestedOneWithoutExpenseInput
 }
 
 export type ExpenseUncheckedCreateWithoutInvoiceInput = {
   id: string
   userId: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -839,6 +1015,7 @@ export type ExpenseUpdateManyWithWhereWithoutInvoiceInput = {
 
 export type ExpenseCreateWithoutInvoiceItemInput = {
   id: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
@@ -847,20 +1024,23 @@ export type ExpenseCreateWithoutInvoiceItemInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   category?: string | null
-  Budget: Prisma.BudgetCreateNestedOneWithoutExpenseInput
+  Budget?: Prisma.BudgetCreateNestedOneWithoutExpenseInput
   Invoice?: Prisma.InvoiceCreateNestedOneWithoutExpenseInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedOneWithoutExpenseInput
   User: Prisma.UserCreateNestedOneWithoutExpenseInput
 }
 
 export type ExpenseUncheckedCreateWithoutInvoiceItemInput = {
   id: string
   userId: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -885,6 +1065,7 @@ export type ExpenseUpdateToOneWithWhereWithoutInvoiceItemInput = {
 
 export type ExpenseUpdateWithoutInvoiceItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -893,20 +1074,23 @@ export type ExpenseUpdateWithoutInvoiceItemInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  Budget?: Prisma.BudgetUpdateOneRequiredWithoutExpenseNestedInput
+  Budget?: Prisma.BudgetUpdateOneWithoutExpenseNestedInput
   Invoice?: Prisma.InvoiceUpdateOneWithoutExpenseNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateOneWithoutExpenseNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutExpenseNestedInput
 }
 
 export type ExpenseUncheckedUpdateWithoutInvoiceItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -915,6 +1099,7 @@ export type ExpenseUncheckedUpdateWithoutInvoiceItemInput = {
 
 export type ExpenseCreateWithoutUserInput = {
   id: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
@@ -923,20 +1108,23 @@ export type ExpenseCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt: Date | string
   category?: string | null
-  Budget: Prisma.BudgetCreateNestedOneWithoutExpenseInput
+  Budget?: Prisma.BudgetCreateNestedOneWithoutExpenseInput
   Invoice?: Prisma.InvoiceCreateNestedOneWithoutExpenseInput
   InvoiceItem?: Prisma.InvoiceItemCreateNestedOneWithoutExpenseInput
+  InventoryItem?: Prisma.InventoryItemCreateNestedOneWithoutExpenseInput
 }
 
 export type ExpenseUncheckedCreateWithoutUserInput = {
   id: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -972,12 +1160,14 @@ export type ExpenseUpdateManyWithWhereWithoutUserInput = {
 export type ExpenseCreateManyBudgetInput = {
   id: string
   userId: string
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -986,6 +1176,7 @@ export type ExpenseCreateManyBudgetInput = {
 
 export type ExpenseUpdateWithoutBudgetInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -996,18 +1187,21 @@ export type ExpenseUpdateWithoutBudgetInput = {
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   Invoice?: Prisma.InvoiceUpdateOneWithoutExpenseNestedInput
   InvoiceItem?: Prisma.InvoiceItemUpdateOneWithoutExpenseNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateOneWithoutExpenseNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutExpenseNestedInput
 }
 
 export type ExpenseUncheckedUpdateWithoutBudgetInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1017,12 +1211,14 @@ export type ExpenseUncheckedUpdateWithoutBudgetInput = {
 export type ExpenseUncheckedUpdateManyWithoutBudgetInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1032,12 +1228,14 @@ export type ExpenseUncheckedUpdateManyWithoutBudgetInput = {
 export type ExpenseCreateManyInvoiceInput = {
   id: string
   userId: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1046,6 +1244,7 @@ export type ExpenseCreateManyInvoiceInput = {
 
 export type ExpenseUpdateWithoutInvoiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1054,20 +1253,23 @@ export type ExpenseUpdateWithoutInvoiceInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  Budget?: Prisma.BudgetUpdateOneRequiredWithoutExpenseNestedInput
+  Budget?: Prisma.BudgetUpdateOneWithoutExpenseNestedInput
   InvoiceItem?: Prisma.InvoiceItemUpdateOneWithoutExpenseNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateOneWithoutExpenseNestedInput
   User?: Prisma.UserUpdateOneRequiredWithoutExpenseNestedInput
 }
 
 export type ExpenseUncheckedUpdateWithoutInvoiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1077,12 +1279,14 @@ export type ExpenseUncheckedUpdateWithoutInvoiceInput = {
 export type ExpenseUncheckedUpdateManyWithoutInvoiceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1091,13 +1295,15 @@ export type ExpenseUncheckedUpdateManyWithoutInvoiceInput = {
 
 export type ExpenseCreateManyUserInput = {
   id: string
-  budgetId: string
+  budgetId?: string | null
+  status?: $Enums.ExpenseStatus
   amount: number
   date: Date | string
   source?: string | null
   receiptId?: string | null
   invoiceId?: string | null
   invoiceItemId?: string | null
+  inventoryItemId?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt: Date | string
@@ -1106,6 +1312,7 @@ export type ExpenseCreateManyUserInput = {
 
 export type ExpenseUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1114,20 +1321,23 @@ export type ExpenseUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  Budget?: Prisma.BudgetUpdateOneRequiredWithoutExpenseNestedInput
+  Budget?: Prisma.BudgetUpdateOneWithoutExpenseNestedInput
   Invoice?: Prisma.InvoiceUpdateOneWithoutExpenseNestedInput
   InvoiceItem?: Prisma.InvoiceItemUpdateOneWithoutExpenseNestedInput
+  InventoryItem?: Prisma.InventoryItemUpdateOneWithoutExpenseNestedInput
 }
 
 export type ExpenseUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1136,13 +1346,15 @@ export type ExpenseUncheckedUpdateWithoutUserInput = {
 
 export type ExpenseUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  budgetId?: Prisma.StringFieldUpdateOperationsInput | string
+  budgetId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumExpenseStatusFieldUpdateOperationsInput | $Enums.ExpenseStatus
   amount?: Prisma.FloatFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   receiptId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   invoiceItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inventoryItemId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1155,19 +1367,22 @@ export type ExpenseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   userId?: boolean
   budgetId?: boolean
+  status?: boolean
   amount?: boolean
   date?: boolean
   source?: boolean
   receiptId?: boolean
   invoiceId?: boolean
   invoiceItemId?: boolean
+  inventoryItemId?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   category?: boolean
-  Budget?: boolean | Prisma.BudgetDefaultArgs<ExtArgs>
+  Budget?: boolean | Prisma.Expense$BudgetArgs<ExtArgs>
   Invoice?: boolean | Prisma.Expense$InvoiceArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Expense$InvoiceItemArgs<ExtArgs>
+  InventoryItem?: boolean | Prisma.Expense$InventoryItemArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["expense"]>
 
@@ -1175,19 +1390,22 @@ export type ExpenseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   userId?: boolean
   budgetId?: boolean
+  status?: boolean
   amount?: boolean
   date?: boolean
   source?: boolean
   receiptId?: boolean
   invoiceId?: boolean
   invoiceItemId?: boolean
+  inventoryItemId?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   category?: boolean
-  Budget?: boolean | Prisma.BudgetDefaultArgs<ExtArgs>
+  Budget?: boolean | Prisma.Expense$BudgetArgs<ExtArgs>
   Invoice?: boolean | Prisma.Expense$InvoiceArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Expense$InvoiceItemArgs<ExtArgs>
+  InventoryItem?: boolean | Prisma.Expense$InventoryItemArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["expense"]>
 
@@ -1195,19 +1413,22 @@ export type ExpenseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   userId?: boolean
   budgetId?: boolean
+  status?: boolean
   amount?: boolean
   date?: boolean
   source?: boolean
   receiptId?: boolean
   invoiceId?: boolean
   invoiceItemId?: boolean
+  inventoryItemId?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   category?: boolean
-  Budget?: boolean | Prisma.BudgetDefaultArgs<ExtArgs>
+  Budget?: boolean | Prisma.Expense$BudgetArgs<ExtArgs>
   Invoice?: boolean | Prisma.Expense$InvoiceArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Expense$InvoiceItemArgs<ExtArgs>
+  InventoryItem?: boolean | Prisma.Expense$InventoryItemArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["expense"]>
 
@@ -1215,56 +1436,64 @@ export type ExpenseSelectScalar = {
   id?: boolean
   userId?: boolean
   budgetId?: boolean
+  status?: boolean
   amount?: boolean
   date?: boolean
   source?: boolean
   receiptId?: boolean
   invoiceId?: boolean
   invoiceItemId?: boolean
+  inventoryItemId?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   category?: boolean
 }
 
-export type ExpenseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "budgetId" | "amount" | "date" | "source" | "receiptId" | "invoiceId" | "invoiceItemId" | "notes" | "createdAt" | "updatedAt" | "category", ExtArgs["result"]["expense"]>
+export type ExpenseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "budgetId" | "status" | "amount" | "date" | "source" | "receiptId" | "invoiceId" | "invoiceItemId" | "inventoryItemId" | "notes" | "createdAt" | "updatedAt" | "category", ExtArgs["result"]["expense"]>
 export type ExpenseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  Budget?: boolean | Prisma.BudgetDefaultArgs<ExtArgs>
+  Budget?: boolean | Prisma.Expense$BudgetArgs<ExtArgs>
   Invoice?: boolean | Prisma.Expense$InvoiceArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Expense$InvoiceItemArgs<ExtArgs>
+  InventoryItem?: boolean | Prisma.Expense$InventoryItemArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ExpenseIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  Budget?: boolean | Prisma.BudgetDefaultArgs<ExtArgs>
+  Budget?: boolean | Prisma.Expense$BudgetArgs<ExtArgs>
   Invoice?: boolean | Prisma.Expense$InvoiceArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Expense$InvoiceItemArgs<ExtArgs>
+  InventoryItem?: boolean | Prisma.Expense$InventoryItemArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type ExpenseIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  Budget?: boolean | Prisma.BudgetDefaultArgs<ExtArgs>
+  Budget?: boolean | Prisma.Expense$BudgetArgs<ExtArgs>
   Invoice?: boolean | Prisma.Expense$InvoiceArgs<ExtArgs>
   InvoiceItem?: boolean | Prisma.Expense$InvoiceItemArgs<ExtArgs>
+  InventoryItem?: boolean | Prisma.Expense$InventoryItemArgs<ExtArgs>
   User?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $ExpensePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Expense"
   objects: {
-    Budget: Prisma.$BudgetPayload<ExtArgs>
+    Budget: Prisma.$BudgetPayload<ExtArgs> | null
     Invoice: Prisma.$InvoicePayload<ExtArgs> | null
     InvoiceItem: Prisma.$InvoiceItemPayload<ExtArgs> | null
+    InventoryItem: Prisma.$InventoryItemPayload<ExtArgs> | null
     User: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string
-    budgetId: string
+    budgetId: string | null
+    status: $Enums.ExpenseStatus
     amount: number
     date: Date
     source: string | null
     receiptId: string | null
     invoiceId: string | null
     invoiceItemId: string | null
+    inventoryItemId: string | null
     notes: string | null
     createdAt: Date
     updatedAt: Date
@@ -1663,9 +1892,10 @@ readonly fields: ExpenseFieldRefs;
  */
 export interface Prisma__ExpenseClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  Budget<T extends Prisma.BudgetDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BudgetDefaultArgs<ExtArgs>>): Prisma.Prisma__BudgetClient<runtime.Types.Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  Budget<T extends Prisma.Expense$BudgetArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Expense$BudgetArgs<ExtArgs>>): Prisma.Prisma__BudgetClient<runtime.Types.Result.GetResult<Prisma.$BudgetPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   Invoice<T extends Prisma.Expense$InvoiceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Expense$InvoiceArgs<ExtArgs>>): Prisma.Prisma__InvoiceClient<runtime.Types.Result.GetResult<Prisma.$InvoicePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   InvoiceItem<T extends Prisma.Expense$InvoiceItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Expense$InvoiceItemArgs<ExtArgs>>): Prisma.Prisma__InvoiceItemClient<runtime.Types.Result.GetResult<Prisma.$InvoiceItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  InventoryItem<T extends Prisma.Expense$InventoryItemArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Expense$InventoryItemArgs<ExtArgs>>): Prisma.Prisma__InventoryItemClient<runtime.Types.Result.GetResult<Prisma.$InventoryItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   User<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1699,12 +1929,14 @@ export interface ExpenseFieldRefs {
   readonly id: Prisma.FieldRef<"Expense", 'String'>
   readonly userId: Prisma.FieldRef<"Expense", 'String'>
   readonly budgetId: Prisma.FieldRef<"Expense", 'String'>
+  readonly status: Prisma.FieldRef<"Expense", 'ExpenseStatus'>
   readonly amount: Prisma.FieldRef<"Expense", 'Float'>
   readonly date: Prisma.FieldRef<"Expense", 'DateTime'>
   readonly source: Prisma.FieldRef<"Expense", 'String'>
   readonly receiptId: Prisma.FieldRef<"Expense", 'String'>
   readonly invoiceId: Prisma.FieldRef<"Expense", 'String'>
   readonly invoiceItemId: Prisma.FieldRef<"Expense", 'String'>
+  readonly inventoryItemId: Prisma.FieldRef<"Expense", 'String'>
   readonly notes: Prisma.FieldRef<"Expense", 'String'>
   readonly createdAt: Prisma.FieldRef<"Expense", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Expense", 'DateTime'>
@@ -2105,6 +2337,25 @@ export type ExpenseDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Expense.Budget
+ */
+export type Expense$BudgetArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Budget
+   */
+  select?: Prisma.BudgetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Budget
+   */
+  omit?: Prisma.BudgetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.BudgetInclude<ExtArgs> | null
+  where?: Prisma.BudgetWhereInput
+}
+
+/**
  * Expense.Invoice
  */
 export type Expense$InvoiceArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2140,6 +2391,25 @@ export type Expense$InvoiceItemArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.InvoiceItemInclude<ExtArgs> | null
   where?: Prisma.InvoiceItemWhereInput
+}
+
+/**
+ * Expense.InventoryItem
+ */
+export type Expense$InventoryItemArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InventoryItem
+   */
+  select?: Prisma.InventoryItemSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InventoryItem
+   */
+  omit?: Prisma.InventoryItemOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InventoryItemInclude<ExtArgs> | null
+  where?: Prisma.InventoryItemWhereInput
 }
 
 /**

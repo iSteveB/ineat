@@ -555,6 +555,9 @@ export class InvoiceService {
           inventoryItemCount: 0,
           expenseCount: 0,
           totalBudgetAmount: 0,
+          pendingExpenseCount: 0,
+          pendingBudgetAmount: 0,
+          requiresBudget: false,
           message: 'Lignes de facture validées avec succès',
         };
 
@@ -575,8 +578,14 @@ export class InvoiceService {
               );
 
               if (repairedExpense) {
-                summary.expenseCount += 1;
-                summary.totalBudgetAmount += repairedExpense.amount;
+                if (repairedExpense.budgetId || validationContext.budget) {
+                  summary.expenseCount += 1;
+                  summary.totalBudgetAmount += repairedExpense.amount;
+                } else {
+                  summary.pendingExpenseCount += 1;
+                  summary.pendingBudgetAmount += repairedExpense.amount;
+                  summary.requiresBudget = true;
+                }
               }
             }
 
@@ -633,8 +642,14 @@ export class InvoiceService {
           );
 
           if (expense) {
-            summary.expenseCount += 1;
-            summary.totalBudgetAmount += expense.amount;
+            if (expense.budgetId || validationContext.budget) {
+              summary.expenseCount += 1;
+              summary.totalBudgetAmount += expense.amount;
+            } else {
+              summary.pendingExpenseCount += 1;
+              summary.pendingBudgetAmount += expense.amount;
+              summary.requiresBudget = true;
+            }
           }
 
           await tx.invoiceItem.update({
@@ -1252,15 +1267,12 @@ export class InvoiceService {
           )
         : preparedBudget;
 
-    if (!budget) {
-      return null;
-    }
-
     return tx.expense.create({
       data: {
         id: randomUUID(),
         userId,
-        budgetId: budget.id,
+        budgetId: budget?.id ?? null,
+        status: budget ? 'ATTACHED' : 'PENDING_BUDGET',
         amount: item.totalPrice,
         date: purchaseDate,
         source: 'Facture Drive',

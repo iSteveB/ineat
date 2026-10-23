@@ -85,19 +85,44 @@ export class BudgetService {
     const startDate = this.normalizePeriodStart(data.periodStart);
     const endDate = this.normalizePeriodEnd(data.periodEnd);
 
-    // Désactiver les budgets précédents qui chevauchent avec cette période
-    await this.deactivateBudgetsForPeriod(userId, startDate, endDate);
+    const budget = await this.prisma.$transaction(async (tx) => {
+      await tx.budget.updateMany({
+        where: {
+          userId,
+          isActive: true,
+          periodStart: { lte: endDate },
+          periodEnd: { gte: startDate },
+        },
+        data: { isActive: false },
+      });
 
-    const budget = await this.prisma.budget.create({
-      data: {
-        id: randomUUID(),
-        userId,
-        amount: data.amount,
-        periodStart: startDate,
-        periodEnd: endDate,
-        isActive: data.isActive ?? true,
-        updatedAt: new Date(),
-      },
+      const createdBudget = await tx.budget.create({
+        data: {
+          id: randomUUID(),
+          userId,
+          amount: data.amount,
+          periodStart: startDate,
+          periodEnd: endDate,
+          isActive: data.isActive ?? true,
+          updatedAt: new Date(),
+        },
+      });
+
+      await tx.expense.updateMany({
+        where: {
+          userId,
+          status: 'PENDING_BUDGET',
+          budgetId: null,
+          date: { gte: startDate, lte: endDate },
+        },
+        data: {
+          budgetId: createdBudget.id,
+          status: 'ATTACHED',
+          updatedAt: new Date(),
+        },
+      });
+
+      return createdBudget;
     });
 
     await this.refreshNotifications(userId);

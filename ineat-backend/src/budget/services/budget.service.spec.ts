@@ -10,7 +10,9 @@ describe('BudgetService', () => {
     },
     expense: {
       deleteMany: jest.fn(),
+      updateMany: jest.fn(),
     },
+    $transaction: jest.fn(),
   };
 
   let service: BudgetService;
@@ -18,6 +20,7 @@ describe('BudgetService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     service = new BudgetService(prisma as any);
+    prisma.$transaction.mockImplementation((callback) => callback(prisma));
     prisma.budget.updateMany.mockResolvedValue({ count: 0 });
     prisma.budget.create.mockImplementation(({ data }) =>
       Promise.resolve({
@@ -38,6 +41,22 @@ describe('BudgetService', () => {
     expect(prisma.budget.updateMany).toHaveBeenCalledWith({
       where: expect.objectContaining({ userId: 'user-1' }),
       data: { isActive: false },
+    });
+    expect(prisma.expense.updateMany).toHaveBeenCalledWith({
+      where: {
+        userId: 'user-1',
+        status: 'PENDING_BUDGET',
+        budgetId: null,
+        date: {
+          gte: new Date(2026, 1, 1, 0, 0, 0, 0),
+          lte: new Date(2026, 1, 28, 23, 59, 59, 999),
+        },
+      },
+      data: {
+        budgetId: budget.id,
+        status: 'ATTACHED',
+        updatedAt: expect.any(Date),
+      },
     });
   });
 
