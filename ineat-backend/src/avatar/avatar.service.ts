@@ -64,12 +64,26 @@ export class AvatarService {
       throw new NotFoundException('Utilisateur non trouvé');
     }
 
-    // Valider que l'URL provient bien de Cloudinary
-    if (!avatarUrl.includes('cloudinary.com')) {
-      throw new BadRequestException("L'URL doit provenir de Cloudinary");
+    const newPublicId =
+      this.cloudinaryService.extractManagedImagePublicId(avatarUrl);
+    const expectedFolder = `avatars/${userId}/`;
+
+    if (!newPublicId.startsWith(expectedFolder)) {
+      throw new BadRequestException(
+        "L'avatar doit appartenir au dossier Cloudinary de l'utilisateur",
+      );
     }
 
-    // Si l'utilisateur avait déjà un avatar, le supprimer de Cloudinary
+    // Mettre d'abord à jour la base pour ne jamais conserver une URL cassée
+    // si la persistance du nouvel avatar échoue.
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl },
+      select: { id: true, avatarUrl: true },
+    });
+
+    // La suppression de l'ancien fichier est un nettoyage best effort : elle
+    // ne doit pas annuler le remplacement déjà persisté.
     if (user.avatarUrl && user.avatarUrl !== avatarUrl) {
       try {
         const publicId = this.cloudinaryService.extractPublicId(user.avatarUrl);
@@ -81,13 +95,6 @@ export class AvatarService {
         );
       }
     }
-
-    // Mettre à jour l'URL de l'avatar dans la base de données
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: { avatarUrl },
-      select: { id: true, avatarUrl: true },
-    });
 
     return {
       id: updatedUser.id,

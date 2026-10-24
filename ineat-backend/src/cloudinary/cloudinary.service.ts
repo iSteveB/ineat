@@ -208,6 +208,51 @@ export class CloudinaryService {
   }
 
   /**
+   * Extrait le public_id d'une image appartenant au cloud Cloudinary configuré.
+   * Cette validation stricte est destinée aux URL reçues depuis le client.
+   */
+  extractManagedImagePublicId(url: string): string {
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      throw new BadRequestException('URL Cloudinary invalide');
+    }
+
+    const segments = parsedUrl.pathname.split('/').filter(Boolean);
+    const configuredCloudName = this.cloudinary.config().cloud_name as string;
+
+    if (
+      parsedUrl.protocol !== 'https:' ||
+      parsedUrl.hostname !== 'res.cloudinary.com' ||
+      segments[0] !== configuredCloudName ||
+      segments[1] !== 'image' ||
+      segments[2] !== 'upload'
+    ) {
+      throw new BadRequestException(
+        "L'URL doit appartenir au cloud Cloudinary configuré",
+      );
+    }
+
+    const resourceSegments = segments.slice(3);
+    if (/^v\d+$/.test(resourceSegments[0] ?? '')) {
+      resourceSegments.shift();
+    }
+
+    const lastSegment = resourceSegments.at(-1);
+    if (!lastSegment || !lastSegment.includes('.')) {
+      throw new BadRequestException('URL Cloudinary invalide');
+    }
+
+    resourceSegments[resourceSegments.length - 1] = lastSegment.replace(
+      /\.[^.]+$/,
+      '',
+    );
+
+    return resourceSegments.join('/');
+  }
+
+  /**
    * Génère une URL transformée pour une image
    * @param publicId - ID public de l'image
    * @param transformations - Transformations à appliquer (width, height, crop, etc.)
