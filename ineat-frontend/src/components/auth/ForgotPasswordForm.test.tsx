@@ -7,6 +7,11 @@ import userEvent from '@testing-library/user-event';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
+	Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+		<a href={to} {...props}>
+			{children}
+		</a>
+	),
 	useNavigate: vi.fn(),
 }));
 
@@ -187,23 +192,19 @@ describe('ForgotPasswordForm', () => {
 		expect(submitButton).toBeDisabled();
 		expect(emailInput).toBeDisabled();
 
-		// Vérifier que le lien de retour est désactivé
-		const retourLink = screen.getByTestId('back-to-login');
-		expect(retourLink).toBeDisabled();
-
 		// Attendre que le chargement soit terminé
 		await waitFor(() => {
 			expect(screen.getByTestId('success-alert')).toBeInTheDocument();
 		});
 	});
 
-	it('navigue vers la page de connexion lorsqu\'on clique sur "Retour à la connexion"', async () => {
+	it('propose un lien "Retour à la connexion"', () => {
 		render(<ForgotPasswordForm />);
 
-		const retourLink = screen.getByTestId('back-to-login');
-		await user.click(retourLink);
-
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/login' });
+		expect(screen.getByRole('link', { name: 'Retour à la connexion' })).toHaveAttribute(
+			'href',
+			'/login'
+		);
 	});
 
 	it("efface l'erreur lors de la modification de l'email", async () => {

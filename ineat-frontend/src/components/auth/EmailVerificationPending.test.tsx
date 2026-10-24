@@ -6,6 +6,11 @@ import { authService } from '@/services/authService';
 const navigate = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
+	Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+		<a href={to} {...props}>
+			{children}
+		</a>
+	),
 	useNavigate: () => navigate,
 }));
 

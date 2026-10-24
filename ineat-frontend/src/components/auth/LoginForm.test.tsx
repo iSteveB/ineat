@@ -7,6 +7,11 @@ import userEvent from '@testing-library/user-event';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
+	Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+		<a href={to} {...props}>
+			{children}
+		</a>
+	),
 	useNavigate: vi.fn(),
 	useSearch: vi.fn(),
 }));
@@ -186,8 +191,6 @@ describe('LoginForm', () => {
 		expect(screen.getByTestId('email-input')).toBeDisabled();
 		expect(screen.getByTestId('password-input')).toBeDisabled();
 		expect(screen.getByTestId('submit-button')).toBeDisabled();
-		expect(screen.getByTestId('forgot-password-button')).toBeDisabled();
-		expect(screen.getByTestId('register-button')).toBeDisabled();
 
 		// Vérifier que le texte du bouton de connexion indique le chargement
 		expect(screen.getByTestId('submit-button')).toHaveTextContent(
@@ -195,31 +198,22 @@ describe('LoginForm', () => {
 		);
 	});
 
-	it('navigue vers la page de récupération de mot de passe', async () => {
+	it('propose un lien vers la récupération de mot de passe', () => {
 		render(<LoginForm />);
 
-		const forgotPasswordButton = screen.getByTestId(
-			'forgot-password-button'
+		expect(screen.getByRole('link', { name: 'Mot de passe oublié ?' })).toHaveAttribute(
+			'href',
+			'/forgot-password'
 		);
-
-		// Cliquer sur le bouton "Mot de passe oublié"
-		await user.click(forgotPasswordButton);
-
-		// Vérifier que la navigation a été appelée
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/forgot-password' });
 	});
 
-	it("navigue vers la page d'inscription", async () => {
+	it("propose un lien vers l'inscription", () => {
 		render(<LoginForm />);
 
-		const registerButton = screen.getByTestId('register-button');
-
-		// Cliquer sur le bouton "S'inscrire"
-		await user.click(registerButton);
-
-		// Vérifier que la navigation a été appelée
-		expect(setErrorMock).toHaveBeenCalledWith(null);
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/register' });
+		expect(screen.getByRole('link', { name: "S'inscrire" })).toHaveAttribute(
+			'href',
+			'/register'
+		);
 	});
 
 	it("efface l'erreur globale au montage", () => {

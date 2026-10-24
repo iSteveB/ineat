@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { z } from 'zod';
 import { authClient } from '@/lib/auth-client';
 import { ResetPasswordSchema } from '@/schemas';
@@ -36,7 +36,6 @@ const getBetterAuthResetErrorMessage = (
 };
 
 const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
-	const navigate = useNavigate();
 	const [password, setPassword] = useState('');
 	const [confirmPassword, setConfirmPassword] = useState('');
 	const [formError, setFormError] = useState<string | null>(
@@ -186,14 +185,11 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 				)}
 			</CardContent>
 			<CardFooter className='flex justify-center'>
-				<Button
-					variant='link'
-					className='p-0 h-auto'
-					onClick={() => navigate({ to: '/login' })}
-					disabled={isLoading}
-					data-testid='back-to-login'>
-					Retour à la connexion
-				</Button>
+				<Button asChild variant='link' className='h-auto p-0'>
+						<Link to='/login' data-testid='back-to-login'>
+							Retour à la connexion
+						</Link>
+					</Button>
 			</CardFooter>
 		</Card>
 	);

@@ -19,12 +19,14 @@ import {
   Loader2,
   Edit3,
   AlertCircle,
+  Camera,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useUpdateProfile } from "@/hooks/useUpdateProfile";
 import { toast } from "sonner";
 import { AvatarUploadModal } from "@/features/profile/AvatarUploadModal";
+import { getInitials } from "@/utils/ui-utils";
 
 const PersonalInfoPage = () => {
   const user = useAuthStore((state) => state.user);
@@ -145,27 +147,32 @@ const PersonalInfoPage = () => {
         {/* ===== SECTION PHOTO DE PROFIL ===== */}
         <Card className="border border-neutral-200 shadow-sm">
           <CardContent className="p-6 flex flex-col items-center justify-center gap-4">
-            <div
-              className="relative size-28 rounded-full bg-accent-600 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl cursor-pointer"
+            <button
+              type="button"
               onClick={handleAvatarClick}
+              aria-label="Modifier la photo de profil"
+              className="group relative flex size-28 items-center justify-center overflow-hidden rounded-full bg-accent-600 shadow-md transition-shadow hover:shadow-lg"
             >
-              {/* Photo de profil */}
               {user?.avatarUrl ? (
                 <img
                   src={user.avatarUrl}
-                  alt="Photo de profil"
-                  className="size-full object-cover transition-all duration-300"
+                  alt=""
+                  className="size-full object-cover"
                 />
               ) : (
-                <span className="text-4xl font-semibold text-surface transition-all duration-300">
-                  {user?.firstName && user?.lastName ? (
-                    `${user?.firstName[0]}${user?.lastName[0]}`
-                  ) : (
-                    <User className="size-12 text-surface" />
+                <span className="text-4xl font-semibold text-surface" aria-hidden="true">
+                  {getInitials(user?.firstName ?? "", user?.lastName ?? "") || (
+                    <User className="size-12" />
                   )}
                 </span>
               )}
-            </div>
+              <span
+                className="absolute inset-x-0 bottom-0 flex justify-center bg-neutral-950/55 py-1.5 text-surface opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+                aria-hidden="true"
+              >
+                <Camera className="size-4" />
+              </span>
+            </button>
 
             {/* Informations utilisateur */}
             <div className="text-center">
@@ -182,7 +189,7 @@ const PersonalInfoPage = () => {
               onClick={handleAvatarClick}
               className="mt-2"
             >
-              <Edit3 className="size-4 mr-2" />
+              <Edit3 aria-hidden="true" />
               Modifier la photo
             </Button>
           </CardContent>

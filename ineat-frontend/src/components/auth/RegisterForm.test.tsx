@@ -7,6 +7,11 @@ import userEvent from '@testing-library/user-event';
 
 // Mocks pour les dépendances
 vi.mock('@tanstack/react-router', () => ({
+	Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+		<a href={to} {...props}>
+			{children}
+		</a>
+	),
 	useNavigate: vi.fn(),
 }));
 
@@ -51,17 +56,13 @@ describe('RegisterForm', () => {
 		expect(screen.getByTestId('register-submit-button')).toBeInTheDocument();
 	});
 
-	it("navigue vers la page de connexion lorsqu'on clique sur le lien correspondant", async () => {
+	it('propose un lien vers la page de connexion', () => {
 		render(<RegisterForm />);
 
-		const loginButton = screen.getByTestId('login-button');
-
-		// Cliquer sur le bouton de connexion
-		await user.click(loginButton);
-
-		// Vérifier que la fonction navigate a été appelée avec la bonne destination
-		expect(setErrorMock).toHaveBeenCalledWith(null);
-		expect(navigateMock).toHaveBeenCalledWith({ to: '/login' });
+		expect(screen.getByRole('link', { name: 'Se connecter' })).toHaveAttribute(
+			'href',
+			'/login'
+		);
 	});
 
 	it('soumet le formulaire avec les données correctes', async () => {

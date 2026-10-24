@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { CircleAlert, CircleCheck, MailCheck } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { Alert, AlertDescription } from '../ui/alert';
@@ -17,7 +17,6 @@ interface EmailVerificationPendingProps {
 }
 
 const EmailVerificationPending = ({ email }: EmailVerificationPendingProps) => {
-	const navigate = useNavigate();
 	const [isSending, setIsSending] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -96,9 +95,11 @@ const EmailVerificationPending = ({ email }: EmailVerificationPendingProps) => {
 				</Button>
 			</CardContent>
 			<CardFooter className='justify-center'>
-				<Button variant='link' onClick={() => navigate({ to: '/login' })}>
-					Retour à la connexion
-				</Button>
+				<Button asChild variant='link' className='h-auto'>
+						<Link to='/login'>
+							Retour à la connexion
+						</Link>
+					</Button>
 			</CardFooter>
 		</Card>
 	);

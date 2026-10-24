@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -24,7 +24,6 @@ const ForgotPasswordForm = () => {
 	const [isSuccess, setIsSuccess] = useState(false);
 
 	// Navigation
-	const navigate = useNavigate();
 
 	// Validation du formulaire
 	const validateForm = (): boolean => {
@@ -153,13 +152,10 @@ const ForgotPasswordForm = () => {
 			</CardContent>
 			<CardFooter className='flex justify-center'>
 				<p className='text-sm text-neutral-600'>
-					<Button
-						variant='link'
-						className='p-0 h-auto'
-						onClick={() => navigate({ to: '/login' })}
-						disabled={isLoading}
-						data-testid='back-to-login'>
-						Retour à la connexion
+					<Button asChild variant='link' className='h-auto p-0'>
+						<Link to='/login' data-testid='back-to-login'>
+							Retour à la connexion
+						</Link>
 					</Button>
 				</p>
 			</CardFooter>

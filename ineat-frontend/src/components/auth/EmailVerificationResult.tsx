@@ -1,5 +1,5 @@
 import { CircleCheck, CircleX } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { Button } from '../ui/button';
 import {
 	Card,
@@ -19,7 +19,6 @@ interface EmailVerificationResultProps {
 }
 
 const EmailVerificationResult = ({ error }: EmailVerificationResultProps) => {
-	const navigate = useNavigate();
 	const hasError = Boolean(error);
 
 	return (
@@ -40,10 +39,10 @@ const EmailVerificationResult = ({ error }: EmailVerificationResultProps) => {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<Button
-					className='w-full'
-					onClick={() => navigate({ to: hasError ? '/login' : '/app' })}>
-					{hasError ? 'Retour à la connexion' : 'Continuer vers InEat'}
+				<Button asChild className='w-full'>
+					<Link to={hasError ? '/login' : '/app'}>
+						{hasError ? 'Retour à la connexion' : 'Continuer vers InEat'}
+					</Link>
 				</Button>
 			</CardContent>
 		</Card>

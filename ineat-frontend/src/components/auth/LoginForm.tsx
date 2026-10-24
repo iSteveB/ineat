@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -151,18 +151,11 @@ const LoginForm = () => {
 					<div className='space-y-2'>
 						<div className='flex items-center justify-between'>
 							<Label htmlFor='password'>Mot de passe</Label>
-							<Button
-								variant='link'
-								className='h-auto p-0 text-sm'
-								onClick={() => {
-									setError(null);
-									navigate({ to: '/forgot-password' });
-								}}
-								type='button'
-								disabled={isLoading}
-								data-testid='forgot-password-button'>
-								Mot de passe oublié ?
-							</Button>
+							<Button asChild variant='link' className='h-auto p-0 text-sm'>
+						<Link to='/forgot-password' data-testid='forgot-password-button'>
+							Mot de passe oublié ?
+						</Link>
+					</Button>
 						</div>
 						<Input
 							id='password'
@@ -195,16 +188,10 @@ const LoginForm = () => {
 			<CardFooter className='flex justify-center'>
 				<p className='text-sm text-neutral-600'>
 					Vous n'avez pas de compte ?{' '}
-					<Button
-						variant='link'
-						className='p-0 h-auto'
-						onClick={() => {
-							setError(null);
-							navigate({ to: '/register' });
-						}}
-						disabled={isLoading}
-						data-testid='register-button'>
-						S'inscrire
+					<Button asChild variant='link' className='h-auto p-0'>
+						<Link to='/register' data-testid='register-button'>
+							S'inscrire
+						</Link>
 					</Button>
 				</p>
 			</CardFooter>

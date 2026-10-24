@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { useEffect, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthStore } from '@/stores/authStore';
 import { RegisterFormSchema } from '@/schemas';
 import { Button } from '../ui/button';
@@ -234,16 +234,10 @@ const RegisterForm = () => {
 			<CardFooter className='flex justify-center'>
 				<p className='text-sm text-neutral-600'>
 					Vous avez déjà un compte ?{' '}
-					<Button
-						variant='link'
-						className='p-0 h-auto'
-						onClick={() => {
-							setError(null);
-							navigate({ to: '/login' });
-						}}
-						disabled={isLoading}
-						data-testid='login-button'>
-						Se connecter
+					<Button asChild variant='link' className='h-auto p-0'>
+						<Link to='/login' data-testid='login-button'>
+							Se connecter
+						</Link>
 					</Button>
 				</p>
 			</CardFooter>
