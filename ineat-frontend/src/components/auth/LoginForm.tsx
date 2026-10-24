@@ -10,9 +10,9 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
+import { CircleAlert, TriangleAlert } from 'lucide-react';
 import { z } from 'zod';
 import { LoginCredentialsSchema } from '@/schemas';
 import { markPwaPromptAfterLogin } from '@/lib/pwa-install';
@@ -88,9 +88,9 @@ const LoginForm = () => {
 	};
 
 	return (
-		<Card className='w-full max-w-md mx-auto'>
+		<Card className='mx-auto w-full max-w-md border border-neutral-200 p-6 shadow-sm sm:p-8'>
 			<CardHeader>
-				<CardTitle>Connexion</CardTitle>
+				<h1 className='type-h1 text-neutral-900'>Connexion</h1>
 				<CardDescription>
 					Accédez à votre compte pour gérer votre inventaire
 					alimentaire.
@@ -107,6 +107,7 @@ const LoginForm = () => {
 							variant='warning'
 							className='mb-4'
 							data-testid='session-expired-alert'>
+							<TriangleAlert aria-hidden='true' />
 							<AlertDescription>
 								Votre session a expiré. Veuillez vous
 								reconnecter.
@@ -118,6 +119,7 @@ const LoginForm = () => {
 					{(formError || error) && (
 						<div data-testid='error-container'>
 							<Alert variant='error' data-testid='error-alert'>
+								<CircleAlert aria-hidden='true' />
 								<AlertDescription data-testid='error-message'>
 									{formError || error}
 								</AlertDescription>
@@ -151,7 +153,7 @@ const LoginForm = () => {
 							<Label htmlFor='password'>Mot de passe</Label>
 							<Button
 								variant='link'
-								className='p-0 h-auto text-xs'
+								className='h-auto p-0 text-sm'
 								onClick={() => {
 									setError(null);
 									navigate({ to: '/forgot-password' });

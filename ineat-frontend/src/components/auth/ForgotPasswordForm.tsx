@@ -9,9 +9,9 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
+import { CircleAlert, CircleCheck } from 'lucide-react';
 import { z } from 'zod';
 import { authClient } from '@/lib/auth-client';
 import { EmailSchema } from '@/schemas';
@@ -83,9 +83,9 @@ const ForgotPasswordForm = () => {
 	};
 
 	return (
-		<Card className='w-full max-w-md mx-auto'>
+		<Card className='mx-auto w-full max-w-md border border-neutral-200 p-6 shadow-sm sm:p-8'>
 			<CardHeader>
-				<CardTitle>Réinitialisation de mot de passe</CardTitle>
+				<h1 className='type-h1 text-neutral-900'>Réinitialisation de mot de passe</h1>
 				<CardDescription>
 					Entrez votre adresse email pour recevoir un lien de
 					réinitialisation
@@ -93,7 +93,8 @@ const ForgotPasswordForm = () => {
 			</CardHeader>
 			<CardContent>
 				{isSuccess ? (
-					<Alert className='mb-4' data-testid='success-alert'>
+					<Alert variant='success' className='mb-4' data-testid='success-alert'>
+						<CircleCheck aria-hidden='true' />
 						<AlertDescription>
 							Si un compte existe avec cette adresse email, vous
 							recevrez un email contenant les instructions pour
@@ -111,6 +112,7 @@ const ForgotPasswordForm = () => {
 								<Alert
 									variant='error'
 									data-testid='error-alert'>
+									<CircleAlert aria-hidden='true' />
 									<AlertDescription data-testid='error-message'>
 										{formError}
 									</AlertDescription>
@@ -150,7 +152,7 @@ const ForgotPasswordForm = () => {
 				)}
 			</CardContent>
 			<CardFooter className='flex justify-center'>
-				<p className='text-sm text-gray-600'>
+				<p className='text-sm text-neutral-600'>
 					<Button
 						variant='link'
 						className='p-0 h-auto'

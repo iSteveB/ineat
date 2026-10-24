@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { authClient } from '@/lib/auth-client';
 import { ResetPasswordSchema } from '@/schemas';
 import { Alert, AlertDescription } from '../ui/alert';
+import { CircleAlert, CircleCheck } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
 	Card,
@@ -11,7 +12,6 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -102,16 +102,17 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 	};
 
 	return (
-		<Card className='w-full max-w-md mx-auto'>
+		<Card className='mx-auto w-full max-w-md border border-neutral-200 p-6 shadow-sm sm:p-8'>
 			<CardHeader>
-				<CardTitle>Nouveau mot de passe</CardTitle>
+				<h1 className='type-h1 text-neutral-900'>Nouveau mot de passe</h1>
 				<CardDescription>
 					Choisissez un nouveau mot de passe pour votre compte
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				{isSuccess ? (
-					<Alert className='mb-4' data-testid='success-alert'>
+					<Alert variant='success' className='mb-4' data-testid='success-alert'>
+						<CircleCheck aria-hidden='true' />
 						<AlertDescription>
 							Votre mot de passe a été réinitialisé. Vous pouvez
 							vous connecter avec votre nouveau mot de passe.
@@ -127,6 +128,7 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 								<Alert
 									variant='error'
 									data-testid='error-alert'>
+									<CircleAlert aria-hidden='true' />
 									<AlertDescription data-testid='error-message'>
 										{formError}
 									</AlertDescription>

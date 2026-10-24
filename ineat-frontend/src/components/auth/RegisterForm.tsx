@@ -12,9 +12,9 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from '../ui/card';
 import { Alert, AlertDescription } from '../ui/alert';
+import { CircleAlert } from 'lucide-react';
 
 const RegisterForm = () => {
 	// États locaux du formulaire
@@ -166,9 +166,10 @@ const RegisterForm = () => {
 						onChange={handleChange}
 						required
 						disabled={isLoading}
+						aria-describedby='password-hint'
 						data-testid='password-input'
 					/>
-					<p className='text-xs text-gray-500'>
+					<p id='password-hint' className='text-sm text-neutral-600'>
 						Au moins 8 caractères
 					</p>
 				</div>
@@ -205,9 +206,9 @@ const RegisterForm = () => {
 	};
 
 	return (
-		<Card className='w-full max-w-md mx-auto'>
+		<Card className='mx-auto w-full max-w-md border border-neutral-200 p-6 shadow-sm sm:p-8'>
 			<CardHeader>
-				<CardTitle>Créer un compte</CardTitle>
+				<h1 className='type-h1 text-neutral-900'>Créer un compte</h1>
 				<CardDescription>
 					Rejoignez InEat pour mieux gérer vos stocks alimentaires
 				</CardDescription>
@@ -220,6 +221,7 @@ const RegisterForm = () => {
 							variant='error'
 							className='mb-4'
 							data-testid='error-alert'>
+							<CircleAlert aria-hidden='true' />
 							<AlertDescription data-testid='error-message'>
 								{formError || error}
 							</AlertDescription>
@@ -230,7 +232,7 @@ const RegisterForm = () => {
 				{renderEmailForm()}
 			</CardContent>
 			<CardFooter className='flex justify-center'>
-				<p className='text-sm text-gray-600'>
+				<p className='text-sm text-neutral-600'>
 					Vous avez déjà un compte ?{' '}
 					<Button
 						variant='link'

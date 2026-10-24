@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { MailCheck } from 'lucide-react';
+import { CircleAlert, CircleCheck, MailCheck } from 'lucide-react';
 import { authService } from '@/services/authService';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Button } from '../ui/button';
@@ -10,7 +10,6 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from '../ui/card';
 
 interface EmailVerificationPendingProps {
@@ -59,10 +58,10 @@ const EmailVerificationPending = ({ email }: EmailVerificationPendingProps) => {
 	};
 
 	return (
-		<Card className='w-full max-w-md mx-auto'>
+		<Card className='mx-auto w-full max-w-md border border-neutral-200 p-6 shadow-sm sm:p-8'>
 			<CardHeader className='text-center'>
 				<MailCheck className='mx-auto mb-2 size-10 text-primary' aria-hidden />
-				<CardTitle>Vérifiez votre boîte mail</CardTitle>
+				<h1 className='type-h1 text-neutral-900'>Vérifiez votre boîte mail</h1>
 				<CardDescription>
 					Nous avons envoyé un lien de vérification à <strong>{email}</strong>.
 					 Il est valable pendant 60 minutes.
@@ -74,12 +73,14 @@ const EmailVerificationPending = ({ email }: EmailVerificationPendingProps) => {
 					 courriers indésirables.
 				</p>
 				{message && (
-					<Alert data-testid='resend-success'>
+					<Alert variant='success' data-testid='resend-success'>
+						<CircleCheck aria-hidden='true' />
 						<AlertDescription>{message}</AlertDescription>
 					</Alert>
 				)}
 				{error && (
 					<Alert variant='error' data-testid='resend-error'>
+						<CircleAlert aria-hidden='true' />
 						<AlertDescription>{error}</AlertDescription>
 					</Alert>
 				)}

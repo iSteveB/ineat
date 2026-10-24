@@ -6,7 +6,6 @@ import {
 	CardContent,
 	CardDescription,
 	CardHeader,
-	CardTitle,
 } from '../ui/card';
 
 const errorMessages: Record<string, string> = {
@@ -24,16 +23,16 @@ const EmailVerificationResult = ({ error }: EmailVerificationResultProps) => {
 	const hasError = Boolean(error);
 
 	return (
-		<Card className='w-full max-w-md mx-auto text-center'>
+		<Card className='mx-auto w-full max-w-md border border-neutral-200 p-6 text-center shadow-sm sm:p-8'>
 			<CardHeader>
 				{hasError ? (
 					<CircleX className='mx-auto mb-2 size-10 text-destructive' aria-hidden />
 				) : (
 					<CircleCheck className='mx-auto mb-2 size-10 text-primary' aria-hidden />
 				)}
-				<CardTitle>
+				<h1 className='type-h1 text-neutral-900'>
 					{hasError ? 'Lien non valide' : 'Adresse email vérifiée'}
-				</CardTitle>
+				</h1>
 				<CardDescription>
 					{hasError
 						? errorMessages[error ?? ''] ?? "Ce lien n'a pas pu être vérifié."
