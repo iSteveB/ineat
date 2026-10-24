@@ -17,7 +17,6 @@ export async function backfillCiqualProducts(
   const products = await prisma.product.findMany({
     where: {
       barcode: null,
-      ciqualCode: null,
       Category: { slug: { in: CIQUAL_CATEGORIES } },
     },
     include: { Category: true },
