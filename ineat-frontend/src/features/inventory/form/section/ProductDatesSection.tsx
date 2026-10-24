@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { formatDate as formatFrenchDate } from '@/utils/dateHelpers';
 
 export interface ProductDatesData {
 	purchaseDate: string;
@@ -42,7 +43,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 
 	const getInputClassName = (field: keyof ProductDatesData) => {
 		let baseClass =
-			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
+			'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900';
 
 		// Erreur
 		if (errors[field]) {
@@ -51,11 +52,10 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
-			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
-			baseClass = baseClass.replace('border-neutral-200', 'border-blue-500/20');
+			baseClass = baseClass.replace('bg-surface', 'bg-info-50');
 			baseClass = baseClass.replace(
-				'focus:ring-accent-600 focus:border-accent-600',
-				'focus:ring-blue-500 focus:border-blue-500',
+				'focus:ring-accent-600/20 focus:border-accent-700',
+				'focus:ring-accent-600/20 focus:border-accent-700',
 			);
 		}
 
@@ -81,8 +81,11 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 	const datesValidationError = validateDatesLogic();
 	const isEstimatedExpiryDate =
 		values.expiryDateSource === 'ESTIMATED' && Boolean(values.expiryDate);
-	const showEstimatedDate =
-		isEstimatedExpiryDate || (!values.expiryDate && estimatedExpiryDate);
+	const estimatedLabelDate = values.expiryDate || estimatedExpiryDate;
+	const showEstimatedDate = Boolean(
+		estimatedLabelDate &&
+			(isEstimatedExpiryDate || (!values.expiryDate && estimatedExpiryDate))
+	);
 
 	return (
 		<div className={className}>
@@ -134,7 +137,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 								)}
 								{showEstimatedDate && (
 									<p className='text-sm text-neutral-600'>
-										Date estimée : {values.expiryDate || estimatedExpiryDate}
+										Date estimée : {formatFrenchDate(estimatedLabelDate as string)}
 										{estimatedExpiryReason ? ` (${estimatedExpiryReason})` : ''}
 									</p>
 								)}

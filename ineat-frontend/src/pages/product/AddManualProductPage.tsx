@@ -10,9 +10,9 @@ import {
 	ArrowLeft,
 	Star,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import WidgetCard from '@/components/common/WidgetCard';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 import { ProductSearchBar } from '@/features/product/ProductSearchBar';
 import { ProductSearchResults } from '@/features/product/ProductSearchResult';
@@ -222,198 +222,123 @@ const AddManualProductPage: React.FC = () => {
 		};
 	};
 
+	const pageTitle =
+		pageState === 'quick-add' && selectedProduct
+			? selectedProduct.name
+			: pageState === 'manual-add'
+				? 'Nouveau produit'
+				: 'Ajout manuel';
+
 	return (
-		<div className='min-h-screen bg-surface'>
-			{/* HEADER */}
-			<div className='relative overflow-hidden bg-surface border-b border-neutral-100 shadow-sm'>
-				<div className='absolute top-0 right-0 size-32 bg-accent-600/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+		<div className='mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-6 lg:py-6'>
+			{pageState === 'search' ? (
+				<Button asChild variant='ghost' className='-ml-3 self-start'>
+					<Link to='/app/inventory/add'>
+						<ArrowLeft aria-hidden='true' />
+						Méthodes d’ajout
+					</Link>
+				</Button>
+			) : (
+				<Button variant='ghost' className='-ml-3 self-start' onClick={handleBackToSearch}>
+					<ArrowLeft aria-hidden='true' />
+					Retour à la recherche
+				</Button>
+			)}
 
-				<div className='relative px-6 py-4 flex items-center justify-between'>
-					<div className='flex items-center gap-4'>
-						<Link to='/app/inventory/add'>
-							<Button
-								variant='ghost'
-								size='sm'
-								className='size-10 p-0 rounded-xl bg-surface hover:bg-neutral-50 border border-neutral-200 shadow-sm'>
-								<ArrowLeft className='size-5 text-neutral-900' />
-							</Button>
-						</Link>
-						<div>
-							<h1 className='text-2xl font-bold text-neutral-900'>
-								Ajouter un produit
-							</h1>
-							<p className='text-sm text-neutral-600'>
-								Recherchez ou créez un nouveau produit
+			<header>
+				<h1 className='type-h1 text-neutral-900'>{pageTitle}</h1>
+				<p className='text-neutral-600'>
+					{pageState === 'search'
+						? 'Recherchez le produit, ou créez-le s’il n’existe pas.'
+						: pageState === 'quick-add'
+							? 'Indiquez la quantité et la date de péremption.'
+							: 'Renseignez les informations du produit.'}
+				</p>
+			</header>
+
+			{pageState === 'search' && (
+				<>
+					<WidgetCard title='Rechercher un produit'>
+						<ProductSearchBar
+							onSearch={handleSearch}
+							onClear={handleClearSearch}
+							isLoading={isSearching}
+							autoFocus
+						/>
+						<p className='mt-2 text-sm text-neutral-600'>
+							Nom, marque ou code-barres.
+						</p>
+					</WidgetCard>
+
+					{(searchResults.length > 0 || (searchQuery && !isSearching)) && (
+						<ProductSearchResults
+							results={searchResults}
+							onSelectProduct={handleSelectProduct}
+							isLoading={isSearching}
+							searchQuery={searchQuery}
+						/>
+					)}
+
+					{searchResults.length === 0 && searchQuery && !isSearching && (
+						<Alert variant='warning' role='status'>
+							<AlertCircle aria-hidden='true' />
+							<AlertDescription>
+								<p>Aucun produit trouvé pour « {searchQuery} ».</p>
+								<Button variant='secondary' size='sm' className='mt-1' onClick={handleSwitchToManualAdd}>
+									<Plus aria-hidden='true' />
+									Créer ce produit
+								</Button>
+							</AlertDescription>
+						</Alert>
+					)}
+
+					{!searchQuery && (
+						<div className='card flex flex-col items-center gap-3 px-6 py-10 text-center'>
+							<span className='flex size-14 items-center justify-center rounded-lg bg-accent-50 text-accent-800'>
+								<Search className='size-7' aria-hidden='true' />
+							</span>
+							<h2 className='type-h3 text-neutral-900'>Commencez par rechercher</h2>
+							<p className='max-w-md text-sm text-neutral-700'>
+								Si le produit existe déjà, il suffira d’indiquer la quantité et la date. Sinon,
+								vous pourrez le créer.
 							</p>
-						</div>
-					</div>
-
-					{pageState === 'search' &&
-						searchResults.length === 0 &&
-						searchQuery && (
-							<Button
-								onClick={handleSwitchToManualAdd}
-								variant='outline'
-								size='sm'
-								className='flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:text-neutral-900 shadow-sm'>
-								<Plus className='size-4' />
-								Créer un nouveau produit
+							<Button variant='secondary' onClick={handleSwitchToManualAdd} className='mt-1'>
+								<Package aria-hidden='true' />
+								Créer directement un produit
 							</Button>
-						)}
-				</div>
-			</div>
+						</div>
+					)}
+				</>
+			)}
 
-			{/* Content */}
-			<div className='max-w-4xl mx-auto px-4 py-6 space-y-6'>
-				{/* État de recherche */}
-				{pageState === 'search' && (
-					<div className='space-y-6'>
-						{/* Barre de recherche */}
-						<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
-							<CardHeader>
-								<CardTitle className='flex items-center gap-3'>
-									<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
-										<Search className='size-5 text-accent-700' />
-									</div>
-									Rechercher un produit existant
-								</CardTitle>
-							</CardHeader>
-							<CardContent className='p-6 pt-0 space-y-3'>
-								<p className='text-sm text-neutral-600'>
-									Commencez par rechercher si le produit
-									existe déjà dans notre base de données
-								</p>
-								<ProductSearchBar
-									onSearch={handleSearch}
-									onClear={handleClearSearch}
-									isLoading={isSearching}
-									autoFocus
-								/>
-							</CardContent>
-						</Card>
+			{pageState === 'quick-add' && selectedProduct && (
+				<section aria-label='Ajout rapide' className='card p-4 sm:p-5'>
+					<ExistingProductQuickAddForm
+						product={selectedProduct}
+						onSubmit={handleQuickAdd}
+						onCancel={handleBackToSearch}
+						isSubmitting={quickAddMutation.isPending}
+						enrichedData={enrichedProductData}
+					/>
+				</section>
+			)}
 
-						{/* Résultats de recherche */}
-						{(searchResults.length > 0 ||
-							(searchQuery && !isSearching)) && (
-							<ProductSearchResults
-								results={searchResults}
-								onSelectProduct={handleSelectProduct}
-								isLoading={isSearching}
-								searchQuery={searchQuery}
-							/>
-						)}
+			{pageState === 'manual-add' && (
+				<>
+					{enrichedProductData && (
+						<Alert variant='info' role='status'>
+							<Star aria-hidden='true' />
+							<AlertTitle>Données Open Food Facts trouvées</AlertTitle>
+							<AlertDescription>
+								Le formulaire est pré-rempli avec les informations disponibles (
+								{Math.round(enrichedProductData.quality.completeness * 100)} % complètes).
+							</AlertDescription>
+						</Alert>
+					)}
 
-						{/* Message si aucun résultat */}
-						{searchResults.length === 0 &&
-							searchQuery &&
-							!isSearching && (
-								<Alert className='border-warning-500/20 bg-warning-50/10 text-neutral-900'>
-									<AlertCircle className='size-4 text-warning-700' />
-									<AlertDescription>
-										Aucun produit trouvé pour "{searchQuery}
-										".{' '}
-										<Button
-											variant='link'
-											className='px-1 h-auto font-medium text-accent-700 hover:text-accent-700/90'
-											onClick={handleSwitchToManualAdd}>
-											Créer ce produit
-										</Button>
-									</AlertDescription>
-								</Alert>
-							)}
-
-						{/* Aide initiale */}
-						{!searchQuery && (
-							<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
-								<CardContent className='p-8 text-center'>
-									<div className='flex flex-col items-center space-y-4'>
-										<div className='size-16 rounded-full bg-neutral-50 flex items-center justify-center'>
-											<Package className='size-8 text-neutral-600' />
-										</div>
-										<div className='space-y-2'>
-											<h3 className='text-lg font-medium text-neutral-900'>
-												Commencez par rechercher
-											</h3>
-											<p className='text-sm text-neutral-600 max-w-md mx-auto'>
-												Tapez le nom, la marque ou le
-												code-barres du produit que vous
-												souhaitez ajouter. Si le produit
-												n'existe pas, vous pourrez le
-												créer.
-											</p>
-										</div>
-										<div className='flex flex-col items-center space-x-4 text-sm text-neutral-600'>
-											<span>ou</span>
-											<Button
-												variant='link'
-												className='text-accent-700 hover:text-accent-700/90'
-												onClick={
-													handleSwitchToManualAdd
-												}>
-												Créer directement un nouveau
-												produit
-											</Button>
-										</div>
-									</div>
-								</CardContent>
-							</Card>
-						)}
-					</div>
-				)}
-
-				{/* État ajout rapide avec produit existant */}
-				{pageState === 'quick-add' && selectedProduct && (
-					<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
-						<CardHeader>
-							<CardTitle className='flex items-center gap-3'>
-								<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
-									<Plus className='size-5 text-accent-700' />
-								</div>
-								Ajout rapide : {selectedProduct.name}
-							</CardTitle>
-						</CardHeader>
-						<CardContent className='p-6 pt-0'>
-							<ExistingProductQuickAddForm
-								product={selectedProduct}
-								onSubmit={handleQuickAdd}
-								onCancel={handleBackToSearch}
-								isSubmitting={quickAddMutation.isPending}
-								enrichedData={enrichedProductData} // Passer les données enrichies
-							/>
-						</CardContent>
-					</Card>
-				)}
-
-				{/* État ajout manuel avec données enrichies possibles */}
-				{pageState === 'manual-add' && (
-					<>
-						{/* NOUVEAU - Alerte si des données enrichies sont disponibles */}
-						{enrichedProductData && (
-							<Alert className='border-blue-500/20 bg-blue-50/10'>
-								<Star className='size-4 text-blue-500' />
-								<AlertDescription>
-									<strong className='text-blue-600'>
-										Données OpenFoodFacts détectées !
-									</strong>
-									<br />
-									<span className='text-neutral-900'>
-										Le formulaire sera pré-rempli avec les
-										informations nutritionnelles et
-										environnementales disponibles (
-										{Math.round(
-											enrichedProductData.quality
-												.completeness * 100
-										)}
-										% complet).
-									</span>
-								</AlertDescription>
-							</Alert>
-						)}
-
-						<AddManualProductForm {...getManualFormProps()} />
-					</>
-				)}
-			</div>
+					<AddManualProductForm {...getManualFormProps()} />
+				</>
+			)}
 		</div>
 	);
 };

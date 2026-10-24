@@ -1,114 +1,67 @@
 import React from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { Scan, Car, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { ArrowLeft, FileText, PencilLine, ScanLine } from 'lucide-react';
+
 import AddMethodCard from '@/components/common/AddMethodCard';
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/stores/authStore';
 
 const AddProductPage: React.FC = () => {
-	const navigate = useNavigate();
 	const { user } = useAuthStore();
 
 	const hasDriveAccess = Boolean(user?.capabilities.canImportDrive);
 	const driveImportsRemaining = user?.capabilities.driveImportsRemaining ?? 0;
 	const canImportDrive = hasDriveAccess && driveImportsRemaining > 0;
 	const driveBlockedMessage = hasDriveAccess
-		? 'Quota Drive atteint. Le prochain import sera disponible au renouvellement.'
-		: 'Réservé Premium: import et analyse automatique des factures Drive.';
-
-	/**
-	 * Utilitaire pour obtenir les initiales de l'utilisateur
-	 */
-	const getInitials = (firstName: string, lastName: string): string => {
-		return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-	};
-
-	/**
-	 * Gestionnaire pour ouvrir le scanner (navigation vers route dédiée)
-	 */
-	const handleOpenScanner = (): void => {
-		navigate({ to: '/app/inventory/add/scan' });
-	};
+		? 'Quota atteint : le prochain import sera disponible au renouvellement.'
+		: 'Analyse automatique de vos factures Drive, avec Premium.';
 
 	return (
-		<div className='min-h-screen bg-surface'>
-			{/* Header */}
-			<div className='bg-surface border-b border-gray-200 shadow-sm'>
-				<div className='max-w-md mx-auto px-4 py-4'>
-					<div className='flex items-center space-x-4'>
-						<Link
-							to='/app/inventory'
-							className='p-2 hover:bg-gray-100 rounded-full transition-colors'>
-							<ArrowLeft className='size-5 text-gray-600' />
-						</Link>
+		<div className='mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-4 sm:px-6 lg:py-6'>
+			<Button asChild variant='ghost' className='-ml-3 self-start'>
+				<Link to='/app/inventory'>
+					<ArrowLeft aria-hidden='true' />
+					Inventaire
+				</Link>
+			</Button>
 
-						<div className='flex items-center space-x-3'>
-							<div className='size-12 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-brand-300/50 to-brand-300 shadow-lg'>
-								{user?.avatarUrl ? (
-									<img
-										src={user.avatarUrl}
-										alt='Avatar utilisateur'
-										className='size-full object-cover'
-									/>
-								) : (
-									<div className='flex items-center justify-center size-full text-surface text-xl font-semibold'>
-										{getInitials(
-											user?.firstName || '',
-											user?.lastName || ''
-										)}
-									</div>
-								)}
-							</div>
-							<h1 className="text-xl font-semibold text-gray-900 font-display">
-								Ajouter un produit
-							</h1>
-						</div>
-					</div>
-				</div>
-			</div>
+			<header>
+				<h1 className='type-h1 text-neutral-900'>Ajouter un produit</h1>
+				<p className='text-neutral-600'>Choisissez comment ajouter vos courses.</p>
+			</header>
 
-			{/* Content */}
-			<div className='max-w-md mx-auto px-4 py-6'>
-				<h2 className='text-lg font-semibold text-gray-900 mb-6'>
-					Choisir une méthode d'ajout
-				</h2>
-
-				<div className='space-y-4'>
-					{/* Scanner un code-barre */}
-					<div onClick={handleOpenScanner} className='cursor-pointer'>
-						<AddMethodCard
-							icon={<Scan className='size-6 text-blue-600' />}
-							title='Scanner un code-barre'
-							description="Scanner directement le code-barre d'un produit avec recherche automatique OpenFoodFacts."
-							to='' // Pas de 'to' car on gère le clic manuellement
-						/>
-					</div>
-
-					{/* Importer une facture Drive */}
+			<ul className='flex flex-col gap-3'>
+				<li>
 					<AddMethodCard
-						icon={<Car className='size-6 text-blue-600' />}
+						icon={<ScanLine className='size-6' aria-hidden='true' />}
+						title='Scanner un code-barre'
+						description='Le plus rapide : nom, Nutri-Score et date estimée sont remplis automatiquement.'
+						to='/app/inventory/add/scan'
+						isRecommended
+					/>
+				</li>
+				<li>
+					<AddMethodCard
+						icon={<PencilLine className='size-6' aria-hidden='true' />}
+						title='Ajout manuel'
+						description='Recherchez un produit par son nom ou saisissez ses informations.'
+						to='/app/inventory/add/search'
+					/>
+				</li>
+				<li>
+					<AddMethodCard
+						icon={<FileText className='size-6' aria-hidden='true' />}
 						title='Importer une facture Drive'
 						description={
 							canImportDrive
-								? `Analyse automatique des factures Drive pour préparer l’ajout au stock. ${driveImportsRemaining} import${driveImportsRemaining > 1 ? 's' : ''} restant${driveImportsRemaining > 1 ? 's' : ''}.`
+								? `Analyse de votre facture Drive pour tout ajouter d’un coup. ${driveImportsRemaining} import${driveImportsRemaining > 1 ? 's' : ''} restant${driveImportsRemaining > 1 ? 's' : ''}.`
 								: driveBlockedMessage
 						}
-						to={
-							canImportDrive
-								? '/app/inventory/add/drive'
-								: '/app/subscription'
-						}
-						isPremium={true}
+						to={canImportDrive ? '/app/inventory/add/drive' : '/app/subscription'}
+						isPremium={!hasDriveAccess}
 					/>
-
-					{/* Ajouter manuellement */}
-					<AddMethodCard
-						icon={<ShoppingCart className='size-6 text-blue-600' />}
-						title='Ajout manuel'
-						description='Entrer manuellement les détails du produit.'
-						to='/app/inventory/add/search'
-					/>
-				</div>
-			</div>
+				</li>
+			</ul>
 		</div>
 	);
 };

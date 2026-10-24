@@ -205,7 +205,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 					{/* Icône de statut */}
 					<div className='absolute right-3 top-1/2 -translate-y-1/2'>
 						{loading && (
-							<Loader2 className='size-4 text-blue-500 animate-spin' />
+							<Loader2 className='size-4 text-info-700 animate-spin' />
 						)}
 						{inputState === 'success' && (
 							<CheckCircle2 className='size-4 text-accent-700' />

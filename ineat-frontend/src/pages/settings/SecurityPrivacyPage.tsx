@@ -165,15 +165,11 @@ const SecurityPrivacyPage = () => {
 				<div className='absolute top-0 right-0 size-32 bg-accent-600/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 				<div className='relative px-6 py-4 flex items-center gap-4'>
-					<Link to='/app/settings'>
-						<Button
-							variant='ghost'
-							size='sm'
-							className='size-10 p-0 rounded-xl bg-surface hover:bg-neutral-50 border border-neutral-100 shadow-sm'
-						>
-							<ChevronLeft className='size-5' />
-						</Button>
-					</Link>
+					<Button asChild variant='secondary' size='icon'>
+						<Link to='/app/settings' aria-label='Retour aux paramètres'>
+							<ChevronLeft aria-hidden='true' />
+						</Link>
+					</Button>
 					<div>
 						<h1 className='text-2xl font-bold text-neutral-900'>
 							Sécurité & Confidentialité

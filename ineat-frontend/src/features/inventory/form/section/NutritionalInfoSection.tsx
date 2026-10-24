@@ -40,10 +40,10 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 	};
 
 	const getInputClassName = (hasValue: boolean = false) => {
-		let baseClass = 'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
+		let baseClass = 'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900 placeholder:text-neutral-500';
 		
 		if (readonly && hasValue) {
-			baseClass = 'bg-blue-50/5 border-blue-500/20 text-neutral-700 placeholder:text-neutral-500';
+			baseClass = 'bg-info-50 border-input text-neutral-700 placeholder:text-neutral-500';
 		}
 		
 		return baseClass;

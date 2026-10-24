@@ -193,16 +193,16 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 		<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
 			<CardHeader>
 				<CardTitle className='flex items-center gap-3'>
-					<div className='p-2 rounded-xl bg-blue-50/20 border border-blue-500/50'>
-						<PackagePlus className='size-5 text-blue-500' />
+					<div className='p-2 rounded-md bg-info-50'>
+						<PackagePlus className='size-5 text-info-700' />
 					</div>
 					Ajouter un produit scanné
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
 				{/* Alerte produit OpenFoodFacts */}
-				<Alert className='border-blue-500/20 bg-blue-50/10'>
-					<Star className='size-4 text-blue-500' />
+				<Alert variant='info'>
+					<Star className='size-4 text-info-700' />
 					<AlertDescription className='flex flex-col text-neutral-700'>
 						<strong className='text-neutral-900'>{enrichedProduct.name}</strong>
 						{enrichedProduct.brand && (
@@ -214,7 +214,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							{enrichedProduct.nutriscore && (
 								<Badge
 									variant='outline'
-									className='bg-green-50 text-green-700 border-green-200'>
+									className='bg-success-50 text-success-700 border-transparent'>
 									<Zap className='size-3 mr-1' />
 									Nutri-Score: {enrichedProduct.nutriscore}
 								</Badge>
@@ -222,7 +222,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							{enrichedProduct.ecoscore && (
 								<Badge
 									variant='outline'
-									className='bg-emerald-50 text-emerald-700 border-emerald-200'>
+									className='bg-success-50 text-success-700 border-transparent'>
 									<Leaf className='size-3 mr-1' />
 									Eco-Score: {enrichedProduct.ecoscore}
 								</Badge>
@@ -230,14 +230,14 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							{enrichedProduct.nutrients && (
 								<Badge
 									variant='outline'
-									className='bg-orange-50 text-orange-700 border-orange-200'>
+									className='bg-warning-50 text-warning-700 border-transparent'>
 									Nutrition disponible
 								</Badge>
 							)}
 							{enrichedProduct.ingredients && (
 								<Badge
 									variant='outline'
-									className='bg-purple-50 text-purple-700 border-purple-200'>
+									className='bg-info-50 text-info-700 border-transparent'>
 									Ingrédients disponibles
 								</Badge>
 							)}
@@ -256,10 +256,10 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							Informations produit
 						</h3>
 						
-						<div className='grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50/10 rounded-xl border border-blue-200/20'>
+						<div className='grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-neutral-50 rounded-lg'>
 							<div className='space-y-2'>
 								<Label className='text-sm text-neutral-600'>Nom du produit</Label>
-								<div className='p-2 bg-white/60 rounded-md text-sm text-neutral-800 font-medium'>
+								<div className='p-2 bg-surface/60 rounded-md text-sm text-neutral-800 font-medium'>
 									{enrichedProduct.name}
 								</div>
 							</div>
@@ -267,7 +267,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							{enrichedProduct.brand && (
 								<div className='space-y-2'>
 									<Label className='text-sm text-neutral-600'>Marque</Label>
-									<div className='p-2 bg-white/60 rounded-md text-sm text-neutral-800'>
+									<div className='p-2 bg-surface/60 rounded-md text-sm text-neutral-800'>
 										{enrichedProduct.brand}
 									</div>
 								</div>
@@ -276,7 +276,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							{enrichedProduct.barcode && (
 								<div className='space-y-2'>
 									<Label className='text-sm text-neutral-600'>Code-barres</Label>
-									<div className='p-2 bg-white/60 rounded-md text-sm text-neutral-800 font-mono'>
+									<div className='p-2 bg-surface/60 rounded-md text-sm text-neutral-800 font-mono'>
 										{enrichedProduct.barcode}
 									</div>
 								</div>
@@ -301,12 +301,12 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 								onValueChange={(value) => handleInputChange('category', value)}
 								disabled={isSubmitting}>
 								<SelectTrigger
-									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+									className={`bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 ${
 										errors['category'] ? 'border-danger-600' : ''
 									}`}>
 									<SelectValue placeholder='Sélectionnez une catégorie' />
 								</SelectTrigger>
-								<SelectContent className='bg-white border border-neutral-200 rounded-xl shadow-sm'>
+								<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 									{categories.length === 0 ? (
 										<SelectItem value='loading' disabled>
 											Chargement...
@@ -349,7 +349,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									value={formData.quantity}
 									onChange={(e) => handleInputChange('quantity', e.target.value)}
 									placeholder='Ex: 1.5'
-									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+									className={`bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 ${
 										errors['quantity'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
@@ -368,10 +368,10 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									onValueChange={(value) => handleInputChange('unitType', value)}
                   
 									disabled={isSubmitting}>
-									<SelectTrigger className='bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500'>
+									<SelectTrigger className='bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700'>
 										<SelectValue />
 									</SelectTrigger>
-									<SelectContent className='bg-white border border-neutral-200 rounded-xl shadow-sm'>
+									<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 										{UNIT_TYPE_OPTIONS.map((option) => (
 											<SelectItem
 												key={option.value}
@@ -401,7 +401,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									type='date'
 									value={formData.purchaseDate}
 									onChange={(e) => handleInputChange('purchaseDate', e.target.value)}
-									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+									className={`bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 ${
 										errors['purchaseDate'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
@@ -420,7 +420,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									type='date'
 									value={formData.expiryDate}
 									onChange={(e) => handleInputChange('expiryDate', e.target.value)}
-									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+									className={`bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 ${
 										errors['expiryDate'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
@@ -457,7 +457,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									value={formData.purchasePrice}
 									onChange={(e) => handleInputChange('purchasePrice', e.target.value)}
 									placeholder='Ex: 2.50'
-									className={`bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+									className={`bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 ${
 										errors['purchasePrice'] ? 'border-danger-600' : ''
 									}`}
 									disabled={isSubmitting}
@@ -475,10 +475,10 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 									value={formData.storageLocation}
 									onValueChange={(value) => handleInputChange('storageLocation', value)}
 									disabled={isSubmitting}>
-									<SelectTrigger className='bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500'>
+									<SelectTrigger className='bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700'>
 										<SelectValue placeholder='Sélectionnez un lieu' />
 									</SelectTrigger>
-									<SelectContent className='bg-white border border-neutral-200 rounded-xl shadow-sm'>
+									<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 										{STORAGE_LOCATION_OPTIONS.map((location) => (
 											<SelectItem
 												key={location}
@@ -500,7 +500,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 								onChange={(e) => handleInputChange('notes', e.target.value)}
 								placeholder='Ajoutez une note sur ce produit...'
 								rows={3}
-								className='bg-white border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none'
+								className='bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 resize-none'
 								disabled={isSubmitting}
 							/>
 						</div>
@@ -519,7 +519,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						<Button
 							type='submit'
 							disabled={isSubmitting}
-							className='flex-1 bg-blue-600 hover:bg-blue-700 text-white'>
+							className='flex-1'>
 							{isSubmitting ? (
 								<>
 									<Loader2 className='size-4 mr-2 animate-spin' />

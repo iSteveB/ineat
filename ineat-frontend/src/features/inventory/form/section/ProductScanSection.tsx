@@ -42,10 +42,10 @@ export const ProductScoresSection: React.FC<ProductScoresSectionProps> = ({
 	};
 
 	const getSelectClassName = (hasValue: boolean = false) => {
-		let baseClass = 'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
+		let baseClass = 'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900';
 		
 		if (readonly && hasValue) {
-			baseClass += ' bg-blue-50/5 border-blue-500/20';
+			baseClass += ' bg-info-50 border-input';
 		}
 		
 		return baseClass;

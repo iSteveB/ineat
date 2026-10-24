@@ -61,7 +61,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 
 	const getInputClassName = (field: keyof ProductExtrasData) => {
 		let baseClass =
-			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
+			'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900 placeholder:text-neutral-500';
 
 		// Erreur
 		if (errors[field]) {
@@ -70,15 +70,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 
 		// Mode readonly avec style différencié
 		if (readonly && values[field]) {
-			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
-			baseClass = baseClass.replace(
-				'border-neutral-200',
-				'border-blue-500/20'
-			);
-			baseClass = baseClass.replace(
-				'focus:ring-accent-600 focus:border-accent-600',
-				'focus:ring-blue-500 focus:border-blue-500'
-			);
+			baseClass = baseClass.replace('bg-surface', 'bg-info-50');
 		}
 
 		return baseClass;
@@ -86,19 +78,11 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 
 	const getSelectClassName = () => {
 		let baseClass =
-			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
+			'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900';
 
 		// Mode readonly avec style différencié
 		if (readonly && values.storageLocation) {
-			baseClass = baseClass.replace('bg-surface', 'bg-blue-50/5');
-			baseClass = baseClass.replace(
-				'border-neutral-200',
-				'border-blue-500/20'
-			);
-			baseClass = baseClass.replace(
-				'focus:ring-accent-600 focus:border-accent-600',
-				'focus:ring-blue-500 focus:border-blue-500'
-			);
+			baseClass = baseClass.replace('bg-surface', 'bg-info-50');
 		}
 
 		return baseClass;

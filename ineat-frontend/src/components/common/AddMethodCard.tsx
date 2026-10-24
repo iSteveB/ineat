@@ -1,8 +1,8 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
-import { Lock } from 'lucide-react';
+import { ChevronRight, Lock } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import React from 'react';
+
+import { cn } from '@/lib/utils';
 
 interface AddMethodCardProps {
 	icon: React.ReactNode;
@@ -11,9 +11,12 @@ interface AddMethodCardProps {
 	to: string;
 	isPremium?: boolean;
 	isDisabled?: boolean;
+	/** Met la méthode en avant (fond accent-50). */
+	isRecommended?: boolean;
 	onClick?: () => void;
 }
 
+/** Carte de choix d'une méthode d'ajout : un lien unique, accessible au clavier. */
 const AddMethodCard: React.FC<AddMethodCardProps> = ({
 	icon,
 	title,
@@ -21,59 +24,62 @@ const AddMethodCard: React.FC<AddMethodCardProps> = ({
 	to,
 	isPremium = false,
 	isDisabled = false,
+	isRecommended = false,
 	onClick,
 }) => {
 	const content = (
-		<Card
-			className={cn(
-				'relative overflow-hidden border-0 shadow-lg transition-all duration-300',
-				'bg-gradient-to-br from-white to-gray-50/50',
-				isDisabled && 'opacity-50 cursor-not-allowed',
-				!isDisabled && 'hover:shadow-xl hover:scale-[1.01]'
-			)}>
-			<div className='absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-100/20 to-purple-100/20 rounded-full blur-2xl -translate-y-8 translate-x-8' />
-			<CardContent className='p-6 flex items-center gap-4'>
-				<div className='flex-shrink-0 size-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center'>
-					{icon}
-				</div>
-				<div className='flex-1'>
-					<h3 className='text-lg font-semibold text-gray-900 mb-1'>
-						{title}
-					</h3>
-					<p className='text-sm text-gray-600 leading-relaxed'>
-						{description}
-					</p>
-				</div>
-				{isPremium && (
-					<div className='flex-shrink-0 px-3 py-1.5 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-full flex items-center gap-1'>
-						<Lock className='size-3' />
-						<span>Premium</span>
-					</div>
-				)}
-			</CardContent>
-		</Card>
+		<>
+			<span
+				className={cn(
+					'flex size-12 shrink-0 items-center justify-center rounded-md',
+					isRecommended ? 'bg-accent-600 text-surface' : 'bg-accent-50 text-accent-800'
+				)}>
+				{icon}
+			</span>
+			<span className='min-w-0 flex-1'>
+				<span className='flex flex-wrap items-center gap-2'>
+					<span className='type-h3 text-neutral-900'>{title}</span>
+					{isRecommended && (
+						<span className='rounded-full bg-surface px-2 py-0.5 text-xs font-semibold text-accent-800'>
+							Recommandé
+						</span>
+					)}
+					{isPremium && (
+						<span className='inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-800'>
+							<Lock className='size-3' aria-hidden='true' />
+							Premium
+						</span>
+					)}
+				</span>
+				<span className='mt-1 block text-sm text-neutral-700'>{description}</span>
+			</span>
+			{!isDisabled && (
+				<ChevronRight
+					className='size-5 shrink-0 text-neutral-500 group-hover:text-accent-700'
+					aria-hidden='true'
+				/>
+			)}
+		</>
 	);
 
-	if (isDisabled) {
+	const className = cn(
+		'card group flex items-center gap-4 p-4 sm:p-5 transition-[box-shadow,border-color]',
+		isRecommended && 'border-accent-600 bg-accent-50',
+		isDisabled ? 'cursor-not-allowed opacity-60' : 'hover:shadow-md'
+	);
+
+	if (isDisabled || !to) {
 		return (
-			<div className='cursor-not-allowed' onClick={onClick}>
+			<div className={className} aria-disabled={isDisabled || undefined}>
 				{content}
 			</div>
 		);
 	}
 
-	if (to) {
-		return (
-			<Link to={to} className='block' onClick={onClick}>
-				{content}
-			</Link>
-		);
-	}
-
 	return (
-		<div className='block' onClick={onClick}>
+		<Link to={to} className={className} onClick={onClick}>
 			{content}
-		</div>
+		</Link>
 	);
 };
 

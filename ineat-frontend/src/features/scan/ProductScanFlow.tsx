@@ -522,7 +522,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 				return (
 					<div className='min-h-screen bg-surface flex flex-col'>
 						{/* Header avec bouton retour */}
-						<div className='relative bg-white border-b border-neutral-100 shadow-sm'>
+						<div className='relative bg-surface border-b border-neutral-100 shadow-sm'>
 							<div className='absolute top-0 right-0 size-32 bg-warning-50/20 rounded-full blur-3xl -translate-y-16 translate-x-16' />
 
 							<div className='relative px-6 py-4 flex items-center gap-4'>
@@ -552,7 +552,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 						{/* Contenu centré */}
 						<div className='flex-1 flex items-center justify-center p-6'>
-							<Card className='w-full max-w-md border-0 bg-white shadow-xl rounded-2xl'>
+							<Card className='w-full max-w-md border-0 bg-surface shadow-xl rounded-2xl'>
 								<CardContent className='p-8 text-center space-y-6'>
 									<div className='space-y-4'>
 										<AlertTriangle className='size-20 text-warning-700 mx-auto' />
@@ -582,7 +582,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									<div className='space-y-3'>
 										<Button
 											onClick={handleCreateManually}
-											className='w-full h-12 bg-brand-500 hover:bg-brand-500 text-white shadow-lg hover:shadow-xl transition-all duration-300'
+											className='w-full h-12 bg-brand-500 hover:bg-brand-500 text-surface shadow-lg hover:shadow-xl transition-all duration-300'
 											size='lg'>
 											<Plus className='size-5 mr-2' />
 											<span>
@@ -627,7 +627,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 			case 'success':
 				return (
 					<div className='min-h-screen bg-surface flex items-center justify-center p-6'>
-						<Card className='w-full max-w-md border-0 bg-white shadow-xl rounded-2xl'>
+						<Card className='w-full max-w-md border-0 bg-surface shadow-xl rounded-2xl'>
 							<CardContent className='p-8 text-center space-y-6'>
 								<CheckCircle2 className='size-20 text-accent-700 mx-auto animate-pulse' />
 								<div>

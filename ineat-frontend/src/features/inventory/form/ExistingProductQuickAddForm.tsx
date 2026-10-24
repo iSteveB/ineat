@@ -334,7 +334,7 @@ export const ExistingProductQuickAddForm: React.FC<
 						{enrichedData?.novascore && (
 							<Badge
 								variant='outline'
-								className='bg-purple-50 text-purple-700 border-purple-200'
+								className='bg-info-50 text-info-700 border-transparent'
 							>
 								Nova {enrichedData.novascore.replace('GROUP_', '')}
 							</Badge>
@@ -345,8 +345,8 @@ export const ExistingProductQuickAddForm: React.FC<
 				{/* NOUVEAU - Indicateur de données enrichies */}
 				{enrichedData && (
 					<div className='mt-4 pt-4 border-t border-brand-300'>
-						<Alert className='border-blue-500/20 bg-blue-50/10'>
-							<Star className='size-4 text-blue-500' />
+						<Alert variant='info'>
+							<Star className='size-4 text-info-700' />
 							<AlertDescription>
 								<div className='flex items-center justify-between'>
 									<span className='text-sm text-neutral-900'>
@@ -361,7 +361,7 @@ export const ExistingProductQuickAddForm: React.FC<
 									{enrichedData.nutrients && (
 										<Badge
 											variant='outline'
-											className='bg-orange-50 text-orange-700 border-orange-200'
+											className='bg-warning-50 text-warning-700 border-transparent'
 										>
 											<Zap className='size-3 mr-1' />
 											Nutrition
@@ -370,7 +370,7 @@ export const ExistingProductQuickAddForm: React.FC<
 									{enrichedData.ingredients && (
 										<Badge
 											variant='outline'
-											className='bg-green-50 text-green-700 border-green-200'
+											className='bg-success-50 text-success-700 border-transparent'
 										>
 											<Leaf className='size-3 mr-1' />
 											Ingrédients
@@ -379,7 +379,7 @@ export const ExistingProductQuickAddForm: React.FC<
 									{enrichedData.quality.hasImage && (
 										<Badge
 											variant='outline'
-											className='bg-purple-50 text-purple-700 border-purple-200'
+											className='bg-info-50 text-info-700 border-transparent'
 										>
 											Image HD
 										</Badge>
@@ -556,8 +556,8 @@ export const ExistingProductQuickAddForm: React.FC<
 						Notes
 						{enrichedData && (
 							<>
-								<Info className='size-3 text-blue-500' />
-								<span className='text-xs text-blue-500'>
+								<Info className='size-3 text-info-700' />
+								<span className='text-xs text-info-700'>
 									(pré-remplies avec OpenFoodFacts)
 								</span>
 							</>
@@ -572,7 +572,7 @@ export const ExistingProductQuickAddForm: React.FC<
 						disabled={isSubmitting}
 						className={
 							enrichedData
-								? 'bg-blue-50/5 border-blue-500/20 focus:border-blue-500/50'
+								? 'bg-info-50 border-input focus:border-accent-700'
 								: ''
 						}
 					/>

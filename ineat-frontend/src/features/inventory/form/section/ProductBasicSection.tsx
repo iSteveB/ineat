@@ -55,7 +55,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 		hasValue: boolean = false
 	) => {
 		let baseClass =
-			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900 placeholder:text-neutral-600';
+			'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900 placeholder:text-neutral-500';
 
 		// Erreur
 		if (errors[field]) {
@@ -69,14 +69,10 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 
 		// Mode readonly avec style différencié
 		if (readonly) {
-			baseClass = baseClass.replace(
-				'focus:ring-accent-600 focus:border-accent-600',
-				'focus:ring-blue-500 focus:border-blue-500'
-			);
 			if (hasValue) {
 				baseClass = baseClass.replace(
 					'bg-accent-600/5 border-accent-600/20',
-					'bg-blue-50/5 border-blue-500/20'
+					'bg-info-50 border-input'
 				);
 			}
 		}
@@ -86,19 +82,15 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 
 	const getSelectClassName = (field: keyof ProductBasicsData) => {
 		let baseClass =
-			'bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none text-neutral-900';
+			'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none text-neutral-900';
 
 		if (errors[field]) {
 			baseClass += ' border-danger-600';
 		}
 
 		if (readonly) {
-			baseClass = baseClass.replace(
-				'focus:ring-accent-600 focus:border-accent-600',
-				'focus:ring-blue-500 focus:border-blue-500'
-			);
 			if (values[field]) {
-				baseClass += ' bg-blue-50/5 border-blue-500/20';
+				baseClass += ' bg-info-50 border-input';
 			}
 		}
 

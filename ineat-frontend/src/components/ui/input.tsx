@@ -15,8 +15,8 @@ const inputVariants = cva(
           "border-accent-600 focus:border-accent-600 focus:ring-2 focus:ring-accent-600/20",
       },
       size: {
-        sm: "h-8 text-sm px-2 py-1",
-        default: "h-10",
+        sm: "h-9 text-sm px-2 py-1",
+        default: "h-11",
         lg: "h-12 text-lg",
       },
     },

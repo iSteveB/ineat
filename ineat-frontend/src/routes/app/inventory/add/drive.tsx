@@ -639,35 +639,30 @@ function DriveInvoiceImportPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-surface">
-			<div className="border-b border-neutral-200 bg-surface">
-				<div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-4">
+		<div>
+			<div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-4 sm:px-6 lg:px-12 lg:pt-6">
+				<Button asChild variant="ghost" className="-ml-3 self-start">
 					<Link to="/app/inventory/add">
-						<Button
-							variant="ghost"
-							size="sm"
-							className="size-10 p-0 rounded-xl border border-neutral-200 bg-surface"
-						>
-							<ArrowLeft className="size-5 text-neutral-900" />
-						</Button>
+						<ArrowLeft aria-hidden="true" />
+						Méthodes d’ajout
 					</Link>
-					<div className="min-w-0 flex-1">
-						<h1 className="text-2xl font-bold text-neutral-900">
-							Facture Drive
-						</h1>
+				</Button>
+				<header className="flex flex-wrap items-end justify-between gap-3">
+					<div className="min-w-0">
+						<h1 className="type-h1 text-neutral-900">Facture Drive</h1>
 						<p className="text-sm text-neutral-600">
 							{driveImportsRemaining} import
 							{driveImportsRemaining > 1 ? 's' : ''} restant
 							{driveImportsRemaining > 1 ? 's' : ''}
 						</p>
 					</div>
-					<Badge variant={canImportDrive ? 'default' : 'secondary'}>
+					<Badge variant={canImportDrive ? 'success' : 'default'}>
 						{canImportDrive ? 'Premium actif' : 'Indisponible'}
 					</Badge>
-				</div>
+				</header>
 			</div>
 
-			<main className="mx-auto max-w-6xl px-4 py-6">
+			<div className="mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 lg:px-12 lg:py-6">
 				{!canImportDrive && !invoiceId && (
 					<Card className="border-neutral-200 bg-surface">
 						<CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -698,8 +693,8 @@ function DriveInvoiceImportPage() {
 						</CardHeader>
 						<CardContent className="space-y-4">
 							{pendingInvoiceFile ? (
-								<div className="flex min-h-56 flex-col items-center justify-center gap-4 rounded-lg border border-neutral-200 bg-white p-6 text-center">
-									<FileText className="size-8 text-surface" />
+								<div className="flex min-h-56 flex-col items-center justify-center gap-4 rounded-lg border border-neutral-200 bg-surface p-6 text-center">
+									<FileText className="size-8 text-accent-700" aria-hidden="true" />
 									<div className="max-w-full">
 										<p className="text-base font-medium text-neutral-900">
 											Analyser ce fichier ?
@@ -729,16 +724,20 @@ function DriveInvoiceImportPage() {
 									</div>
 								</div>
 							) : (
-								<label className="flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-neutral-200 bg-white p-6 text-center transition-colors hover:bg-neutral-50">
+								<label className="flex min-h-56 cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-neutral-400 bg-surface p-6 text-center transition-colors hover:border-accent-600 hover:bg-accent-50 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ring">
 									{importMutation.isPending ? (
-										<Loader2 className="size-8 animate-spin text-surface" />
+										<span className="flex size-14 items-center justify-center rounded-full bg-accent-50 text-accent-700">
+											<Loader2 className="size-7 animate-spin" aria-hidden="true" />
+										</span>
 									) : (
-										<Upload className="size-8 text-surface" />
+										<span className="flex size-14 items-center justify-center rounded-full bg-accent-50 text-accent-700">
+											<Upload className="size-7" aria-hidden="true" />
+										</span>
 									)}
 									<div>
 										<p className="text-base font-medium text-neutral-900">
 											{importMutation.isPending
-												? 'Analyse en cours...'
+												? 'Analyse en cours…'
 												: 'Charger un PDF'}
 										</p>
 										<p className="mt-1 text-sm text-neutral-600">
@@ -879,7 +878,7 @@ function DriveInvoiceImportPage() {
 										return (
 											<div
 												key={item.id}
-												className={`overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md ${
+												className={`overflow-hidden rounded-lg border bg-surface transition-shadow hover:shadow-md ${
 													needsCorrection
 														? 'border-warning-500'
 														: 'border-neutral-200'
@@ -1393,14 +1392,14 @@ function DriveInvoiceImportPage() {
 						</CardContent>
 					</Card>
 				)}
-			</main>
+			</div>
 		</div>
 	);
 }
 
 function SummaryCell({ label, value }: { label: string; value: string }) {
 	return (
-		<div className="rounded-md border border-neutral-200 bg-white p-4">
+		<div className="rounded-md border border-neutral-200 bg-surface p-4">
 			<p className="text-xs uppercase text-neutral-600">{label}</p>
 			<p className="mt-1 text-lg font-semibold text-neutral-900">{value}</p>
 		</div>
@@ -1445,20 +1444,20 @@ function InvoiceProcessingCard({
 		<Card className="overflow-hidden border-neutral-200 bg-surface">
 			<CardContent className="space-y-6 p-6">
 				<div
-					className="relative flex min-h-64 flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-100 bg-white px-6 py-10 text-center"
+					className="relative flex min-h-64 flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-100 bg-surface px-6 py-10 text-center"
 					aria-live="polite"
 					role="status"
 				>
 					{!isFailed && (
 						<>
-							<div className="absolute -left-12 -top-12 size-40 rounded-full bg-canvas/5 motion-safe:animate-pulse" />
-							<div className="absolute -bottom-16 -right-10 size-48 rounded-full bg-canvas/5 motion-safe:animate-pulse" />
-							<div className="relative mb-7 flex size-24 items-center justify-center rounded-full bg-canvas/10 motion-safe:animate-bounce">
-								<span className="absolute inset-0 rounded-full border border-neutral-200/30 motion-safe:animate-ping" />
-								<ChefHat className="relative size-12 text-surface" />
+							<div className="absolute -left-12 -top-12 size-40 rounded-full bg-accent-50 motion-safe:animate-pulse" />
+							<div className="absolute -bottom-16 -right-10 size-48 rounded-full bg-accent-50 motion-safe:animate-pulse" />
+							<div className="relative mb-7 flex size-24 items-center justify-center rounded-full bg-accent-100 motion-safe:animate-bounce">
+								<span className="absolute inset-0 rounded-full border border-accent-600/40 motion-safe:animate-ping" />
+								<ChefHat className="relative size-12 text-accent-700" aria-hidden="true" />
 							</div>
-							<p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-surface">
-								Cooking progress
+							<p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-accent-800">
+								Analyse en cours
 							</p>
 						</>
 					)}
@@ -1481,7 +1480,7 @@ function InvoiceProcessingCard({
 							{[0, 1, 2].map((dot) => (
 								<span
 									key={dot}
-									className="size-2 rounded-full bg-canvas motion-safe:animate-bounce"
+									className="size-2 rounded-full bg-accent-600 motion-safe:animate-bounce"
 									style={{ animationDelay: `${dot * 160}ms` }}
 								/>
 							))}
@@ -1496,7 +1495,7 @@ function InvoiceProcessingCard({
 							<span>{progress} %</span>
 						</div>
 						<div
-							className="h-2 overflow-hidden rounded-full bg-neutral-50"
+							className="h-2 overflow-hidden rounded-full bg-neutral-100"
 							role="progressbar"
 							aria-label="Progression de l’analyse"
 							aria-valuemin={0}

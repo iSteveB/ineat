@@ -135,15 +135,11 @@ const PersonalInfoPage = () => {
 
         <div className="relative px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/app/settings">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="size-10 p-0 rounded-xl bg-neutral-50 hover:bg-gray-100 border border-gray-200 shadow-sm"
-              >
-                <ChevronLeft className="size-5" />
-              </Button>
-            </Link>
+            <Button asChild variant="secondary" size="icon">
+            	<Link to="/app/settings" aria-label="Retour aux paramètres">
+            		<ChevronLeft aria-hidden="true" />
+            	</Link>
+            </Button>
             <div>
               <h1 className="text-2xl font-bold text-neutral-900">
                 Informations personnelles

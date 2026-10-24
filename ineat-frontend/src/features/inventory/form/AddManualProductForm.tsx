@@ -1,9 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, PackagePlus } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import type { Category, AddInventoryItemData } from '@/schemas';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useProductForm } from '@/hooks/useProductForm';
 import { ProductBasicsSection } from './section/ProductBasicSection';
@@ -64,16 +63,8 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 	});
 
 	return (
-		<Card className='relative overflow-hidden border-0 bg-surface shadow-xl'>
-			<CardHeader>
-				<CardTitle className='flex items-center gap-3'>
-					<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
-						<PackagePlus className='size-5 text-accent-700' />
-					</div>
-					Ajouter un produit manuellement
-				</CardTitle>
-			</CardHeader>
-			<CardContent className='p-6 space-y-6'>
+		<section aria-label='Informations du produit' className='card p-4 sm:p-6'>
+			<div className='space-y-6'>
 				{/* Alerte données pré-remplies */}
 				{hasPrefilledData && (
 					<Alert className='border-accent-600/20 bg-accent-600/10'>
@@ -242,7 +233,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						</Button>
 					</div>
 				</form>
-			</CardContent>
-		</Card>
+			</div>
+		</section>
 	);
 };
