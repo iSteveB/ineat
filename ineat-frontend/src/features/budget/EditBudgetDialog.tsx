@@ -7,7 +7,7 @@ import { isValidBudget } from "@/schemas/budget";
 import { budgetService } from "@/services/budgetService";
 import useBudgetStore from "@/stores/budgetStore";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Edit, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { Info, CircleAlert, Loader2, PencilLine } from "lucide-react";
 import { FC, useState, useMemo } from "react";
 
 interface EditBudgetDialogProps {
@@ -80,14 +80,13 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<DialogTrigger asChild>
 				<Button variant='secondary' size='sm'>
-					<Edit className='size-4 mr-1' />
-					Modifier
+					<PencilLine aria-hidden='true' />
+					Modifier le budget
 				</Button>
 			</DialogTrigger>
 			<DialogContent className='sm:max-w-md'>
 				<DialogHeader>
 					<DialogTitle className='flex items-center gap-2'>
-						<Edit className='size-5 text-accent-700' />
 						Modifier le budget
 					</DialogTitle>
 					<DialogDescription>
@@ -97,19 +96,17 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 				</DialogHeader>
 
 				<div className='space-y-4'>
-					<Alert className='border-accent-600/20 bg-accent-600/10'>
-						<CheckCircle className='size-4 text-accent-700' />
-						<AlertDescription className='text-neutral-900'>
-							<span className="font-bold">À savoir :</span> Cette
-							action modifie uniquement le montant de votre
-							budget. Toutes vos dépenses existantes sont conservées.
+					<Alert variant='info' role='status'>
+						<Info aria-hidden='true' />
+						<AlertDescription>
+							Seul le montant change : vos dépenses sont conservées.
 						</AlertDescription>
 					</Alert>
 
 					<div className='space-y-2'>
 						<label
 							htmlFor='edit-budget-amount'
-							className='text-sm font-medium'>
+							className='text-sm font-medium text-neutral-900'>
 							Nouveau montant (€)
 						</label>
 						<Input
@@ -125,13 +122,13 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 					</div>
 
 					{error && (
-						<Alert variant='warning'>
-							<AlertTriangle className='size-4' />
+						<Alert variant='error'>
+							<CircleAlert aria-hidden='true' />
 							<AlertDescription>{error}</AlertDescription>
 						</Alert>
 					)}
 
-					<div className='bg-neutral-50 p-3 rounded-md'>
+					<div className='rounded-md bg-neutral-50 p-3 text-neutral-900'>
 						<div className='flex justify-between text-sm'>
 							<span>Montant actuel :</span>
 							<span className='font-semibold'>
@@ -154,7 +151,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 
 				<DialogFooter>
 					<Button
-						variant='outline'
+						variant='secondary'
 						onClick={() => setIsOpen(false)}
 						disabled={isUpdating}>
 						Annuler
@@ -169,13 +166,12 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 						}>
 						{isUpdating ? (
 							<>
-								<Loader2 className='size-4 mr-2 animate-spin' />
-								Modification...
+								<Loader2 className='animate-spin' aria-hidden='true' />
+								Enregistrement…
 							</>
 						) : (
 							<>
-								<Edit className='size-4 mr-2' />
-								Modifier
+								Enregistrer
 							</>
 						)}
 					</Button>

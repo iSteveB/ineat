@@ -1,13 +1,13 @@
+import WidgetCard from "@/components/common/WidgetCard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Budget } from "@/schemas";
 import { isValidBudget } from "@/schemas/budget";
 import { budgetService } from "@/services/budgetService";
 import useBudgetStore from "@/stores/budgetStore";
-import { Loader2, Edit, Plus, Info, AlertTriangle } from "lucide-react";
-import { FC, useState, useMemo, useEffect, useCallback } from "react";
+import { CircleAlert, Info, Loader2, PencilLine, Plus } from "lucide-react";
+import { FC, FormEvent, useState, useMemo, useEffect, useCallback, useId } from "react";
 
 const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 	onBudgetCreated,
@@ -19,6 +19,7 @@ const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 	const [existingBudget, setExistingBudget] = useState<Budget | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const { createMonthlyBudget, updateBudget } = useBudgetStore();
+	const errorId = useId();
 
 	const safeExistingBudgetAmount = useMemo(() => {
 		if (!existingBudget || !isValidBudget(existingBudget)) {
@@ -51,7 +52,8 @@ const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 		checkExistingBudget();
 	}, [checkExistingBudget]);
 
-	const handleCreateOrUpdateBudget = async () => {
+	const handleCreateOrUpdateBudget = async (event: FormEvent) => {
+		event.preventDefault();
 		const budgetAmount = parseFloat(amount);
 
 		if (!budgetAmount || budgetAmount <= 0) {
@@ -84,158 +86,96 @@ const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 
 	if (isCheckingExisting) {
 		return (
-			<Card>
-				<CardContent className='flex items-center justify-center py-12'>
-					<div className='text-center space-y-2'>
-						<Loader2 className='size-8 animate-spin mx-auto text-accent-700' />
-						<p className='text-neutral-600'>
-							Vérification d'un budget existant...
-						</p>
-					</div>
-				</CardContent>
-			</Card>
+			<WidgetCard title='Budget du mois'>
+				<p role='status' className='flex items-center gap-2 py-4 text-sm text-neutral-600'>
+					<Loader2 className='size-5 animate-spin text-accent-600' aria-hidden='true' />
+					Vérification d’un budget existant…
+				</p>
+			</WidgetCard>
 		);
 	}
 
-	return (
-		<Card>
-			<CardHeader>
-				<CardTitle className='flex items-center gap-2'>
-					{existingBudget ? (
-						<>
-							<Edit className='size-5 text-accent-700' />
-							Modifier votre budget mensuel
-						</>
-					) : (
-						<>
-							<Plus className='size-5 text-accent-700' />
-							Créer votre budget mensuel
-						</>
-					)}
-				</CardTitle>
-			</CardHeader>
+	const isUnchanged = Boolean(existingBudget && parseFloat(amount) === existingBudget.amount);
 
-			<CardContent className='space-y-4'>
-				{existingBudget ? (
-					<Alert className='border-brand-300 bg-canvas/50'>
-						<Edit className='size-4 text-brand-800' />
-						<AlertDescription className='text-neutral-900'>
-							<strong>
-								Budget existant détecté pour cette période
-							</strong>
-							<br />
-							Montant actuel :{' '}
-							<strong>
-								{safeExistingBudgetAmount ||
-									`${existingBudget.amount}€`}
-							</strong>
-							<br />
-							<span className='text-sm text-neutral-600'>
-								✅ La modification conservera toutes vos
-								dépenses actuelles.
-							</span>
+	return (
+		<WidgetCard
+			title={existingBudget ? 'Modifier votre budget' : 'Définir votre budget'}
+			subtitle={
+				existingBudget
+					? undefined
+					: 'Fixez un montant mensuel pour suivre vos dépenses alimentaires.'
+			}>
+			<form onSubmit={handleCreateOrUpdateBudget} className='flex max-w-md flex-col gap-4'>
+				{existingBudget && (
+					<Alert variant='info' role='status'>
+						<Info aria-hidden='true' />
+						<AlertDescription>
+							<p>
+								Montant actuel :{' '}
+								<strong className='text-neutral-900'>
+									{safeExistingBudgetAmount || `${existingBudget.amount} €`}
+								</strong>
+								. Vos dépenses sont conservées.
+							</p>
 						</AlertDescription>
 					</Alert>
-				) : (
-					<>
-						<div className='text-center space-y-2'>
-							<div className='text-4xl'>💰</div>
-							<h3 className='font-semibold'>
-								Aucun budget défini
-							</h3>
-							<p className='text-neutral-600 text-sm'>
-								Créez votre budget mensuel pour suivre vos
-								dépenses alimentaires
-							</p>
-						</div>
-
-						<Alert className='border-accent-600/20 bg-accent-600/10'>
-							<Info className='size-4 text-accent-700' />
-							<AlertDescription className='text-neutral-900'>
-								<strong>Nouveau budget</strong> - Aucun budget
-								n'existe pour cette période.
-							</AlertDescription>
-						</Alert>
-					</>
 				)}
 
-				<div className='space-y-3'>
-					<div className='space-y-2'>
-						<label
-							htmlFor='budget-amount'
-							className='text-sm font-medium'>
-							{existingBudget
-								? 'Nouveau montant (€)'
-								: 'Montant mensuel (€)'}
-						</label>
+				<div className='flex flex-col gap-1.5'>
+					<label htmlFor='budget-amount' className='text-sm font-medium text-neutral-900'>
+						{existingBudget ? 'Nouveau montant mensuel' : 'Montant mensuel'}
+					</label>
+					<div className='relative'>
 						<Input
 							id='budget-amount'
 							type='number'
-							placeholder={
-								existingBudget
-									? `Actuel: ${existingBudget.amount}€`
-									: 'Ex: 300'
-							}
+							inputMode='decimal'
+							placeholder='Ex. 300'
 							value={amount}
 							onChange={(e) => setAmount(e.target.value)}
 							min='1'
 							step='1'
 							disabled={isCreating}
+							aria-invalid={Boolean(error)}
+							aria-describedby={error ? errorId : undefined}
+							className='h-12 pr-10'
 						/>
+						<span aria-hidden='true' className='absolute right-3 top-1/2 -translate-y-1/2 font-medium text-neutral-600'>
+							€
+						</span>
 					</div>
-
 					{error && (
-						<Alert variant='warning'>
-							<AlertTriangle className='size-4' />
-							<AlertDescription>{error}</AlertDescription>
-						</Alert>
+						<p id={errorId} className='flex items-center gap-1.5 text-sm text-danger-700'>
+							<CircleAlert className='size-4 shrink-0' aria-hidden='true' />
+							{error}
+						</p>
 					)}
-
-					<Button
-						onClick={handleCreateOrUpdateBudget}
-						disabled={
-							!amount ||
-							parseFloat(amount) <= 0 ||
-							isCreating ||
-							!!(
-								existingBudget &&
-								parseFloat(amount) === existingBudget.amount
-							)
-						}
-						className='w-full'>
-						{isCreating ? (
-							<>
-								<Loader2 className='size-4 mr-2 animate-spin' />
-								{existingBudget
-									? 'Modification...'
-									: 'Création en cours...'}
-							</>
-						) : (
-							<>
-								{existingBudget ? (
-									<>
-										<Edit className='size-4 mr-2' />
-										Modifier mon budget
-									</>
-								) : (
-									<>
-										<Plus className='size-4 mr-2' />
-										Créer mon budget
-									</>
-								)}
-							</>
-						)}
-					</Button>
 				</div>
 
-				<div className='text-xs text-neutral-600 text-center'>
-					💡{' '}
+				<Button
+					type='submit'
+					disabled={!amount || parseFloat(amount) <= 0 || isCreating || isUnchanged}>
+					{isCreating ? (
+						<Loader2 className='animate-spin' aria-hidden='true' />
+					) : existingBudget ? (
+						<PencilLine aria-hidden='true' />
+					) : (
+						<Plus aria-hidden='true' />
+					)}
+					{isCreating
+						? 'Enregistrement…'
+						: existingBudget
+							? 'Modifier mon budget'
+							: 'Créer mon budget'}
+				</Button>
+
+				<p className='text-sm text-neutral-600'>
 					{existingBudget
-						? 'La modification préservera toutes vos dépenses existantes'
-						: 'Votre budget sera automatiquement reconduit chaque mois'}
-				</div>
-			</CardContent>
-		</Card>
+						? 'La modification ne touche qu’au montant.'
+						: 'Le budget est reconduit automatiquement chaque mois.'}
+				</p>
+			</form>
+		</WidgetCard>
 	);
 };
 

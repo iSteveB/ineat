@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useCallback } from 'react';
-import { Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 
 import CreateBudget from '@/features/budget/BudgetEditor';
 import EditBudgetDialog from '@/features/budget/EditBudgetDialog';
@@ -12,17 +12,10 @@ import { isValidBudget } from '@/schemas/budget';
 import { useBudgetStore } from '@/stores/budgetStore';
 import { budgetService } from '@/services/budgetService';
 
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-import {
-	AlertTriangle,
-	Loader2,
-	ArrowLeft,
-	ChevronLeft,
-	ChevronRight,
-} from 'lucide-react';
+import { CircleAlert, History, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const getCurrentMonth = () => {
 	const now = new Date();
@@ -99,112 +92,77 @@ export const BudgetPage: FC = () => {
 	);
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30'>
-			{/* ===== HEADER ===== */}
-			<div className='relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm'>
-				<div className='absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100/30 to-purple-100/30 rounded-full blur-3xl -translate-y-16 translate-x-16' />
-
-				<div className='relative px-6 py-4 flex items-center justify-between'>
-					<div className='flex items-center gap-4'>
-						<Link to='/app'>
-							<Button
-								variant='ghost'
-								size='sm'
-								className='size-10 p-0 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 shadow-sm'>
-								<ArrowLeft className='size-5' />
-							</Button>
-						</Link>
-						<div>
-							<h1 className='text-2xl font-bold text-gray-900'>
-								Budget{' '}
-								{safeBudgetPeriod || formatMonth(displayedMonth)}
-							</h1>
-							<p className='text-sm text-gray-600'>
-								{isCurrentMonth
-									? 'Suivi de vos dépenses'
-									: 'Consultation d’un mois passé'}
-							</p>
-						</div>
-					</div>
-
-					{isCurrentMonth &&
-						selectedBudget &&
-						isValidBudget(selectedBudget) && (
-						<div className='flex items-center gap-4'>
-							<EditBudgetDialog
-								budget={selectedBudget}
-								onBudgetUpdated={handleBudgetCreated}
-							/>
-						</div>
-					)}
+		<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-6 lg:px-12 lg:py-6'>
+			<header className='flex flex-wrap items-end justify-between gap-3'>
+				<div>
+					<h1 className='type-h1 text-neutral-900'>Budget</h1>
+					<p className='text-sm text-neutral-600'>
+						{safeBudgetPeriod && isCurrentMonth
+							? `Période : ${safeBudgetPeriod}`
+							: 'Suivi de vos dépenses alimentaires'}
+					</p>
 				</div>
-			</div>
+				{isCurrentMonth && selectedBudget && isValidBudget(selectedBudget) && (
+					<EditBudgetDialog budget={selectedBudget} onBudgetUpdated={handleBudgetCreated} />
+				)}
+			</header>
 
-			<div className='max-w-7xl mx-auto p-6 space-y-6'>
-				<div className='flex flex-wrap items-center justify-center gap-3'>
+			<nav aria-label='Choix du mois' className='flex flex-wrap items-center gap-2'>
+				<div className='card flex items-center gap-1 p-1'>
 					<Button
-						variant='outline'
-						size='sm'
+						variant='ghost'
+						size='icon'
 						aria-label='Afficher le mois précédent'
 						onClick={() => selectMonth(shiftMonth(displayedMonth, -1))}>
-						<ChevronLeft className='size-4' />
+						<ChevronLeft aria-hidden='true' />
 					</Button>
-					<div className='min-w-40 text-center font-semibold text-gray-900'>
+					<p aria-live='polite' className='min-w-36 text-center font-display text-lg font-bold text-neutral-900'>
 						{formatMonth(displayedMonth)}
-					</div>
+					</p>
 					<Button
-						variant='outline'
-						size='sm'
+						variant='ghost'
+						size='icon'
 						aria-label='Afficher le mois suivant'
 						disabled={displayedMonth >= currentMonth}
 						onClick={() => selectMonth(shiftMonth(displayedMonth, 1))}>
-						<ChevronRight className='size-4' />
+						<ChevronRight aria-hidden='true' />
 					</Button>
-					{!isCurrentMonth && (
-						<Button size='sm' onClick={() => selectMonth(currentMonth)}>
-							Revenir au mois courant
-						</Button>
-					)}
 				</div>
-				{error && (
-					<Alert variant='warning'>
-						<AlertTriangle className='size-4' />
-						<AlertDescription>{error}</AlertDescription>
-					</Alert>
+				{!isCurrentMonth && (
+					<Button variant='secondary' onClick={() => selectMonth(currentMonth)}>
+						Revenir au mois courant
+					</Button>
 				)}
+			</nav>
 
-				{isLoading ? (
-					<Card>
-						<CardContent className='flex items-center justify-center py-12'>
-							<div className='text-center space-y-2'>
-								<Loader2 className='size-8 animate-spin mx-auto text-accent-700' />
-								<p className='text-neutral-600'>
-									Chargement du budget...
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-				) : !selectedBudget ||
-				  !selectedBudgetStats ||
-				  !isValidBudget(selectedBudget) ? (
-					<CreateBudget
-						onBudgetCreated={handleBudgetCreated}
-						month={displayedMonth}
-					/>
-				) : (
-					<div className='space-y-6'>
-						{isCurrentMonth && <BudgetAlerts alerts={selectedAlerts} />}
-						<BudgetStatsCards
-							budget={selectedBudget}
-							stats={selectedBudgetStats}
-						/>
-						<ExpenseList
-							expenses={selectedExpenses}
-							isLoading={isLoadingExpenses}
-						/>
-					</div>
-				)}
-			</div>
+			{!isCurrentMonth && (
+				<p className='flex items-center gap-2 rounded-lg bg-info-50 px-4 py-3 text-sm text-info-700'>
+					<History className='size-4 shrink-0' aria-hidden='true' />
+					Vous consultez un mois passé.
+				</p>
+			)}
+
+			{error && (
+				<Alert variant='error'>
+					<CircleAlert aria-hidden='true' />
+					<AlertDescription>{error}</AlertDescription>
+				</Alert>
+			)}
+
+			{isLoading ? (
+				<p role='status' className='flex items-center justify-center gap-3 py-16 text-neutral-600'>
+					<Loader2 className='size-6 animate-spin text-accent-600' aria-hidden='true' />
+					Chargement du budget…
+				</p>
+			) : !selectedBudget || !selectedBudgetStats || !isValidBudget(selectedBudget) ? (
+				<CreateBudget onBudgetCreated={handleBudgetCreated} month={displayedMonth} />
+			) : (
+				<div className='flex flex-col gap-4 lg:gap-6'>
+					{isCurrentMonth && <BudgetAlerts alerts={selectedAlerts} />}
+					<BudgetStatsCards budget={selectedBudget} stats={selectedBudgetStats} />
+					<ExpenseList expenses={selectedExpenses} isLoading={isLoadingExpenses} />
+				</div>
+			)}
 		</div>
 	);
 };

@@ -1,45 +1,44 @@
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { BudgetAlert } from "@/schemas";
-import { AlertTriangle } from "lucide-react";
-import { FC } from "react";
+import { CircleAlert, Info, TriangleAlert } from 'lucide-react';
+import { FC } from 'react';
+
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { BudgetAlert } from '@/schemas';
 
 interface BudgetAlertsProps {
 	alerts: BudgetAlert[];
 }
 
+const SEVERITY = {
+	CRITICAL: { variant: 'error', icon: CircleAlert },
+	WARNING: { variant: 'warning', icon: TriangleAlert },
+	INFO: { variant: 'info', icon: Info },
+} as const;
+
 const BudgetAlerts: FC<BudgetAlertsProps> = ({ alerts }) => {
 	if (alerts.length === 0) return null;
 
 	return (
-		<div className='space-y-2'>
-			{alerts.map((alert) => (
-				<Alert
-					key={alert.id}
-					variant={
-						alert.severity === 'CRITICAL' ? 'warning' : 'default'
-					}>
-					<AlertTriangle className='size-4' />
-					<AlertDescription>
-						<strong>{alert.title}</strong>
-						<br />
-						{alert.message}
-						{alert.suggestions && alert.suggestions.length > 0 && (
-							<div className='mt-2'>
-								<strong>Suggestions:</strong>
-								<ul className='list-disc list-inside mt-1'>
-									{alert.suggestions.map(
-										(suggestion, index) => (
-											<li key={index} className='text-sm'>
-												{suggestion}
-											</li>
-										)
-									)}
+		<div className='flex flex-col gap-3'>
+			{alerts.map((alert) => {
+				const { variant, icon: Icon } = SEVERITY[alert.severity] ?? SEVERITY.INFO;
+
+				return (
+					<Alert key={alert.id} variant={variant} role='status'>
+						<Icon aria-hidden='true' />
+						<AlertTitle>{alert.title}</AlertTitle>
+						<AlertDescription>
+							<p>{alert.message}</p>
+							{alert.suggestions && alert.suggestions.length > 0 && (
+								<ul className='mt-1 list-disc pl-5'>
+									{alert.suggestions.map((suggestion) => (
+										<li key={suggestion}>{suggestion}</li>
+									))}
 								</ul>
-							</div>
-						)}
-					</AlertDescription>
-				</Alert>
-			))}
+							)}
+						</AlertDescription>
+					</Alert>
+				);
+			})}
 		</div>
 	);
 };
