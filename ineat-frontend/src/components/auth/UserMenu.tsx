@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '../ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
 import { CircleHelp, LogOut, Settings, User } from 'lucide-react';
 
@@ -74,6 +74,14 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative size-8 rounded-full cursor-pointer" data-testid="user-menu-button">
           <Avatar className="size-8" data-testid="user-avatar">
+            {user.avatarUrl && (
+              <AvatarImage
+                src={user.avatarUrl}
+                alt={`Photo de profil de ${user.firstName} ${user.lastName}`}
+                className="object-cover"
+                data-testid="avatar-image"
+              />
+            )}
             <AvatarFallback data-testid="avatar-initials">{getInitials()}</AvatarFallback>
           </Avatar>
         </Button>

@@ -53,6 +53,16 @@ vi.mock('../ui/dropdown-menu', async () => {
 	};
 });
 
+vi.mock('../ui/avatar', () => ({
+	Avatar: ({ children, ...props }: React.ComponentProps<'span'>) => (
+		<span {...props}>{children}</span>
+	),
+	AvatarImage: (props: React.ComponentProps<'img'>) => <img {...props} />,
+	AvatarFallback: ({ children, ...props }: React.ComponentProps<'span'>) => (
+		<span {...props}>{children}</span>
+	),
+}));
+
 describe('UserMenu', () => {
 	// Préparation des mocks
 	const navigateMock = vi.fn();
@@ -102,6 +112,30 @@ describe('UserMenu', () => {
 			'john.doe@example.com'
 		);
 		expect(screen.queryByTestId('user-profile-type')).not.toBeInTheDocument();
+	});
+
+	it("affiche la photo de profil lorsqu'elle est définie", () => {
+		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+			user: {
+				firstName: 'John',
+				lastName: 'Doe',
+				email: 'john.doe@example.com',
+				avatarUrl: 'https://example.com/avatar.jpg',
+				defaultServings: 4,
+			},
+			logout: logoutMock,
+		});
+
+		render(<UserMenu />);
+
+		expect(screen.getByTestId('avatar-image')).toHaveAttribute(
+			'src',
+			'https://example.com/avatar.jpg'
+		);
+		expect(screen.getByTestId('avatar-image')).toHaveAttribute(
+			'alt',
+			'Photo de profil de John Doe'
+		);
 	});
 
 	it("gère correctement l'absence de nom et prénom", () => {
