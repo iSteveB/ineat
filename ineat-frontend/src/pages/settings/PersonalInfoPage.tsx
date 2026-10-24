@@ -128,35 +128,25 @@ const PersonalInfoPage = () => {
   const showEmailError = Boolean(emailError && emailChanged);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface to-info-50/30">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-4 sm:px-6 lg:py-6">
       {/* ===== HEADER ===== */}
-      <div className="relative overflow-hidden bg-surface border-b border-gray-200 shadow-sm">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-info-50/30 to-brand-300/30 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+      <Button asChild variant="ghost" className="-ml-3 self-start">
+        <Link to="/app/settings">
+          <ChevronLeft aria-hidden="true" />
+          Paramètres
+        </Link>
+      </Button>
+      <header>
+        <h1 className="type-h1 text-neutral-900">Informations personnelles</h1>
+        <p className="text-neutral-600">Gérez vos données</p>
+      </header>
 
-        <div className="relative px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button asChild variant="secondary" size="icon">
-            	<Link to="/app/settings" aria-label="Retour aux paramètres">
-            		<ChevronLeft aria-hidden="true" />
-            	</Link>
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-neutral-900">
-                Informations personnelles
-              </h1>
-              <p className="text-sm text-neutral-600">Gérez vos données</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 py-6 space-y-6">
+      <div className="flex flex-col gap-4 lg:gap-6">
         {/* ===== SECTION PHOTO DE PROFIL ===== */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-surface to-neutral-50/50 shadow-xl">
-          <div className="absolute top-0 right-0 size-32 bg-gradient-to-br from-accent-600/20 to-brand-300/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+        <Card className="border border-neutral-200 shadow-sm">
           <CardContent className="p-6 flex flex-col items-center justify-center gap-4">
             <div
-              className="relative size-28 rounded-full bg-gradient-to-br from-accent-600 to-accent-600/80 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl cursor-pointer"
+              className="relative size-28 rounded-full bg-accent-600 flex items-center justify-center overflow-hidden shadow-lg group transition-all duration-300 hover:shadow-xl cursor-pointer"
               onClick={handleAvatarClick}
             >
               {/* Photo de profil */}
@@ -164,10 +154,10 @@ const PersonalInfoPage = () => {
                 <img
                   src={user.avatarUrl}
                   alt="Photo de profil"
-                  className="size-full object-cover transition-all duration-300 group-hover:scale-110"
+                  className="size-full object-cover transition-all duration-300"
                 />
               ) : (
-                <span className="text-4xl font-semibold text-surface transition-all duration-300 group-hover:scale-110">
+                <span className="text-4xl font-semibold text-surface transition-all duration-300">
                   {user?.firstName && user?.lastName ? (
                     `${user?.firstName[0]}${user?.lastName[0]}`
                   ) : (
@@ -179,7 +169,7 @@ const PersonalInfoPage = () => {
 
             {/* Informations utilisateur */}
             <div className="text-center">
-              <h2 className="text-xl font-bold text-neutral-900">
+              <h2 className="type-h2 text-neutral-900">
                 {user?.firstName} {user?.lastName}
               </h2>
               <p className="text-sm text-neutral-600">{user?.email}</p>
@@ -187,10 +177,10 @@ const PersonalInfoPage = () => {
 
             {/* Bouton d'édition de profil */}
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={handleAvatarClick}
-              className="mt-2 text-accent-700 hover:text-accent-700/80 hover:bg-accent-600/10 border border-accent-600/20 hover:border-accent-600/30 transition-all duration-200"
+              className="mt-2"
             >
               <Edit3 className="size-4 mr-2" />
               Modifier la photo
@@ -199,8 +189,7 @@ const PersonalInfoPage = () => {
         </Card>
 
         {/* ===== FORMULAIRE D'INFORMATIONS PERSONNELLES ===== */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-surface to-neutral-50/50 shadow-xl">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent-600/20 to-accent-600/20 rounded-full blur-3xl -translate-y-16 translate-x-16" />
+        <Card className="border border-neutral-200 shadow-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="size-5 text-accent-700" />
@@ -221,7 +210,7 @@ const PersonalInfoPage = () => {
                     value={personalInfo.firstName}
                     onChange={handlePersonalChange}
                     required
-                    className="bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600"
+                    className="bg-neutral-50 border-neutral-200 focus:ring-accent-600/20 focus:border-accent-700"
                   />
                 </div>
                 <div className="space-y-2">
@@ -232,7 +221,7 @@ const PersonalInfoPage = () => {
                     value={personalInfo.lastName}
                     onChange={handlePersonalChange}
                     required
-                    className="bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600"
+                    className="bg-neutral-50 border-neutral-200 focus:ring-accent-600/20 focus:border-accent-700"
                   />
                 </div>
               </div>
@@ -247,9 +236,9 @@ const PersonalInfoPage = () => {
                   onChange={handlePersonalChange}
                   required
                   className={cn(
-                    "bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600",
+ "bg-neutral-50 border-neutral-200 focus:ring-accent-600/20 focus:border-accent-700",
                     showEmailError &&
-                      "border-red-500 focus:ring-red-500 focus:border-red-500",
+ "border-danger-600 focus:ring-danger-600/20 focus:border-danger-600",
                   )}
                 />
               </div>
@@ -264,13 +253,13 @@ const PersonalInfoPage = () => {
                   onChange={handlePersonalChange}
                   required={emailChanged}
                   className={cn(
-                    "bg-neutral-50 border-gray-200 focus:ring-accent-600 focus:border-accent-600",
+ "bg-neutral-50 border-neutral-200 focus:ring-accent-600/20 focus:border-accent-700",
                     showEmailError &&
-                      "border-red-500 focus:ring-red-500 focus:border-red-500",
+ "border-danger-600 focus:ring-danger-600/20 focus:border-danger-600",
                   )}
                 />
                 {showEmailError && (
-                  <div className="flex items-center gap-2 text-sm text-red-500 mt-1">
+                  <div className="flex items-center gap-2 text-sm text-danger-700 mt-1">
                     <AlertCircle className="size-4" />
                     <span>{emailError}</span>
                   </div>
@@ -347,7 +336,7 @@ const PersonalInfoPage = () => {
             <CardFooter>
               <Button
                 onClick={handlePersonalSubmit}
-                className="w-full h-12 bg-gradient-to-r from-accent-600 to-accent-600 hover:from-accent-600/90 hover:to-accent-600/90 text-surface shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full h-12 text-surface shadow-lg hover:shadow-xl transition-all duration-300"
                 disabled={!isEditing || isLoading}
               >
                 {isLoading ? (

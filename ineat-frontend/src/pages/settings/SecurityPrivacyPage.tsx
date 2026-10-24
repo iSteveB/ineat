@@ -158,35 +158,25 @@ const SecurityPrivacyPage = () => {
 	};
 
 	return (
-		<div className='min-h-screen bg-surface pb-16'>
+		<div className='mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-4 sm:px-6 lg:py-6'>
 			{/* ===== HEADER ===== */}
-			<div className='relative overflow-hidden bg-surface border-b border-neutral-100 shadow-sm'>
-				{/* Dégradé de fond subtil pour l'ambiance, moins intrusif */}
-				<div className='absolute top-0 right-0 size-32 bg-accent-600/10 rounded-full blur-3xl -translate-y-16 translate-x-16' />
+			<Button asChild variant='ghost' className='-ml-3 self-start'>
+				<Link to='/app/settings'>
+					<ChevronLeft aria-hidden='true' />
+					Paramètres
+				</Link>
+			</Button>
+			<header>
+				<h1 className='type-h1 text-neutral-900'>Sécurité & Confidentialité</h1>
+				<p className='text-neutral-600'>Gérez vos paramètres de sécurité et de confidentialité</p>
+			</header>
 
-				<div className='relative px-6 py-4 flex items-center gap-4'>
-					<Button asChild variant='secondary' size='icon'>
-						<Link to='/app/settings' aria-label='Retour aux paramètres'>
-							<ChevronLeft aria-hidden='true' />
-						</Link>
-					</Button>
-					<div>
-						<h1 className='text-2xl font-bold text-neutral-900'>
-							Sécurité & Confidentialité
-						</h1>
-						<p className='text-sm text-neutral-900'>
-							Gérez vos paramètres de sécurité et de confidentialité
-						</p>
-					</div>
-				</div>
-			</div>
-
-			<div className='p-6 space-y-6'>
+			<div className='flex flex-col gap-4 lg:gap-6'>
 				{/* Formulaire de changement de mot de passe */}
 				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+							<div className='flex size-10 items-center justify-center rounded-md bg-accent-50 text-accent-800'>
 								<Lock className='size-5 text-accent-700' />
 							</div>
 							Modifier mon mot de passe
@@ -209,7 +199,7 @@ const SecurityPrivacyPage = () => {
 									onChange={handlePasswordChange}
 									disabled={isSubmittingPassword}
 									required
-									className='bg-surface border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none'
+									className='bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none'
 								/>
 							</div>
 
@@ -226,7 +216,7 @@ const SecurityPrivacyPage = () => {
 									disabled={isSubmittingPassword}
 									required
 									minLength={8}
-									className='bg-surface border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none'
+									className='bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none'
 								/>
 								{passwordInfo.newPassword.length > 0 &&
 									passwordInfo.newPassword.length < 8 && (
@@ -249,7 +239,7 @@ const SecurityPrivacyPage = () => {
 									disabled={isSubmittingPassword}
 									required
 									className={cn(
-										'bg-surface border border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600 focus:border-accent-600 focus:outline-none',
+										'bg-surface border border-input rounded-md shadow-xs focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 focus:outline-none',
 										passwordInfo.confirmPassword.length > 0 && !passwordsMatch
 											? 'border-danger-600'
 											: '',
@@ -285,7 +275,7 @@ const SecurityPrivacyPage = () => {
 				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+							<div className='flex size-10 items-center justify-center rounded-md bg-accent-50 text-accent-800'>
 								<Shield className='size-5 text-accent-700' />
 							</div>
 							Confidentialité des Données
@@ -359,7 +349,7 @@ const SecurityPrivacyPage = () => {
 				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-accent-600/20 border border-accent-600/50'>
+							<div className='flex size-10 items-center justify-center rounded-md bg-accent-50 text-accent-800'>
 								<Info className='size-5 text-accent-700' />
 							</div>
 							Questions fréquentes
@@ -408,14 +398,14 @@ const SecurityPrivacyPage = () => {
 				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
-							<div className='p-2 rounded-xl bg-danger-600/20 border border-danger-600/50'>
+							<div className='flex size-10 items-center justify-center rounded-md bg-danger-50 text-danger-700'>
 								<Trash2 className='size-5 text-danger-700' />
 							</div>
 							Supprimer mon compte
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
-						<div className='flex flex-col p-4 bg-danger-50/5 rounded-xl border border-danger-600/20'>
+						<div className='flex flex-col p-4 bg-danger-50 rounded-lg'>
 							<p className='text-sm text-neutral-900 mb-4'>
 								Cette action supprimera définitivement votre compte et les
 								données associées, à l’exception des documents conservés
@@ -423,7 +413,7 @@ const SecurityPrivacyPage = () => {
 							</p>
 							<Button
 								onClick={() => setDeleteBenefitsOpen(true)}
-								className='bg-danger-600 hover:bg-danger-600/90 text-surface shadow-lg hover:shadow-xl transition-all duration-300 whitespace-normal text-center leading-tight py-8 md:max-w-1/2 m-auto'
+								variant='error'
 							>
 								<Trash2 className='size-4 mr-2 flex-shrink-0' />
 								<span className='break-words'>

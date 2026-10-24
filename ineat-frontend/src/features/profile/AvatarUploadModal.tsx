@@ -106,7 +106,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 				<div className='space-y-4'>
 					{/* Aperçu de l'image */}
 					<div className='flex justify-center'>
-						<div className='relative size-32 rounded-full overflow-hidden bg-gradient-to-br from-accent-600 to-accent-600/80 flex items-center justify-center shadow-lg'>
+						<div className='relative size-32 rounded-full overflow-hidden bg-accent-600 flex items-center justify-center shadow-lg'>
 							{previewUrl ? (
 								<img
 									src={previewUrl}
@@ -169,7 +169,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 					{/* Barre de progression */}
 					{isUploading && (
 						<div className='space-y-2'>
-							<div className='w-full bg-gray-200 rounded-full h-2 overflow-hidden'>
+							<div className='w-full bg-neutral-200 rounded-full h-2 overflow-hidden'>
 								<div
 									className='bg-accent-600 h-2 transition-all duration-300 ease-out'
 									style={{ width: `${uploadProgress}%` }}
@@ -227,7 +227,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 							onClick={handleUpload}
 							disabled={isUploading}
 							className={cn(
-								'bg-gradient-to-r from-accent-600 to-accent-600',
+								'bg-accent-600',
 								'hover:from-accent-600/90 hover:to-accent-600/90',
 								'text-surface'
 							)}>

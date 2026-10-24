@@ -427,7 +427,8 @@ export const UI_CONSTANTS = {
 } as const;
 
 export const getInitials = (firstName: string, lastName: string) => {
-	return `${firstName[0]}${lastName[0]}`.toUpperCase();
+	// Sans prénom ni nom, `''[0]` vaut undefined : on renvoie une chaîne vide
+	return `${firstName?.charAt(0) ?? ''}${lastName?.charAt(0) ?? ''}`.toUpperCase();
 };
 
 export const getCurrentMonthTitle = (): string => {

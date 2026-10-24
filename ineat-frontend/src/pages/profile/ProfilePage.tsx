@@ -73,7 +73,7 @@ function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
 							x2={width - padding.right}
 							y1={y}
 							y2={y}
-					className='stroke-gray-200'
+					className='stroke-neutral-200'
 							strokeWidth='1'
 						/>
 					);
@@ -92,7 +92,7 @@ function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
 							cx={point.x}
 							cy={point.y}
 							r='5'
-							className='fill-accent-600 stroke-white'
+							className='fill-accent-600 stroke-surface'
 							strokeWidth='2'>
 							<title>{`${formatMonth(point.month, 'long')} : ${currencyFormatter.format(point.total)}`}</title>
 						</circle>
@@ -136,9 +136,9 @@ const ProfilePage = () => {
 	const hasSpending = insights?.spendingTrend.some((point) => point.total > 0);
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 pb-16'>
-			<div className='mx-auto max-w-5xl space-y-6 px-4 py-8'>
-				<section className='relative rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm sm:p-8'>
+		<div>
+			<div className='mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-6 lg:px-12 lg:py-6'>
+				<section className='relative card relative p-6 sm:p-8'>
 					<Link
 						to='/app/settings'
 						aria-label='Ouvrir les paramètres'
@@ -146,7 +146,7 @@ const ProfilePage = () => {
 						<Settings className='size-5' />
 					</Link>
 					<div className='flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left'>
-						<div className='flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-300 text-2xl font-semibold text-white'>
+						<div className='flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-2xl font-semibold text-brand-800'>
 							{user?.avatarUrl ? (
 								<img
 									src={user.avatarUrl}
@@ -158,11 +158,13 @@ const ProfilePage = () => {
 							)}
 						</div>
 						<div>
-							<h1 className='text-3xl font-bold text-neutral-900'>
+							<h1 className='type-h1 text-neutral-900'>
 								{user?.firstName} {user?.lastName}
 							</h1>
 							<p className='mt-1 text-neutral-500'>{user?.email}</p>
-							<Badge className='mt-3 text-white'>{planLabel}</Badge>
+							<Badge variant={user?.effectivePlan === 'PREMIUM' ? 'premium' : 'default'} className='mt-3'>
+								{planLabel}
+							</Badge>
 						</div>
 					</div>
 				</section>
@@ -190,7 +192,7 @@ const ProfilePage = () => {
 							<Link
 								key={stat.label}
 								to='/app/recipes'
-								className='group rounded-xl border border-neutral-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-accent-600/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600'>
+								className='group rounded-xl border border-neutral-200 bg-surface p-5 shadow-sm transition hover:border-accent-600/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600'>
 								<div className='flex items-center justify-between'>
 									<div className='flex items-center gap-3'>
 										<div className='rounded-lg bg-accent-600/20 p-3 text-accent-700'>

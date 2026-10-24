@@ -1,41 +1,70 @@
 import { useAuthStore } from '@/stores/authStore';
 import { Link } from '@tanstack/react-router';
 import {
-	ChevronRight,
-	LogOut,
-	Settings,
-	User,
-	Shield,
 	Bell,
+	ChevronRight,
 	CreditCard,
-	Utensils,
-	Eye,
+	LogOut,
 	PanelTop,
+	Shield,
+	User,
+	Utensils,
+	type LucideIcon,
 } from 'lucide-react';
-import { User as UserType } from '@/schemas';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { getInitials } from '@/utils/ui-utils';
 
 interface MenuItem {
 	title: string;
 	href: string;
-	icon: React.ComponentType<{ className?: string }>;
-	description?: string;
+	icon: LucideIcon;
+	description: string;
 }
 
-const isUserPremium = (user: UserType): boolean => {
-	return user.effectivePlan === 'PREMIUM';
-};
+const MenuGroup = ({ id, title, items }: { id: string; title: string; items: MenuItem[] }) => (
+	<section aria-labelledby={id}>
+		<h2 id={id} className='type-h2 mb-3 text-neutral-900'>
+			{title}
+		</h2>
+		<ul className='card divide-y divide-neutral-200 overflow-hidden p-0'>
+			{items.map((item) => (
+				<li key={item.href}>
+					<Link
+						to={item.href}
+						className='group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-neutral-50 sm:px-5'>
+						<span className='flex size-10 shrink-0 items-center justify-center rounded-md bg-accent-50 text-accent-800'>
+							<item.icon className='size-5' aria-hidden='true' />
+						</span>
+						<span className='min-w-0 flex-1'>
+							<span className='block font-medium text-neutral-900'>{item.title}</span>
+							<span className='block text-sm text-neutral-600'>{item.description}</span>
+						</span>
+						<ChevronRight
+							className='size-5 shrink-0 text-neutral-500 group-hover:text-accent-700'
+							aria-hidden='true'
+						/>
+					</Link>
+				</li>
+			))}
+		</ul>
+	</section>
+);
 
 const SettingsPage = () => {
 	const user = useAuthStore((state) => state.user);
 	const logout = useAuthStore((state) => state.logout);
 	const canAccessAdmin = Boolean(user?.capabilities.canAccessAdmin);
+	const isPremium = user?.effectivePlan === 'PREMIUM';
+	const initials = getInitials(user?.firstName ?? '', user?.lastName ?? '');
 
-	const profileItems: MenuItem[] = [
+	const accountItems: MenuItem[] = [
 		{
 			title: 'Informations personnelles',
 			href: '/app/settings/personal-info',
 			icon: User,
-			description: 'Nom, prénom, photo de profil',
+			description: 'Nom, email, photo de profil',
 		},
 		{
 			title: 'Restrictions alimentaires',
@@ -44,14 +73,26 @@ const SettingsPage = () => {
 			description: 'Allergies, régimes alimentaires',
 		},
 		{
-			title: "Préférences d'affichage",
-			href: '/app/settings/preferences',
-			icon: Eye,
-			description: 'Thème, langue, unités',
+			title: 'Abonnement',
+			href: '/app/subscription',
+			icon: CreditCard,
+			description: 'Formule, facturation, avantages',
 		},
 	];
 
-	const systemSettingsItems: MenuItem[] = [
+	const appItems: MenuItem[] = [
+		{
+			title: 'Notifications',
+			href: '/app/settings/notifications',
+			icon: Bell,
+			description: 'Alertes de péremption, emails, rappels',
+		},
+		{
+			title: 'Sécurité et confidentialité',
+			href: '/app/settings/security',
+			icon: Shield,
+			description: 'Mot de passe, sessions, données',
+		},
 		...(canAccessAdmin
 			? [
 					{
@@ -62,157 +103,36 @@ const SettingsPage = () => {
 					},
 				]
 			: []),
-		{
-			title: 'Sécurité & Confidentialité',
-			href: '/app/settings/security',
-			icon: Shield,
-			description: 'Mot de passe, sessions, données',
-		},
-		{
-			title: 'Notifications',
-			href: '/app/settings/notifications',
-			icon: Bell,
-			description: 'Alertes, emails, rappels',
-		},
-		{
-			title: 'Abonnement Premium',
-			href: '/app/subscription',
-			icon: CreditCard,
-			description: 'Plan, facturation, avantages',
-		},
 	];
 
 	return (
-		<div className='min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 pb-16'>
-			{/* Header utilisateur */}
-			<div className='bg-surface py-8 shadow-sm border-b border-gray-200'>
-				<div className='flex flex-col items-center space-y-4'>
-					<div className='size-24 rounded-full bg-brand-300 flex items-center justify-center overflow-hidden shadow-lg'>
-						{user?.avatarUrl ? (
-							<img
-								src={user.avatarUrl || '/placeholder.svg'}
-								alt='Photo de profil'
-								className='size-full object-cover'
-							/>
-						) : (
-							<span className='text-2xl font-semibold text-surface'>
-								{user?.firstName && user?.lastName
-									? `${user?.firstName[0]}${user?.lastName[0]}`
-									: '?'}
-							</span>
-						)}
-					</div>
+		<div className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-4 sm:px-6 lg:py-6'>
+			<h1 className='type-h1 text-neutral-900'>Paramètres</h1>
 
-					<div className='text-center'>
-						<h1 className='text-2xl font-bold text-gray-900'>
-							{user?.firstName} {user?.lastName}
-						</h1>
-						<p className='text-gray-600'>{user?.email}</p>
-
-						{user && isUserPremium(user) && (
-							<span className='inline-block mt-2 px-4 py-1 bg-brand-300 text-neutral-900 font-semibold rounded-full shadow-sm'>
-								Premium
-							</span>
-						)}
-					</div>
+			<section aria-label='Mon compte' className='card flex items-center gap-4 p-4 sm:p-5'>
+				<span className='flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-xl font-semibold text-brand-800'>
+					{user?.avatarUrl ? (
+						<img src={user.avatarUrl} alt='' className='size-full object-cover' />
+					) : (
+						initials || <User className='size-7' aria-hidden='true' />
+					)}
+				</span>
+				<div className='min-w-0 flex-1'>
+					<p className='truncate font-display text-lg font-bold text-neutral-900'>
+						{user?.firstName} {user?.lastName}
+					</p>
+					<p className='truncate text-sm text-neutral-600'>{user?.email}</p>
 				</div>
-			</div>
-
-			{/* Section PROFIL */}
-			<section className='px-4 py-6'>
-				<div className='flex items-center gap-3 mb-4'>
-					<div className='p-2 bg-brand-300/10 rounded-lg'>
-						<User className='size-5 text-brand-800' />
-					</div>
-					<div>
-						<h2 className='text-xl font-bold text-gray-900'>
-							Mes informations
-						</h2>
-						<p className='text-sm text-gray-600'>
-							Profil et préférences personnelles
-						</p>
-					</div>
-				</div>
-
-				<div className='bg-surface rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
-					{profileItems.map((item, index) => (
-						<Link
-							key={index}
-							to={item.href}
-							className='flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors group'>
-							<div className='flex items-center gap-4'>
-								<div className='p-2 bg-gray-50 rounded-lg group-hover:bg-gray-100 transition-colors'>
-									<item.icon className='size-5 text-gray-600' />
-								</div>
-								<div>
-									<span className='text-lg font-medium text-gray-900'>
-										{item.title}
-									</span>
-									{item.description && (
-										<p className='text-sm text-gray-500'>
-											{item.description}
-										</p>
-									)}
-								</div>
-							</div>
-							<ChevronRight className='size-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
-						</Link>
-					))}
-				</div>
+				<Badge variant={isPremium ? 'premium' : 'default'}>{isPremium ? 'Premium' : 'Gratuit'}</Badge>
 			</section>
 
-			{/* Section PARAMÈTRES - "Configuration" */}
-			<section className='px-4 py-6'>
-				<div className='flex items-center gap-3 mb-4'>
-					<div className='p-2 bg-brand-300/10 rounded-lg'>
-						<Settings className='size-5 text-brand-800' />
-					</div>
-					<div>
-						<h2 className='text-xl font-bold text-gray-900'>
-							Configuration
-						</h2>
-						<p className='text-sm text-gray-600'>
-							Paramètres et sécurité de l'application
-						</p>
-					</div>
-				</div>
+			<MenuGroup id='settings-account' title='Mon compte' items={accountItems} />
+			<MenuGroup id='settings-app' title='Application' items={appItems} />
 
-				<div className='bg-surface rounded-xl shadow-xl border border-gray-100 overflow-hidden'>
-					{systemSettingsItems.map((item, index) => (
-						<Link
-							key={index}
-							to={item.href}
-							className='flex items-center justify-between p-4 border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors group'>
-							<div className='flex items-center gap-4'>
-								<div className='p-2 bg-gray-50 rounded-lg group-hover:bg-gray-100 transition-colors'>
-									<item.icon className='size-5 text-gray-600' />
-								</div>
-								<div>
-									<span className='text-lg font-medium text-gray-900'>
-										{item.title}
-									</span>
-									{item.description && (
-										<p className='text-sm text-gray-500'>
-											{item.description}
-										</p>
-									)}
-								</div>
-							</div>
-							<ChevronRight className='size-5 text-gray-400 group-hover:text-gray-600 transition-colors' />
-						</Link>
-					))}
-				</div>
-			</section>
-
-			{/* Actions de compte */}
-			<div className='px-4 mt-2 space-y-4'>
-				<button
-					onClick={() => logout()}
-					className='w-full py-3 px-4 rounded-xl bg-neutral-400 text-surface font-semibold flex items-center justify-center cursor-pointer hover:bg-neutral-500 transition-colors shadow-md hover:shadow-lg'>
-					<LogOut className='size-5 mr-2' />
-					Déconnexion
-				</button>
-			</div>
+			<Button variant='secondary' onClick={() => logout()} className='self-start'>
+				<LogOut aria-hidden='true' />
+				Se déconnecter
+			</Button>
 		</div>
 	);
 };
