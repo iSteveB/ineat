@@ -24,6 +24,12 @@ describe('backfillCiqualProducts', () => {
     );
 
     expect(result).toEqual({ scanned: 1, matched: 1, updated: 1 });
+    expect(prisma.product.findMany).toHaveBeenCalledWith({
+      where: {
+        Category: { slug: { in: ['fruits-et-legumes', 'viandes-et-poissons'] } },
+      },
+      include: { Category: true },
+    });
     expect(prisma.product.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'product-1' },
