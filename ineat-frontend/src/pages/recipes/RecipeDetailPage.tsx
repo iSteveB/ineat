@@ -4,9 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearch } from '@tanstack/react-router';
 import {
 	ArrowLeft,
+	ChefHat,
 	CheckCircle2,
+	CircleCheck,
 	Clock,
-	ImageOff,
+	Gauge,
+	Loader2,
 	ShoppingBasket,
 	Users,
 } from 'lucide-react';
@@ -34,6 +37,8 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 import { RecipeFilter } from './recipeFilters';
+import WidgetCard from '@/components/common/WidgetCard';
+import { cn } from '@/lib/utils';
 
 type RecipeDetailPageProps = {
 	recipeId: string;
@@ -122,31 +127,30 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 
 	if (!canUseRecipes) {
 		return (
-			<div className='mx-auto max-w-3xl p-4'>
-				<div className='rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-800'>
+			<div className='mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
+				<p role='status' className='rounded-lg bg-warning-50 p-4 text-warning-700'>
 					Les recettes sont réservées Premium.
-				</div>
+				</p>
 			</div>
 		);
 	}
 
 	if (isLoading) {
 		return (
-			<div className='flex min-h-80 items-center justify-center'>
-				<div className='size-8 animate-spin rounded-full border-2 border-accent-600 border-t-transparent' />
-			</div>
+			<p role='status' className='flex min-h-80 items-center justify-center gap-3 text-neutral-600'>
+				<Loader2 className='size-6 animate-spin text-accent-600' aria-hidden='true' />
+				Chargement de la recette…
+			</p>
 		);
 	}
 
 	if (isError || !recipe) {
 		return (
-			<div className='mx-auto max-w-3xl space-y-4 p-4'>
+			<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
 				<BackButton filter={activeFilter} />
-				<div className='rounded-lg border border-neutral-200 bg-surface p-6'>
-					<h1 className='text-lg font-semibold text-neutral-900'>
-						Recette indisponible
-					</h1>
-					<p className='mt-1 text-sm text-neutral-600'>
+				<div className='card p-6'>
+					<h1 className='type-h2 text-neutral-900'>Recette indisponible</h1>
+					<p className='mt-1 text-neutral-700'>
 						Cette recette n’existe pas ou n’est plus accessible.
 					</p>
 				</div>
@@ -155,9 +159,9 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 	}
 
 	return (
-		<div className='mx-auto max-w-5xl space-y-6 p-4'>
+		<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-6 lg:px-12 lg:py-6'>
 			<BackButton filter={activeFilter} />
-			<header className='relative overflow-hidden rounded-lg border border-neutral-200 bg-surface shadow-sm'>
+			<header className='card relative overflow-hidden'>
 				<FavoriteRecipeButton
 					isFavorite={recipe.isFavorite}
 					isPending={favoriteMutation.isPending}
@@ -167,76 +171,71 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 							isFavorite: !recipe.isFavorite,
 						})
 					}
-					className='absolute right-4 top-4 z-10 shadow-md'
+					className='absolute right-4 top-4 z-10'
 				/>
-				{recipe.imageUrl ? (
-					<img
-						src={recipe.imageUrl}
-						alt={recipe.name}
-						className='h-72 w-full object-cover'
-					/>
-				) : (
-					<div className='flex h-56 items-center justify-center bg-neutral-50 text-neutral-500'>
-						<ImageOff className='mr-2 size-5' />
-						Image indisponible
+				<div className='aspect-[16/9] max-h-80 w-full bg-accent-50 text-accent-800 sm:aspect-[21/9]'>
+					{recipe.imageUrl ? (
+						<img src={recipe.imageUrl} alt='' className='size-full object-cover' />
+					) : (
+						<span className='flex size-full items-center justify-center'>
+							<ChefHat className='size-12' aria-hidden='true' />
+						</span>
+					)}
+				</div>
+				<div className='flex flex-col gap-3 p-4 sm:p-5'>
+					<div className='flex flex-wrap gap-2'>
+						<Badge variant='secondary'>{recipe.typeLabel}</Badge>
+						{recipe.doneAt && (
+							<Badge variant='success'>
+								<CircleCheck className='size-3.5' aria-hidden='true' />
+								Déjà faite
+							</Badge>
+						)}
 					</div>
-				)}
-				<div className='p-5'>
-					<div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
-						<div>
-							<div className='flex flex-wrap gap-2'>
-								<Badge variant='secondary'>{recipe.typeLabel}</Badge>
-								<Badge variant='outline'>
-									{difficultyLabels[recipe.difficulty]}
-								</Badge>
-								{recipe.doneAt && <Badge variant='outline'>Fait</Badge>}
-							</div>
-							<h1 className='mt-3 text-2xl font-semibold text-neutral-900'>
-								{recipe.name}
-							</h1>
-							{recipe.description && (
-								<p className='mt-2 max-w-2xl text-sm text-neutral-700'>
-									{recipe.description}
-								</p>
-							)}
-						</div>
-						<div className='grid grid-cols-3 gap-2 text-sm sm:min-w-72'>
-							<Stat icon={<Clock className='size-4' />}>
-								{recipe.totalTime} min
-							</Stat>
-							<Stat icon={<Users className='size-4' />}>
-								{recipe.servings}
-							</Stat>
-							<Stat>{recipe.ingredients.length} ing.</Stat>
-						</div>
-					</div>
+					<h1 className='type-h1 text-neutral-900'>{recipe.name}</h1>
+					{recipe.description && (
+						<p className='max-w-2xl text-neutral-700'>{recipe.description}</p>
+					)}
+					<ul className='flex flex-wrap gap-2 text-sm'>
+						<Stat icon={<Clock className='size-4' aria-hidden='true' />}>
+							{recipe.totalTime} min
+						</Stat>
+						<Stat icon={<Users className='size-4' aria-hidden='true' />}>
+							{recipe.servings} personne{recipe.servings > 1 ? 's' : ''}
+						</Stat>
+						<Stat icon={<Gauge className='size-4' aria-hidden='true' />}>
+							{difficultyLabels[recipe.difficulty]}
+						</Stat>
+						<Stat icon={<ShoppingBasket className='size-4' aria-hidden='true' />}>
+							{recipe.ingredients.length} ingrédient{recipe.ingredients.length > 1 ? 's' : ''}
+						</Stat>
+					</ul>
 				</div>
 			</header>
 
-			<div className='grid gap-4 lg:grid-cols-[1fr_320px]'>
-				<section className='rounded-lg border border-neutral-200 bg-surface p-5 shadow-sm'>
-					<h2 className='text-lg font-semibold text-neutral-900'>
-						Préparation
-					</h2>
-					<ol className='mt-4 space-y-3'>
+			<div className='grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-6'>
+				<WidgetCard title='Préparation'>
+					<ol className='flex flex-col gap-4'>
 						{recipe.steps.map((step, index) => (
-							<li key={step} className='flex gap-3 text-sm text-neutral-700'>
-								<span className='flex size-6 shrink-0 items-center justify-center rounded-full bg-accent-600 text-xs font-semibold text-surface'>
+							<li key={step} className='flex gap-3 text-neutral-700'>
+								<span
+									aria-hidden='true'
+									className='flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-600 text-sm font-semibold text-surface'>
 									{index + 1}
 								</span>
-								{step}
+								<span className='pt-0.5'>{step}</span>
 							</li>
 						))}
 					</ol>
-				</section>
+				</WidgetCard>
 
-				<aside className='space-y-4'>
+				<aside className='flex min-w-0 flex-col gap-4 lg:sticky lg:top-20'>
 					<IngredientList recipe={recipe} />
 					<Button
 						className='w-full'
 						disabled={Boolean(recipe.doneAt) || previewMutation.isPending}
 						onClick={() => previewMutation.mutate(recipe.id)}>
-						<CheckCircle2 className='size-4' />
+						<CheckCircle2 aria-hidden='true' />
 						{recipe.doneAt ? 'Déjà fait' : 'Marquer comme fait'}
 					</Button>
 				</aside>
@@ -256,7 +255,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 							<div className='flex gap-2'>
 								<Button
 									type='button'
-									variant='outline'
+									variant='secondary'
 									size='sm'
 									onClick={() =>
 										setSelectedInventoryItemIds(
@@ -269,7 +268,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 								</Button>
 								<Button
 									type='button'
-									variant='outline'
+									variant='secondary'
 									size='sm'
 									onClick={() => setSelectedInventoryItemIds([])}>
 									Tout conserver
@@ -283,9 +282,10 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 
 									return (
 										<li key={item.inventoryItemId}>
-											<label className='flex cursor-pointer items-center gap-3 rounded-md bg-neutral-50 px-3 py-2'>
+											<label className='flex min-h-11 cursor-pointer items-center gap-3 rounded-md bg-neutral-50 px-3 py-2'>
 												<input
 													type='checkbox'
+													className='size-4 accent-accent-600'
 													checked={isSelected}
 													onChange={() =>
 														setSelectedInventoryItemIds((selectedIds) =>
@@ -330,29 +330,21 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 
 function BackButton({ filter }: { filter: RecipeFilter }) {
 	return (
-		<Button asChild variant='secondary'>
+		<Button asChild variant='ghost' className='-ml-3 self-start'>
 			<Link to='/app/recipes' search={{ filter }}>
-				<ArrowLeft className='size-4' />
-				Retour
+				<ArrowLeft aria-hidden='true' />
+				Mes recettes
 			</Link>
 		</Button>
 	);
 }
 
-function Stat({
-	children,
-	icon,
-}: {
-	children: ReactNode;
-	icon?: ReactNode;
-}) {
+function Stat({ children, icon }: { children: ReactNode; icon: ReactNode }) {
 	return (
-		<div className='rounded-md bg-neutral-50 px-3 py-2 font-semibold text-neutral-900'>
-			<span className='flex items-center gap-1'>
-				{icon}
-				{children}
-			</span>
-		</div>
+		<li className='inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 font-medium text-neutral-900'>
+			{icon}
+			{children}
+		</li>
 	);
 }
 
@@ -368,38 +360,45 @@ function IngredientList({ recipe }: { recipe: SavedRecipe }) {
 	);
 
 	return (
-		<section className='rounded-lg border border-neutral-200 bg-surface p-4 shadow-sm'>
-			<h2 className='flex items-center gap-2 text-base font-semibold text-neutral-900'>
-				<ShoppingBasket className='size-4 text-neutral-700' />
-				Ingrédients
-			</h2>
-			<IngredientGroup title='Inventaire' ingredients={inventoryIngredients} />
-			<IngredientGroup title='Basiques' ingredients={basicIngredients} />
-			<IngredientGroup title='À compléter' ingredients={missingIngredients} />
-		</section>
+		<WidgetCard title='Ingrédients'>
+			<div className='flex flex-col gap-4'>
+				<IngredientGroup title='Dans votre inventaire' ingredients={inventoryIngredients} />
+				<IngredientGroup title='Basiques' ingredients={basicIngredients} />
+				<IngredientGroup title='À acheter' ingredients={missingIngredients} tone='warning' />
+			</div>
+		</WidgetCard>
 	);
 }
 
 function IngredientGroup({
 	title,
 	ingredients,
+	tone = 'neutral',
 }: {
 	title: string;
 	ingredients: SavedRecipe['ingredients'];
+	tone?: 'neutral' | 'warning';
 }) {
 	if (ingredients.length === 0) return null;
 
 	return (
-		<div className='mt-4'>
-			<p className='text-xs font-semibold uppercase text-neutral-600'>{title}</p>
-			<ul className='mt-2 space-y-2'>
+		<div>
+			<h3 className='text-sm font-medium text-neutral-600'>{title}</h3>
+			<ul className='mt-2 divide-y divide-neutral-200'>
 				{ingredients.map((ingredient) => (
 					<li
 						key={ingredient.id}
-						className='rounded-md bg-neutral-50 px-3 py-2 text-sm text-neutral-700'>
-						{ingredient.name}
-						{ingredient.quantity ? ` · ${ingredient.quantity}` : ''}
-						{ingredient.unit ? ` ${ingredient.unit}` : ''}
+						className={cn(
+							'flex justify-between gap-3 py-2 text-neutral-900',
+							tone === 'warning' && 'text-warning-700'
+						)}>
+						<span>{ingredient.name}</span>
+						{(ingredient.quantity || ingredient.unit) && (
+							<span className='shrink-0 text-neutral-600'>
+								{ingredient.quantity}
+								{ingredient.unit ? ` ${ingredient.unit}` : ''}
+							</span>
+						)}
 					</li>
 				))}
 			</ul>

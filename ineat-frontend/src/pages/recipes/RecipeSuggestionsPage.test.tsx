@@ -196,7 +196,7 @@ describe('RecipeSuggestionsPage', () => {
 		expect(screen.getByText('Houmous citronné')).toBeInTheDocument();
 		expect(screen.getByText('Mousse banane cacao')).toBeInTheDocument();
 
-		await user.click(screen.getAllByRole('button', { name: /drop/i })[1]);
+		await user.click(screen.getAllByRole('button', { name: /écarter/i })[1]);
 		expect(screen.queryByText('Mousse banane cacao')).not.toBeInTheDocument();
 
 		await user.click(
@@ -248,7 +248,7 @@ describe('RecipeSuggestionsPage', () => {
 		renderRecipeSuggestions();
 
 		await user.click(
-			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
+			await screen.findByRole('button', { name: /^Mettre en favori/ })
 		);
 
 		await waitFor(() => {
@@ -258,7 +258,7 @@ describe('RecipeSuggestionsPage', () => {
 			);
 		});
 		expect(
-			screen.getByRole('button', { name: 'Retirer des favoris' })
+			screen.getByRole('button', { name: /^Mettre en favori/ })
 		).toHaveAttribute('aria-pressed', 'true');
 	});
 
@@ -274,12 +274,12 @@ describe('RecipeSuggestionsPage', () => {
 		renderRecipeSuggestions();
 
 		await user.click(
-			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
+			await screen.findByRole('button', { name: /^Mettre en favori/ })
 		);
 
 		await waitFor(() => {
 			expect(
-				screen.getByRole('button', { name: 'Ajouter aux favoris' })
+				screen.getByRole('button', { name: /^Mettre en favori/ })
 			).toHaveAttribute('aria-pressed', 'false');
 		});
 	});

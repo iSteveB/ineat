@@ -1,26 +1,27 @@
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearch } from '@tanstack/react-router';
 import {
-	ArrowRight,
 	BookmarkPlus,
 	Check,
+	ChefHat,
+	ChevronDown,
 	Clock,
-	Eye,
-	ListChecks,
+	Gauge,
+	Info,
+	Loader2,
 	Sparkles,
-	Trash2,
 	Users,
+	X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useInventory } from '@/hooks/useInventory';
-import { FavoriteRecipeButton } from '@/components/recipes/FavoriteRecipeButton';
+import RecipeCard from '@/components/recipes/RecipeCard';
 import { useRecipeFavoriteMutation } from '@/hooks/useRecipeFavoriteMutation';
 import {
 	GeneratedRecipe,
@@ -31,6 +32,7 @@ import {
 import { useAuthStore } from '@/stores/authStore';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 import { RecipeFilter } from './recipeFilters';
+import { cn } from '@/lib/utils';
 
 const recipeTypes: Array<{ value: RecipeType; label: string }> = [
 	{ value: 'STARTER', label: 'Entrée' },
@@ -173,16 +175,16 @@ export function RecipeSuggestionsPage() {
 
 	if (!canUseRecipes) {
 		return (
-			<div className='mx-auto max-w-3xl p-4'>
-				<section className='rounded-lg border border-neutral-200 bg-surface p-8 text-center'>
-					<ListChecks className='mx-auto mb-3 size-8 text-accent-700' />
-					<h1 className='text-xl font-semibold text-neutral-900'>
-						Recettes réservées Premium
-					</h1>
-					<p className='mt-2 text-sm text-neutral-600'>
-						Les recettes IA sont incluses avec Premium.
+			<div className='mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
+				<section className='card flex flex-col items-center gap-3 px-6 py-12 text-center'>
+					<span className='flex size-14 items-center justify-center rounded-lg bg-brand-50 text-brand-800'>
+						<ChefHat className='size-7' aria-hidden='true' />
+					</span>
+					<h1 className='type-h2 text-neutral-900'>Recettes réservées Premium</h1>
+					<p className='max-w-md text-neutral-700'>
+						Les recettes générées à partir de votre inventaire sont incluses avec Premium.
 					</p>
-					<Button asChild className='mt-5'>
+					<Button asChild variant='brand' className='mt-2'>
 						<Link to='/app/subscription'>Voir les plans</Link>
 					</Button>
 				</section>
@@ -191,24 +193,29 @@ export function RecipeSuggestionsPage() {
 	}
 
 	return (
-		<div className='mx-auto max-w-6xl space-y-6 p-4'>
-			<header className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+		<div className='mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-4 sm:px-6 lg:gap-8 lg:px-12 lg:py-6'>
+			<header className='flex flex-wrap items-end justify-between gap-3'>
 				<div>
-					<p className='text-sm font-medium text-success-700'>
-						{quotaRemaining} génération{quotaRemaining > 1 ? 's' : ''} restante
-						{quotaRemaining > 1 ? 's' : ''} aujourd’hui
+					<h1 className='type-h1 text-neutral-900'>Recettes</h1>
+					<p className='text-sm text-neutral-600'>
+						Des idées de repas à partir de ce que vous avez déjà.
 					</p>
-					<h1 className='text-2xl font-semibold text-neutral-900'>
-						Recettes depuis l’inventaire
-					</h1>
 				</div>
+				<p className='inline-flex items-center gap-1.5 rounded-full bg-accent-50 px-3 py-1 text-sm font-medium text-accent-800'>
+					<Sparkles className='size-4' aria-hidden='true' />
+					{quotaRemaining} génération{quotaRemaining > 1 ? 's' : ''} restante
+					{quotaRemaining > 1 ? 's' : ''} aujourd’hui
+				</p>
 			</header>
 
-			<section className='rounded-lg border border-neutral-200 bg-surface p-5 shadow-sm'>
-				<div className='grid gap-5 lg:grid-cols-[1.2fr_0.8fr]'>
-					<div className='space-y-4'>
-						<div>
-							<Label>Types de recettes</Label>
+			<section aria-labelledby='recipe-generator-title' className='card p-4 sm:p-5'>
+				<h2 id='recipe-generator-title' className='type-h2 text-neutral-900'>
+					Générer des idées
+				</h2>
+				<div className='mt-4 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]'>
+					<div className='flex flex-col gap-5'>
+						<fieldset>
+							<legend className='text-sm font-medium text-neutral-900'>Types de recettes</legend>
 							<div className='mt-2 flex flex-wrap gap-2'>
 								{recipeTypes.map((type) => {
 									const selected = selectedTypes.includes(type.value);
@@ -216,6 +223,7 @@ export function RecipeSuggestionsPage() {
 										<button
 											key={type.value}
 											type='button'
+											aria-pressed={selected}
 											onClick={() =>
 												setSelectedTypes((current) =>
 													selected
@@ -223,311 +231,313 @@ export function RecipeSuggestionsPage() {
 														: [...current, type.value]
 												)
 											}
-											className={`rounded-md border px-3 py-2 text-sm font-medium ${
+											className={cn(
+												'inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors',
 												selected
-													? 'border-accent-600 bg-accent-600/10 text-success-700'
-													: 'border-neutral-200 bg-surface text-neutral-700'
-											}`}>
-											{selected && <Check className='mr-1 inline size-4' />}
+													? 'border-accent-600 bg-accent-600 text-surface'
+													: 'border-neutral-300 bg-surface text-neutral-700 hover:border-accent-600 hover:text-accent-700'
+											)}>
+											{selected && <Check className='size-4' aria-hidden='true' />}
 											{type.label}
 										</button>
 									);
 								})}
 							</div>
-						</div>
+						</fieldset>
 
-						<div className='grid gap-4 sm:grid-cols-2'>
-							<div>
-								<Label htmlFor='recipe-servings'>Nombre de personnes</Label>
+						<div className='grid gap-5 sm:grid-cols-2'>
+							<div className='flex flex-col gap-1.5'>
+								<label htmlFor='recipe-servings' className='text-sm font-medium text-neutral-900'>
+									Nombre de personnes
+								</label>
 								<Input
 									id='recipe-servings'
 									type='number'
+									inputMode='numeric'
 									min={1}
 									max={20}
 									value={servings}
-									onChange={(event) =>
-										setServings(Number(event.target.value))
-									}
-									className='mt-2'
+									onChange={(event) => setServings(Number(event.target.value))}
+									className='h-11'
 								/>
 							</div>
-							<div>
-								<Label>Mode</Label>
-								<div className='mt-2 grid grid-cols-2 gap-2'>
+							<fieldset>
+								<legend className='text-sm font-medium text-neutral-900'>Mode</legend>
+								<div className='mt-1.5 grid grid-cols-2 gap-2'>
 									<Button
 										type='button'
+										aria-pressed={mode === 'STRICT'}
 										variant={mode === 'STRICT' ? 'primary' : 'secondary'}
 										onClick={() => setMode('STRICT')}>
 										Strict
 									</Button>
 									<Button
 										type='button'
+										aria-pressed={mode === 'FLEXIBLE'}
 										variant={mode === 'FLEXIBLE' ? 'primary' : 'secondary'}
 										onClick={() => setMode('FLEXIBLE')}>
 										Avec largesse
 									</Button>
 								</div>
-							</div>
+								<p className='mt-1.5 text-sm text-neutral-600'>
+									{mode === 'STRICT'
+										? 'Uniquement vos produits et les basiques.'
+										: 'Quelques ingrédients à acheter en plus.'}
+								</p>
+							</fieldset>
 						</div>
 
 						{mode === 'FLEXIBLE' && (
-							<div>
-								<Label htmlFor='extra-ingredients'>
+							<div className='flex flex-col gap-1.5'>
+								<label htmlFor='extra-ingredients' className='text-sm font-medium text-neutral-900'>
 									Ingrédients en plus autorisés : {extraIngredientLimit}
-								</Label>
+								</label>
 								<input
 									id='extra-ingredients'
 									type='range'
 									min={1}
 									max={5}
 									value={extraIngredientLimit}
-									onChange={(event) =>
-										setExtraIngredientLimit(Number(event.target.value))
-									}
-									className='mt-3 w-full accent-accent-600'
+									onChange={(event) => setExtraIngredientLimit(Number(event.target.value))}
+									className='h-11 w-full cursor-pointer accent-accent-600'
 								/>
 							</div>
 						)}
 					</div>
 
-					<div className='rounded-lg border border-neutral-200 bg-neutral-50 p-4'>
-						<p className='text-sm font-semibold text-neutral-900'>
-							Règles MVP
+					<div className='flex flex-col gap-3 rounded-lg bg-neutral-50 p-4'>
+						<p className='flex items-center gap-2 font-medium text-neutral-900'>
+							<Info className='size-4 text-accent-700' aria-hidden='true' />
+							Bon à savoir
 						</p>
-						<ul className='mt-3 space-y-2 text-sm text-neutral-700'>
-							<li>Une recette par catégorie cochée.</li>
-							<li>Basiques gratuits : sel, poivre, eau, huile neutre.</li>
-							<li>L’image est créée seulement à la sauvegarde.</li>
+						<ul className='flex list-disc flex-col gap-1.5 pl-5 text-sm text-neutral-700'>
+							<li>Une recette par type coché.</li>
+							<li>Sel, poivre, eau et huile neutre sont toujours disponibles.</li>
+							<li>La photo de la recette est créée quand vous la gardez.</li>
 						</ul>
-						{generationBlockedReason && (
-							<p className='mt-4 rounded-md border border-orange-200 bg-orange-50 px-3 py-2 text-sm text-orange-800'>
-								{generationBlockedReason}
-							</p>
-						)}
+						<p role='status' className={cn(generationBlockedReason && 'rounded-md bg-warning-50 px-3 py-2 text-sm text-warning-700')}>
+							{generationBlockedReason}
+						</p>
 						<Button
-							className='mt-4 w-full'
+							className='mt-auto w-full'
 							disabled={Boolean(generationBlockedReason) || generateMutation.isPending}
 							onClick={() => generateMutation.mutate()}>
-							<Sparkles className='size-4' />
-							{generateMutation.isPending ? 'Génération...' : 'Générer'}
+							{generateMutation.isPending ? (
+								<Loader2 className='animate-spin' aria-hidden='true' />
+							) : (
+								<Sparkles aria-hidden='true' />
+							)}
+							{generateMutation.isPending ? 'Génération…' : 'Générer'}
 						</Button>
 					</div>
 				</div>
 			</section>
 
 			{generatedRecipes.length > 0 && (
-				<section className='space-y-4'>
-					<h2 className='text-lg font-semibold text-neutral-900'>
-						Propositions générées
+				<section aria-labelledby='generated-recipes-title' className='flex flex-col gap-4'>
+					<h2 id='generated-recipes-title' className='type-h2 text-neutral-900'>
+						Propositions
 					</h2>
-					<div className='grid gap-4 lg:grid-cols-3'>
-						{generatedRecipes.map((recipe) => {
-							const opened = openedRecipeId === recipe.clientId;
-							return (
-								<article
-									key={recipe.clientId}
-									className='rounded-lg border border-neutral-200 bg-surface p-4 shadow-sm'>
-									<div className='space-y-2'>
-										<Badge variant='secondary'>
-											{recipeTypes.find((type) => type.value === recipe.type)?.label}
-										</Badge>
-										<h3 className='text-lg font-semibold text-neutral-900'>
-											{recipe.name}
-										</h3>
-										<p className='text-sm text-neutral-600'>
-											{recipe.description}
-										</p>
-									</div>
-									<div className='mt-4 grid grid-cols-3 gap-2 text-sm'>
-										<RecipeStat icon={<Clock className='size-4' />}>
-											{(recipe.preparationTime ?? 0) + (recipe.cookingTime ?? 0)} min
-										</RecipeStat>
-										<RecipeStat icon={<Users className='size-4' />}>
-											{recipe.servings}
-										</RecipeStat>
-										<RecipeStat>{difficultyLabels[recipe.difficulty]}</RecipeStat>
-									</div>
-									<div className='mt-4 flex flex-wrap gap-2'>
-										<Button
-											variant='secondary'
-											onClick={() =>
-												setOpenedRecipeId(opened ? null : recipe.clientId)
-											}>
-											<Eye className='size-4' />
-											Voir
-										</Button>
-										<Button
-											disabled={saveMutation.isPending}
-											onClick={() => {
-												setOpenedRecipeId(recipe.clientId);
-												saveMutation.mutate(recipe);
-											}}>
-											<BookmarkPlus className='size-4' />
-											Ajouter à mes recettes
-										</Button>
-										<Button
-											variant='secondary'
-											onClick={() =>
-												setGeneratedRecipes((recipes) =>
-													recipes.filter(
-														(item) => item.clientId !== recipe.clientId
-													)
-												)
-											}>
-											<Trash2 className='size-4' />
-											Drop
-										</Button>
-									</div>
-									{opened && <GeneratedRecipeDetails recipe={recipe} />}
-								</article>
-							);
-						})}
-					</div>
+					<ul className='grid grid-cols-1 items-start gap-4 lg:grid-cols-3'>
+						{generatedRecipes.map((recipe) => (
+							<li key={recipe.clientId} className='min-w-0'>
+								<GeneratedRecipeCard
+									recipe={recipe}
+									isOpen={openedRecipeId === recipe.clientId}
+									isSaving={saveMutation.isPending}
+									onToggle={() =>
+										setOpenedRecipeId(openedRecipeId === recipe.clientId ? null : recipe.clientId)
+									}
+									onSave={() => {
+										setOpenedRecipeId(recipe.clientId);
+										saveMutation.mutate(recipe);
+									}}
+									onDismiss={() =>
+										setGeneratedRecipes((recipes) =>
+											recipes.filter((item) => item.clientId !== recipe.clientId)
+										)
+									}
+								/>
+							</li>
+						))}
+					</ul>
 				</section>
 			)}
 
-			<section className='space-y-4'>
+			<section aria-labelledby='saved-recipes-title' className='flex flex-col gap-4'>
 				<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-					<h2 className='text-lg font-semibold text-neutral-900'>Mes recettes</h2>
-					<nav
-						aria-label='Filtrer mes recettes'
-						className='flex max-w-full gap-2 overflow-x-auto pb-1'>
-						{savedRecipeFilters.map((filter) => (
-							<Button
-								key={filter.value}
-								asChild
-								size='sm'
-								variant={activeFilter === filter.value ? 'primary' : 'secondary'}>
+					<h2 id='saved-recipes-title' className='type-h2 text-neutral-900'>
+						Mes recettes
+					</h2>
+					<nav aria-label='Filtrer mes recettes' className='-mx-1 flex max-w-full gap-2 overflow-x-auto px-1 py-1'>
+						{savedRecipeFilters.map((filter) => {
+							const isActive = activeFilter === filter.value;
+							return (
 								<Link
+									key={filter.value}
 									to='/app/recipes'
 									search={{ filter: filter.value }}
-									aria-current={activeFilter === filter.value ? 'page' : undefined}>
+									aria-current={isActive ? 'page' : undefined}
+									className={cn(
+										'inline-flex h-10 shrink-0 items-center rounded-full border px-4 text-sm font-medium transition-colors',
+										isActive
+											? 'border-accent-600 bg-accent-600 text-surface'
+											: 'border-neutral-300 bg-surface text-neutral-700 hover:border-accent-600 hover:text-accent-700'
+									)}>
 									{filter.label}
 								</Link>
-							</Button>
-						))}
+							);
+						})}
 					</nav>
 				</div>
 				{isLoadingSavedRecipes ? (
-					<div className='rounded-lg border border-neutral-200 bg-surface p-6 text-sm text-neutral-600'>
-						Chargement des recettes...
-					</div>
+					<p role='status' className='flex items-center gap-2 py-8 text-neutral-600'>
+						<Loader2 className='size-5 animate-spin text-accent-600' aria-hidden='true' />
+						Chargement des recettes…
+					</p>
 				) : isSavedRecipesError ? (
-					<div className='rounded-lg border border-danger-600 bg-danger-50/10 p-4 text-danger-700'>
+					<p role='alert' className='rounded-lg bg-danger-50 p-4 text-danger-700'>
 						Impossible de charger vos recettes.
-					</div>
-				) : savedRecipes.length === 0 ? (
-					<div className='rounded-lg border border-neutral-200 bg-surface p-6 text-sm text-neutral-600'>
-						Aucune recette gardée pour l’instant.
-					</div>
+					</p>
 				) : filteredSavedRecipes.length === 0 ? (
-					<div className='rounded-lg border border-neutral-200 bg-surface p-6 text-sm text-neutral-600'>
-						{activeFilter === 'favorites'
-							? 'Vous n’avez pas encore de recette favorite.'
-							: 'Aucune recette ne correspond à ce filtre.'}
-					</div>
+					<p className='card p-6 text-neutral-700'>
+						{savedRecipes.length === 0
+							? 'Aucune recette gardée pour l’instant. Générez des idées puis gardez celles qui vous plaisent.'
+							: activeFilter === 'favorites'
+								? 'Vous n’avez pas encore de recette favorite.'
+								: 'Aucune recette ne correspond à ce filtre.'}
+					</p>
 				) : (
-					<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+					<ul className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 						{filteredSavedRecipes.map((recipe) => (
-							<article
-								key={recipe.id}
-								className='relative overflow-hidden rounded-lg border border-neutral-200 bg-surface shadow-sm'>
-								<FavoriteRecipeButton
-									isFavorite={recipe.isFavorite}
-									isPending={
+							<li key={recipe.id} className='min-w-0'>
+								<RecipeCard
+									recipe={recipe}
+									filter={activeFilter}
+									isFavoritePending={
 										favoriteMutation.isPending &&
 										favoriteMutation.variables?.recipeId === recipe.id
 									}
-									onToggle={() =>
+									onToggleFavorite={() =>
 										favoriteMutation.mutate({
 											recipeId: recipe.id,
 											isFavorite: !recipe.isFavorite,
 										})
 									}
-									className='absolute right-3 top-3 z-10 shadow-md'
 								/>
-								{recipe.imageUrl && (
-									<img
-										src={recipe.imageUrl}
-										alt={recipe.name}
-										className='h-40 w-full object-cover'
-									/>
-								)}
-								<div className='p-4'>
-									<div className='flex items-center justify-between gap-2'>
-										<Badge variant='secondary'>{recipe.typeLabel}</Badge>
-										{recipe.doneAt && <Badge variant='outline'>Fait</Badge>}
-									</div>
-									<h3 className='mt-3 text-lg font-semibold text-neutral-900'>
-										{recipe.name}
-									</h3>
-									<p className='mt-1 text-sm text-neutral-600'>
-										{recipe.totalTime} min · {recipe.servings} personne
-										{recipe.servings > 1 ? 's' : ''}
-									</p>
-									<Button asChild className='mt-4 w-full'>
-										<Link
-											to='/app/recipes/$recipeId'
-											params={{ recipeId: recipe.id }}
-											search={{ filter: activeFilter }}>
-											Ouvrir
-											<ArrowRight className='size-4' />
-										</Link>
-									</Button>
-								</div>
-							</article>
+							</li>
 						))}
-					</div>
+					</ul>
 				)}
 			</section>
 		</div>
 	);
 }
 
-function RecipeStat({
-	children,
-	icon,
-}: {
-	children: ReactNode;
-	icon?: ReactNode;
-}) {
+function RecipeStat({ children, icon }: { children: ReactNode; icon: ReactNode }) {
 	return (
-		<div className='rounded-md bg-neutral-50 px-3 py-2 font-semibold text-neutral-900'>
-			<span className='flex items-center gap-1'>
-				{icon}
-				{children}
-			</span>
-		</div>
+		<span className='inline-flex items-center gap-1 text-sm text-neutral-700'>
+			{icon}
+			{children}
+		</span>
 	);
 }
 
-function GeneratedRecipeDetails({ recipe }: { recipe: GeneratedRecipe }) {
+function GeneratedRecipeCard({
+	recipe,
+	isOpen,
+	isSaving,
+	onToggle,
+	onSave,
+	onDismiss,
+}: {
+	recipe: GeneratedRecipe;
+	isOpen: boolean;
+	isSaving: boolean;
+	onToggle: () => void;
+	onSave: () => void;
+	onDismiss: () => void;
+}) {
+	const detailsId = useId();
+	const missingCount = recipe.ingredients.filter((ingredient) => ingredient.source === 'MISSING').length;
+
 	return (
-		<div className='mt-4 space-y-4 border-t border-neutral-200 pt-4'>
+		<article className='card flex flex-col gap-3 p-4'>
+			<div className='flex flex-wrap items-center gap-2'>
+				<Badge variant='secondary'>
+					{recipeTypes.find((type) => type.value === recipe.type)?.label}
+				</Badge>
+				{missingCount > 0 && (
+					<Badge variant='warning'>
+						{missingCount} ingrédient{missingCount > 1 ? 's' : ''} à acheter
+					</Badge>
+				)}
+			</div>
+			<h3 className='type-h3 text-neutral-900'>{recipe.name}</h3>
+			<p className='text-sm text-neutral-700'>{recipe.description}</p>
+			<div className='flex flex-wrap gap-x-4 gap-y-1'>
+				<RecipeStat icon={<Clock className='size-4' aria-hidden='true' />}>
+					{(recipe.preparationTime ?? 0) + (recipe.cookingTime ?? 0)} min
+				</RecipeStat>
+				<RecipeStat icon={<Users className='size-4' aria-hidden='true' />}>
+					{recipe.servings} pers.
+				</RecipeStat>
+				<RecipeStat icon={<Gauge className='size-4' aria-hidden='true' />}>
+					{difficultyLabels[recipe.difficulty]}
+				</RecipeStat>
+			</div>
+
+			<button
+				type='button'
+				onClick={onToggle}
+				aria-expanded={isOpen}
+				aria-controls={detailsId}
+				className='inline-flex cursor-pointer items-center gap-1 self-start rounded-sm text-sm font-medium text-accent-700 hover:underline'>
+				{isOpen ? 'Masquer la recette' : 'Voir la recette'}
+				<ChevronDown className={cn('size-4 transition-transform', isOpen && 'rotate-180')} aria-hidden='true' />
+			</button>
+			{isOpen && <GeneratedRecipeDetails id={detailsId} recipe={recipe} />}
+
+			<div className='mt-1 flex flex-wrap gap-2 border-t border-neutral-200 pt-3'>
+				<Button disabled={isSaving} onClick={onSave} className='flex-1'>
+					<BookmarkPlus aria-hidden='true' />
+					Ajouter à mes recettes
+				</Button>
+				<Button variant='secondary' onClick={onDismiss}>
+					<X aria-hidden='true' />
+					Écarter
+				</Button>
+			</div>
+		</article>
+	);
+}
+
+function GeneratedRecipeDetails({ id, recipe }: { id: string; recipe: GeneratedRecipe }) {
+	return (
+		<div id={id} className='flex flex-col gap-4'>
 			<div>
-				<p className='text-xs font-semibold uppercase text-neutral-600'>
-					Ingrédients
-				</p>
-				<div className='mt-2 flex flex-wrap gap-2'>
+				<h4 className='text-sm font-medium text-neutral-900'>Ingrédients</h4>
+				<ul className='mt-2 flex flex-wrap gap-2'>
 					{recipe.ingredients.map((ingredient) => (
-						<span
+						<li
 							key={`${ingredient.source}-${ingredient.name}`}
-							className='rounded-md bg-neutral-50 px-2 py-1 text-xs text-neutral-700'>
+							className={cn(
+								'rounded-full px-2.5 py-0.5 text-sm',
+								ingredient.source === 'MISSING'
+									? 'bg-warning-50 text-warning-700'
+									: 'bg-neutral-100 text-neutral-800'
+							)}>
 							{ingredient.name}
-							{ingredient.source === 'MISSING' ? ' · à ajouter' : ''}
-						</span>
+							{ingredient.source === 'MISSING' ? ' · à acheter' : ''}
+						</li>
 					))}
-				</div>
+				</ul>
 			</div>
 			<div>
-				<p className='text-xs font-semibold uppercase text-neutral-600'>
-					Préparation
-				</p>
-				<ol className='mt-2 space-y-2 text-sm text-neutral-700'>
-					{recipe.steps.map((step, index) => (
-						<li key={step}>
-							<span className='font-semibold'>{index + 1}.</span> {step}
-						</li>
+				<h4 className='text-sm font-medium text-neutral-900'>Préparation</h4>
+				<ol className='mt-2 flex list-decimal flex-col gap-2 pl-5 text-sm text-neutral-700 marker:font-semibold marker:text-accent-700'>
+					{recipe.steps.map((step) => (
+						<li key={step}>{step}</li>
 					))}
 				</ol>
 			</div>

@@ -288,7 +288,7 @@ describe('RecipeDetailPage', () => {
 		renderRecipeDetail();
 
 		await user.click(
-			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
+			await screen.findByRole('button', { name: 'Mettre en favori' })
 		);
 
 		await waitFor(() => {
@@ -298,7 +298,7 @@ describe('RecipeDetailPage', () => {
 			);
 		});
 		expect(
-			screen.getByRole('button', { name: 'Retirer des favoris' })
+			screen.getByRole('button', { name: 'Mettre en favori' })
 		).toHaveAttribute('aria-pressed', 'true');
 	});
 });
