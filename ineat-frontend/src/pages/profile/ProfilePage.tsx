@@ -21,6 +21,7 @@ import { getDietaryLabel } from '@/constants/dietary';
 import { ProfileInsights, userService } from '@/services/userService';
 import { useAuthStore } from '@/stores/authStore';
 import { getInitials } from '@/utils/ui-utils';
+import { formatCurrency } from '@/schemas/budget';
 
 const goalLabels = {
 	REDUCE_WASTE: 'Réduire le gaspillage',
@@ -29,11 +30,6 @@ const goalLabels = {
 	FIND_MEAL_IDEAS: 'Trouver des idées de repas',
 } as const;
 
-const currencyFormatter = new Intl.NumberFormat('fr-FR', {
-	style: 'currency',
-	currency: 'EUR',
-	maximumFractionDigits: 2,
-});
 
 const formatMonth = (month: string, style: 'short' | 'long' = 'short') =>
 	new Intl.DateTimeFormat('fr-FR', {
@@ -94,7 +90,7 @@ function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
 							r='5'
 							className='fill-accent-600 stroke-surface'
 							strokeWidth='2'>
-							<title>{`${formatMonth(point.month, 'long')} : ${currencyFormatter.format(point.total)}`}</title>
+							<title>{`${formatMonth(point.month, 'long')} : ${formatCurrency(point.total)}`}</title>
 						</circle>
 						<text
 							x={point.x}
@@ -108,7 +104,7 @@ function SpendingChart({ data }: { data: ProfileInsights['spendingTrend'] }) {
 			</svg>
 			<ul className='sr-only'>
 				{data.map((point) => (
-					<li key={point.month}>{`${formatMonth(point.month, 'long')} : ${currencyFormatter.format(point.total)}`}</li>
+					<li key={point.month}>{`${formatMonth(point.month, 'long')} : ${formatCurrency(point.total)}`}</li>
 				))}
 			</ul>
 		</div>
@@ -363,7 +359,7 @@ const ProfilePage = () => {
 									<>
 										<div className='mb-2 flex flex-wrap items-end gap-x-3 gap-y-1'>
 											<p className='text-2xl font-bold'>
-												{currencyFormatter.format(currentMonth?.total ?? 0)}
+												{formatCurrency(currentMonth?.total ?? 0)}
 											</p>
 											<p className='pb-0.5 text-sm capitalize text-neutral-500'>
 												{currentMonth && formatMonth(currentMonth.month, 'long')}

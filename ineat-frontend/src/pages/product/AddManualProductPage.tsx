@@ -27,6 +27,7 @@ import {
 } from '@/services/inventoryService';
 import type { AddInventoryItemData } from '@/schemas';
 import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
+import { formatCurrency } from '@/schemas/budget';
 
 type PageState = 'search' | 'quick-add' | 'manual-add';
 
@@ -62,7 +63,7 @@ const AddManualProductPage: React.FC = () => {
 	): void => {
 		const budgetDescription = result.budgetInfo.expenseCreated
 			? result.budgetInfo.remainingBudget !== undefined
-				? `Budget restant : ${result.budgetInfo.remainingBudget.toFixed(2)} €`
+				? `Budget restant : ${formatCurrency(result.budgetInfo.remainingBudget)}`
 				: 'Dépense ajoutée au budget'
 			: "Aucune dépense n'a été créée";
 

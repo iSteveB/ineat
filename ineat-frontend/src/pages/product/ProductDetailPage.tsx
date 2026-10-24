@@ -44,6 +44,7 @@ import WidgetCard from '@/components/common/WidgetCard';
 import { UpdateInventoryItemData } from '@/schemas';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 import { getProductImageUrl } from '@/utils/productPresentation';
+import { formatCurrency } from '@/schemas/budget';
 
 const ProductDetailPage: FC = () => {
 	const { productId } = useParams({ from: '/app/inventory/$productId' });
@@ -274,8 +275,6 @@ const ProductDetailPage: FC = () => {
 	const isEstimated = inventoryItem.expiryDateSource === 'ESTIMATED';
 	const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
-	const formatPrice = (price: number): string =>
-		new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
 
 	return (
 		<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:gap-6 lg:px-12 lg:py-6'>
@@ -393,7 +392,7 @@ const ProductDetailPage: FC = () => {
 						subtitle={
 							hasSeveralLots
 								? `${purchaseLots.length} lots · ${formatUnit(inventoryItem.quantity, product.unitType)} au total${
-										totalPurchasePrice > 0 ? ` · ${formatPrice(totalPurchasePrice)}` : ''
+										totalPurchasePrice > 0 ? ` · ${formatCurrency(totalPurchasePrice)}` : ''
 									}`
 								: undefined
 						}>
@@ -411,7 +410,7 @@ const ProductDetailPage: FC = () => {
 										</p>
 										<p className='text-sm font-medium text-neutral-900'>
 											{lot.purchasePrice !== undefined && lot.purchasePrice !== null
-												? formatPrice(lot.purchasePrice)
+												? formatCurrency(lot.purchasePrice)
 												: 'Prix non renseigné'}
 										</p>
 									</div>

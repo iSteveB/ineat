@@ -146,9 +146,9 @@ export default function AdminUsersPage() {
 				<CardHeader>
 					<CardTitle>Recherche et filtres</CardTitle>
 				</CardHeader>
-				<CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+				<CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
 					{(search.activeFrom || search.createdFrom) && (
-						<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent-100 bg-accent-50 p-3 text-sm md:col-span-2 xl:col-span-5">
+						<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent-100 bg-accent-50 p-3 text-sm sm:col-span-2 xl:col-span-3">
 							<p>
 								<strong>
 									{search.activeFrom
@@ -175,7 +175,7 @@ export default function AdminUsersPage() {
 							</Button>
 						</div>
 					)}
-					<label className="relative xl:col-span-2">
+					<label className="relative sm:col-span-2 xl:col-span-3">
 						<span className="sr-only">Rechercher un utilisateur</span>
 						<Search className="pointer-events-none absolute left-3 top-3 size-4 text-neutral-500" />
 						<Input
@@ -421,6 +421,29 @@ function formatRange(value?: string) {
 		: '—';
 }
 
+/** Libellés affichés pour les valeurs techniques des listes déroulantes. */
+const OPTION_LABELS: Record<string, string> = {
+	USER: 'Utilisateur',
+	ADMIN: 'Administrateur',
+	FREE: 'Gratuit',
+	TRIAL: 'Essai',
+	PREMIUM: 'Premium',
+	ACTIVE: 'Actif',
+	EXPIRED: 'Expiré',
+	CANCELLED: 'Résilié',
+	SUSPENDED: 'Suspendu',
+	BANNED: 'Banni',
+	PENDING_DELETION: 'Suppression en attente',
+	ANONYMIZED: 'Anonymisé',
+	createdAt: 'Date d’inscription',
+	email: 'E-mail',
+	lastName: 'Nom',
+	desc: 'Décroissant',
+	asc: 'Croissant',
+};
+
+const optionLabel = (option: string) => OPTION_LABELS[option] ?? option;
+
 function FilterSelect({
 	label,
 	value,
@@ -441,11 +464,13 @@ function FilterSelect({
 				aria-label={label}
 				value={value}
 				onChange={(event) => onChange(event.target.value)}
-				className="h-10 w-full rounded-md border border-neutral-200 bg-surface px-3 text-sm"
+				className="h-11 w-full rounded-md border border-input bg-surface px-3 text-sm text-neutral-900"
 			>
 				{allowAll && <option value="">Tous · {label}</option>}
 				{options.map((option) => (
-					<option key={option}>{option}</option>
+					<option key={option} value={option}>
+						{optionLabel(option)}
+					</option>
 				))}
 			</select>
 		</label>
@@ -471,10 +496,12 @@ function InlineSelect({
 			value={value}
 			disabled={disabled}
 			onChange={(event) => onChange(event.target.value)}
-			className="rounded-md border border-neutral-200 bg-surface px-2 py-1 text-sm disabled:opacity-60"
+			className="h-9 rounded-md border border-input bg-surface px-2 text-sm text-neutral-900 disabled:opacity-60"
 		>
 			{options.map((option) => (
-				<option key={option}>{option}</option>
+				<option key={option} value={option}>
+					{optionLabel(option)}
+				</option>
 			))}
 		</select>
 	);

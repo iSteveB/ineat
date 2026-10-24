@@ -38,6 +38,7 @@ import {
 	type UpdateInvoiceItemInput,
 	type ValidateInvoiceResponse
 } from '@/services/invoiceService';
+import { formatCurrency } from '@/schemas/budget';
 import { inventoryService } from '@/services/inventoryService';
 import { useAuthStore } from '@/stores/authStore';
 import { useInventoryActions } from '@/stores/inventoryStore';
@@ -90,13 +91,8 @@ type InvoiceItemDraft = Pick<
 	| 'productId'
 >;
 
-const formatCurrency = (amount?: number | null): string =>
-	typeof amount === 'number'
-		? amount.toLocaleString('fr-FR', {
-				style: 'currency',
-				currency: 'EUR'
-			})
-		: '-';
+const formatOptionalCurrency = (amount?: number | null): string =>
+	typeof amount === 'number' ? formatCurrency(amount) : '-';
 
 const formatDate = (date?: string | null): string =>
 	date ? new Intl.DateTimeFormat('fr-FR').format(new Date(date)) : '-';
@@ -794,7 +790,7 @@ function DriveInvoiceImportPage() {
 								<div>
 									<p className="text-xs uppercase text-neutral-600">Total</p>
 									<p className="font-medium text-neutral-900">
-										{formatCurrency(invoice.totalAmount)}
+										{formatOptionalCurrency(invoice.totalAmount)}
 									</p>
 								</div>
 								<div>
@@ -802,7 +798,7 @@ function DriveInvoiceImportPage() {
 										Somme des lignes
 									</p>
 									<p className="font-medium text-neutral-900">
-										{formatCurrency(reviewTotals.linesTotal)}
+										{formatOptionalCurrency(reviewTotals.linesTotal)}
 									</p>
 								</div>
 								<div>
@@ -814,7 +810,7 @@ function DriveInvoiceImportPage() {
 												: 'text-warning-700'
 										}`}
 									>
-										{formatCurrency(reviewTotals.difference)}
+										{formatOptionalCurrency(reviewTotals.difference)}
 									</p>
 								</div>
 							</CardContent>
@@ -956,7 +952,7 @@ function DriveInvoiceImportPage() {
 																	Prix
 																</p>
 																<p className="font-semibold text-neutral-900">
-																	{formatCurrency(getLineTotal(draft))}
+																	{formatOptionalCurrency(getLineTotal(draft))}
 																</p>
 															</div>
 														</div>
@@ -1340,7 +1336,7 @@ function DriveInvoiceImportPage() {
 								/>
 								<SummaryCell
 									label="Rattaché au budget"
-									value={formatCurrency(result.totalBudgetAmount)}
+									value={formatOptionalCurrency(result.totalBudgetAmount)}
 								/>
 							</div>}
 							{result?.requiresBudget && (
@@ -1349,7 +1345,7 @@ function DriveInvoiceImportPage() {
 									<AlertDescription className="space-y-3 text-warning-900">
 										<p>
 											{result.pendingExpenseCount} dépense{result.pendingExpenseCount > 1 ? 's' : ''}, soit{' '}
-											{formatCurrency(result.pendingBudgetAmount)}, {result.pendingExpenseCount > 1 ? 'sont enregistrées' : 'est enregistrée'} en attente.
+											{formatOptionalCurrency(result.pendingBudgetAmount)}, {result.pendingExpenseCount > 1 ? 'sont enregistrées' : 'est enregistrée'} en attente.
 											{' '}Créez un budget couvrant la date d’achat pour {result.pendingExpenseCount > 1 ? 'les y rattacher' : 'l’y rattacher'} automatiquement.
 										</p>
 										<Button asChild size="sm">

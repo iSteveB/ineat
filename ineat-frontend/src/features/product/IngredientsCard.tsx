@@ -2,26 +2,13 @@ import React from 'react';
 import { TriangleAlert } from 'lucide-react';
 
 import WidgetCard from '@/components/common/WidgetCard';
+import { detectAllergens } from '@/utils/allergens';
 
 interface IngredientsCardProps {
 	ingredients?: string | null;
 	className?: string;
 	compact?: boolean;
 }
-
-// Mots-clés d'allergènes courants : simple aide à la lecture, l'étiquette officielle fait foi
-const ALLERGEN_KEYWORDS = [
-	'gluten', 'blé', 'seigle', 'orge', 'avoine',
-	'lait', 'lactose', 'crème', 'beurre', 'fromage',
-	'œuf', 'oeuf',
-	'soja', 'soya',
-	'arachide', 'cacahuète',
-	'noix', 'amande', 'noisette', 'pistache',
-	'poisson', 'thon', 'saumon',
-	'crustacé', 'crevette', 'crabe',
-	'mollusque', 'moule', 'huître',
-	'céleri', 'moutarde', 'sésame', 'sulfite',
-];
 
 export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 	ingredients,
@@ -38,10 +25,7 @@ export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 		);
 	}
 
-	const normalizedIngredients = ingredients.toLowerCase();
-	const detectedAllergens = ALLERGEN_KEYWORDS.filter((allergen) =>
-		normalizedIngredients.includes(allergen)
-	);
+	const detectedAllergens = detectAllergens(ingredients);
 
 	return (
 		<WidgetCard

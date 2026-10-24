@@ -2,6 +2,7 @@ import type { FC, ReactNode } from 'react';
 import { CircleAlert, TriangleAlert } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/schemas/budget';
 
 interface BudgetProgressProps {
 	/** Titre affiché à gauche du montant (ex. un <h2>). */
@@ -12,13 +13,6 @@ interface BudgetProgressProps {
 	className?: string;
 }
 
-/** Montant en euros, sans centimes quand ils sont nuls : « 212 € », « 13,80 € ». */
-const formatCurrency = (amount: number) =>
-	new Intl.NumberFormat('fr-FR', {
-		style: 'currency',
-		currency: 'EUR',
-		minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-	}).format(amount);
 
 /** Seuil à partir duquel la barre passe en avertissement (en %). */
 const WARNING_THRESHOLD = 80;

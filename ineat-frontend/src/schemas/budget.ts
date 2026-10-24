@@ -741,12 +741,13 @@ export const validateExpenseForBudget = (
 };
 
 /**
- * Formate un montant en euros
+ * Formate un montant en euros, sans centimes quand ils sont nuls : « 212 € », « 13,80 € ».
  */
 export const formatCurrency = (amount: number): string => {
 	return new Intl.NumberFormat('fr-FR', {
 		style: 'currency',
 		currency: 'EUR',
+		minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
 	}).format(amount);
 };
 
