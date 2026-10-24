@@ -67,6 +67,7 @@ export const toSafeUserResponse = (
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    avatarUrl: user.avatarUrl ?? null,
     defaultServings: user.defaultServings,
     primaryGoal: user.primaryGoal,
     profileOnboardingCompletedAt:

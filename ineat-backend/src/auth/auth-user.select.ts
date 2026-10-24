@@ -6,6 +6,7 @@ export const authUserSelect = {
   emailVerified: true,
   firstName: true,
   lastName: true,
+  avatarUrl: true,
   defaultServings: true,
   primaryGoal: true,
   profileOnboardingCompletedAt: true,

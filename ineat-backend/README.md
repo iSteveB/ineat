@@ -55,7 +55,7 @@ Variables principales:
 | `CLOUDINARY_CLOUD_NAME`             | Uploads                     | Cloudinary cloud name                                                    |
 | `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                                       |
 | `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                                    |
-| `CLOUDINARY_AVATAR_PRESET`          | Optionnel                   | Preset Cloudinary pour avatars                                           |
+| `CLOUDINARY_AVATAR_PRESET`          | Uploads d'avatars           | Preset Cloudinary dedie aux avatars                                      |
 | `STRIPE_ENABLED`                    | Non                         | Active la validation Stripe hors production quand `true`                 |
 | `STRIPE_SECRET_KEY`                 | Billing prod / Stripe actif | Cle secrete Stripe backend                                               |
 | `STRIPE_PRICE_PREMIUM_MONTHLY_EUR`  | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium mensuel 5,99 EUR TTC                |

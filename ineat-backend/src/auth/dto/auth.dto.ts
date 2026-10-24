@@ -5,6 +5,7 @@ export const SafeUserSchema = z.object({
   email: z.string(),
   firstName: z.string(),
   lastName: z.string(),
+  avatarUrl: z.string().url().nullable().optional(),
   defaultServings: z.number().int().min(1).max(20),
   primaryGoal: z
     .enum(['REDUCE_WASTE', 'SAVE_MONEY', 'EAT_BETTER', 'FIND_MEAL_IDEAS'])

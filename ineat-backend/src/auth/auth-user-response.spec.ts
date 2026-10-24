@@ -9,6 +9,8 @@ describe('toSafeUserResponse', () => {
         email: 'jane@example.com',
         firstName: 'Jane',
         lastName: 'Doe',
+        avatarUrl:
+          'https://res.cloudinary.com/ineat/image/upload/avatars/user-1/avatar.jpg',
         defaultServings: 4,
         primaryGoal: null,
         role: 'USER',
@@ -30,6 +32,8 @@ describe('toSafeUserResponse', () => {
     );
 
     expect(response).toMatchObject({
+      avatarUrl:
+        'https://res.cloudinary.com/ineat/image/upload/avatars/user-1/avatar.jpg',
       subscriptionPlan: 'TRIAL',
       subscriptionStatus: 'ACTIVE',
       trialStartedAt: '2026-07-26T07:00:00.000Z',
@@ -40,6 +44,26 @@ describe('toSafeUserResponse', () => {
       effectivePlan: 'PREMIUM',
       subscription: 'TRIAL',
     });
+  });
+
+  it('returns a null avatar when the user has no profile picture', () => {
+    const response = toSafeUserResponse({
+      id: 'user-without-avatar',
+      email: 'no-avatar@example.com',
+      firstName: 'No',
+      lastName: 'Avatar',
+      avatarUrl: null,
+      defaultServings: 4,
+      primaryGoal: null,
+      role: 'USER',
+      subscriptionPlan: 'FREE',
+      subscriptionStatus: 'ACTIVE',
+      preferences: {},
+      createdAt: new Date('2026-07-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-07-01T00:00:00.000Z'),
+    });
+
+    expect(response.avatarUrl).toBeNull();
   });
 
   it('normalizes preferences stored as JSON strings for historical users', () => {
