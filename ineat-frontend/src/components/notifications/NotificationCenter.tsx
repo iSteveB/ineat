@@ -7,14 +7,16 @@ import { Link } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
 import {
 	AlertTriangle,
-	Bell,
+	BellOff,
 	Check,
+	CheckCheck,
 	CircleDollarSign,
-	Clock,
 	Info,
+	Loader2,
+	type LucideIcon,
 } from 'lucide-react';
 
-import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { notificationService } from '@/services/notificationService';
@@ -23,16 +25,25 @@ import type {
 	NotificationType,
 } from '@/services/notificationService';
 
-const typeLabels: Record<NotificationType, string> = {
-	EXPIRY: 'Péremption',
-	BUDGET: 'Budget',
-	SYSTEM: 'Système',
-};
-
-const typeStyles: Record<NotificationType, string> = {
-	EXPIRY: 'border-orange-200 bg-orange-50 text-orange-800',
-	BUDGET: 'border-red-200 bg-red-50 text-red-800',
-	SYSTEM: 'border-blue-200 bg-blue-50 text-blue-800',
+const typeConfig: Record<
+	NotificationType,
+	{ label: string; icon: LucideIcon; className: string }
+> = {
+	EXPIRY: {
+		label: 'Péremption',
+		icon: AlertTriangle,
+		className: 'bg-warning-50 text-warning-700',
+	},
+	BUDGET: {
+		label: 'Budget',
+		icon: CircleDollarSign,
+		className: 'bg-danger-50 text-danger-700',
+	},
+	SYSTEM: {
+		label: 'Information',
+		icon: Info,
+		className: 'bg-info-50 text-info-700',
+	},
 };
 
 type NotificationTarget = '/app/inventory' | '/app/budget';
@@ -49,21 +60,19 @@ function getNotificationTarget(
 	return null;
 }
 
-function NotificationIcon({ type }: { type: NotificationType }) {
-	if (type === 'EXPIRY') return <AlertTriangle className='size-4' />;
-	if (type === 'BUDGET') return <CircleDollarSign className='size-4' />;
-	return <Info className='size-4' />;
-}
-
 function formatNotificationDate(date: string) {
 	return new Intl.DateTimeFormat('fr-FR', {
-		day: '2-digit',
+		day: 'numeric',
 		month: 'short',
 		hour: '2-digit',
 		minute: '2-digit',
 	}).format(new Date(date));
 }
 
+/**
+ * Liste des notifications, avec chargement progressif.
+ * `compact` sert au panneau de la cloche ; la page complète porte son propre <h1>.
+ */
 export function NotificationCenter({
 	compact = false,
 	onNavigate,
@@ -93,6 +102,8 @@ export function NotificationCenter({
 		getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
 	});
 	const notifications = data?.pages.flatMap((page) => page.items) ?? [];
+	// Dans le panneau (dialog titré en h2), les titres de notification descendent d'un niveau
+	const ItemHeading = compact ? 'h3' : 'h2';
 	const unreadCount = data?.pages[0]?.unreadCount ?? 0;
 
 	useEffect(() => {
@@ -123,124 +134,150 @@ export function NotificationCenter({
 
 	if (isLoading) {
 		return (
-			<div className='flex min-h-48 items-center justify-center'>
-				<div className='size-8 animate-spin rounded-full border-2 border-accent-600 border-t-transparent' />
+			<div
+				role='status'
+				className='flex min-h-48 items-center justify-center gap-2 text-sm text-neutral-600'>
+				<Loader2 className='size-5 animate-spin text-accent-700' aria-hidden='true' />
+				Chargement des notifications…
 			</div>
 		);
 	}
 
 	return (
-		<div className={cn('space-y-4', compact ? 'p-3' : 'p-4')}>
-			<header className='flex items-center justify-between gap-3'>
-				<div>
-					<p className='text-sm font-medium text-success-700'>
-						{unreadCount} non lue{unreadCount > 1 ? 's' : ''}
-					</p>
-					{!compact && (
-						<h1 className='text-2xl font-semibold text-neutral-900'>
-							Notifications
-						</h1>
-					)}
-				</div>
+		<div className={cn('flex flex-col gap-4', compact && 'p-3')}>
+			{compact && (
+				<p className='pr-10 font-display text-lg font-bold text-neutral-900' aria-hidden='true'>
+					Notifications
+				</p>
+			)}
+			<div className='flex flex-wrap items-center justify-between gap-3'>
+				<p className='text-sm font-medium text-neutral-700'>
+					{unreadCount === 0
+						? 'Tout est lu'
+						: `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`}
+				</p>
 				<Button
 					variant='secondary'
-					size={compact ? 'sm' : 'default'}
+					size='sm'
 					disabled={unreadCount === 0 || markAllAsReadMutation.isPending}
 					onClick={() => markAllAsReadMutation.mutate()}>
-					<Check className='size-4' />
-					Tout lire
+					<CheckCheck aria-hidden='true' />
+					Tout marquer comme lu
 				</Button>
-			</header>
+			</div>
 
 			{isError ? (
-				<div className='rounded-lg border border-danger-600 bg-danger-50 p-5 text-center'>
-					<p className='text-sm text-danger-700'>
-						Impossible de charger les notifications.
-					</p>
-					<Button className='mt-3' variant='outline' onClick={() => refetch()}>
-						Réessayer
-					</Button>
-				</div>
+				<Alert variant='error'>
+					<AlertTriangle aria-hidden='true' />
+					<AlertTitle>Impossible de charger les notifications.</AlertTitle>
+					<AlertDescription>
+						<Button
+							className='mt-2'
+							variant='secondary'
+							size='sm'
+							onClick={() => refetch()}>
+							Réessayer
+						</Button>
+					</AlertDescription>
+				</Alert>
 			) : notifications.length === 0 ? (
-				<div className='rounded-lg border border-neutral-200 bg-surface p-8 text-center'>
-					<Bell className='mx-auto mb-3 size-8 text-accent-700' />
-					<p className='font-semibold text-neutral-900'>Rien à signaler</p>
-					<p className='mt-1 text-sm text-neutral-600'>
+				<div className='card flex flex-col items-center gap-2 p-8 text-center'>
+					<span className='flex size-12 items-center justify-center rounded-full bg-accent-50 text-accent-700'>
+						<BellOff className='size-6' aria-hidden='true' />
+					</span>
+					<p className='type-h3 text-neutral-900'>Aucune notification</p>
+					<p className='text-sm text-neutral-600'>
 						Les alertes de péremption et de budget apparaîtront ici.
 					</p>
 				</div>
 			) : (
-				<section className='space-y-2' aria-label='Liste des notifications'>
-					{notifications.map((notification) => {
-						const target = getNotificationTarget(notification);
-						return (
-							<article
-								key={notification.id}
-								className={cn(
-									'rounded-lg border bg-surface p-3',
-									notification.isRead
-										? 'border-neutral-200 opacity-75'
-										: 'border-accent-100'
-								)}>
-								<div className='flex gap-3'>
-									<div
+				<section aria-label='Liste des notifications'>
+					<ul
+						className={cn(
+							'divide-y divide-neutral-200 overflow-hidden',
+							compact ? 'rounded-lg border border-neutral-200' : 'card p-0'
+						)}>
+						{notifications.map((notification) => {
+							const target = getNotificationTarget(notification);
+							const config = typeConfig[notification.type];
+							const Icon = config.icon;
+							return (
+								<li
+									key={notification.id}
+									className={cn(
+										'relative flex gap-3 p-4',
+										!notification.isRead && 'bg-accent-50/60'
+									)}>
+									<span
 										className={cn(
-											'flex size-9 shrink-0 items-center justify-center rounded-md border',
-											typeStyles[notification.type]
+											'flex size-10 shrink-0 items-center justify-center rounded-md',
+											config.className
 										)}>
-										<NotificationIcon type={notification.type} />
-									</div>
-									<div className='min-w-0 flex-1 space-y-1.5'>
-										<div className='flex flex-wrap items-center gap-2'>
-											<Badge variant='outline'>
-												{typeLabels[notification.type]}
-											</Badge>
-											<span className='inline-flex items-center gap-1 text-xs text-neutral-600'>
-												<Clock className='size-3' />
-												{formatNotificationDate(notification.lastOccurredAt)}
+										<Icon className='size-5' aria-hidden='true' />
+									</span>
+									<div className='min-w-0 flex-1'>
+										<div className='flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-neutral-600'>
+											<span className='font-semibold uppercase tracking-wide'>
+												{config.label}
 											</span>
+											<span aria-hidden='true'>·</span>
+											<time dateTime={notification.lastOccurredAt}>
+												{formatNotificationDate(notification.lastOccurredAt)}
+											</time>
+											{!notification.isRead && (
+												<span className='inline-flex items-center gap-1 font-semibold text-accent-800'>
+													<span
+														className='size-2 rounded-full bg-accent-600'
+														aria-hidden='true'
+													/>
+													Non lue
+												</span>
+											)}
 										</div>
-										<h2 className='text-sm font-semibold text-neutral-900'>
+										<ItemHeading className='mt-1 font-semibold text-neutral-900'>
 											{notification.title}
-										</h2>
+										</ItemHeading>
 										<p className='text-sm text-neutral-700'>
 											{notification.message}
 										</p>
-										<div className='flex flex-wrap gap-2 pt-1'>
-											{target && (
-												<Button asChild size='sm' variant='outline'>
-													<Link
-														to={target}
-														onClick={() => {
-															if (!notification.isRead) {
-																markAsReadMutation.mutate(notification.id);
-															}
-															onNavigate?.();
-														}}>
-														Ouvrir
-													</Link>
-												</Button>
-											)}
-											{!notification.isRead && (
-												<Button
-													size='sm'
-													variant='secondary'
-													disabled={markAsReadMutation.isPending}
-													onClick={() =>
-														markAsReadMutation.mutate(notification.id)
-													}>
-													<Check className='size-4' /> Lu
-												</Button>
-											)}
-										</div>
+										{(target || !notification.isRead) && (
+											<div className='mt-2 flex flex-wrap gap-2'>
+												{target && (
+													<Button asChild size='sm' variant='secondary'>
+														<Link
+															to={target}
+															onClick={() => {
+																if (!notification.isRead) {
+																	markAsReadMutation.mutate(notification.id);
+																}
+																onNavigate?.();
+															}}>
+															Voir
+														</Link>
+													</Button>
+												)}
+												{!notification.isRead && (
+													<Button
+														size='sm'
+														variant='ghost'
+														disabled={markAsReadMutation.isPending}
+														onClick={() =>
+															markAsReadMutation.mutate(notification.id)
+														}>
+														<Check aria-hidden='true' />
+														Marquer comme lu
+													</Button>
+												)}
+											</div>
+										)}
 									</div>
-								</div>
-							</article>
-						);
-					})}
+								</li>
+							);
+						})}
+					</ul>
 					<div
 						ref={loadMoreRef}
-						className='flex min-h-10 items-center justify-center text-xs text-neutral-500'
+						className='flex min-h-10 items-center justify-center text-xs text-neutral-600'
 						aria-live='polite'>
 						{isFetchingNextPage
 							? 'Chargement des notifications précédentes…'

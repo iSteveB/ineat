@@ -12,6 +12,7 @@ const refreshUserMock = vi.fn();
 
 vi.mock('@tanstack/react-router', () => ({
 	useNavigate: () => navigateMock,
+	Link: ({ children }: { children: React.ReactNode }) => <a>{children}</a>,
 }));
 
 vi.mock('@/hooks/useAuth', () => ({
@@ -150,7 +151,7 @@ describe('SubscriptionPage', () => {
 		render(<SubscriptionPage />);
 
 		expect(
-			screen.getByText(/Trial actif: vous avez les droits Premium/)
+			screen.getByText(/Essai actif : vous avez les droits Premium/)
 		).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: 'Commencer Premium' }))
 			.toBeEnabled();

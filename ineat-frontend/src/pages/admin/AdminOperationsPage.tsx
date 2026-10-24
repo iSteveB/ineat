@@ -131,7 +131,7 @@ export default function AdminOperationsPage({
 				<CardContent className='space-y-3 p-8 text-center'>
 					<AlertTriangle className='mx-auto size-8 text-danger-700' />
 					<p className='font-medium'>Supervision indisponible</p>
-					<Button variant='outline' onClick={() => queuesQuery.refetch()}>
+					<Button variant='secondary' onClick={() => queuesQuery.refetch()}>
 						Réessayer
 					</Button>
 				</CardContent>
@@ -147,8 +147,8 @@ export default function AdminOperationsPage({
 		<div className='space-y-6'>
 			<header className='flex flex-wrap items-start justify-between gap-4'>
 				<div>
-					<p className='text-sm font-medium text-primary'>Exploitation</p>
-					<h1 className='text-2xl font-semibold text-neutral-900'>
+					<p className='text-sm font-medium text-accent-700'>Exploitation</p>
+					<h1 className='type-h1 text-neutral-900'>
 						Files et jobs
 					</h1>
 					<p className='mt-1 text-sm text-neutral-600'>
@@ -157,7 +157,7 @@ export default function AdminOperationsPage({
 					</p>
 				</div>
 				<Button
-					variant='outline'
+					variant='secondary'
 					onClick={() => queuesQuery.refetch()}
 					disabled={queuesQuery.isFetching}
 				>
@@ -340,7 +340,7 @@ export default function AdminOperationsPage({
 										<TableCell>
 											{job.state === 'failed' && (
 												<Button
-													variant='outline'
+													variant='secondary'
 													size='sm'
 													onClick={() =>
 														setJobToRetry({
@@ -487,7 +487,7 @@ export default function AdminOperationsPage({
 										</TableCell>
 										<TableCell>
 											<Button
-												variant='outline'
+												variant='secondary'
 												size='sm'
 												onClick={() => setJobToRetry(job)}
 											>
@@ -588,7 +588,7 @@ function Pagination({
 	return (
 		<div className='flex items-center justify-end gap-3 text-sm'>
 			<Button
-				variant='outline'
+				variant='secondary'
 				size='sm'
 				disabled={page <= 1}
 				onClick={() => onChange(page - 1)}
@@ -599,7 +599,7 @@ function Pagination({
 				Page {page} sur {totalPages}
 			</span>
 			<Button
-				variant='outline'
+				variant='secondary'
 				size='sm'
 				disabled={page >= totalPages}
 				onClick={() => onChange(page + 1)}

@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { CheckCircle2, HelpCircle, Lightbulb, Mail, Send } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, HelpCircle, Lightbulb, Mail, Send } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import {
 	SUPPORT_SUBJECTS,
@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/accordion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -122,135 +121,149 @@ export default function HelpPage() {
 	};
 
 	return (
-		<div className='mx-auto w-full max-w-4xl space-y-8 px-4 py-6 sm:px-6 lg:py-10'>
-			<section aria-labelledby='faq-title'>
-				<div className='mb-5 flex items-start gap-3'>
-					<div className='rounded-xl bg-brand-300/10 p-3 text-brand-800'>
-						<HelpCircle aria-hidden='true' className='size-6' />
-					</div>
-					<div>
-						<h2 id='faq-title' className='text-2xl font-semibold text-text-primary'>
-							Questions fréquentes
-						</h2>
-						<p className='mt-1 text-sm text-neutral-600'>
-							Retrouvez rapidement les réponses aux questions les plus courantes.
-						</p>
-					</div>
+		<div className='mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-4 sm:px-6 lg:py-6'>
+			<header>
+				<h1 className='type-h1 text-neutral-900'>Aide</h1>
+				<p className='text-neutral-600'>
+					Les réponses aux questions courantes, et l’équipe InEat si besoin.
+				</p>
+			</header>
+
+			<section aria-labelledby='faq-title' className='flex flex-col gap-4'>
+				<div className='flex items-center gap-3'>
+					<span className='flex size-10 shrink-0 items-center justify-center rounded-md bg-accent-50 text-accent-800'>
+						<HelpCircle aria-hidden='true' className='size-5' />
+					</span>
+					<h2 id='faq-title' className='type-h2 text-neutral-900'>
+						Questions fréquentes
+					</h2>
 				</div>
 
-				<div className='grid gap-4 md:grid-cols-2'>
+				<div className='grid items-start gap-4 md:grid-cols-2'>
 					{FAQ_SECTIONS.map((section) => (
-						<Card key={section.title} className='h-fit'>
-							<CardHeader>
-								<CardTitle className='text-lg'>{section.title}</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<Accordion type='single' collapsible>
-									{section.items.map((item) => (
-										<AccordionItem key={item.question} value={item.question}>
-											<AccordionTrigger>{item.question}</AccordionTrigger>
-											<AccordionContent className='leading-6 text-neutral-600'>
-												{item.answer}
-											</AccordionContent>
-										</AccordionItem>
-									))}
-								</Accordion>
-							</CardContent>
-						</Card>
+						<section
+							key={section.title}
+							aria-label={section.title}
+							className='card p-4 sm:p-5'>
+							<h3 className='type-h3 text-neutral-900'>{section.title}</h3>
+							<Accordion type='single' collapsible>
+								{section.items.map((item) => (
+									<AccordionItem key={item.question} value={item.question}>
+										<AccordionTrigger className='text-base'>{item.question}</AccordionTrigger>
+										<AccordionContent className='leading-6 text-neutral-700'>
+											{item.answer}
+										</AccordionContent>
+									</AccordionItem>
+								))}
+							</Accordion>
+						</section>
 					))}
 				</div>
 			</section>
 
-			<section aria-labelledby='contact-title'>
-				<Card>
-					<CardHeader>
-						<div className='flex items-start gap-3'>
-							<div className='rounded-xl bg-accent-600/10 p-3 text-success-700'>
-								<Lightbulb aria-hidden='true' className='size-6' />
-							</div>
-							<div>
-								<CardTitle id='contact-title'>Une question ou une idée ?</CardTitle>
-								<p className='mt-1 text-sm text-neutral-600'>
-									Votre message sera envoyé directement à l’équipe InEat.
-								</p>
-							</div>
-						</div>
-					</CardHeader>
-					<CardContent>
-						<form className='space-y-5' onSubmit={handleSubmit} noValidate>
-							<div className='space-y-2'>
-								<Label htmlFor='support-email'>Votre adresse e-mail</Label>
-								<div className='relative'>
-									<Mail aria-hidden='true' className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-600' />
-									<input
-										id='support-email'
-										type='email'
-										value={user?.email ?? ''}
-										readOnly
-										className='h-10 w-full rounded-md border border-neutral-200 bg-neutral-50/40 pl-10 pr-3 text-sm text-neutral-900'
-									/>
-								</div>
-								<p className='text-xs text-neutral-600'>Nous répondrons à cette adresse.</p>
-							</div>
+			<section aria-labelledby='contact-title' className='card flex flex-col gap-5 p-4 sm:p-6'>
+				<div className='flex items-start gap-3'>
+					<span className='flex size-10 shrink-0 items-center justify-center rounded-md bg-brand-100 text-brand-800'>
+						<Lightbulb aria-hidden='true' className='size-5' />
+					</span>
+					<div>
+						<h2 id='contact-title' className='type-h2 text-neutral-900'>
+							Une question ou une idée ?
+						</h2>
+						<p className='text-sm text-neutral-600'>
+							Votre message est envoyé directement à l’équipe InEat.
+						</p>
+					</div>
+				</div>
 
-							<div className='space-y-2'>
-								<Label htmlFor='support-subject'>Sujet</Label>
-								<select
-									id='support-subject'
-									value={subject}
-									onChange={(event) => setSubject(event.target.value as SupportSubject)}
-									className='h-10 w-full rounded-md border border-neutral-200 bg-surface px-3 text-sm text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300'>
-									{Object.entries(SUPPORT_SUBJECTS).map(([value, label]) => (
-										<option key={value} value={value}>{label}</option>
-									))}
-								</select>
-							</div>
-
-							<div className='space-y-2'>
-								<div className='flex items-center justify-between gap-4'>
-									<Label htmlFor='support-message'>Message</Label>
-									<span className='text-xs text-neutral-600'>{message.length}/2 000</span>
-								</div>
-								<Textarea
-									id='support-message'
-									value={message}
-									onChange={(event) => {
-										setMessage(event.target.value);
-										setError(null);
-										setSuccess(false);
-									}}
-									placeholder={placeholder}
-									maxLength={2000}
-									rows={7}
-									aria-describedby={messageError ? 'support-message-error' : undefined}
-									aria-invalid={Boolean(messageError)}
+				<form className='flex flex-col gap-5' onSubmit={handleSubmit} noValidate>
+					<div className='grid gap-5 sm:grid-cols-2'>
+						<div className='flex flex-col gap-2'>
+							<Label htmlFor='support-email'>Votre adresse e-mail</Label>
+							<div className='relative'>
+								<Mail
+									aria-hidden='true'
+									className='absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-600'
 								/>
-								{messageError && (
-									<p id='support-message-error' className='text-sm text-danger-700'>{messageError}</p>
-								)}
+								<input
+									id='support-email'
+									type='email'
+									value={user?.email ?? ''}
+									readOnly
+									aria-describedby='support-email-hint'
+									className='h-11 w-full rounded-md border border-neutral-200 bg-neutral-50 pl-10 pr-3 text-neutral-900'
+								/>
 							</div>
+							<p id='support-email-hint' className='text-xs text-neutral-600'>
+								Nous répondrons à cette adresse.
+							</p>
+						</div>
 
-							{success && (
-								<Alert variant='success' aria-live='polite'>
-									<CheckCircle2 aria-hidden='true' />
-									<AlertTitle>Message envoyé</AlertTitle>
-									<AlertDescription>Votre message a bien été transmis au support.</AlertDescription>
-								</Alert>
-							)}
-							{error && (
-								<Alert variant='error' aria-live='assertive'>
-									<AlertTitle>Envoi impossible</AlertTitle>
-									<AlertDescription>{error}</AlertDescription>
-								</Alert>
-							)}
+						<div className='flex flex-col gap-2'>
+							<Label htmlFor='support-subject'>Sujet</Label>
+							<select
+								id='support-subject'
+								value={subject}
+								onChange={(event) => setSubject(event.target.value as SupportSubject)}
+								className='h-11 w-full rounded-md border border-input bg-surface px-3 text-neutral-900'>
+								{Object.entries(SUPPORT_SUBJECTS).map(([value, label]) => (
+									<option key={value} value={value}>
+										{label}
+									</option>
+								))}
+							</select>
+						</div>
+					</div>
 
-							<Button type='submit' disabled={isSending || trimmedMessage.length < 10} className='w-full sm:w-auto'>
-								<Send aria-hidden='true' className='size-4' />
-								{isSending ? 'Envoi en cours…' : 'Envoyer le message'}
-							</Button>
-						</form>
-					</CardContent>
-				</Card>
+					<div className='flex flex-col gap-2'>
+						<div className='flex items-center justify-between gap-4'>
+							<Label htmlFor='support-message'>Message</Label>
+							<span className='text-xs text-neutral-600'>{message.length}/2 000</span>
+						</div>
+						<Textarea
+							id='support-message'
+							value={message}
+							onChange={(event) => {
+								setMessage(event.target.value);
+								setError(null);
+								setSuccess(false);
+							}}
+							placeholder={placeholder}
+							maxLength={2000}
+							rows={7}
+							aria-describedby={messageError ? 'support-message-error' : undefined}
+							aria-invalid={Boolean(messageError)}
+						/>
+						{messageError && (
+							<p id='support-message-error' className='text-sm text-danger-700'>
+								{messageError}
+							</p>
+						)}
+					</div>
+
+					{success && (
+						<Alert variant='success' role='status'>
+							<CheckCircle2 aria-hidden='true' />
+							<AlertTitle>Message envoyé</AlertTitle>
+							<AlertDescription>Votre message a bien été transmis au support.</AlertDescription>
+						</Alert>
+					)}
+					{error && (
+						<Alert variant='error'>
+							<AlertTriangle aria-hidden='true' />
+							<AlertTitle>Envoi impossible</AlertTitle>
+							<AlertDescription>{error}</AlertDescription>
+						</Alert>
+					)}
+
+					<Button
+						type='submit'
+						disabled={isSending || trimmedMessage.length < 10}
+						className='w-full sm:w-auto sm:self-start'>
+						<Send aria-hidden='true' />
+						{isSending ? 'Envoi en cours…' : 'Envoyer le message'}
+					</Button>
+				</form>
 			</section>
 		</div>
 	);

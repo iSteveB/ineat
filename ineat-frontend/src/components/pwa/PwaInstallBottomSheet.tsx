@@ -70,7 +70,7 @@ export function PwaInstallBottomSheet() {
 	return (
 		<DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
 			<DialogPrimitive.Portal>
-				<DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-black/45 data-[state=closed]:animate-fade data-[state=open]:animate-fade' />
+				<DialogPrimitive.Overlay className='fixed inset-0 z-50 bg-neutral-950/45 data-[state=closed]:animate-fade data-[state=open]:animate-fade' />
 				<DialogPrimitive.Content
 					className='fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-lg rounded-t-2xl bg-surface px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5 shadow-xl outline-none data-[state=open]:animate-slide'
 					aria-describedby='pwa-install-description'>
@@ -90,7 +90,7 @@ export function PwaInstallBottomSheet() {
 						)}
 					</div>
 
-					<DialogPrimitive.Title className='pr-10 font-display text-xl font-semibold text-neutral-900'>
+					<DialogPrimitive.Title className='pr-10 type-h2 text-neutral-900'>
 						{showIosInstructions
 							? 'Ajouter INEAT sur iPhone'
 							: 'Installer INEAT'}

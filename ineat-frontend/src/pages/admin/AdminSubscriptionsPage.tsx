@@ -169,8 +169,8 @@ export default function AdminSubscriptionsPage() {
 	return (
 		<div className='space-y-8'>
 			<header>
-				<p className='text-sm font-medium text-primary'>Stripe</p>
-				<h1 className='text-2xl font-semibold text-neutral-900'>
+				<p className='text-sm font-medium text-accent-700'>Stripe</p>
+				<h1 className='type-h1 text-neutral-900'>
 					Promotions et abonnements
 				</h1>
 				<p className='mt-1 text-sm text-neutral-600'>
@@ -370,7 +370,7 @@ export default function AdminSubscriptionsPage() {
 						<div className='space-y-3 p-6 text-sm text-danger-700'>
 							<p>Impossible de charger les promotions Stripe.</p>
 							<Button
-								variant='outline'
+								variant='secondary'
 								size='sm'
 								onClick={() => promotionsQuery.refetch()}
 							>
@@ -424,7 +424,7 @@ export default function AdminSubscriptionsPage() {
 										<TableCell>
 											{promotion.active && (
 												<Button
-													variant='outline'
+													variant='secondary'
 													size='sm'
 													onClick={() => setPromotionToDeactivate(promotion.id)}
 												>
@@ -451,7 +451,7 @@ export default function AdminSubscriptionsPage() {
 						<div className='space-y-3 p-6 text-sm text-danger-700'>
 							<p>Impossible de charger les abonnements.</p>
 							<Button
-								variant='outline'
+								variant='secondary'
 								size='sm'
 								onClick={() => subscribersQuery.refetch()}
 							>
@@ -500,7 +500,7 @@ export default function AdminSubscriptionsPage() {
 										<TableCell>
 											{user.stripeSubscriptionId && (
 												<Button
-													variant='outline'
+													variant='secondary'
 													size='sm'
 													onClick={() =>
 														setSubscriptionAction({

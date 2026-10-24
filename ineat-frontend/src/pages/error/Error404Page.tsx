@@ -1,61 +1,66 @@
 import React from 'react';
+import { Link, useMatches } from '@tanstack/react-router';
+import { ArrowLeft, Home, SearchX } from 'lucide-react';
+
+import logoMark from '@/assets/Logo.svg';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileSearch } from 'lucide-react';
-import { Header } from '@/components/layout/Header';
-import NavigationBar from '@/components/layout/NavigationBar';
 
 interface Error404Props {
 	/** Message d'erreur personnalisé */
 	message?: string;
-	/** Afficher la barre de recherche */
-	showSearch?: boolean;
 }
 
+/**
+ * Page introuvable. Sous /app, elle s'affiche dans la mise en page de l'application
+ * (qui porte déjà le <main>) ; ailleurs, elle porte son propre <main> et le logo.
+ */
 export const Error404Page: React.FC<Error404Props> = ({
-	message = 'Désolé, nous ne trouvons pas cette page',
+	message = 'Cette page n’existe pas ou a été déplacée.',
 }) => {
-	return (
-		<div className='min-h-screen bg-surface flex flex-col items-center justify-center px-4 py-8'>
-			<div className='w-full max-w-7xl fixed top-0 left-0'>
-				<Header />
-			</div>
-			<div className='max-w-2xl w-full text-center space-y-8'>
-				<div className='space-y-6'>
-					<div className='flex justify-center'>
-						<div className='relative'>
-							<div className='size-32 bg-primaire-50 rounded-full flex items-center justify-center'>
-								<FileSearch className='size-16 text-primaire-100' />
-							</div>
-							<div className='absolute -top-2 -right-2 size-8 bg-accent-600 rounded-full opacity-80' />
-							<div className='absolute -bottom-3 -left-3 size-6 bg-avertissement-50 rounded-full opacity-60' />
-						</div>
-					</div>
-					<div className='space-y-3'>
-						<h1 className='text-6xl font-bold text-accent-700 font-display'>
-							404
-						</h1>
-						<h2 className='text-2xl font-semibold text-neutral-900 font-display'>
-							Page non trouvée
-						</h2>
-						<p className='text-lg text-neutral-600 font-outfit max-w-md mx-auto'>
-							{message}. La page que vous recherchez n'existe pas
-							ou a été déplacée.
-						</p>
-					</div>
-				</div>
+	const isInApp = useMatches({
+		select: (matches) => matches.some((match) => match.routeId.startsWith('/app')),
+	});
 
-				{/* Lien de retour en arrière */}
-				<div className='pt-4'>
-					<Button
-						variant='ghost'
-						onClick={() => window.history.back()}
-						className='text-neutral-600 hover:text-neutral-900'>
-						<ArrowLeft className='size-4 mr-2' />
-						Retour à la page précédente
-					</Button>
-				</div>
-				<NavigationBar />
+	const content = (
+		<div className='mx-auto flex w-full max-w-md flex-col items-center gap-5 px-4 py-12 text-center'>
+			<span className='flex size-24 items-center justify-center rounded-full bg-brand-100 text-brand-800'>
+				<SearchX className='size-12' aria-hidden='true' />
+			</span>
+			<div className='flex flex-col gap-2'>
+				<p className='text-sm font-semibold uppercase tracking-wide text-accent-700'>
+					Erreur 404
+				</p>
+				<h1 className='type-h1 text-neutral-900'>Page introuvable</h1>
+				<p className='text-neutral-600'>{message}</p>
 			</div>
+			<div className='flex w-full flex-col gap-2 sm:w-auto sm:flex-row'>
+				<Button asChild>
+					<Link to={isInApp ? '/app' : '/'}>
+						<Home aria-hidden='true' />
+						{isInApp ? 'Retour à l’accueil' : 'Retour au site'}
+					</Link>
+				</Button>
+				<Button variant='secondary' onClick={() => window.history.back()}>
+					<ArrowLeft aria-hidden='true' />
+					Page précédente
+				</Button>
+			</div>
+		</div>
+	);
+
+	if (isInApp) return content;
+
+	return (
+		<div className='flex min-h-screen flex-col bg-canvas'>
+			<header className='px-4 py-4 sm:px-6'>
+				<Link to='/' className='inline-flex items-center gap-2 rounded-md text-neutral-900'>
+					<img src={logoMark} alt='' className='size-9' />
+					<span className='font-display text-xl font-bold tracking-tight'>InEat</span>
+				</Link>
+			</header>
+			<main id='contenu' className='flex flex-1 items-center justify-center'>
+				{content}
+			</main>
 		</div>
 	);
 };

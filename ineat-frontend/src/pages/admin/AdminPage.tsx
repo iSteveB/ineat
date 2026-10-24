@@ -59,8 +59,8 @@ export default function AdminPage() {
 		<div className='space-y-6'>
 			<header className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
 				<div>
-					<p className='text-sm font-medium text-primary'>Administration</p>
-					<h1 className='text-2xl font-semibold text-neutral-900'>
+					<p className='text-sm font-medium text-accent-700'>Administration</p>
+					<h1 className='type-h1 text-neutral-900'>
 						Vue d’ensemble
 					</h1>
 					<p className='mt-1 text-sm text-neutral-600'>
@@ -212,7 +212,7 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 					series={[
 						{
 							label: 'Inscriptions',
-							color: 'bg-primary',
+							color: 'bg-accent-600',
 							points: dashboard.trends.registrations.map((point) => ({
 								date: point.date,
 								value: point.value,
@@ -225,7 +225,7 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 					series={[
 						{
 							label: 'Trials',
-							color: 'bg-amber-500',
+							color: 'bg-brand-300',
 							points: dashboard.trends.subscriptions.map((point) => ({
 								date: point.date,
 								value: point.trials,
@@ -305,7 +305,7 @@ function DashboardContent({ dashboard }: { dashboard: AdminDashboard }) {
 									key={item.type}
 									onClick={() => openAttention(item.type)}
 									aria-label={`Voir ${attentionLabels[item.type]}`}
-									className='flex w-full items-center justify-between rounded-lg border border-danger-600 bg-danger-50/40 p-3 text-left transition hover:border-danger-600 hover:bg-danger-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+									className='flex w-full items-center justify-between rounded-lg border border-danger-600 bg-danger-50 p-3 text-left transition hover:bg-danger-50'
 								>
 									<p className='flex items-center gap-2 text-sm text-neutral-800'>
 										<AlertTriangle className='size-4 text-danger-700' />
@@ -414,16 +414,16 @@ function MetricCard({
 			type='button'
 			onClick={onClick}
 			aria-label={`Voir ${label.toLowerCase()}`}
-			className='h-full rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+			className='h-full rounded-lg text-left'
 		>
-			<Card className='h-full transition hover:border-primary/40 hover:shadow-md'>
+			<Card className='h-full transition hover:border-accent-600 hover:shadow-md'>
 				<CardContent className='flex gap-3 p-4'>
-					<div className='h-fit rounded-lg bg-primary/10 p-2 text-primary'>
+					<div className='h-fit rounded-lg bg-accent-50 p-2 text-accent-700'>
 						<Icon className='size-5' />
 					</div>
 					<div>
 						<p className='text-sm text-neutral-600'>{label}</p>
-						<p className='text-2xl font-semibold text-neutral-900'>{value}</p>
+						<p className='type-stat text-neutral-900'>{value}</p>
 						<p className='text-xs text-neutral-500'>{detail}</p>
 					</div>
 				</CardContent>
@@ -480,7 +480,7 @@ function DashboardSkeleton() {
 			{Array.from({ length: 4 }).map((_, index) => (
 				<div
 					key={index}
-					className='h-28 animate-pulse rounded-xl bg-neutral-50'
+					className='h-28 animate-pulse rounded-lg bg-neutral-100'
 				/>
 			))}
 		</div>
@@ -497,7 +497,7 @@ function AdminState({
 	return (
 		<Card>
 			<CardContent className='p-8 text-center'>
-				<h2 className='text-xl font-semibold text-neutral-900'>{title}</h2>
+				<h2 className='type-h2 text-neutral-900'>{title}</h2>
 				<p className='mt-2 text-sm text-neutral-600'>{description}</p>
 			</CardContent>
 		</Card>

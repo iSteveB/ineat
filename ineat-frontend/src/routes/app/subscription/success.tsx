@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { CheckCircle2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 
 export const Route = createFileRoute('/app/subscription/success')({
@@ -9,26 +9,19 @@ export const Route = createFileRoute('/app/subscription/success')({
 
 function SubscriptionSuccessPage() {
 	return (
-		<div className="container mx-auto px-4 py-8">
-			<div className="mx-auto max-w-xl">
-				<Card>
-					<CardContent className="p-8 text-center">
-						<div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-green-50">
-							<CheckCircle2 className="size-8 text-green-600" />
-						</div>
-						<h1 className="mb-2 text-2xl font-bold">
-							Paiement confirmé
-						</h1>
-						<p className="mb-6 text-muted-foreground">
-							Votre abonnement Premium est en cours d’activation.
-							Les droits seront synchronisés automatiquement après
-							confirmation Stripe.
-						</p>
-						<Button asChild>
-							<Link to="/app/inventory">Retour à l’inventaire</Link>
-						</Button>
-					</CardContent>
-				</Card>
+		<div className='mx-auto flex w-full max-w-xl flex-col px-4 py-10 sm:px-6'>
+			<div className='card flex flex-col items-center gap-4 p-8 text-center'>
+				<span className='flex size-16 items-center justify-center rounded-full bg-success-50 text-success-700'>
+					<CheckCircle2 className='size-8' aria-hidden='true' />
+				</span>
+				<h1 className='type-h1 text-neutral-900'>Paiement confirmé</h1>
+				<p className='text-neutral-600'>
+					Votre abonnement Premium est en cours d’activation. Vos droits seront
+					synchronisés automatiquement dès la confirmation de Stripe.
+				</p>
+				<Button asChild>
+					<Link to='/app'>Retour à l’accueil</Link>
+				</Button>
 			</div>
 		</div>
 	);

@@ -133,8 +133,8 @@ export default function AdminUsersPage() {
 	return (
 		<div className="space-y-6">
 			<header>
-				<p className="text-sm font-medium text-primary">Administration</p>
-				<h1 className="text-2xl font-semibold text-neutral-900">
+				<p className="text-sm font-medium text-accent-700">Administration</p>
+				<h1 className="type-h1 text-neutral-900">
 					Utilisateurs
 				</h1>
 				<p className="mt-1 text-sm text-neutral-600">
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
 				</CardHeader>
 				<CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
 					{(search.activeFrom || search.createdFrom) && (
-						<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 text-sm md:col-span-2 xl:col-span-5">
+						<div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-accent-100 bg-accent-50 p-3 text-sm md:col-span-2 xl:col-span-5">
 							<p>
 								<strong>
 									{search.activeFrom
@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
 								{formatRange(search.activeTo ?? search.createdTo)}
 							</p>
 							<Button
-								variant="outline"
+								variant="secondary"
 								size="sm"
 								onClick={() =>
 									updateSearch({
@@ -382,7 +382,7 @@ export default function AdminUsersPage() {
 					</p>
 					<div className="flex gap-2">
 						<Button
-							variant="outline"
+							variant="secondary"
 							size="sm"
 							disabled={pagination.page <= 1}
 							onClick={() => updateSearch({ page: pagination.page - 1 })}
@@ -390,7 +390,7 @@ export default function AdminUsersPage() {
 							<ChevronLeft className="size-4" /> Précédent
 						</Button>
 						<Button
-							variant="outline"
+							variant="secondary"
 							size="sm"
 							disabled={pagination.page >= pagination.totalPages}
 							onClick={() => updateSearch({ page: pagination.page + 1 })}

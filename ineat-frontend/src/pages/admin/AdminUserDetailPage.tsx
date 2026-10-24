@@ -93,7 +93,7 @@ export default function AdminUserDetailPage() {
 		return (
 			<Card>
 				<CardContent className="space-y-4 p-8 text-center">
-					<h1 className="text-xl font-semibold text-neutral-900">
+					<h1 className="type-h1 text-neutral-900">
 						Utilisateur introuvable
 					</h1>
 					<p className="text-sm text-neutral-600">
@@ -119,8 +119,8 @@ export default function AdminUserDetailPage() {
 			</Button>
 			<header className="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<p className="text-sm font-medium text-primary">Compte utilisateur</p>
-					<h1 className="text-2xl font-semibold text-neutral-900">
+					<p className="text-sm font-medium text-accent-700">Compte utilisateur</p>
+					<h1 className="type-h1 text-neutral-900">
 						{user.firstName} {user.lastName}
 					</h1>
 					<p className="text-sm text-neutral-600">{user.email}</p>
@@ -413,7 +413,7 @@ function CountCard({
 	return (
 		<Card>
 			<CardContent className="flex items-center gap-3 p-4">
-				<Icon className="size-5 text-primary" />
+				<Icon className="size-5 text-accent-700" />
 				<div>
 					<p className="text-xs text-neutral-500">{label}</p>
 					<p className="text-xl font-semibold text-neutral-900">{value}</p>

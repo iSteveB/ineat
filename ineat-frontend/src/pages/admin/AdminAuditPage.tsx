@@ -53,8 +53,8 @@ export default function AdminAuditPage() {
 	return (
 		<div className='space-y-6'>
 			<header>
-				<p className='text-sm font-medium text-primary'>Traçabilité</p>
-				<h1 className='flex items-center gap-2 text-2xl font-semibold text-neutral-900'>
+				<p className='text-sm font-medium text-accent-700'>Traçabilité</p>
+				<h1 className='flex items-center gap-2 type-h1 text-neutral-900'>
 					<History className='size-6' /> Journal d’audit
 				</h1>
 				<p className='mt-1 text-sm text-neutral-600'>
@@ -162,7 +162,7 @@ export default function AdminAuditPage() {
 					</label>
 					<div className='flex items-end gap-2'>
 						<Button onClick={applyFilters}>Appliquer</Button>
-						<Button variant='outline' onClick={resetFilters}>
+						<Button variant='secondary' onClick={resetFilters}>
 							Réinitialiser
 						</Button>
 					</div>
@@ -178,7 +178,7 @@ export default function AdminAuditPage() {
 							<div className='space-y-3 p-6 text-sm text-danger-700'>
 								<p>Impossible de charger le journal d’audit.</p>
 								<Button
-									variant='outline'
+									variant='secondary'
 									size='sm'
 									onClick={() => auditQuery.refetch()}
 								>
@@ -259,7 +259,7 @@ export default function AdminAuditPage() {
 					</p>
 					<div className='flex gap-2'>
 						<Button
-							variant='outline'
+							variant='secondary'
 							size='sm'
 							disabled={data.pagination.page <= 1}
 							onClick={() => updateQuery({ page: data.pagination.page - 1 })}
@@ -267,7 +267,7 @@ export default function AdminAuditPage() {
 							<ChevronLeft className='size-4' /> Précédent
 						</Button>
 						<Button
-							variant='outline'
+							variant='secondary'
 							size='sm'
 							disabled={data.pagination.page >= data.pagination.totalPages}
 							onClick={() => updateQuery({ page: data.pagination.page + 1 })}
@@ -295,7 +295,7 @@ function AuditDetail({ log }: { log: AdminAuditLog }) {
 				</p>
 				{log.resourceType === 'USER' && (
 					<a
-						className='mt-2 inline-block font-medium text-primary hover:underline'
+						className='mt-2 inline-block font-medium text-accent-700 hover:underline'
 						href={`/app/admin/users/${encodeURIComponent(log.resourceId)}`}
 					>
 						Voir la fiche utilisateur
