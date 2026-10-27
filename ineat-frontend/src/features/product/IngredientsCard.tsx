@@ -10,6 +10,19 @@ interface IngredientsCardProps {
 	compact?: boolean;
 }
 
+const renderHighlightedAllergens = (ingredients: string): React.ReactNode[] =>
+	ingredients.split(/(_[^_]+_)/g).filter(Boolean).map((part, index) => {
+		if (part.startsWith('_') && part.endsWith('_')) {
+			return (
+				<strong key={`${part}-${index}`} className='font-semibold text-neutral-900'>
+					{part.slice(1, -1)}
+				</strong>
+			);
+		}
+
+		return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
+	});
+
 export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 	ingredients,
 	className,
@@ -32,7 +45,9 @@ export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 			title='Ingrédients'
 			subtitle={compact ? undefined : 'Par ordre décroissant de poids dans le produit.'}
 			className={className}>
-			<p className='leading-relaxed text-neutral-700'>{ingredients}</p>
+			<p className='leading-relaxed text-neutral-700'>
+				{renderHighlightedAllergens(ingredients)}
+			</p>
 
 			{detectedAllergens.length > 0 && (
 				<div className='mt-4 flex items-start gap-2 rounded-md bg-warning-50 p-3 text-sm text-warning-700'>
