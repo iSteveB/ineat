@@ -41,7 +41,7 @@ import ExpiryBadge from '@/components/common/ExpiryBadge';
 import NutriScore from '@/components/common/NutriScore';
 import ScoreBadge from '@/components/common/ScoreBadge';
 import WidgetCard from '@/components/common/WidgetCard';
-import { UpdateInventoryItemData } from '@/schemas';
+import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 import { getProductImageUrl } from '@/utils/productPresentation';
 import { formatCurrency } from '@/schemas/budget';
@@ -60,10 +60,12 @@ const ProductDetailPage: FC = () => {
 
 	// État pour le modal de modification
 	const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+	const [selectedLotId, setSelectedLotId] = useState<string | null>(null);
 	const [isUpdating, setIsUpdating] = useState<boolean>(false);
 	const [isUpdatingFavorite, setIsUpdatingFavorite] = useState(false);
 	const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
 	// Charger les données au montage du composant si elles ne sont pas déjà chargées
 	useEffect(() => {
@@ -72,11 +74,20 @@ const ProductDetailPage: FC = () => {
 		}
 	}, [fetchInventoryItems, items.length, isLoading]);
 
-	// Trouver l'élément correspondant au productId
-	const inventoryItem = items.find((item) => item.id === productId);
+	// L'URL historique contient l'ID du lot principal. Mémoriser aussi l'ID du
+	// produit garde la fiche stable si une modification change le lot principal.
+	const routedInventoryItem = items.find(
+		(item) => item.id === productId || item.lots?.some((lot) => lot.id === productId),
+	);
+	const inventoryItem =
+		routedInventoryItem ??
+		items.find((item) => item.product.id === selectedProductId);
 
-	// Calculer le statut d'expiration
-	const expiryStatus = calculateExpiryStatus(inventoryItem?.expiryDate);
+	useEffect(() => {
+		if (routedInventoryItem) {
+			setSelectedProductId(routedInventoryItem.product.id);
+		}
+	}, [routedInventoryItem]);
 
 	// Obtenir le texte descriptif du Nutriscore
 	const getNutriscoreText = (score: string | undefined): string => {
@@ -131,27 +142,29 @@ const ProductDetailPage: FC = () => {
 	};
 
 	// Gérer l'ouverture du modal de modification
-	const handleOpenEditModal = (): void => {
+	const handleOpenEditModal = (lotId: string): void => {
+		setSelectedLotId(lotId);
 		setIsEditModalOpen(true);
 	};
 
 	// Gérer la fermeture du modal de modification
 	const handleCloseEditModal = (): void => {
 		setIsEditModalOpen(false);
+		setSelectedLotId(null);
 	};
 
 	// Gérer la mise à jour du produit
 	const handleUpdateProduct = async (
 		updates: UpdateInventoryItemData,
 	): Promise<void> => {
-		if (!inventoryItem) return;
+		if (!selectedLotId) return;
 
 		setIsUpdating(true);
 
 		try {
-			await updateInventoryItem(inventoryItem.id, updates);
-			toast.success('Produit mis à jour avec succès');
-			setIsEditModalOpen(false);
+			await updateInventoryItem(selectedLotId, updates);
+			toast.success('Lot mis à jour avec succès');
+			handleCloseEditModal();
 		} catch (error) {
 			toast.error(
 				getUserFacingErrorMessage(
@@ -166,13 +179,15 @@ const ProductDetailPage: FC = () => {
 
 	// Supprimer le produit (après confirmation dans la boîte de dialogue)
 	const handleDelete = async (): Promise<void> => {
-		if (!inventoryItem) return;
+		if (!selectedLotId) return;
 
 		setIsDeleting(true);
 		try {
-			await removeInventoryItem(inventoryItem.id);
-			toast.success("Produit supprimé de l'inventaire");
-			navigate({ to: '/app/inventory' });
+			await removeInventoryItem(selectedLotId);
+			toast.success('Lot supprimé de l’inventaire');
+			if (purchaseLots.length === 1) {
+				navigate({ to: '/app/inventory' });
+			}
 		} catch (error) {
 			toast.error(
 				getUserFacingErrorMessage(
@@ -183,6 +198,7 @@ const ProductDetailPage: FC = () => {
 		} finally {
 			setIsDeleting(false);
 			setIsConfirmingDelete(false);
+			setSelectedLotId(null);
 		}
 	};
 
@@ -272,7 +288,38 @@ const ProductDetailPage: FC = () => {
 	const hasSeveralLots = purchaseLots.length > 1;
 	const { product } = inventoryItem;
 	const productImageUrl = getProductImageUrl(product);
-	const isEstimated = inventoryItem.expiryDateSource === 'ESTIMATED';
+	const startOfToday = new Date();
+	startOfToday.setHours(0, 0, 0, 0);
+	const datedLots = purchaseLots.filter((lot) => Boolean(lot.expiryDate));
+	const validLots = datedLots.filter(
+		(lot) => new Date(lot.expiryDate as string).getTime() >= startOfToday.getTime(),
+	);
+	const nextExpiringLot = (validLots.length > 0 ? validLots : datedLots).reduce<
+		(typeof datedLots)[number] | undefined
+	>((closest, lot) => {
+		if (!closest) return lot;
+		const lotTime = new Date(lot.expiryDate as string).getTime();
+		const closestTime = new Date(closest.expiryDate as string).getTime();
+		return validLots.length > 0
+			? lotTime < closestTime
+				? lot
+				: closest
+			: lotTime > closestTime
+				? lot
+				: closest;
+	}, undefined);
+	const displayedExpiryDate = nextExpiringLot?.expiryDate;
+	const expiryStatus = calculateExpiryStatus(displayedExpiryDate);
+	const isEstimated = nextExpiringLot?.expiryDateSource === 'ESTIMATED';
+	const selectedLot = purchaseLots.find((lot) => lot.id === selectedLotId);
+	const selectedLotItem: InventoryItemWithStatus | null = selectedLot
+		? {
+				...inventoryItem,
+				...selectedLot,
+				expiryStatus: calculateExpiryStatus(selectedLot.expiryDate),
+				lots: undefined,
+			}
+		: null;
 	const capitalize = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
 
 
@@ -327,11 +374,11 @@ const ProductDetailPage: FC = () => {
 
 					<div className='flex flex-wrap items-center gap-x-3 gap-y-1'>
 						<ExpiryBadge status={expiryStatus}>
-							{formatExpiryLabel(inventoryItem.expiryDate, product.category.slug)}
+							{formatExpiryLabel(displayedExpiryDate, product.category.slug)}
 						</ExpiryBadge>
-						{inventoryItem.expiryDate && (
+						{displayedExpiryDate && (
 							<p className='text-sm text-neutral-700'>
-								Péremption le {formatDate(inventoryItem.expiryDate)}
+								Péremption le {formatDate(displayedExpiryDate)}
 								{isEstimated && <span className='text-neutral-600'> · date estimée</span>}
 							</p>
 						)}
@@ -432,6 +479,27 @@ const ProductDetailPage: FC = () => {
 											</>
 										)}
 									</dl>
+									<div className='mt-3 flex gap-2 border-t border-neutral-200 pt-3'>
+										<Button
+											variant='secondary'
+											size='sm'
+											onClick={() => handleOpenEditModal(lot.id)}
+											className='flex-1'>
+											<PencilLine aria-hidden='true' />
+											Modifier
+										</Button>
+										<Button
+											variant='error'
+											size='sm'
+											onClick={() => {
+												setSelectedLotId(lot.id);
+												setIsConfirmingDelete(true);
+											}}
+											className='flex-1'>
+											<Trash2 aria-hidden='true' />
+											Supprimer
+										</Button>
+									</div>
 								</li>
 							))}
 						</ul>
@@ -443,23 +511,12 @@ const ProductDetailPage: FC = () => {
 						</WidgetCard>
 					)}
 
-					{/* ===== ACTIONS ===== */}
-					<div className='flex gap-3'>
-						<Button variant='secondary' onClick={handleOpenEditModal} className='flex-1'>
-							<PencilLine aria-hidden='true' />
-							Modifier
-						</Button>
-						<Button variant='error' onClick={() => setIsConfirmingDelete(true)} className='flex-1'>
-							<Trash2 aria-hidden='true' />
-							Supprimer
-						</Button>
-					</div>
 				</div>
 			</div>
 
 			{/* ===== MODAL DE MODIFICATION ===== */}
 			<EditInventoryItemModal
-				item={inventoryItem}
+				item={selectedLotItem}
 				isOpen={isEditModalOpen}
 				onClose={handleCloseEditModal}
 				onSubmit={handleUpdateProduct}
@@ -469,9 +526,12 @@ const ProductDetailPage: FC = () => {
 			<AlertDialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Supprimer {product.name} ?</AlertDialogTitle>
+						<AlertDialogTitle>Supprimer ce lot de {product.name} ?</AlertDialogTitle>
 						<AlertDialogDescription>
-							Ce produit sera retiré de votre inventaire. Cette action est définitive.
+							{purchaseLots.length === 1
+								? 'Il s’agit du dernier lot : le produit sera retiré de votre inventaire.'
+								: 'Seul ce lot sera retiré de votre inventaire. Les autres lots seront conservés.'}{' '}
+							Cette action est définitive.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

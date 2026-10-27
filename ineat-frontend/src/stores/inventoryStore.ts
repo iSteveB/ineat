@@ -415,22 +415,11 @@ export const useInventoryStore = create<InventoryState>()(
 
 					set({ isLoading: true, error: null });
 					try {
-						const updatedRawItem =
-							await inventoryService.updateInventoryItem(
-								id,
-								updates
-							);
+						await inventoryService.updateInventoryItem(id, updates);
 
-						// Enrichir l'item mis à jour avec le statut d'expiration
-						const updatedItem =
-							addExpiryStatusToItem(updatedRawItem);
-
-						set((state) => ({
-							items: state.items.map((item) =>
-								item.id === id ? updatedItem : item
-							),
-							isLoading: false,
-						}));
+						// Un élément affiché peut regrouper plusieurs lots. Recharger permet
+						// de recalculer les totaux et le lot portant la prochaine péremption.
+						await get().fetchInventoryItems();
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,
@@ -515,10 +504,9 @@ export const useInventoryStore = create<InventoryState>()(
 					try {
 						await inventoryService.removeInventoryItem(id);
 
-						set((state) => ({
-							items: state.items.filter((item) => item.id !== id),
-							isLoading: false,
-						}));
+						// La suppression vise un lot, pas nécessairement tout le produit.
+						// Recharger conserve les autres lots et recalcule leur agrégat.
+						await get().fetchInventoryItems();
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,

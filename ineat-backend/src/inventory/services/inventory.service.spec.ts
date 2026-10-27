@@ -378,8 +378,8 @@ describe('InventoryService', () => {
         productId: 'product-1',
         userId: 'user-1',
         quantity: 2,
-        expiryDate: new Date('2026-07-10'),
-        purchaseDate: new Date('2026-06-01'),
+        expiryDate: new Date('2099-07-10'),
+        purchaseDate: new Date('2099-06-01'),
       },
       {
         ...inventoryItem,
@@ -387,8 +387,8 @@ describe('InventoryService', () => {
         productId: 'product-1',
         userId: 'user-1',
         quantity: 2,
-        expiryDate: new Date('2026-07-20'),
-        purchaseDate: new Date('2026-06-02'),
+        expiryDate: new Date('2099-07-20'),
+        purchaseDate: new Date('2099-06-02'),
       },
     ]);
 
@@ -404,14 +404,49 @@ describe('InventoryService', () => {
           expect.objectContaining({
             id: 'lot-1',
             quantity: 2,
-            expiryDate: new Date('2026-07-10'),
+            expiryDate: new Date('2099-07-10'),
           }),
           expect.objectContaining({
             id: 'lot-2',
             quantity: 2,
-            expiryDate: new Date('2026-07-20'),
+            expiryDate: new Date('2099-07-20'),
           }),
         ],
+      }),
+    );
+  });
+
+  it('uses the nearest non-expired lot as the grouped product expiry', async () => {
+    prisma.inventoryItem.findMany.mockResolvedValue([
+      {
+        ...inventoryItem,
+        id: 'expired-lot',
+        productId: 'product-1',
+        userId: 'user-1',
+        expiryDate: new Date('2020-01-01'),
+      },
+      {
+        ...inventoryItem,
+        id: 'later-valid-lot',
+        productId: 'product-1',
+        userId: 'user-1',
+        expiryDate: new Date('2099-08-20'),
+      },
+      {
+        ...inventoryItem,
+        id: 'nearest-valid-lot',
+        productId: 'product-1',
+        userId: 'user-1',
+        expiryDate: new Date('2099-08-10'),
+      },
+    ]);
+
+    const result = await service.getUserInventory('user-1');
+
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        id: 'nearest-valid-lot',
+        expiryDate: new Date('2099-08-10'),
       }),
     );
   });

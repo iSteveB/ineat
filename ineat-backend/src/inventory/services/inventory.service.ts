@@ -1111,9 +1111,23 @@ export class InventoryService {
   }
 
   private shouldUseLotAsPrimaryItem(candidate: any, current: any): boolean {
-    return (
-      this.compareNullableDates(candidate.expiryDate, current.expiryDate) < 0
-    );
+    if (!candidate.expiryDate) return false;
+    if (!current.expiryDate) return true;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const candidateTime = new Date(candidate.expiryDate).getTime();
+    const currentTime = new Date(current.expiryDate).getTime();
+    const candidateIsValid = candidateTime >= today.getTime();
+    const currentIsValid = currentTime >= today.getTime();
+
+    if (candidateIsValid !== currentIsValid) return candidateIsValid;
+
+    // Pour les lots valides, la prochaine DLC est prioritaire. Si tous les
+    // lots sont périmés, conserver la date passée la plus proche d'aujourd'hui.
+    return candidateIsValid
+      ? candidateTime < currentTime
+      : candidateTime > currentTime;
   }
 
   private compareNullableDates(
