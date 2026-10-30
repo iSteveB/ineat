@@ -45,4 +45,17 @@ describe('getExpirySuggestion', () => {
 		});
 	});
 
+	it('applies a minimum of three days to automatic estimates', () => {
+		const suggestion = getExpirySuggestion({
+			categorySlug: 'surgeles',
+			storageLocation: 'refrigerateur',
+			purchaseDate: '2026-05-01',
+		});
+
+		expect(suggestion).toEqual({
+			date: '2026-05-04',
+			reason: 'surgelés + refrigerateur',
+		});
+	});
+
 });

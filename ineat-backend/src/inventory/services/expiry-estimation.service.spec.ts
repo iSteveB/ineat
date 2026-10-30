@@ -13,6 +13,28 @@ describe('estimateExpiryDate', () => {
     expect(result.ruleId).toBe('RAW_FATTY_FISH');
   });
 
+  it('applies a minimum of three days to automatic estimates', () => {
+    const result = estimateExpiryDate({
+      preservationCategory: 'RAW_SHELLFISH',
+      storageLocation: 'refrigerateur',
+      purchaseDate: '2026-10-29',
+    });
+
+    expect(result.expiryDate).toEqual(new Date('2026-11-01'));
+    expect(result.durationDays).toBe(3);
+  });
+
+  it('uses the updated preservation durations', () => {
+    const result = estimateExpiryDate({
+      preservationCategory: 'YOGURT',
+      storageLocation: 'refrigerateur',
+      purchaseDate: '2026-10-29',
+    });
+
+    expect(result.expiryDate).toEqual(new Date('2026-11-12'));
+    expect(result.durationDays).toBe(14);
+  });
+
   it('returns no date for an incompatible preservation combination', () => {
     const result = estimateExpiryDate({
       preservationCategory: 'RAW_SHELLFISH',

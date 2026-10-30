@@ -10,6 +10,7 @@ import {
 } from '../constants/expiry-rules';
 
 export type ExpiryDateSource = 'MANUAL' | 'ESTIMATED';
+const MINIMUM_ESTIMATED_SHELF_LIFE_DAYS = 3;
 
 export interface ExpiryEstimationInput {
   productName?: string | null;
@@ -104,10 +105,10 @@ export const estimateExpiryDate = ({
 
   const storageGroup = resolveStorageGroup(storageLocation);
   if (preservationCategory) {
-    const durationDays =
+    const configuredDurationDays =
       PRESERVATION_SHELF_LIFE_DAYS[preservationCategory]?.[storageGroup];
 
-    if (durationDays === undefined) {
+    if (configuredDurationDays === undefined) {
       return {
         expiryDate: null,
         source: 'ESTIMATED',
@@ -117,6 +118,11 @@ export const estimateExpiryDate = ({
         referenceDate,
       };
     }
+
+    const durationDays = Math.max(
+      configuredDurationDays,
+      MINIMUM_ESTIMATED_SHELF_LIFE_DAYS,
+    );
 
     return {
       expiryDate: addDays(referenceDate, durationDays),
@@ -140,10 +146,14 @@ export const estimateExpiryDate = ({
     : categoryRule
       ? 'category'
       : 'storage';
-  const days =
+  const configuredDays =
     matchedRule?.daysByStorage[storageGroup] ??
     matchedRule?.defaultDays ??
     STORAGE_FALLBACK_DAYS[storageGroup];
+  const days = Math.max(
+    configuredDays,
+    MINIMUM_ESTIMATED_SHELF_LIFE_DAYS,
+  );
   return {
     expiryDate: addDays(referenceDate, days),
     source: 'ESTIMATED',

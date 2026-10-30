@@ -20,6 +20,8 @@ export interface ExpirySuggestion {
 	reason: string;
 }
 
+const MINIMUM_ESTIMATED_SHELF_LIFE_DAYS = 3;
+
 const normalize = (value?: string): string =>
 	(value ?? '')
 		.toLowerCase()
@@ -82,10 +84,14 @@ export const getExpirySuggestion = ({
 		`${categorySlug ?? ''} ${categoryName ?? ''}`,
 	);
 	const matchedRule = productRule ?? categoryRule;
-	const days =
+	const configuredDays =
 		matchedRule?.daysByStorage[storageGroup] ??
 		matchedRule?.defaultDays ??
 		STORAGE_FALLBACK_DAYS[storageGroup];
+	const days = Math.max(
+		configuredDays,
+		MINIMUM_ESTIMATED_SHELF_LIFE_DAYS,
+	);
 	return {
 		date: formatDate(addDays(referenceDate, days)),
 		reason: matchedRule
