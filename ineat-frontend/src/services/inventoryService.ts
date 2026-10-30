@@ -11,10 +11,6 @@ import {
 	AddProductResponse,
 	hasBudgetImpact,
 } from '@/schemas';
-import type {
-	PackageStatus,
-	PreparationStatus,
-} from '@/utils/productStateOptions';
 
 // Types spécifiques au service
 export interface ProductSearchResult {
@@ -60,8 +56,6 @@ export interface QuickAddFormData {
 	purchaseDate: string;
 	purchasePrice?: number;
 	storageLocation?: string;
-	packageStatus?: PackageStatus;
-	preparationStatus?: PreparationStatus;
 	notes?: string;
 }
 
@@ -73,8 +67,6 @@ export interface QuickAddFormDataWithCategory {
 	purchaseDate: string;
 	purchasePrice?: number;
 	storageLocation?: string;
-	packageStatus?: PackageStatus;
-	preparationStatus?: PreparationStatus;
 	notes?: string;
 
 	// Création rapide avec données enrichies

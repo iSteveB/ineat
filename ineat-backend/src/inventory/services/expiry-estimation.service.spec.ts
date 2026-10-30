@@ -1,6 +1,29 @@
 import { estimateExpiryDate } from './expiry-estimation.service';
 
 describe('estimateExpiryDate', () => {
+  it('uses the validated preservation grid when the AI category is known', () => {
+    const result = estimateExpiryDate({
+      preservationCategory: 'RAW_FATTY_FISH',
+      storageLocation: 'refrigerateur',
+      purchaseDate: '2026-10-29',
+    });
+
+    expect(result.expiryDate).toEqual(new Date('2026-11-01'));
+    expect(result.durationDays).toBe(3);
+    expect(result.ruleId).toBe('RAW_FATTY_FISH');
+  });
+
+  it('returns no date for an incompatible preservation combination', () => {
+    const result = estimateExpiryDate({
+      preservationCategory: 'RAW_SHELLFISH',
+      storageLocation: 'placard',
+      purchaseDate: '2026-10-29',
+    });
+
+    expect(result.expiryDate).toBeNull();
+    expect(result.durationDays).toBeUndefined();
+  });
+
   it('keeps a manual expiry date as the source of truth', () => {
     const result = estimateExpiryDate({
       productName: 'Yaourt nature',
@@ -81,31 +104,4 @@ describe('estimateExpiryDate', () => {
     expect(result.referenceDate).toEqual(new Date('2026-05-02'));
   });
 
-  it('uses a short cold-storage duration for cooked products', () => {
-    const result = estimateExpiryDate({
-      productName: 'Riz',
-      categorySlug: 'epicerie-salee',
-      storageLocation: 'refrigerateur',
-      preparationStatus: 'COOKED',
-      purchaseDate: '2026-05-01',
-    });
-
-    expect(result.expiryDate).toEqual(new Date('2026-05-04'));
-    expect(result.durationDays).toBe(3);
-    expect(result.reason).toBe('épicerie salée + refrigerateur + cuit');
-  });
-
-  it('caps shelf life for opened packaged products', () => {
-    const result = estimateExpiryDate({
-      productName: 'Lait',
-      categorySlug: 'produits-laitiers',
-      storageLocation: 'refrigerateur',
-      packageStatus: 'OPENED',
-      purchaseDate: '2026-05-01',
-    });
-
-    expect(result.expiryDate).toEqual(new Date('2026-05-06'));
-    expect(result.durationDays).toBe(5);
-    expect(result.reason).toBe('produits laitiers + refrigerateur + ouvert');
-  });
 });

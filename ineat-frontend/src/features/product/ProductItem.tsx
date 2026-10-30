@@ -51,7 +51,6 @@ const ProductItem: FC<ProductItemProps> = ({
 	]
 		.filter(Boolean)
 		.join(' · ');
-	const isEstimated = item.expiryDateSource === 'ESTIMATED';
 	const imageUrl = getProductImageUrl(item.product);
 
 	return (
@@ -75,13 +74,7 @@ const ProductItem: FC<ProductItemProps> = ({
 			<span className='flex shrink-0 flex-col items-end gap-1.5'>
 				<ExpiryBadge status={item.expiryStatus}>
 					{formatExpiryLabel(item.expiryDate, item.product.category.slug)}
-					{isEstimated && <span className='sr-only'> (date estimée)</span>}
 				</ExpiryBadge>
-				{isEstimated && (
-					<span aria-hidden='true' className='text-xs text-neutral-600'>
-						Date estimée
-					</span>
-				)}
 				{(showNutriscore || showEcoscore) && (
 					<span className='flex items-center gap-1.5'>
 						{showNutriscore && item.product.nutriscore && (

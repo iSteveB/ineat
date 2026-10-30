@@ -25,8 +25,6 @@ describe('inventory schemas', () => {
 		expect(() =>
 			AddInventoryItemSchema.parse({
 				...validManualProduct,
-				packageStatus: 'UNOPENED',
-				preparationStatus: 'RAW',
 			}),
 		).not.toThrow();
 
@@ -38,24 +36,6 @@ describe('inventory schemas', () => {
 				expiryDate: '2026-05-10',
 			}),
 		).not.toThrow();
-	});
-
-	it('rejettent les états produit inconnus', () => {
-		expect(
-			AddInventoryItemSchema.safeParse({
-				...validManualProduct,
-				packageStatus: 'BROKEN',
-			}).success,
-		).toBe(false);
-
-		expect(
-			AddExistingProductToInventorySchema.safeParse({
-				productId: validProductId,
-				quantity: 1,
-				purchaseDate: '2026-05-01',
-				preparationStatus: 'WARM',
-			}).success,
-		).toBe(false);
 	});
 
 	it('rejettent les quantités, prix et codes-barres invalides avec messages UI', () => {
@@ -125,8 +105,6 @@ describe('inventory schemas', () => {
 			purchaseDate: '2026-06-01T00:00:00.000Z',
 			purchasePrice: 3,
 			storageLocation: null,
-			packageStatus: null,
-			preparationStatus: null,
 			notes: null,
 			createdAt: '2026-06-01T08:00:00.000Z',
 			updatedAt: '2026-06-02T08:00:00.000Z',
@@ -159,8 +137,6 @@ describe('inventory schemas', () => {
 					purchaseDate: '2026-06-01T00:00:00.000Z',
 					purchasePrice: 1.5,
 					storageLocation: null,
-					packageStatus: null,
-					preparationStatus: null,
 					notes: null,
 					createdAt: '2026-06-01T08:00:00.000Z',
 					updatedAt: '2026-06-01T08:00:00.000Z',
@@ -173,8 +149,6 @@ describe('inventory schemas', () => {
 					purchaseDate: '2026-06-02T00:00:00.000Z',
 					purchasePrice: 1.5,
 					storageLocation: null,
-					packageStatus: null,
-					preparationStatus: null,
 					notes: null,
 					createdAt: '2026-06-02T08:00:00.000Z',
 					updatedAt: '2026-06-02T08:00:00.000Z',

@@ -77,8 +77,6 @@ model InventoryItem {
   quantity          Float
   expiryDate        DateTime?
   expiryDateSource  ExpiryDateSource   @default(MANUAL)
-  packageStatus     PackageStatus?
-  preparationStatus PreparationStatus?
   purchaseDate      DateTime
   purchasePrice     Float?
   storageLocation   String?
@@ -115,16 +113,6 @@ model InventoryFavorite {
 enum ExpiryDateSource {
   MANUAL
   ESTIMATED
-}
-
-enum PackageStatus {
-  UNOPENED
-  OPENED
-}
-
-enum PreparationStatus {
-  RAW
-  COOKED
 }
 
 model Notification {
@@ -317,6 +305,8 @@ model InvoiceItem {
   ciqualMatchConfidence   Float?
   ciqualNutrients         Json?
   expiryDate              DateTime?
+  expiryDateSource        ExpiryDateSource?
+  preservationCategory    String?
   storageLocation         String?
   notes                   String?
   createdAt               DateTime  @default(now())

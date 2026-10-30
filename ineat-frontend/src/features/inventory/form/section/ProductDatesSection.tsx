@@ -2,7 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { formatDate as formatFrenchDate } from '@/utils/dateHelpers';
+import { Info } from 'lucide-react';
 
 export interface ProductDatesData {
 	purchaseDate: string;
@@ -26,7 +26,6 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 	values,
 	onChange,
 	estimatedExpiryDate,
-	estimatedExpiryReason,
 	disabled = false,
 	readonly = false,
 	showTitle = true,
@@ -119,8 +118,13 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 
 							{/* Date de péremption */}
 							<div className='space-y-2'>
-								<Label htmlFor='expiryDate' className='text-neutral-900'>
+								<Label htmlFor='expiryDate' className='flex items-center gap-1 text-neutral-900'>
 									Date de péremption
+									{showEstimatedDate && (
+										<span title='Date estimée' aria-label='Date estimée'>
+											<Info className='size-3.5' aria-hidden='true' />
+										</span>
+									)}
 								</Label>
 								<Input
 									id='expiryDate'
@@ -134,17 +138,6 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 								/>
 								{errors.expiryDate && (
 									<p className='text-sm text-danger-700'>{errors.expiryDate}</p>
-								)}
-								{showEstimatedDate && (
-									<p className='text-sm text-neutral-600'>
-										Date estimée : {formatFrenchDate(estimatedLabelDate as string)}
-										{estimatedExpiryReason ? ` (${estimatedExpiryReason})` : ''}
-									</p>
-								)}
-								{values.expiryDateSource === 'MANUAL' && values.expiryDate && (
-									<p className='text-sm text-neutral-600'>
-										Date saisie manuellement
-									</p>
 								)}
 							</div>
 						</div>

@@ -20,9 +20,6 @@ import { getBudgetNotificationType } from './budget';
 
 // ===== SCHÉMA ÉLÉMENT D'INVENTAIRE =====
 
-export const PackageStatusSchema = z.enum(['UNOPENED', 'OPENED']);
-export const PreparationStatusSchema = z.enum(['RAW', 'COOKED']);
-
 const nullableOptional = <T extends z.ZodTypeAny>(schema: T) =>
 	schema.nullable().optional().transform((value) => value ?? undefined);
 
@@ -47,8 +44,6 @@ export const InventoryItemSchema = z
 				.string()
 				.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères'),
 		),
-		packageStatus: nullableOptional(PackageStatusSchema),
-		preparationStatus: nullableOptional(PreparationStatusSchema),
 		notes: nullableOptional(MediumTextSchema),
 		isFavorite: z.boolean().default(false),
 	})
@@ -61,8 +56,6 @@ export const InventoryLotSchema = InventoryItemSchema.omit({
 	expiryDate: nullableOptional(z.string().datetime()),
 	purchasePrice: nullableOptional(PriceSchema),
 	storageLocation: nullableOptional(z.string()),
-	packageStatus: nullableOptional(PackageStatusSchema),
-	preparationStatus: nullableOptional(PreparationStatusSchema),
 	notes: nullableOptional(MediumTextSchema),
 });
 
@@ -150,8 +143,6 @@ export const AddInventoryItemSchema = z
 			.string()
 			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 			.optional(),
-		packageStatus: PackageStatusSchema.optional(),
-		preparationStatus: PreparationStatusSchema.optional(),
 		notes: MediumTextSchema.optional(),
 	})
 	.refine(
@@ -189,8 +180,6 @@ export const AddExistingProductToInventorySchema = z
 			.string()
 			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 			.optional(),
-		packageStatus: PackageStatusSchema.optional(),
-		preparationStatus: PreparationStatusSchema.optional(),
 		notes: MediumTextSchema.optional(),
 	})
 	.refine(
@@ -229,8 +218,6 @@ export const UpdateInventoryItemSchema = z.object({
 		.string()
 		.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
 		.optional(),
-	packageStatus: PackageStatusSchema.optional(),
-	preparationStatus: PreparationStatusSchema.optional(),
 	notes: MediumTextSchema.optional(),
 });
 export type UpdateInventoryItemData = z.infer<typeof UpdateInventoryItemSchema>;

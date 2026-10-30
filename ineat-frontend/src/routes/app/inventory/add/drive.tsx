@@ -13,6 +13,7 @@ import {
 	Loader2,
 	Package,
 	Save,
+	Info,
 	RotateCcw,
 	Upload,
 	X
@@ -85,6 +86,7 @@ type InvoiceItemDraft = Pick<
 	| 'totalPrice'
 	| 'category'
 	| 'expiryDate'
+	| 'expiryDateSource'
 	| 'storageLocation'
 	| 'notes'
 	| 'selectedEan'
@@ -131,6 +133,7 @@ const createDraft = (item: InvoiceItem): InvoiceItemDraft => ({
 	totalPrice: item.totalPrice,
 	category: item.category,
 	expiryDate: item.expiryDate,
+	expiryDateSource: item.expiryDateSource,
 	storageLocation: item.storageLocation,
 	notes: item.notes,
 	selectedEan: item.selectedEan,
@@ -543,7 +546,8 @@ function DriveInvoiceImportPage() {
 						: value || null;
 			const nextDraft = {
 				...currentDraft,
-				[field]: parsedValue
+				[field]: parsedValue,
+				...(field === 'expiryDate' ? { expiryDateSource: 'MANUAL' as const } : {})
 			};
 
 			if (field === 'quantity' || field === 'unitPrice') {
@@ -1236,9 +1240,14 @@ function DriveInvoiceImportPage() {
 																</Select>
 															</div>
 															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Date d'expiration
-																</label>
+													<label className="flex items-center gap-1 text-xs font-medium uppercase text-neutral-600">
+														Date d'expiration
+														{draft.expiryDateSource === 'ESTIMATED' && draft.expiryDate && (
+															<span title="Date estimée" aria-label="Date estimée">
+																<Info className="size-3.5" aria-hidden="true" />
+															</span>
+														)}
+													</label>
 																<Input
 																	type="date"
 																	value={draft.expiryDate?.slice(0, 10) ?? ''}

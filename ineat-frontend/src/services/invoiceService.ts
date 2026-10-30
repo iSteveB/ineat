@@ -77,6 +77,8 @@ export interface InvoiceItem {
 		} | null;
 	} | null;
 	expiryDate?: string | null;
+	expiryDateSource?: 'MANUAL' | 'ESTIMATED' | null;
+	preservationCategory?: string | null;
 	storageLocation?: string | null;
 	notes?: string | null;
 	createdAt: string;

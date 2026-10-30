@@ -3,6 +3,7 @@ import {
   InvoiceDocumentExtractor,
   InvoiceInterpreter,
 } from './invoice-analysis-contracts';
+import type { PreservationCategory } from '../../../inventory/constants/expiry-rules';
 
 export type InvoiceExternalProductStatus =
   | 'SKIPPED'
@@ -46,6 +47,7 @@ export interface AnalyzedInvoiceItem {
   productCode?: string | null;
   category?: string | null;
   storageLocation?: string | null;
+  preservationCategory?: PreservationCategory | null;
   discount?: number | null;
   selectedEan?: string | null;
   suggestedEans?: string[];
@@ -76,7 +78,10 @@ export interface InvoiceAnalysisProvider {
   analyzePdf(pdfUrl: string, pdfBuffer?: Buffer): Promise<AnalyzedInvoice>;
 }
 
-export interface ContractualInvoiceAnalysisProvider<TPayload = Prisma.InputJsonValue>
-  extends InvoiceAnalysisProvider,
+export interface ContractualInvoiceAnalysisProvider<
+  TPayload = Prisma.InputJsonValue,
+>
+  extends
+    InvoiceAnalysisProvider,
     InvoiceDocumentExtractor<TPayload>,
     InvoiceInterpreter<TPayload> {}

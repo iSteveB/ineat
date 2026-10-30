@@ -31,6 +31,7 @@ export class MockInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
         productCode: '3564700012345',
         category: 'produits-laitiers',
         storageLocation: 'Réfrigérateur',
+        preservationCategory: 'MILK',
         selectedEan: '3564700012345',
         suggestedEans: ['3564700012345'],
       },

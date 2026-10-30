@@ -28,6 +28,7 @@ import { isInvoiceStorageLocation } from './invoice-product-classification';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
 import { CiqualReferenceService } from '../../ciqual/ciqual-reference.service';
+import { estimateExpiryDate } from '../../inventory/services/expiry-estimation.service';
 
 export interface InvoiceUser {
   id: string;
@@ -249,7 +250,9 @@ export class InvoiceService {
     const response = await fetch(pdfUrl);
 
     if (!response.ok) {
-      throw new Error(`Invoice PDF download failed (status=${response.status})`);
+      throw new Error(
+        `Invoice PDF download failed (status=${response.status})`,
+      );
     }
 
     const pdfBuffer = Buffer.from(await response.arrayBuffer());
@@ -457,6 +460,7 @@ export class InvoiceService {
 
     if (updateDto.expiryDate !== undefined) {
       updateData.expiryDate = new Date(updateDto.expiryDate);
+      updateData.expiryDateSource = 'MANUAL';
     }
 
     if (updateDto.storageLocation !== undefined) {
@@ -655,6 +659,7 @@ export class InvoiceService {
               quantity: item.quantity,
               purchaseDate,
               expiryDate: item.expiryDate,
+              expiryDateSource: item.expiryDateSource ?? 'MANUAL',
               purchasePrice: item.totalPrice,
               storageLocation: item.storageLocation,
               notes: item.notes,
@@ -888,35 +893,50 @@ export class InvoiceService {
       });
 
       await tx.invoiceItem.createMany({
-        data: resolvedItems.map((item) => ({
-          id: randomUUID(),
-          invoiceId,
-          productId: item.productId,
-          detectedName: item.detectedName,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          totalPrice: item.totalPrice,
-          confidence: item.confidence,
-          productCode: item.productCode,
-          category: item.category,
-          storageLocation: item.storageLocation,
-          discount: item.discount,
-          selectedEan: item.selectedEan,
-          suggestedEans: item.suggestedEans ?? [],
-          externalProductProvider: item.externalProductProvider,
-          externalProductStatus: item.externalProductStatus,
-          externalProductData: item.externalProductData
-            ? (item.externalProductData as unknown as Prisma.InputJsonValue)
-            : undefined,
-          externalProductError: item.externalProductError,
-          ciqualCode: item.ciqualCode,
-          ciqualName: item.ciqualName,
-          ciqualMatchConfidence: item.ciqualMatchConfidence,
-          ciqualNutrients: item.ciqualNutrients
-            ? (item.ciqualNutrients as Prisma.InputJsonValue)
-            : undefined,
-          updatedAt: now,
-        })),
+        data: resolvedItems.map((item) => {
+          const expiryEstimation = item.preservationCategory
+            ? estimateExpiryDate({
+                preservationCategory: item.preservationCategory,
+                storageLocation: item.storageLocation,
+                purchaseDate: analysis.purchaseDate ?? now,
+              })
+            : null;
+
+          return {
+            id: randomUUID(),
+            invoiceId,
+            productId: item.productId,
+            detectedName: item.detectedName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            totalPrice: item.totalPrice,
+            confidence: item.confidence,
+            productCode: item.productCode,
+            category: item.category,
+            preservationCategory: item.preservationCategory,
+            storageLocation: item.storageLocation,
+            expiryDate: expiryEstimation?.expiryDate,
+            expiryDateSource: expiryEstimation?.expiryDate
+              ? expiryEstimation.source
+              : null,
+            discount: item.discount,
+            selectedEan: item.selectedEan,
+            suggestedEans: item.suggestedEans ?? [],
+            externalProductProvider: item.externalProductProvider,
+            externalProductStatus: item.externalProductStatus,
+            externalProductData: item.externalProductData
+              ? (item.externalProductData as unknown as Prisma.InputJsonValue)
+              : undefined,
+            externalProductError: item.externalProductError,
+            ciqualCode: item.ciqualCode,
+            ciqualName: item.ciqualName,
+            ciqualMatchConfidence: item.ciqualMatchConfidence,
+            ciqualNutrients: item.ciqualNutrients
+              ? (item.ciqualNutrients as Prisma.InputJsonValue)
+              : undefined,
+            updatedAt: now,
+          };
+        }),
       });
     });
 
@@ -1039,9 +1059,11 @@ export class InvoiceService {
         nutritionSourceVersion: item.ciqualCode
           ? ciqualSource.version
           : undefined,
-        nutrients: externalProductData?.nutrients ?? item.ciqualNutrients
-          ? ((externalProductData?.nutrients ?? item.ciqualNutrients) as Prisma.InputJsonValue)
-          : undefined,
+        nutrients:
+          (externalProductData?.nutrients ?? item.ciqualNutrients)
+            ? ((externalProductData?.nutrients ??
+                item.ciqualNutrients) as Prisma.InputJsonValue)
+            : undefined,
         updatedAt: new Date(),
       },
       include: { Category: true },
@@ -1519,6 +1541,8 @@ export class InvoiceService {
           }
         : null,
       expiryDate: item.expiryDate?.toISOString() ?? null,
+      expiryDateSource: item.expiryDateSource,
+      preservationCategory: item.preservationCategory,
       storageLocation: item.storageLocation,
       notes: item.notes,
       createdAt: item.createdAt.toISOString(),

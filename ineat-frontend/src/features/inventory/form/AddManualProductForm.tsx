@@ -12,7 +12,6 @@ import { NutritionalInfoSection } from './section/NutritionalInfoSection';
 import { ProductContentSection } from './section/ProductContentSection';
 import { ProductDatesSection } from './section/ProductDatesSection';
 import { ProductExtraSection } from './section/ProductExtraSection';
-import { ProductStateSection } from './section/ProductStateSection';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
 
 interface AddManualProductFormProps {
@@ -57,8 +56,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 		categorySlug: formData.category,
 		categoryName: selectedCategory?.name,
 		storageLocation: formData.storageLocation,
-		packageStatus: formData.packageStatus || undefined,
-		preparationStatus: formData.preparationStatus || undefined,
 		purchaseDate: formData.purchaseDate,
 	});
 
@@ -191,19 +188,6 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 						errors={{
 							purchasePrice: errors.purchasePrice,
 						}}
-					/>
-
-					<ProductStateSection
-						values={{
-							packageStatus: formData.packageStatus,
-							preparationStatus: formData.preparationStatus,
-						}}
-						productName={formData.name}
-						categorySlug={formData.category}
-						categoryName={selectedCategory?.name}
-						storageLocation={formData.storageLocation}
-						onChange={handleInputChange}
-						disabled={isSubmitting}
 					/>
 
 					{/* Boutons d'action */}

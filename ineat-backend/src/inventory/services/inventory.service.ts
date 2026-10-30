@@ -87,8 +87,6 @@ type InventoryItemInput = Pick<
   | 'purchaseDate'
   | 'purchasePrice'
   | 'storageLocation'
-  | 'packageStatus'
-  | 'preparationStatus'
   | 'notes'
 >;
 
@@ -126,8 +124,6 @@ export class InventoryService {
         categorySlug: product.Category?.slug ?? addProductDto.category,
         categoryName: product.Category?.name,
         storageLocation: addProductDto.storageLocation,
-        packageStatus: addProductDto.packageStatus,
-        preparationStatus: addProductDto.preparationStatus,
         purchaseDate: addProductDto.purchaseDate,
         manualExpiryDate: addProductDto.expiryDate,
       });
@@ -193,8 +189,6 @@ export class InventoryService {
         categorySlug: product.Category?.slug,
         categoryName: product.Category?.name,
         storageLocation: quickAddDto.storageLocation,
-        packageStatus: quickAddDto.packageStatus,
-        preparationStatus: quickAddDto.preparationStatus,
         purchaseDate: quickAddDto.purchaseDate,
         manualExpiryDate: quickAddDto.expiryDate,
       });
@@ -444,8 +438,6 @@ export class InventoryService {
         | 'expiryDate'
         | 'purchaseDate'
         | 'storageLocation'
-        | 'packageStatus'
-        | 'preparationStatus'
         | 'notes'
         | 'purchasePrice'
       >
@@ -493,14 +485,6 @@ export class InventoryService {
       updatePayload.storageLocation = updateData.storageLocation;
     }
 
-    if (updateData.packageStatus !== undefined) {
-      updatePayload.packageStatus = updateData.packageStatus;
-    }
-
-    if (updateData.preparationStatus !== undefined) {
-      updatePayload.preparationStatus = updateData.preparationStatus;
-    }
-
     if (updateData.notes !== undefined) {
       updatePayload.notes = updateData.notes;
     }
@@ -511,8 +495,6 @@ export class InventoryService {
 
     const contextChanged =
       updateData.storageLocation !== undefined ||
-      updateData.packageStatus !== undefined ||
-      updateData.preparationStatus !== undefined ||
       updateData.purchaseDate !== undefined;
 
     if (
@@ -527,11 +509,6 @@ export class InventoryService {
         storageLocation:
           updatePayload.storageLocation ??
           existingInventoryItem.storageLocation,
-        packageStatus:
-          updatePayload.packageStatus ?? existingInventoryItem.packageStatus,
-        preparationStatus:
-          updatePayload.preparationStatus ??
-          existingInventoryItem.preparationStatus,
         purchaseDate:
           updatePayload.purchaseDate ?? existingInventoryItem.purchaseDate,
         addedAt: existingInventoryItem.createdAt,
@@ -968,8 +945,6 @@ export class InventoryService {
         userId,
         productId,
         storageLocation: itemData.storageLocation || null,
-        packageStatus: itemData.packageStatus || null,
-        preparationStatus: itemData.preparationStatus || null,
         expiryDate: expiryEstimation.expiryDate,
       },
       include: {
@@ -1016,8 +991,6 @@ export class InventoryService {
         purchaseDate: new Date(itemData.purchaseDate),
         expiryDate: expiryEstimation.expiryDate,
         expiryDateSource: expiryEstimation.source,
-        packageStatus: itemData.packageStatus || null,
-        preparationStatus: itemData.preparationStatus || null,
         purchasePrice: itemData.purchasePrice ?? null,
         storageLocation: itemData.storageLocation || null,
         notes: itemData.notes || null,
@@ -1102,8 +1075,6 @@ export class InventoryService {
       purchaseDate: item.purchaseDate,
       purchasePrice: item.purchasePrice,
       storageLocation: item.storageLocation,
-      packageStatus: item.packageStatus,
-      preparationStatus: item.preparationStatus,
       notes: item.notes,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
@@ -1166,8 +1137,6 @@ export class InventoryService {
       expiryDateDurationDays: expiryEstimation?.durationDays,
       purchasePrice: inventoryItem.purchasePrice,
       storageLocation: inventoryItem.storageLocation,
-      packageStatus: inventoryItem.packageStatus,
-      preparationStatus: inventoryItem.preparationStatus,
       notes: inventoryItem.notes,
       nutriscore: product.nutriscore,
       ecoscore: product.ecoscore,
@@ -1346,8 +1315,6 @@ export class InventoryService {
             categorySlug: item.Product?.Category?.slug,
             categoryName: item.Product?.Category?.name,
             storageLocation: item.storageLocation,
-            packageStatus: item.packageStatus,
-            preparationStatus: item.preparationStatus,
             purchaseDate: item.purchaseDate,
             addedAt: item.createdAt,
           }).expiryDate;

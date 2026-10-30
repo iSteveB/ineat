@@ -65,6 +65,8 @@ export type InvoiceItemMinAggregateOutputType = {
   ciqualName: string | null
   ciqualMatchConfidence: number | null
   expiryDate: Date | null
+  expiryDateSource: $Enums.ExpiryDateSource | null
+  preservationCategory: string | null
   storageLocation: string | null
   notes: string | null
   createdAt: Date | null
@@ -92,6 +94,8 @@ export type InvoiceItemMaxAggregateOutputType = {
   ciqualName: string | null
   ciqualMatchConfidence: number | null
   expiryDate: Date | null
+  expiryDateSource: $Enums.ExpiryDateSource | null
+  preservationCategory: string | null
   storageLocation: string | null
   notes: string | null
   createdAt: Date | null
@@ -122,6 +126,8 @@ export type InvoiceItemCountAggregateOutputType = {
   ciqualMatchConfidence: number
   ciqualNutrients: number
   expiryDate: number
+  expiryDateSource: number
+  preservationCategory: number
   storageLocation: number
   notes: number
   createdAt: number
@@ -169,6 +175,8 @@ export type InvoiceItemMinAggregateInputType = {
   ciqualName?: true
   ciqualMatchConfidence?: true
   expiryDate?: true
+  expiryDateSource?: true
+  preservationCategory?: true
   storageLocation?: true
   notes?: true
   createdAt?: true
@@ -196,6 +204,8 @@ export type InvoiceItemMaxAggregateInputType = {
   ciqualName?: true
   ciqualMatchConfidence?: true
   expiryDate?: true
+  expiryDateSource?: true
+  preservationCategory?: true
   storageLocation?: true
   notes?: true
   createdAt?: true
@@ -226,6 +236,8 @@ export type InvoiceItemCountAggregateInputType = {
   ciqualMatchConfidence?: true
   ciqualNutrients?: true
   expiryDate?: true
+  expiryDateSource?: true
+  preservationCategory?: true
   storageLocation?: true
   notes?: true
   createdAt?: true
@@ -343,6 +355,8 @@ export type InvoiceItemGroupByOutputType = {
   ciqualMatchConfidence: number | null
   ciqualNutrients: runtime.JsonValue | null
   expiryDate: Date | null
+  expiryDateSource: $Enums.ExpiryDateSource | null
+  preservationCategory: string | null
   storageLocation: string | null
   notes: string | null
   createdAt: Date
@@ -396,6 +410,8 @@ export type InvoiceItemWhereInput = {
   ciqualMatchConfidence?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
   ciqualNutrients?: Prisma.JsonNullableFilter<"InvoiceItem">
   expiryDate?: Prisma.DateTimeNullableFilter<"InvoiceItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceNullableFilter<"InvoiceItem"> | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   storageLocation?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvoiceItem"> | Date | string
@@ -429,6 +445,8 @@ export type InvoiceItemOrderByWithRelationInput = {
   ciqualMatchConfidence?: Prisma.SortOrderInput | Prisma.SortOrder
   ciqualNutrients?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrderInput | Prisma.SortOrder
+  preservationCategory?: Prisma.SortOrderInput | Prisma.SortOrder
   storageLocation?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -465,6 +483,8 @@ export type InvoiceItemWhereUniqueInput = Prisma.AtLeast<{
   ciqualMatchConfidence?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
   ciqualNutrients?: Prisma.JsonNullableFilter<"InvoiceItem">
   expiryDate?: Prisma.DateTimeNullableFilter<"InvoiceItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceNullableFilter<"InvoiceItem"> | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   storageLocation?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvoiceItem"> | Date | string
@@ -498,6 +518,8 @@ export type InvoiceItemOrderByWithAggregationInput = {
   ciqualMatchConfidence?: Prisma.SortOrderInput | Prisma.SortOrder
   ciqualNutrients?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrderInput | Prisma.SortOrder
+  preservationCategory?: Prisma.SortOrderInput | Prisma.SortOrder
   storageLocation?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -536,6 +558,8 @@ export type InvoiceItemScalarWhereWithAggregatesInput = {
   ciqualMatchConfidence?: Prisma.FloatNullableWithAggregatesFilter<"InvoiceItem"> | number | null
   ciqualNutrients?: Prisma.JsonNullableWithAggregatesFilter<"InvoiceItem">
   expiryDate?: Prisma.DateTimeNullableWithAggregatesFilter<"InvoiceItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceNullableWithAggregatesFilter<"InvoiceItem"> | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   storageLocation?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"InvoiceItem"> | Date | string
@@ -564,6 +588,8 @@ export type InvoiceItemCreateInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -597,6 +623,8 @@ export type InvoiceItemUncheckedCreateInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -626,6 +654,8 @@ export type InvoiceItemUpdateInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -659,6 +689,8 @@ export type InvoiceItemUncheckedUpdateInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -690,6 +722,8 @@ export type InvoiceItemCreateManyInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -718,6 +752,8 @@ export type InvoiceItemUpdateManyMutationInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -748,6 +784,8 @@ export type InvoiceItemUncheckedUpdateManyInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -793,6 +831,8 @@ export type InvoiceItemCountOrderByAggregateInput = {
   ciqualMatchConfidence?: Prisma.SortOrder
   ciqualNutrients?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  preservationCategory?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -829,6 +869,8 @@ export type InvoiceItemMaxOrderByAggregateInput = {
   ciqualName?: Prisma.SortOrder
   ciqualMatchConfidence?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  preservationCategory?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -856,6 +898,8 @@ export type InvoiceItemMinOrderByAggregateInput = {
   ciqualName?: Prisma.SortOrder
   ciqualMatchConfidence?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
+  expiryDateSource?: Prisma.SortOrder
+  preservationCategory?: Prisma.SortOrder
   storageLocation?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -971,6 +1015,10 @@ export type InvoiceItemUncheckedUpdateManyWithoutInvoiceNestedInput = {
   deleteMany?: Prisma.InvoiceItemScalarWhereInput | Prisma.InvoiceItemScalarWhereInput[]
 }
 
+export type NullableEnumExpiryDateSourceFieldUpdateOperationsInput = {
+  set?: $Enums.ExpiryDateSource | null
+}
+
 export type InvoiceItemCreateWithoutExpenseInput = {
   id: string
   detectedName: string
@@ -993,6 +1041,8 @@ export type InvoiceItemCreateWithoutExpenseInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1025,6 +1075,8 @@ export type InvoiceItemUncheckedCreateWithoutExpenseInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1069,6 +1121,8 @@ export type InvoiceItemUpdateWithoutExpenseInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1101,6 +1155,8 @@ export type InvoiceItemUncheckedUpdateWithoutExpenseInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1129,6 +1185,8 @@ export type InvoiceItemCreateWithoutProductInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1160,6 +1218,8 @@ export type InvoiceItemUncheckedCreateWithoutProductInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1220,6 +1280,8 @@ export type InvoiceItemScalarWhereInput = {
   ciqualMatchConfidence?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
   ciqualNutrients?: Prisma.JsonNullableFilter<"InvoiceItem">
   expiryDate?: Prisma.DateTimeNullableFilter<"InvoiceItem"> | Date | string | null
+  expiryDateSource?: Prisma.EnumExpiryDateSourceNullableFilter<"InvoiceItem"> | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   storageLocation?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   notes?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   createdAt?: Prisma.DateTimeFilter<"InvoiceItem"> | Date | string
@@ -1248,6 +1310,8 @@ export type InvoiceItemCreateWithoutInvoiceInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1279,6 +1343,8 @@ export type InvoiceItemUncheckedCreateWithoutInvoiceInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1335,6 +1401,8 @@ export type InvoiceItemCreateManyProductInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1363,6 +1431,8 @@ export type InvoiceItemUpdateWithoutProductInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1394,6 +1464,8 @@ export type InvoiceItemUncheckedUpdateWithoutProductInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1424,6 +1496,8 @@ export type InvoiceItemUncheckedUpdateManyWithoutProductInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1453,6 +1527,8 @@ export type InvoiceItemCreateManyInvoiceInput = {
   ciqualMatchConfidence?: number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Date | string | null
+  expiryDateSource?: $Enums.ExpiryDateSource | null
+  preservationCategory?: string | null
   storageLocation?: string | null
   notes?: string | null
   createdAt?: Date | string
@@ -1481,6 +1557,8 @@ export type InvoiceItemUpdateWithoutInvoiceInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1512,6 +1590,8 @@ export type InvoiceItemUncheckedUpdateWithoutInvoiceInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1542,6 +1622,8 @@ export type InvoiceItemUncheckedUpdateManyWithoutInvoiceInput = {
   ciqualMatchConfidence?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   ciqualNutrients?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expiryDateSource?: Prisma.NullableEnumExpiryDateSourceFieldUpdateOperationsInput | $Enums.ExpiryDateSource | null
+  preservationCategory?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   storageLocation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1574,6 +1656,8 @@ export type InvoiceItemSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   ciqualMatchConfidence?: boolean
   ciqualNutrients?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  preservationCategory?: boolean
   storageLocation?: boolean
   notes?: boolean
   createdAt?: boolean
@@ -1607,6 +1691,8 @@ export type InvoiceItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   ciqualMatchConfidence?: boolean
   ciqualNutrients?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  preservationCategory?: boolean
   storageLocation?: boolean
   notes?: boolean
   createdAt?: boolean
@@ -1639,6 +1725,8 @@ export type InvoiceItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   ciqualMatchConfidence?: boolean
   ciqualNutrients?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  preservationCategory?: boolean
   storageLocation?: boolean
   notes?: boolean
   createdAt?: boolean
@@ -1671,13 +1759,15 @@ export type InvoiceItemSelectScalar = {
   ciqualMatchConfidence?: boolean
   ciqualNutrients?: boolean
   expiryDate?: boolean
+  expiryDateSource?: boolean
+  preservationCategory?: boolean
   storageLocation?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type InvoiceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceId" | "productId" | "detectedName" | "quantity" | "unitPrice" | "totalPrice" | "confidence" | "validated" | "productCode" | "category" | "discount" | "selectedEan" | "suggestedEans" | "externalProductProvider" | "externalProductStatus" | "externalProductData" | "externalProductError" | "ciqualCode" | "ciqualName" | "ciqualMatchConfidence" | "ciqualNutrients" | "expiryDate" | "storageLocation" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["invoiceItem"]>
+export type InvoiceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceId" | "productId" | "detectedName" | "quantity" | "unitPrice" | "totalPrice" | "confidence" | "validated" | "productCode" | "category" | "discount" | "selectedEan" | "suggestedEans" | "externalProductProvider" | "externalProductStatus" | "externalProductData" | "externalProductError" | "ciqualCode" | "ciqualName" | "ciqualMatchConfidence" | "ciqualNutrients" | "expiryDate" | "expiryDateSource" | "preservationCategory" | "storageLocation" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["invoiceItem"]>
 export type InvoiceItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Expense?: boolean | Prisma.InvoiceItem$ExpenseArgs<ExtArgs>
   Invoice?: boolean | Prisma.InvoiceDefaultArgs<ExtArgs>
@@ -1723,6 +1813,8 @@ export type $InvoiceItemPayload<ExtArgs extends runtime.Types.Extensions.Interna
     ciqualMatchConfidence: number | null
     ciqualNutrients: runtime.JsonValue | null
     expiryDate: Date | null
+    expiryDateSource: $Enums.ExpiryDateSource | null
+    preservationCategory: string | null
     storageLocation: string | null
     notes: string | null
     createdAt: Date
@@ -2176,6 +2268,8 @@ export interface InvoiceItemFieldRefs {
   readonly ciqualMatchConfidence: Prisma.FieldRef<"InvoiceItem", 'Float'>
   readonly ciqualNutrients: Prisma.FieldRef<"InvoiceItem", 'Json'>
   readonly expiryDate: Prisma.FieldRef<"InvoiceItem", 'DateTime'>
+  readonly expiryDateSource: Prisma.FieldRef<"InvoiceItem", 'ExpiryDateSource'>
+  readonly preservationCategory: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly storageLocation: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly notes: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly createdAt: Prisma.FieldRef<"InvoiceItem", 'DateTime'>

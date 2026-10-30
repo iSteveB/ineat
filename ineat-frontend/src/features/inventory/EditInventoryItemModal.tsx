@@ -20,13 +20,6 @@ import {
 import { Loader2, Package, Calendar, MapPin, FileText } from 'lucide-react';
 import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
-import { formatDate as formatFrenchDate } from '@/utils/dateHelpers';
-import {
-	getProductStateOptions,
-	PackageStatus,
-	PreparationStatus,
-} from '@/utils/productStateOptions';
-import { ProductStateSection } from './form/section/ProductStateSection';
 
 interface EditInventoryItemModalProps {
 	item: InventoryItemWithStatus | null;
@@ -74,10 +67,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 		'MANUAL' | 'ESTIMATED'
 	>('MANUAL');
 	const [purchaseDate, setPurchaseDate] = useState<string>('');
-	const [packageStatus, setPackageStatus] = useState<PackageStatus | ''>('');
-	const [preparationStatus, setPreparationStatus] = useState<
-		PreparationStatus | ''
-	>('');
 	const [notes, setNotes] = useState<string>('');
 
 	// Initialiser les valeurs du formulaire quand l'item change
@@ -88,8 +77,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			setExpiryDate(formatDate(item.expiryDate));
 			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
 			setPurchaseDate(formatDate(item.purchaseDate));
-			setPackageStatus(item.packageStatus || '');
-			setPreparationStatus(item.preparationStatus || '');
 			setNotes(item.notes || '');
 		}
 	}, [item]);
@@ -102,8 +89,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			setExpiryDate(formatDate(item.expiryDate));
 			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
 			setPurchaseDate(formatDate(item.purchaseDate));
-			setPackageStatus(item.packageStatus || '');
-			setPreparationStatus(item.preparationStatus || '');
 			setNotes(item.notes || '');
 		}
 	}, [isOpen, item]);
@@ -114,8 +99,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 				categorySlug: item.product.category?.slug,
 				categoryName: item.product.category?.name,
 				storageLocation,
-				packageStatus: packageStatus || undefined,
-				preparationStatus: preparationStatus || undefined,
 				purchaseDate,
 			})
 		: null;
@@ -129,45 +112,9 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 		setExpiryDateSource('ESTIMATED');
 	}, [expiryDate, expiryDateSource, expirySuggestion]);
 
-	useEffect(() => {
-		if (!item) return;
-
-		const options = getProductStateOptions({
-			productName: item.product.name,
-			categorySlug: item.product.category?.slug,
-			categoryName: item.product.category?.name,
-			storageLocation,
-		});
-
-		const nextPackageStatus = options.showPackageStatus
-			? packageStatus || options.defaultPackageStatus || ''
-			: '';
-		const nextPreparationStatus = options.showPreparationStatus
-			? preparationStatus || options.defaultPreparationStatus || ''
-			: '';
-
-		if (nextPackageStatus !== packageStatus) {
-			setPackageStatus(nextPackageStatus);
-		}
-		if (nextPreparationStatus !== preparationStatus) {
-			setPreparationStatus(nextPreparationStatus);
-		}
-	}, [item, packageStatus, preparationStatus, storageLocation]);
-
 	const handleExpiryDateChange = (value: string): void => {
 		setExpiryDate(value);
 		setExpiryDateSource(value ? 'MANUAL' : 'ESTIMATED');
-	};
-
-	const handleProductStateChange = (
-		field: 'packageStatus' | 'preparationStatus',
-		value: string,
-	): void => {
-		if (field === 'packageStatus') {
-			setPackageStatus(value as PackageStatus);
-		} else {
-			setPreparationStatus(value as PreparationStatus);
-		}
 	};
 
 	// Gérer la soumission du formulaire
@@ -184,8 +131,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 			...(expiryDateSource === 'MANUAL' && {
 				expiryDate: expiryDate || undefined,
 			}),
-			packageStatus: packageStatus || undefined,
-			preparationStatus: preparationStatus || undefined,
 			notes: notes || undefined,
 		};
 
@@ -281,20 +226,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							onChange={(e) => handleExpiryDateChange(e.target.value)}
 							className='mt-1'
 						/>
-						{expiryDateSource === 'ESTIMATED' && expiryDate && (
-							<p className='text-sm text-neutral-600 mt-1'>
-								Date estimée : {formatFrenchDate(expiryDate)}
-								{expirySuggestion?.reason
-									? ` (${expirySuggestion.reason})`
-									: ''}
-							</p>
-						)}
-						{expiryDateSource === 'MANUAL' && expiryDate && (
-							<p className='text-sm text-neutral-600 mt-1'>
-								Date manuelle conservée. Les changements de contexte ne
-								l’écraseront pas.
-							</p>
-						)}
 					</div>
 
 					{/* Date d'achat */}
@@ -311,16 +242,6 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							className='mt-1'
 						/>
 					</div>
-
-					<ProductStateSection
-						values={{ packageStatus, preparationStatus }}
-						productName={item.product.name}
-						categorySlug={item.product.category?.slug}
-						categoryName={item.product.category?.name}
-						storageLocation={storageLocation}
-						onChange={handleProductStateChange}
-						disabled={isSubmitting}
-					/>
 
 					{/* Notes */}
 					<div>

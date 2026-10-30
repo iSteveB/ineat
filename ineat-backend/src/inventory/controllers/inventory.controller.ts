@@ -30,10 +30,6 @@ import {
   ProductCreatedWithBudgetDto,
 } from '../services/inventory.service';
 import { AddManualProductDto, QuickAddProductDto } from '../../DTOs';
-import {
-  PackageStatus,
-  PreparationStatus,
-} from '../dto/add-manual-product.dto';
 import { RemoveInventoryItemsDto } from '../dto/remove-inventory-items.dto';
 import { ConsumeInventoryItemDto } from '../dto/consume-inventory-item.dto';
 import { UpdateInventoryFavoriteDto } from '../dto/update-inventory-favorite.dto';
@@ -91,8 +87,6 @@ export class InventoryController {
       purchaseDate: item.purchaseDate.toISOString(),
       purchasePrice: item.purchasePrice,
       storageLocation: item.storageLocation,
-      packageStatus: item.packageStatus,
-      preparationStatus: item.preparationStatus,
       notes: item.notes,
       isFavorite: Boolean(item.isFavorite),
       createdAt: item.createdAt.toISOString(),
@@ -105,8 +99,6 @@ export class InventoryController {
         purchaseDate: lot.purchaseDate.toISOString(),
         purchasePrice: lot.purchasePrice,
         storageLocation: lot.storageLocation,
-        packageStatus: lot.packageStatus,
-        preparationStatus: lot.preparationStatus,
         notes: lot.notes,
         createdAt: lot.createdAt.toISOString(),
         updatedAt: lot.updatedAt.toISOString(),
@@ -266,8 +258,6 @@ export class InventoryController {
           expiryDateDurationDays: result.expiryDateDurationDays,
           purchasePrice: result.purchasePrice,
           storageLocation: result.storageLocation,
-          packageStatus: result.packageStatus,
-          preparationStatus: result.preparationStatus,
           notes: result.notes,
           nutriscore: result.nutriscore,
           ecoscore: result.ecoscore,
@@ -410,8 +400,6 @@ export class InventoryController {
           expiryDateDurationDays: result.expiryDateDurationDays,
           purchasePrice: result.purchasePrice,
           storageLocation: result.storageLocation,
-          packageStatus: result.packageStatus,
-          preparationStatus: result.preparationStatus,
           notes: result.notes,
           nutriscore: result.nutriscore,
           ecoscore: result.ecoscore,
@@ -843,16 +831,6 @@ export class InventoryController {
         expiryDate: { type: 'string', format: 'date', nullable: true },
         purchaseDate: { type: 'string', format: 'date', nullable: true },
         storageLocation: { type: 'string', nullable: true },
-        packageStatus: {
-          type: 'string',
-          enum: ['UNOPENED', 'OPENED'],
-          nullable: true,
-        },
-        preparationStatus: {
-          type: 'string',
-          enum: ['RAW', 'COOKED'],
-          nullable: true,
-        },
         notes: { type: 'string', nullable: true },
         purchasePrice: { type: 'number', minimum: 0, nullable: true },
       },
@@ -875,8 +853,6 @@ export class InventoryController {
       expiryDate?: string;
       purchaseDate?: string;
       storageLocation?: string;
-      packageStatus?: PackageStatus;
-      preparationStatus?: PreparationStatus;
       notes?: string;
       purchasePrice?: number;
     },

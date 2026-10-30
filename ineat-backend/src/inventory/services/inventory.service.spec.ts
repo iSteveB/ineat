@@ -152,8 +152,6 @@ describe('InventoryService', () => {
       expiryDate: '2026-05-10',
       purchasePrice: 4.5,
       storageLocation: 'frigo',
-      packageStatus: 'OPENED',
-      preparationStatus: 'RAW',
       notes: 'bio',
     } as any);
 
@@ -177,8 +175,6 @@ describe('InventoryService', () => {
             getTime: expect.any(Function),
           }),
           expiryDateSource: 'MANUAL',
-          packageStatus: 'OPENED',
-          preparationStatus: 'RAW',
         }),
       }),
     );
@@ -189,8 +185,6 @@ describe('InventoryService', () => {
         category: 'fruits',
         expiryDateSource: 'MANUAL',
         expiryDateRuleLevel: 'manual',
-        packageStatus: 'OPENED',
-        preparationStatus: 'RAW',
         budgetImpact: {
           expenseCreated: false,
           message: 'Aucun budget disponible',
@@ -592,7 +586,7 @@ describe('InventoryService', () => {
     expect(result.expiryBreakdown.unknown).toBe(0);
   });
 
-  it('recalculates an estimated expiry date when product context changes', async () => {
+  it('recalculates an estimated expiry date when storage changes', async () => {
     prisma.inventoryItem.findFirst.mockResolvedValue({
       ...inventoryItem,
       expiryDateSource: 'ESTIMATED',
@@ -617,19 +611,19 @@ describe('InventoryService', () => {
     );
 
     const result = await service.updateInventoryItem('user-1', 'item-1', {
-      packageStatus: 'OPENED',
+      storageLocation: 'congelateur',
     } as any);
 
     expect(prisma.inventoryItem.update).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          packageStatus: 'OPENED',
-          expiryDate: new Date('2026-05-06'),
+          storageLocation: 'congelateur',
+          expiryDate: new Date('2026-07-30'),
           expiryDateSource: 'ESTIMATED',
         }),
       }),
     );
-    expect(result.expiryDate).toEqual(new Date('2026-05-06'));
+    expect(result.expiryDate).toEqual(new Date('2026-07-30'));
   });
 
   it('keeps a manual expiry date when product context changes', async () => {

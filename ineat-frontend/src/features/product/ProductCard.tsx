@@ -33,7 +33,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 	]
 		.filter(Boolean)
 		.join(' · ');
-	const isEstimated = item.expiryDateSource === 'ESTIMATED';
 	const imageUrl = getProductImageUrl(item.product);
 
 	const content = (
@@ -76,13 +75,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 				{(item.expiryDate || item.product.category.slug === 'fruits-et-legumes') && (
 					<ExpiryBadge status={item.expiryStatus}>
 						{formatExpiryLabel(item.expiryDate, item.product.category.slug)}
-						{isEstimated && <span className='sr-only'> (date estimée)</span>}
 					</ExpiryBadge>
-				)}
-				{isEstimated && (
-					<span aria-hidden='true' className='text-xs text-neutral-600'>
-						Date estimée
-					</span>
 				)}
 				{item.product.nutriscore && <NutriScore score={item.product.nutriscore} size='sm' />}
 			</span>

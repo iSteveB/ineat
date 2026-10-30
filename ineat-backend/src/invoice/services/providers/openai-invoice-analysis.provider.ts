@@ -10,6 +10,7 @@ import {
   OpenAIExtractedInvoicePayload,
   normalizeOpenAIInvoiceAnalysis,
 } from './openai-invoice-normalizer';
+import { PRESERVATION_CATEGORIES } from '../../../inventory/constants/expiry-rules';
 
 interface OpenAIErrorPayload {
   error?: {
@@ -79,6 +80,8 @@ const INVOICE_EXTRACTION_SCHEMA = {
           'discount',
           'ean',
           'categoryHint',
+          'preservationCategory',
+          'storageLocation',
           'confidence',
         ],
         properties: {
@@ -107,6 +110,18 @@ const INVOICE_EXTRACTION_SCHEMA = {
             type: ['string', 'null'],
             description: `Indice de catégorie. Préférer un de ces slugs si évident: ${KNOWN_INVOICE_CATEGORY_SLUGS.join(', ')}.`,
           },
+          preservationCategory: {
+            type: ['string', 'null'],
+            enum: [...PRESERVATION_CATEGORIES, null],
+            description:
+              'Catégorie de conservation exacte. null si le produit est ambigu, sec, en conserve fermée ou industriel avec date fabricant.',
+          },
+          storageLocation: {
+            type: ['string', 'null'],
+            enum: ['refrigerateur', 'congelateur', 'placard', null],
+            description:
+              'Lieu de stockage domestique le plus probable. null en cas de doute.',
+          },
           confidence: { type: 'number', minimum: 0, maximum: 1 },
         },
       },
@@ -125,20 +140,21 @@ const INVOICE_ANALYSIS_PROMPT = [
   'Exemples: 4 oranges => quantity 4; 5 paquets de farine 3 kg => quantity 5, pas 15 ni 3.',
   'Pour chaque produit, unitPrice est le prix unitaire TTC. Si seule une ligne totale est visible, calcule unitPrice = totalPrice / quantity.',
   'Pour categoryHint, utilise un slug connu seulement si la catégorie est évidente.',
+  `Pour preservationCategory, choisis uniquement parmi: ${PRESERVATION_CATEGORIES.join(', ')}.`,
+  'Utilise null pour preservationCategory ou storageLocation dès que la classification est incertaine.',
+  'Ne donne pas de catégorie de conservation aux produits secs, conserves fermées et produits industriels dont la date fabricant doit primer.',
   'Si une information est absente ou incertaine, utilise null et baisse la confidence.',
 ].join(' ');
 
 export const OPENAI_INVOICE_VERSIONS = {
   pipeline: 'invoice-analysis-v1',
-  prompt: 'drive-invoice-fr-v3',
-  schema: 'drive-invoice-v3',
+  prompt: 'drive-invoice-fr-v4',
+  schema: 'drive-invoice-v4',
   normalizer: 'openai-invoice-normalizer-v2',
 } as const;
 
 @Injectable()
-export class OpenAIInvoiceAnalysisProvider
-  implements ContractualInvoiceAnalysisProvider<OpenAIExtractedInvoicePayload>
-{
+export class OpenAIInvoiceAnalysisProvider implements ContractualInvoiceAnalysisProvider<OpenAIExtractedInvoicePayload> {
   readonly providerName = 'openai';
 
   constructor(private readonly configService: ConfigService) {}

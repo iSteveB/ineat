@@ -274,8 +274,6 @@ const ProductDetailPage: FC = () => {
 						purchaseDate: inventoryItem.purchaseDate,
 						purchasePrice: inventoryItem.purchasePrice,
 						storageLocation: inventoryItem.storageLocation,
-						packageStatus: inventoryItem.packageStatus,
-						preparationStatus: inventoryItem.preparationStatus,
 						notes: inventoryItem.notes,
 						createdAt: inventoryItem.createdAt,
 						updatedAt: inventoryItem.updatedAt,
@@ -310,7 +308,6 @@ const ProductDetailPage: FC = () => {
 	}, undefined);
 	const displayedExpiryDate = nextExpiringLot?.expiryDate;
 	const expiryStatus = calculateExpiryStatus(displayedExpiryDate);
-	const isEstimated = nextExpiringLot?.expiryDateSource === 'ESTIMATED';
 	const selectedLot = purchaseLots.find((lot) => lot.id === selectedLotId);
 	const selectedLotItem: InventoryItemWithStatus | null = selectedLot
 		? {
@@ -379,7 +376,6 @@ const ProductDetailPage: FC = () => {
 						{displayedExpiryDate && (
 							<p className='text-sm text-neutral-700'>
 								Péremption le {formatDate(displayedExpiryDate)}
-								{isEstimated && <span className='text-neutral-600'> · date estimée</span>}
 							</p>
 						)}
 					</div>

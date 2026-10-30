@@ -9,6 +9,10 @@ import {
   normalizeInvoiceCategory,
   suggestInvoiceStorageLocation,
 } from '../invoice-product-classification';
+import {
+  PRESERVATION_CATEGORIES,
+  PreservationCategory,
+} from '../../../inventory/constants/expiry-rules';
 
 export type OpenAIInvoiceLineType =
   | 'product'
@@ -29,6 +33,8 @@ export interface OpenAIExtractedInvoiceLine {
   discount: number | null;
   ean: string | null;
   categoryHint: string | null;
+  preservationCategory?: PreservationCategory | null;
+  storageLocation?: 'refrigerateur' | 'congelateur' | 'placard' | null;
   confidence: number;
 }
 
@@ -158,6 +164,11 @@ function normalizeInvoiceLine(
     hasPriceMismatch: prices.hasPriceMismatch,
   });
   const ean = normalizeBarcode(line.ean);
+  const preservationCategory = PRESERVATION_CATEGORIES.includes(
+    line.preservationCategory as PreservationCategory,
+  ) && line.storageLocation
+    ? (line.preservationCategory as PreservationCategory)
+    : null;
 
   return {
     detectedName,
@@ -169,7 +180,8 @@ function normalizeInvoiceLine(
     selectedEan: ean,
     suggestedEans: ean ? [ean] : [],
     category,
-    storageLocation,
+    storageLocation: line.storageLocation ?? storageLocation,
+    preservationCategory,
     discount: normalizeNullableNumber(line.discount),
   };
 }

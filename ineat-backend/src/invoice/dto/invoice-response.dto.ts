@@ -98,6 +98,12 @@ export class InvoiceItemResponseDto {
   @ApiPropertyOptional()
   expiryDate?: string | null;
 
+  @ApiPropertyOptional({ enum: ['MANUAL', 'ESTIMATED'] })
+  expiryDateSource?: string | null;
+
+  @ApiPropertyOptional()
+  preservationCategory?: string | null;
+
   @ApiPropertyOptional()
   storageLocation?: string | null;
 
