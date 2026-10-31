@@ -72,11 +72,16 @@ const COOKING_MESSAGES = [
 	'Découpage des oignons numériques… sans les larmes.',
 	'On goûte les totaux pour vérifier l’assaisonnement…',
 	'On cherche les meilleurs accords dans vos produits…',
-	'Un dernier coup de torchon avant le service…'
+	'Un dernier coup de torchon avant le service…',
+	'On passe chaque ligne de la facture à la loupe…',
+	'Les quantités prennent doucement leur place…',
+	'On vérifie que les prix sont bien assaisonnés…',
+	'Vos produits se rangent dans les bonnes catégories…',
+	'La brigade termine les dernières vérifications…'
 ] as const;
 
 const MINIMUM_COOKING_DURATION_MS = 4_500;
-const COOKING_MESSAGE_INTERVAL_MS = 1_100;
+const COOKING_MESSAGE_INTERVAL_MS = 3_000;
 
 type InvoiceItemDraft = Pick<
 	InvoiceItem,
@@ -1455,8 +1460,6 @@ function InvoiceProcessingCard({
 				>
 					{!isFailed && (
 						<>
-							<div className="absolute -left-12 -top-12 size-40 rounded-full bg-accent-50 motion-safe:animate-pulse" />
-							<div className="absolute -bottom-16 -right-10 size-48 rounded-full bg-accent-50 motion-safe:animate-pulse" />
 							<div className="relative mb-7 flex size-24 items-center justify-center rounded-full bg-accent-100 motion-safe:animate-bounce">
 								<span className="absolute inset-0 rounded-full border border-accent-600/40 motion-safe:animate-ping" />
 								<ChefHat className="relative size-12 text-accent-700" aria-hidden="true" />
