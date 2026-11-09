@@ -15,9 +15,8 @@ const benefits = [
 ];
 
 const BrandLink = ({ className }: { className?: string }) => (
-	<Link to='/' className={`flex items-center gap-2 rounded-md text-neutral-900 ${className ?? ''}`}>
-		<img src={logoMark} alt='' className='size-10' />
-		<span className='font-display text-2xl font-bold tracking-tight'>InEat</span>
+	<Link to='/' aria-label='InEat, accueil' className={`inline-flex rounded-md ${className ?? ''}`}>
+		<img src={logoMark} alt='' className='h-12 w-auto' />
 	</Link>
 );
 

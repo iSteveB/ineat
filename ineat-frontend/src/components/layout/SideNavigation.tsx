@@ -24,11 +24,8 @@ const SideNavigation: FC = () => {
 		<nav
 			aria-label='Navigation principale'
 			className='fixed inset-y-0 left-0 z-30 hidden w-62 flex-col gap-1 border-r border-neutral-200 bg-surface px-3 py-5 lg:flex'>
-			<Link to='/app' className='mb-5 flex items-center gap-2 rounded-md px-3' aria-label='InEat, accueil'>
-				<img src={logoMark} alt='' className='size-8' />
-				<span className='font-display text-[1.375rem] font-bold tracking-tight text-neutral-900'>
-					InEat
-				</span>
+			<Link to='/app' className='mb-5 rounded-md px-3' aria-label='InEat, accueil'>
+				<img src={logoMark} alt='' className='h-9 w-auto' />
 			</Link>
 
 			{navigationEntries.map((entry) => {

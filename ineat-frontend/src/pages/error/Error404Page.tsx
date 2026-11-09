@@ -53,9 +53,8 @@ export const Error404Page: React.FC<Error404Props> = ({
 	return (
 		<div className='flex min-h-screen flex-col bg-canvas'>
 			<header className='px-4 py-4 sm:px-6'>
-				<Link to='/' className='inline-flex items-center gap-2 rounded-md text-neutral-900'>
-					<img src={logoMark} alt='' className='size-9' />
-					<span className='font-display text-xl font-bold tracking-tight'>InEat</span>
+				<Link to='/' aria-label='InEat, accueil' className='inline-flex rounded-md'>
+					<img src={logoMark} alt='' className='h-10 w-auto' />
 				</Link>
 			</header>
 			<main id='contenu' className='flex flex-1 items-center justify-center'>

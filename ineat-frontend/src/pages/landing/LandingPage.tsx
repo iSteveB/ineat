@@ -99,10 +99,9 @@ const LandingHeader = ({
 		<div className='mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:h-20 sm:px-8 lg:px-12'>
 			<Link
 				to='/'
-				className='flex items-center gap-2 rounded-md text-neutral-900'
+				className='rounded-md'
 				aria-label='InEat, accueil'>
-				<img src={logoMark} alt='' className='size-9 sm:size-10' />
-				<span className='font-display text-2xl font-bold tracking-tight'>InEat</span>
+				<img src={logoMark} alt='' className='h-10 w-auto sm:h-12' />
 			</Link>
 
 			<nav aria-label='Site' className='flex items-center gap-1 sm:gap-2'>
@@ -348,8 +347,8 @@ const LandingPage = () => {
 
 			<footer className='border-t border-neutral-200 px-4 py-8 sm:px-8 lg:px-12'>
 				<div className='mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 text-sm text-neutral-600 sm:flex-row'>
-					<p className='flex items-center gap-2'>
-						<img src={logoMark} alt='' className='size-6' />
+					<p className='flex items-center gap-3'>
+						<img src={logoMark} alt='' className='h-7 w-auto' />
 						© {new Date().getFullYear()} InEat
 					</p>
 					<nav aria-label='Pied de page' className='flex gap-4'>
