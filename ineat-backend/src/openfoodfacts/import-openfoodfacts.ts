@@ -6,6 +6,7 @@ import { once } from 'node:events';
 import { parse } from 'csv-parse';
 import { Pool, PoolClient } from 'pg';
 import { from as copyFrom } from 'pg-copy-streams';
+import { escapeCopyValue } from './openfoodfacts-import.utils';
 
 const DEFAULT_SOURCE_URL =
   'https://static.openfoodfacts.org/data/en.openfoodfacts.org.products.csv.gz';
@@ -401,15 +402,6 @@ function compactObject(
       (entry): entry is [string, number] => entry[1] !== null,
     ),
   );
-}
-
-function escapeCopyValue(value: string | number | null): string {
-  if (value === null) return '\\N';
-  return String(value)
-    .replace(/\\/g, '\\\\')
-    .replace(/\t/g, '\\t')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r');
 }
 
 function isHttpUrl(value: string): boolean {
