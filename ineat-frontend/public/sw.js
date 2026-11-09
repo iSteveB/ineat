@@ -1,8 +1,8 @@
-const CACHE_NAME = 'ineat-public-v1';
+const CACHE_NAME = 'ineat-public-v2';
 const PUBLIC_ASSETS = [
 	'/manifest.webmanifest',
-	'/pwa-icon-192.png',
-	'/pwa-icon-512.png',
+	'/android-chrome-192x192.png',
+	'/android-chrome-512x512.png',
 	'/apple-touch-icon.png',
 ];
 
