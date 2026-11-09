@@ -38,32 +38,40 @@ Puis remplacer les placeholders par les valeurs locales ou les secrets de l'envi
 
 Variables principales:
 
-| Variable                            | Obligatoire                 | Usage                                                                    |
-| ----------------------------------- | --------------------------- | ------------------------------------------------------------------------ |
-| `NODE_ENV`                          | Non                         | `development` par defaut                                                 |
-| `PORT`                              | Non                         | Port HTTP, `3000` par defaut                                             |
-| `DATABASE_URL`                      | Oui                         | Connexion PostgreSQL Prisma                                              |
-| `BETTER_AUTH_SECRET`                | Oui                         | Secret de signature/chiffrement Better Auth                              |
-| `BETTER_AUTH_URL`                   | Oui                         | Origine publique du backend Better Auth, sans chemin `/auth`             |
-| `FRONTEND_URL`                      | Production                  | Origine frontend autorisee en prod                                       |
-| `CORS_ORIGIN`                       | Production                  | Origine CORS supplementaire                                              |
-| `EMAIL_ENABLED`                     | Non                         | Active et valide la configuration email hors production                  |
-| `RESEND_API_KEY`                    | Production / email actif    | Cle API Resend limitee au domaine transactionnel                         |
-| `EMAIL_FROM`                        | Production / email actif    | Expediteur au format `InEat <bonjour@ineat.store>`                        |
-| `EMAIL_REPLY_TO`                    | Production / email actif    | Adresse de reponse, par exemple `support@ineat.store`                     |
-| `BILLING_EMAIL_INTERVAL_MS`         | Non                         | Frequence du scheduler des emails d'essai, 24 heures par defaut           |
-| `CLOUDINARY_CLOUD_NAME`             | Uploads                     | Cloudinary cloud name                                                    |
-| `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                                       |
-| `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                                    |
-| `CLOUDINARY_AVATAR_PRESET`          | Uploads d'avatars           | Preset Cloudinary dedie aux avatars                                      |
-| `STRIPE_ENABLED`                    | Non                         | Active la validation Stripe hors production quand `true`                 |
-| `STRIPE_SECRET_KEY`                 | Billing prod / Stripe actif | Cle secrete Stripe backend                                               |
-| `STRIPE_PRICE_PREMIUM_MONTHLY_EUR`  | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium mensuel 5,99 EUR TTC                |
-| `STRIPE_PRICE_PREMIUM_YEARLY_EUR`   | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium annuel 59,99 EUR TTC                |
-| `STRIPE_WEBHOOK_SECRET`             | Billing prod / Stripe actif | Secret de signature des webhooks Stripe                                  |
-| `STRIPE_CHECKOUT_SUCCESS_URL`       | Billing prod / Stripe actif | URL de retour apres paiement Checkout reussi                             |
-| `STRIPE_CHECKOUT_CANCEL_URL`        | Billing prod / Stripe actif | URL de retour apres abandon Checkout                                     |
-| `STRIPE_CUSTOMER_PORTAL_RETURN_URL` | Billing prod / Stripe actif | URL de retour depuis le Customer Portal                                  |
+| Variable                            | Obligatoire                 | Usage                                                           |
+| ----------------------------------- | --------------------------- | --------------------------------------------------------------- |
+| `NODE_ENV`                          | Non                         | `development` par defaut                                        |
+| `PORT`                              | Non                         | Port HTTP, `3000` par defaut                                    |
+| `DATABASE_URL`                      | Oui                         | Connexion PostgreSQL Prisma                                     |
+| `OPENFOODFACTS_DATABASE_URL`        | Copie locale OFF            | PostgreSQL dedie a la copie Open Food Facts                     |
+| `OPENFOODFACTS_DATABASE_POOL_SIZE`  | Non                         | Connexions de lecture vers la base OFF, `5` par defaut          |
+| `OPENFOODFACTS_IMPORT_SOURCE`       | Non                         | Export TSV gzip OFF ou chemin local pour le cron d'import       |
+| `OPENFOODFACTS_IMPORT_MIN_BYTES`    | Non                         | Taille compressee minimale acceptee, `100000000` par defaut     |
+| `OPENFOODFACTS_IMPORT_MIN_ROWS`     | Non                         | Nombre minimal de produits avant bascule, `1000000` par defaut  |
+| `OPENFOODFACTS_REMOTE_INTERVAL_MS`  | Non                         | Espacement Redis des fallbacks OFF, `4200` ms par defaut        |
+| `OPENFOODFACTS_REMOTE_MAX_WAIT_MS`  | Non                         | Attente maximale d'un fallback OFF, `5000` ms par defaut        |
+| `OPENFOODFACTS_REMOTE_ATTEMPTS`     | Non                         | Tentatives sur `429` et `5xx`, `3` par defaut                   |
+| `BETTER_AUTH_SECRET`                | Oui                         | Secret de signature/chiffrement Better Auth                     |
+| `BETTER_AUTH_URL`                   | Oui                         | Origine publique du backend Better Auth, sans chemin `/auth`    |
+| `FRONTEND_URL`                      | Production                  | Origine frontend autorisee en prod                              |
+| `CORS_ORIGIN`                       | Production                  | Origine CORS supplementaire                                     |
+| `EMAIL_ENABLED`                     | Non                         | Active et valide la configuration email hors production         |
+| `RESEND_API_KEY`                    | Production / email actif    | Cle API Resend limitee au domaine transactionnel                |
+| `EMAIL_FROM`                        | Production / email actif    | Expediteur au format `InEat <bonjour@ineat.store>`              |
+| `EMAIL_REPLY_TO`                    | Production / email actif    | Adresse de reponse, par exemple `support@ineat.store`           |
+| `BILLING_EMAIL_INTERVAL_MS`         | Non                         | Frequence du scheduler des emails d'essai, 24 heures par defaut |
+| `CLOUDINARY_CLOUD_NAME`             | Uploads                     | Cloudinary cloud name                                           |
+| `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                              |
+| `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                           |
+| `CLOUDINARY_AVATAR_PRESET`          | Uploads d'avatars           | Preset Cloudinary dedie aux avatars                             |
+| `STRIPE_ENABLED`                    | Non                         | Active la validation Stripe hors production quand `true`        |
+| `STRIPE_SECRET_KEY`                 | Billing prod / Stripe actif | Cle secrete Stripe backend                                      |
+| `STRIPE_PRICE_PREMIUM_MONTHLY_EUR`  | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium mensuel 5,99 EUR TTC       |
+| `STRIPE_PRICE_PREMIUM_YEARLY_EUR`   | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium annuel 59,99 EUR TTC       |
+| `STRIPE_WEBHOOK_SECRET`             | Billing prod / Stripe actif | Secret de signature des webhooks Stripe                         |
+| `STRIPE_CHECKOUT_SUCCESS_URL`       | Billing prod / Stripe actif | URL de retour apres paiement Checkout reussi                    |
+| `STRIPE_CHECKOUT_CANCEL_URL`        | Billing prod / Stripe actif | URL de retour apres abandon Checkout                            |
+| `STRIPE_CUSTOMER_PORTAL_RETURN_URL` | Billing prod / Stripe actif | URL de retour depuis le Customer Portal                         |
 
 ### Stripe Billing V1
 

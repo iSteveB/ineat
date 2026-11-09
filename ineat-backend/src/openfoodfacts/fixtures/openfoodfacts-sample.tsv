@@ -1,0 +1,4 @@
+code	product_name	brands	quantity	image_url	categories_tags	nutriscore_grade	ecoscore_grade	nova_group	ingredients_text	energy-kcal_100g	carbohydrates_100g	sugars_100g	proteins_100g	fat_100g	saturated-fat_100g	fiber_100g	salt_100g	completeness	last_modified_t
+3017624010701	Nutella	Ferrero	400 g	https://images.openfoodfacts.org/sample.jpg	en:spreads,en:hazelnut-spreads	e	d	4	Sugar, palm oil, hazelnuts	539	57.5	56.3	6.3	30.9	10.6	0	0.1	0.92	1700000000
+3280220923007	Produit de référence	Marque test	1 kg		en:test-products	b	c	2	Ingrédient test	120	20	3	5	2	0.5	4	0.2	0.8	1700000100
+3564700012345	Yaourt nature	Marque locale	4 x 125 g		fr:produits-laitiers	a	b	1	Lait, ferments	65	5	5	4	3	2	0	0.1	0.9	1700000200
