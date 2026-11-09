@@ -57,7 +57,8 @@ async function main(): Promise<void> {
     runId = await startImportRun(client, source, metadata);
     await prepareNextTable(client);
 
-    const rowCount = await copyProducts(client, source);
+    const sourceRowCount = await copyProducts(client, source);
+    const rowCount = await finalizeNextTable(client, runId);
     const minimumRows = positiveInteger(
       process.env.OPENFOODFACTS_IMPORT_MIN_ROWS,
       1_000_000,
@@ -68,7 +69,6 @@ async function main(): Promise<void> {
       );
     }
 
-    await finalizeNextTable(client, runId);
     await activateNextTable(client);
     await client.query('ANALYZE off_products');
     await finishImportRun(client, runId, 'SUCCEEDED', rowCount, null);
@@ -78,6 +78,7 @@ async function main(): Promise<void> {
         event: 'openfoodfacts_import_succeeded',
         runId,
         rowCount,
+        sourceRowCount,
         source,
         sourceBytes: metadata.contentLength,
       }),
@@ -284,10 +285,30 @@ function projectRecord(
 async function finalizeNextTable(
   client: PoolClient,
   runId: string,
-): Promise<void> {
+): Promise<number> {
   const suffix = runId.replace(/-/g, '');
   const indexName = `off_products_barcode_${suffix}`;
   const constraintName = `off_products_pk_${suffix}`;
+  const deduplicated = await client.query(`
+    WITH ranked AS (
+      SELECT ctid,
+             row_number() OVER (
+               PARTITION BY barcode
+               ORDER BY off_last_modified_at DESC NULLS LAST, ctid DESC
+             ) AS position
+        FROM off_products_next
+    )
+    DELETE FROM off_products_next AS product
+     USING ranked
+     WHERE product.ctid = ranked.ctid
+       AND ranked.position > 1
+  `);
+  console.log(
+    JSON.stringify({
+      event: 'openfoodfacts_import_deduplicated',
+      removedRows: deduplicated.rowCount ?? 0,
+    }),
+  );
   await client.query('ALTER TABLE off_products_next SET LOGGED');
   await client.query(
     `CREATE UNIQUE INDEX ${indexName} ON off_products_next (barcode)`,
@@ -295,6 +316,10 @@ async function finalizeNextTable(
   await client.query(
     `ALTER TABLE off_products_next ADD CONSTRAINT ${constraintName} PRIMARY KEY USING INDEX ${indexName}`,
   );
+  const count = await client.query<{ row_count: string }>(
+    'SELECT count(*) AS row_count FROM off_products_next',
+  );
+  return Number(count.rows[0].row_count);
 }
 
 async function activateNextTable(client: PoolClient): Promise<void> {
