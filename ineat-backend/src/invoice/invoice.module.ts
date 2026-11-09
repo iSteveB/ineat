@@ -9,8 +9,10 @@ import { OpenFoodFactsInvoiceEnrichmentService } from './services/openfoodfacts-
 import { MockInvoiceAnalysisProvider } from './services/providers/mock-invoice-analysis.provider';
 import { OpenAIInvoiceAnalysisProvider } from './services/providers/openai-invoice-analysis.provider';
 import { CiqualReferenceService } from '../ciqual/ciqual-reference.service';
+import { OpenFoodFactsModule } from '../openfoodfacts/openfoodfacts.module';
 
 @Module({
+  imports: [OpenFoodFactsModule],
   controllers: [InvoiceController],
   providers: [
     InvoiceService,

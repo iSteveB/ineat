@@ -62,6 +62,9 @@ importers:
       compression:
         specifier: ^1.8.0
         version: 1.8.1
+      csv-parse:
+        specifier: ^6.1.0
+        version: 6.2.1
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -80,6 +83,9 @@ importers:
       pg:
         specifier: ^8.16.3
         version: 8.16.3
+      pg-copy-streams:
+        specifier: ^7.0.0
+        version: 7.0.0
       reflect-metadata:
         specifier: ^0.2.0
         version: 0.2.2
@@ -164,7 +170,7 @@ importers:
         version: 6.3.4
       ts-jest:
         specifier: ^29.1.0
-        version: 29.4.6(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.27.0)(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.25)(ts-node@10.9.2(@types/node@20.19.25)(typescript@5.9.3)))(typescript@5.9.3)
+        version: 29.4.6(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.25)(ts-node@10.9.2(@types/node@20.19.25)(typescript@5.9.3)))(typescript@5.9.3)
       ts-loader:
         specifier: ^9.4.3
         version: 9.5.4(typescript@5.9.3)(webpack@5.97.1)
@@ -2091,6 +2097,9 @@ packages:
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
 
+  csv-parse@6.2.1:
+    resolution: {integrity: sha512-LRLMV+UCyfMokp8Wb411duBf1gaBKJfOfBWU9eHMJ+b+cJYZsNu3AFmjJf3+yPGd59Exz1TsMjaSFyxnYB9+IQ==}
+
   date-fns@4.1.0:
     resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
 
@@ -3349,6 +3358,9 @@ packages:
   pg-connection-string@2.9.1:
     resolution: {integrity: sha512-nkc6NpDcvPVpZXxrreI/FOtX3XemeLl8E0qFr6F2Lrm/I8WOnaWNhIPK2Z7OHpw7gh5XJThi6j6ppgNoaT1w4w==}
 
+  pg-copy-streams@7.0.0:
+    resolution: {integrity: sha512-zBvnY6wtaBRE2ae2xXWOOGMaNVPkXh1vhypAkNSKgMdciJeTyIQAHZaEeRAxUjs/p1El5jgzYmwG5u871Zj3dQ==}
+
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
     engines: {node: '>=4.0.0'}
@@ -3483,7 +3495,6 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qs@6.13.0:
@@ -6375,6 +6386,8 @@ snapshots:
 
   csstype@3.2.3: {}
 
+  csv-parse@6.2.1: {}
+
   date-fns@4.1.0: {}
 
   debug@2.6.9:
@@ -7844,6 +7857,8 @@ snapshots:
 
   pg-connection-string@2.9.1: {}
 
+  pg-copy-streams@7.0.0: {}
+
   pg-int8@1.0.1: {}
 
   pg-pool@3.10.1(pg@8.16.3):
@@ -8381,7 +8396,7 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
-  ts-jest@29.4.6(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(esbuild@0.27.0)(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.25)(ts-node@10.9.2(@types/node@20.19.25)(typescript@5.9.3)))(typescript@5.9.3):
+  ts-jest@29.4.6(@babel/core@7.28.5)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.28.5))(jest-util@29.7.0)(jest@29.7.0(@types/node@20.19.25)(ts-node@10.9.2(@types/node@20.19.25)(typescript@5.9.3)))(typescript@5.9.3):
     dependencies:
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
@@ -8399,7 +8414,6 @@ snapshots:
       '@jest/transform': 29.7.0
       '@jest/types': 29.6.3
       babel-jest: 29.7.0(@babel/core@7.28.5)
-      esbuild: 0.27.0
       jest-util: 29.7.0
 
   ts-loader@9.5.4(typescript@5.9.3)(webpack@5.97.1):

@@ -10,6 +10,10 @@ import {
   normalizeInvoiceCategory,
   suggestInvoiceStorageLocation,
 } from './invoice-product-classification';
+import {
+  LocalOpenFoodFactsProduct,
+  OpenFoodFactsLocalRepository,
+} from '../../openfoodfacts/openfoodfacts-local.repository';
 
 interface OpenFoodFactsProductResponse {
   status?: number;
@@ -17,7 +21,7 @@ interface OpenFoodFactsProductResponse {
   product?: OpenFoodFactsProduct;
 }
 
-interface OpenFoodFactsProduct {
+interface OpenFoodFactsProduct extends LocalOpenFoodFactsProduct {
   code?: string;
   product_name?: string;
   product_name_fr?: string;
@@ -61,6 +65,10 @@ const DEFAULT_OPENFOODFACTS_NEGATIVE_CACHE_TTL_SECONDS = 6 * 60 * 60;
 const DEFAULT_OPENFOODFACTS_CONCURRENCY = 4;
 const DEFAULT_OPENFOODFACTS_USER_AGENT =
   'Ineat/1.0 (invoice-import; contact=dev@ineat.app)';
+const DEFAULT_OPENFOODFACTS_REMOTE_INTERVAL_MS = 4200;
+const DEFAULT_OPENFOODFACTS_REMOTE_MAX_WAIT_MS = 5000;
+const DEFAULT_OPENFOODFACTS_REMOTE_ATTEMPTS = 3;
+const OPENFOODFACTS_REMOTE_LIMIT_KEY = 'openfoodfacts:remote-read-slot:v1';
 const OPENFOODFACTS_FIELDS = [
   'code',
   'product_name',
@@ -98,6 +106,7 @@ export class OpenFoodFactsInvoiceEnrichmentService {
   constructor(
     private readonly configService: ConfigService,
     private readonly redis: RedisService,
+    private readonly localRepository: OpenFoodFactsLocalRepository,
   ) {}
 
   async enrichItems(
@@ -198,6 +207,19 @@ export class OpenFoodFactsInvoiceEnrichmentService {
   ): Promise<OpenFoodFactsInvoiceEnrichmentResult> {
     try {
       const startedAt = Date.now();
+      const localProduct = await this.localRepository.findByBarcode(barcode);
+      if (localProduct) {
+        const result = this.createFoundResult(barcode, localProduct);
+        this.logLookupEvent({
+          event: 'invoice_openfoodfacts_local_lookup_completed',
+          barcode,
+          status: result.status,
+          durationMs: Date.now() - startedAt,
+        });
+        await this.writeCache(barcode, result, false);
+        return result;
+      }
+
       const response = await this.fetchProduct(barcode);
 
       if (response.status === 0 || !response.product) {
@@ -216,23 +238,15 @@ export class OpenFoodFactsInvoiceEnrichmentService {
         return result;
       }
 
-      const data = this.mapProduct(barcode, response.product);
-      const status: InvoiceExternalProductStatus = data.name
-        ? 'FOUND'
-        : 'INCOMPLETE';
+      const result = this.createFoundResult(barcode, response.product);
 
       this.logLookupEvent({
         event: 'invoice_openfoodfacts_lookup_completed',
         barcode,
-        status,
+        status: result.status,
         durationMs: Date.now() - startedAt,
       });
 
-      const result: OpenFoodFactsInvoiceEnrichmentResult = {
-        status,
-        data,
-        error: null,
-      };
       await this.writeCache(barcode, result, false);
       return result;
     } catch (error) {
@@ -253,13 +267,25 @@ export class OpenFoodFactsInvoiceEnrichmentService {
     }
   }
 
+  private createFoundResult(
+    barcode: string,
+    product: OpenFoodFactsProduct,
+  ): OpenFoodFactsInvoiceEnrichmentResult {
+    const data = this.mapProduct(barcode, product);
+    return {
+      status: data.name ? 'FOUND' : 'INCOMPLETE',
+      data,
+      error: null,
+    };
+  }
+
   private async readCache(
     barcode: string,
   ): Promise<OpenFoodFactsInvoiceEnrichmentResult | null> {
     try {
-      const value = await this.redis.producerConnection().get(
-        this.cacheKey(barcode),
-      );
+      const value = await this.redis
+        .producerConnection()
+        .get(this.cacheKey(barcode));
       return value
         ? (JSON.parse(value) as OpenFoodFactsInvoiceEnrichmentResult)
         : null;
@@ -295,11 +321,43 @@ export class OpenFoodFactsInvoiceEnrichmentService {
   private async fetchProduct(
     barcode: string,
   ): Promise<OpenFoodFactsProductResponse> {
+    const attempts = Math.min(
+      3,
+      this.getPositiveConfig(
+        'OPENFOODFACTS_REMOTE_ATTEMPTS',
+        DEFAULT_OPENFOODFACTS_REMOTE_ATTEMPTS,
+      ),
+    );
+
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      if (this.localRepository.isConfigured()) {
+        await this.acquireRemoteReadSlot();
+      }
+
+      const response = await this.performProductFetch(barcode);
+      if (response.status === 404) {
+        return { status: 0, status_verbose: 'product not found' };
+      }
+      if (response.ok) {
+        return (await response.json()) as OpenFoodFactsProductResponse;
+      }
+
+      const retryable = response.status === 429 || response.status >= 500;
+      if (!retryable || attempt === attempts) {
+        throw new Error(`HTTP_${response.status}`);
+      }
+      await this.waitBeforeRetry(response, attempt);
+    }
+
+    throw new Error('OFF_REMOTE_RETRY_EXHAUSTED');
+  }
+
+  private async performProductFetch(barcode: string): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.getTimeoutMs());
 
     try {
-      const response = await fetch(this.buildProductUrl(barcode), {
+      return await fetch(this.buildProductUrl(barcode), {
         method: 'GET',
         headers: {
           Accept: 'application/json',
@@ -307,18 +365,25 @@ export class OpenFoodFactsInvoiceEnrichmentService {
         },
         signal: controller.signal,
       });
-
-      if (response.status === 404) {
-        return { status: 0, status_verbose: 'product not found' };
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP_${response.status}`);
-      }
-
-      return (await response.json()) as OpenFoodFactsProductResponse;
     } finally {
       clearTimeout(timeoutId);
+    }
+  }
+
+  private async waitBeforeRetry(
+    response: Response,
+    attempt: number,
+  ): Promise<void> {
+    const retryAfter = response.headers?.get?.('retry-after');
+    const retryAfterSeconds = retryAfter === null ? NaN : Number(retryAfter);
+    const delayMs = Number.isFinite(retryAfterSeconds)
+      ? Math.max(0, retryAfterSeconds * 1000)
+      : Math.min(
+          5000,
+          250 * 2 ** (attempt - 1) + Math.floor(Math.random() * 150),
+        );
+    if (delayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 
@@ -326,12 +391,46 @@ export class OpenFoodFactsInvoiceEnrichmentService {
     const baseUrl =
       this.configService.get<string>('OPENFOODFACTS_BASE_URL')?.trim() ||
       DEFAULT_OPENFOODFACTS_BASE_URL;
-    const url = new URL(`/api/v2/product/${barcode}`, baseUrl);
+    const url = new URL(`/api/v3.6/product/${barcode}.json`, baseUrl);
 
     url.searchParams.set('fields', OPENFOODFACTS_FIELDS.join(','));
     url.searchParams.set('lc', 'fr');
 
     return url.toString();
+  }
+
+  private async acquireRemoteReadSlot(): Promise<void> {
+    const connection = this.redis.producerConnection();
+    const intervalMs = this.getPositiveConfig(
+      'OPENFOODFACTS_REMOTE_INTERVAL_MS',
+      DEFAULT_OPENFOODFACTS_REMOTE_INTERVAL_MS,
+    );
+    const maxWaitMs = this.getPositiveConfig(
+      'OPENFOODFACTS_REMOTE_MAX_WAIT_MS',
+      DEFAULT_OPENFOODFACTS_REMOTE_MAX_WAIT_MS,
+    );
+    const deadline = Date.now() + maxWaitMs;
+
+    while (Date.now() <= deadline) {
+      const acquired = await connection.set(
+        OPENFOODFACTS_REMOTE_LIMIT_KEY,
+        String(Date.now()),
+        'PX',
+        intervalMs,
+        'NX',
+      );
+      if (acquired === 'OK') return;
+
+      const remaining = await connection.pttl(OPENFOODFACTS_REMOTE_LIMIT_KEY);
+      const waitMs = Math.max(
+        50,
+        Math.min(remaining > 0 ? remaining : 250, deadline - Date.now()),
+      );
+      if (waitMs <= 0) break;
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+    }
+
+    throw new Error('OFF_REMOTE_RATE_LIMITED');
   }
 
   private mapProduct(
@@ -359,6 +458,7 @@ export class OpenFoodFactsInvoiceEnrichmentService {
       ingredients_text_en: product.ingredients_text_en,
       nutriments: product.nutriments,
       completeness: product.completeness,
+      last_modified_t: product.last_modified_t,
     });
 
     return this.pruneUndefined({

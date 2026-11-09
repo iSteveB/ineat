@@ -106,6 +106,23 @@ const baseEnvironmentSchema = z
       emptyToUndefined,
       z.coerce.number().int().min(500).max(30000).default(5000),
     ),
+    OPENFOODFACTS_DATABASE_URL: optionalString,
+    OPENFOODFACTS_DATABASE_POOL_SIZE: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).max(20).default(5),
+    ),
+    OPENFOODFACTS_REMOTE_INTERVAL_MS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1000).default(4200),
+    ),
+    OPENFOODFACTS_REMOTE_MAX_WAIT_MS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(100).max(30000).default(5000),
+    ),
+    OPENFOODFACTS_REMOTE_ATTEMPTS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).max(3).default(3),
+    ),
     OPENFOODFACTS_CACHE_TTL_SECONDS: z.preprocess(
       emptyToUndefined,
       z.coerce.number().int().min(60).default(2592000),

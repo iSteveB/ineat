@@ -29,7 +29,8 @@
     "prisma:migrate": "NODE_ENV=development prisma migrate dev",
     "prisma:migrate:prod": "NODE_ENV=production prisma migrate deploy",
     "prisma:seed": "NODE_ENV=development prisma db seed",
-    "prisma:reset": "NODE_ENV=development prisma migrate reset --force"
+    "prisma:reset": "NODE_ENV=development prisma migrate reset --force",
+    "openfoodfacts:import": "tsx src/openfoodfacts/import-openfoodfacts.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -54,11 +55,13 @@
     "cloudinary": "^2.7.0",
     "compression": "^1.8.0",
     "date-fns": "^4.1.0",
+    "csv-parse": "^6.1.0",
     "express": "^4.21.2",
     "helmet": "^8.1.0",
     "ioredis": "^5.11.1",
     "jose": "^6.2.3",
     "pg": "^8.16.3",
+    "pg-copy-streams": "^7.0.0",
     "reflect-metadata": "^0.2.0",
     "resend": "^6.18.0",
     "rxjs": "^7.8.1",

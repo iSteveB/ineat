@@ -9,9 +9,14 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
   const redisConnection = {
     get: jest.fn(),
     set: jest.fn(),
+    pttl: jest.fn(),
   };
   const redis = {
     producerConnection: jest.fn(() => redisConnection),
+  };
+  const localRepository = {
+    findByBarcode: jest.fn(),
+    isConfigured: jest.fn(),
   };
 
   let service: OpenFoodFactsInvoiceEnrichmentService;
@@ -36,9 +41,13 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
     global.fetch = fetchMock;
     redisConnection.get.mockResolvedValue(null);
     redisConnection.set.mockResolvedValue('OK');
+    redisConnection.pttl.mockResolvedValue(50);
+    localRepository.findByBarcode.mockResolvedValue(null);
+    localRepository.isConfigured.mockReturnValue(false);
     service = new OpenFoodFactsInvoiceEnrichmentService(
       configService as unknown as ConfigService,
       redis as any,
+      localRepository as any,
     );
   });
 
@@ -91,7 +100,7 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
 
     const [lookupUrl] = fetchMock.mock.calls[0];
     expect(lookupUrl).toContain(
-      'https://world.openfoodfacts.test/api/v2/product/3017624010701',
+      'https://world.openfoodfacts.test/api/v3.6/product/3017624010701.json',
     );
     expect(lookupUrl).toContain('nutriscore_grade');
     expect(lookupUrl).toContain('ecoscore_grade');
@@ -182,6 +191,55 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
 
     expect(result.status).toBe('FOUND');
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('utilise la copie locale avant le fournisseur distant', async () => {
+    localRepository.findByBarcode.mockResolvedValue({
+      code: '3017624010701',
+      product_name: 'Produit local',
+      brands: 'Marque locale',
+      categories_tags: ['fr:epicerie'],
+      last_modified_t: 1_700_000_000,
+    });
+
+    const result = await service.lookupBarcode('3017624010701');
+
+    expect(result).toMatchObject({
+      status: 'FOUND',
+      data: {
+        barcode: '3017624010701',
+        name: 'Produit local',
+        brand: 'Marque locale',
+        categoriesTags: ['fr:epicerie'],
+        raw: { last_modified_t: 1_700_000_000 },
+      },
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(redisConnection.set).toHaveBeenCalled();
+  });
+
+  it('réserve un créneau Redis avant un fallback distant', async () => {
+    localRepository.isConfigured.mockReturnValue(true);
+    fetchMock.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: jest.fn().mockResolvedValue({
+        status: 1,
+        product: { code: '3017624010701', product_name_fr: 'Produit distant' },
+      }),
+    });
+
+    const result = await service.lookupBarcode('3017624010701');
+
+    expect(result.status).toBe('FOUND');
+    expect(redisConnection.set).toHaveBeenCalledWith(
+      'openfoodfacts:remote-read-slot:v1',
+      expect.any(String),
+      'PX',
+      4200,
+      'NX',
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('déduplique deux EAN identiques pendant une même facture', async () => {
@@ -307,6 +365,31 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
       externalProductData: null,
       externalProductError: 'NETWORK_ERROR',
     });
+  });
+
+  it('réessaie un 429 en respectant Retry-After', async () => {
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 429,
+        headers: { get: jest.fn().mockReturnValue('0') },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue({
+          status: 1,
+          product: {
+            code: '3564700012345',
+            product_name_fr: 'Produit repris',
+          },
+        }),
+      });
+
+    const result = await service.lookupBarcode('3564700012345');
+
+    expect(result.status).toBe('FOUND');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('marque les produits trouvés mais sans nom comme incomplets', async () => {
