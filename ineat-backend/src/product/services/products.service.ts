@@ -188,19 +188,4 @@ export class ProductsService {
     return /^\d{8,13}$/.test(str);
   }
 
-  /**
-   * Recherche floue pour améliorer les résultats
-   * Utilise la distance de Levenshtein pour trouver des correspondances approximatives
-   */
-  private async searchWithFuzzyMatching(
-    searchTerm: string,
-    limit: number = 10,
-  ): Promise<ProductSearchResultDto[]> {
-    // Pour une recherche floue plus avancée, on pourrait utiliser
-    // une extension PostgreSQL comme pg_trgm ou implémenter
-    // un algorithme de distance de Levenshtein
-
-    // Pour l'instant, on utilise la recherche basique
-    return this.searchProducts(searchTerm, limit);
-  }
 }

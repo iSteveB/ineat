@@ -10,7 +10,7 @@ import { ZodSchema, ZodError } from 'zod';
 export class ZodValidationPipe implements PipeTransform {
   constructor(private schema: ZodSchema) {}
 
-  transform(value: unknown, metadata: ArgumentMetadata) {
+  transform(value: unknown, _metadata: ArgumentMetadata) {
     try {
       return this.schema.parse(value);
     } catch (error) {
@@ -31,9 +31,3 @@ export class ZodValidationPipe implements PipeTransform {
   }
 }
 
-/**
- * Factory pour créer des pipes Zod spécifiques
- */
-export function createZodPipe<T>(schema: ZodSchema<T>) {
-  return new ZodValidationPipe(schema);
-}

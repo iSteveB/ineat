@@ -130,7 +130,7 @@ describe('BillingService', () => {
   };
 
   it('creates a monthly Checkout session with the backend monthly price', async () => {
-    const { service, prisma, stripe, email } = createService({
+    const { service, prisma, stripe } = createService({
       ...user,
       stripeCustomerId: null,
     });
@@ -226,7 +226,7 @@ describe('BillingService', () => {
   });
 
   it('starts a 3-day trial without Stripe', async () => {
-    const { service, prisma, stripe, email } = createService({
+    const { service, prisma, stripe } = createService({
       ...user,
       subscriptionPlan: 'FREE',
       subscriptionStatus: 'ACTIVE',

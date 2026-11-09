@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Budget, Expense } from '../../../prisma/generated/prisma/client';
+import { Budget } from '../../../prisma/generated/prisma/client';
 import {
   CreateBudgetData,
   UpdateBudgetData,
@@ -291,7 +291,7 @@ export class BudgetService {
         id: crypto.randomUUID(),
         budgetId,
         type: alertCheck.alertType,
-        title: this.getAlertTitle(alertCheck.alertType, stats),
+        title: this.getAlertTitle(alertCheck.alertType),
         message: this.getAlertMessage(alertCheck.alertType, stats),
         severity: this.getAlertSeverity(alertCheck.alertType),
         isRead: false,
@@ -345,33 +345,6 @@ export class BudgetService {
     });
   }
 
-  private async deactivateBudgetsForPeriod(
-    userId: string,
-    startDate: Date,
-    endDate: Date,
-  ): Promise<void> {
-    await this.prisma.budget.updateMany({
-      where: {
-        userId,
-        OR: [
-          {
-            periodStart: { gte: startDate, lte: endDate },
-          },
-          {
-            periodEnd: { gte: startDate, lte: endDate },
-          },
-          {
-            AND: [
-              { periodStart: { lte: startDate } },
-              { periodEnd: { gte: endDate } },
-            ],
-          },
-        ],
-      },
-      data: { isActive: false },
-    });
-  }
-
   private async refreshNotifications(userId: string): Promise<void> {
     try {
       await this.notifications?.synchronizeBudgetNotifications(userId);
@@ -380,7 +353,7 @@ export class BudgetService {
     }
   }
 
-  private getAlertTitle(type: BudgetAlert['type'], stats: BudgetStats): string {
+  private getAlertTitle(type: BudgetAlert['type']): string {
     switch (type) {
       case 'THRESHOLD_75':
         return '75% du budget consommé';

@@ -466,28 +466,4 @@ export class ExpenseService {
     return budget?.id || null;
   }
 
-  /**
-   * Valide qu'une dépense peut être ajoutée
-   */
-  private validateExpenseData(data: CreateExpenseData): {
-    isValid: boolean;
-    errors: string[];
-  } {
-    const errors: string[] = [];
-
-    if (data.amount < 0) {
-      errors.push('Le montant ne peut pas être négatif');
-    }
-
-    const expenseDate = new Date(data.date);
-    const now = new Date();
-    if (expenseDate > now) {
-      errors.push('La date de dépense ne peut pas être dans le futur');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  }
 }

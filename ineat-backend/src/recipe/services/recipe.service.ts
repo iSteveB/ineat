@@ -22,10 +22,7 @@ import {
   RecipeGenerationModeDto,
   SaveGeneratedRecipeDto,
 } from '../dto/generate-recipes.dto';
-import {
-  BASIC_RECIPE_INGREDIENT_SET,
-  BASIC_RECIPE_INGREDIENTS,
-} from '../recipe.constants';
+import { BASIC_RECIPE_INGREDIENT_SET } from '../recipe.constants';
 import { OpenAiRecipeService } from './openai-recipe.service';
 
 const TYPE_LABELS: Record<RecipeType, string> = {

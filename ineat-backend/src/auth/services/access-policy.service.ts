@@ -53,14 +53,10 @@ export class AccessPolicyService {
       inventoryLimit: isPremiumLike ? 500 : 50,
       canUseRecipes: isPremiumLike,
       canGenerateAiRecipes: isPremiumLike,
-      aiRecipeGenerationRemaining: this.getAiRecipeGenerationLimit(
-        effectivePlan,
-        isTrial,
-      ),
-      aiRecipeImageGenerationRemaining: this.getAiRecipeGenerationLimit(
-        effectivePlan,
-        isTrial,
-      ),
+      aiRecipeGenerationRemaining:
+        this.getAiRecipeGenerationLimit(effectivePlan),
+      aiRecipeImageGenerationRemaining:
+        this.getAiRecipeGenerationLimit(effectivePlan),
       canImportDrive: isPremiumLike,
       driveImportsRemaining: this.getDriveImportLimit(effectivePlan, isTrial),
       canUseAutomaticBudgetSync: isPremiumLike,
@@ -98,10 +94,7 @@ export class AccessPolicyService {
     );
   }
 
-  private getAiRecipeGenerationLimit(
-    effectivePlan: EffectivePlan,
-    isTrial: boolean,
-  ): number {
+  private getAiRecipeGenerationLimit(effectivePlan: EffectivePlan): number {
     if (effectivePlan === 'FREE') {
       return 0;
     }
