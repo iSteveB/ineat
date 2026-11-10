@@ -27,7 +27,9 @@ describe('Select', () => {
 		);
 
 		const viewport = document.querySelector('[data-slot="select-viewport"]');
+		const content = screen.getByRole('listbox');
 		expect(viewport).not.toBeNull();
+		expect(content).toHaveClass('z-[200]');
 		expect(viewport).toHaveClass('overflow-y-auto', 'touch-pan-y');
 		expect(viewport).not.toHaveClass('h-[var(--radix-select-trigger-height)]');
 		expect(screen.getByText('Catégorie 20')).toBeInTheDocument();

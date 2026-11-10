@@ -32,7 +32,9 @@ const ScannerPage: FC = () => {
 	};
 
 	return (
-		<div className='fixed inset-0 z-[100] bg-neutral-950'>
+		<div
+			data-slot='scanner-page'
+			className='fixed inset-0 z-[100] touch-pan-y overflow-y-auto overscroll-contain bg-neutral-950'>
 			<ProductScanFlow
 				onComplete={handleScanComplete}
 				onCancel={handleScanCancel}
