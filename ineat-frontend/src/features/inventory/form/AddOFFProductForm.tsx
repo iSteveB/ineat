@@ -301,6 +301,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 								onValueChange={(value) => handleInputChange('category', value)}
 								disabled={isSubmitting}>
 								<SelectTrigger
+									id='category'
 									className={`bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 ${
 										errors['category'] ? 'border-danger-600' : ''
 									}`}>
