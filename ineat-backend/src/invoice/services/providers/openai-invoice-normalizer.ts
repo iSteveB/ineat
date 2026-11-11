@@ -26,6 +26,8 @@ export interface OpenAIExtractedInvoiceLine {
   rawLabel: string | null;
   detectedName: string | null;
   lineType: OpenAIInvoiceLineType;
+  /** Optional for compatibility with analyses produced before schema v5. */
+  isFood?: boolean;
   quantity: number | null;
   unit: string | null;
   unitPrice: number | null;
@@ -132,7 +134,7 @@ function normalizeInvoiceLine(
 ): AnalyzedInvoiceItem | null {
   const detectedName = cleanString(line.detectedName ?? line.rawLabel);
 
-  if (!detectedName || line.lineType !== 'product') {
+  if (!detectedName || line.lineType !== 'product' || line.isFood === false) {
     return null;
   }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { InvoiceItem } from '@/services/invoiceService';
 import {
+	getBarcodeFreeProductLabel,
 	getInvoiceTotals,
 	getReliableInvoiceItemIds,
 	requiresInvoiceItemCorrection,
@@ -35,12 +36,40 @@ describe('invoiceReview', () => {
 	it('identifie les lignes fiables pour une validation partielle', () => {
 		const items = [
 			item({ id: 'reliable' }),
-			item({ id: 'uncertain', externalProductStatus: 'NOT_FOUND' }),
+			item({
+				id: 'uncertain',
+				externalProductStatus: 'NOT_FOUND',
+				selectedEan: '3564700012345'
+			}),
 			item({ id: 'validated', validated: true })
 		];
 
 		expect(getReliableInvoiceItemIds(items)).toEqual(['reliable']);
 		expect(requiresInvoiceItemCorrection(items[1])).toBe(true);
+	});
+
+	it('ne demande pas de correction OpenFoodFacts pour un produit sans code-barres', () => {
+		const barcodeFreeItem = item({ externalProductStatus: 'NOT_FOUND' });
+
+		expect(requiresInvoiceItemCorrection(barcodeFreeItem)).toBe(false);
+	});
+
+	it('adapte le libellé des produits sans code-barres', () => {
+		expect(
+			getBarcodeFreeProductLabel(
+				item({ detectedName: 'Poireaux vrac', category: 'fruits-et-legumes' })
+			)
+		).toBe('Produit en vrac');
+		expect(
+			getBarcodeFreeProductLabel(
+				item({ detectedName: 'Filet mignon', category: 'viandes-et-poissons' })
+			)
+		).toBe('Produit frais');
+		expect(
+			getBarcodeFreeProductLabel(
+				item({ detectedName: 'Produit artisanal', category: 'autres' })
+			)
+		).toBe('Produit sans code-barres');
 	});
 
 	it('calcule la somme des lignes et l’écart avec la facture', () => {

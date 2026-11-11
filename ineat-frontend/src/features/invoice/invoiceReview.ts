@@ -2,6 +2,24 @@ import type { InvoiceItem } from '@/services/invoiceService';
 
 export const RELIABLE_INVOICE_CONFIDENCE = 0.75;
 
+const VALID_BARCODE_PATTERN = /^\d{8,13}$/;
+
+export const hasInvoiceItemBarcode = (item: InvoiceItem): boolean =>
+	[item.selectedEan, item.productCode].some(
+		(value) => typeof value === 'string' && VALID_BARCODE_PATTERN.test(value)
+	);
+
+export const getBarcodeFreeProductLabel = (item: InvoiceItem): string => {
+	if (/\bvrac\b/i.test(item.detectedName)) return 'Produit en vrac';
+	if (
+		item.category === 'fruits-et-legumes' ||
+		item.category === 'viandes-et-poissons'
+	) {
+		return 'Produit frais';
+	}
+	return 'Produit sans code-barres';
+};
+
 export const getInvoiceItemTotal = (item: {
 	quantity?: number;
 	unitPrice?: number | null;
@@ -19,9 +37,8 @@ export const requiresInvoiceItemCorrection = (item: InvoiceItem): boolean =>
 	item.quantity <= 0 ||
 	getInvoiceItemTotal(item) === null ||
 	item.confidence < RELIABLE_INVOICE_CONFIDENCE ||
-	['ERROR', 'NOT_FOUND', 'INCOMPLETE'].includes(
-		item.externalProductStatus ?? ''
-	);
+	['ERROR', 'INCOMPLETE'].includes(item.externalProductStatus ?? '') ||
+	(item.externalProductStatus === 'NOT_FOUND' && hasInvoiceItemBarcode(item));
 
 export const sortInvoiceItemsForReview = (
 	items: InvoiceItem[]

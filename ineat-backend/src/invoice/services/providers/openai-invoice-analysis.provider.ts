@@ -73,6 +73,7 @@ const INVOICE_EXTRACTION_SCHEMA = {
           'rawLabel',
           'detectedName',
           'lineType',
+          'isFood',
           'quantity',
           'unit',
           'unitPrice',
@@ -96,6 +97,11 @@ const INVOICE_EXTRACTION_SCHEMA = {
           lineType: {
             type: 'string',
             enum: ['product', 'fee', 'discount', 'total', 'payment', 'unknown'],
+          },
+          isFood: {
+            type: 'boolean',
+            description:
+              'true uniquement pour un aliment ou une boisson destiné à la consommation humaine; false pour toutes les autres lignes, notamment hygiène, entretien, maison et beauté.',
           },
           quantity: { type: ['number', 'null'] },
           unit: { type: ['string', 'null'] },
@@ -133,6 +139,8 @@ const INVOICE_ANALYSIS_PROMPT = [
   'Analyse cette facture Drive PDF française.',
   'Extrais les métadonnées et toutes les lignes visibles.',
   'Classe chaque ligne avec lineType: product, fee, discount, total, payment ou unknown.',
+  'Pour chaque ligne, indique isFood=true uniquement si elle correspond à un aliment ou une boisson destiné à la consommation humaine; utilise false dans tous les autres cas.',
+  'Les produits d’hygiène, beauté, entretien, maison et tous les autres produits non alimentaires doivent avoir isFood=false.',
   'Ne transforme pas les frais, totaux, moyens de paiement ou remises globales en produits.',
   'Les prix sont en euros TTC sauf mention contraire.',
   'Pour chaque produit, quantity est un entier positif correspondant au nombre d’unités achetées affiché sur la facture.',
@@ -148,9 +156,9 @@ const INVOICE_ANALYSIS_PROMPT = [
 
 export const OPENAI_INVOICE_VERSIONS = {
   pipeline: 'invoice-analysis-v1',
-  prompt: 'drive-invoice-fr-v4',
-  schema: 'drive-invoice-v4',
-  normalizer: 'openai-invoice-normalizer-v2',
+  prompt: 'drive-invoice-fr-v5',
+  schema: 'drive-invoice-v5',
+  normalizer: 'openai-invoice-normalizer-v3',
 } as const;
 
 @Injectable()

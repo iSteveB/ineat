@@ -134,6 +134,51 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
     expect(result.items[0].detectedName).toBe('Pommes Golden');
   });
 
+  it('filtre les produits non alimentaires', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          nominalPayload.lines[0],
+          {
+            rawLabel: 'Shampoing homme',
+            detectedName: 'Shampoing homme',
+            lineType: 'product',
+            isFood: false,
+            quantity: 1,
+            unit: 'piece',
+            unitPrice: 2.47,
+            totalPrice: 2.47,
+            confidence: 0.98,
+            ean: null,
+            categoryHint: null,
+            discount: null,
+          },
+          {
+            rawLabel: 'Sel régénérant lave-vaisselle',
+            detectedName: 'Sel régénérant lave-vaisselle',
+            lineType: 'product',
+            isFood: false,
+            quantity: 1,
+            unit: 'piece',
+            unitPrice: 1.29,
+            totalPrice: 1.29,
+            confidence: 0.98,
+            ean: null,
+            categoryHint: null,
+            discount: null,
+          },
+        ],
+      },
+    });
+
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0].detectedName).toBe('Pommes Golden');
+  });
+
   it('gère quantité multiple, remise ligne et total recalculé', () => {
     const result = normalizeOpenAIInvoiceAnalysis({
       pdfUrl: 'https://example.com/invoice.pdf',

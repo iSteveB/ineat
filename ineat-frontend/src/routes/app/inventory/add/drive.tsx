@@ -46,6 +46,8 @@ import { useInventoryActions } from '@/stores/inventoryStore';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 import {
 	getInvoiceTotals,
+	getBarcodeFreeProductLabel,
+	hasInvoiceItemBarcode,
 	getReliableInvoiceItemIds,
 	requiresInvoiceItemCorrection,
 	sortInvoiceItemsForReview
@@ -176,6 +178,13 @@ const getReviewStatus = (item: InvoiceItem) => {
 		return {
 			label: 'OFF indisponible · à vérifier',
 			variant: 'warning' as const
+		};
+	}
+
+	if (!hasInvoiceItemBarcode(item)) {
+		return {
+			label: getBarcodeFreeProductLabel(item),
+			variant: 'secondary' as const
 		};
 	}
 
