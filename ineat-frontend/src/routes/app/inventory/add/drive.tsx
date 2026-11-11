@@ -52,6 +52,7 @@ import {
 	requiresInvoiceItemCorrection,
 	sortInvoiceItemsForReview
 } from '@/features/invoice/invoiceReview';
+import { formatNovaScore } from '@/utils/productPresentation';
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
 	validateSearch: z.object({
@@ -1033,7 +1034,7 @@ function DriveInvoiceImportPage() {
 																			NOVA
 																		</span>
 																		<p className="font-medium text-neutral-900">
-																			{formatProductScore(
+																			{formatNovaScore(
 																				item.externalProductData.novascore
 																			)}
 																		</p>
