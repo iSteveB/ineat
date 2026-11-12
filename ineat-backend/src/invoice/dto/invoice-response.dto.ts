@@ -69,6 +69,9 @@ export class InvoiceItemResponseDto {
   @ApiPropertyOptional({ enum: ['FRESH', 'BULK', 'PACKAGED', 'UNKNOWN'] })
   productForm?: string | null;
 
+  @ApiProperty()
+  productFormConfirmed: boolean;
+
   @ApiPropertyOptional({
     enum: ['GTIN', 'STORE_REFERENCE', 'NONE', 'UNKNOWN'],
   })

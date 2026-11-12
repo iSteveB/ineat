@@ -293,6 +293,7 @@ model InvoiceItem {
   validated               Boolean   @default(false)
   productCode             String?
   productForm             String?
+  productFormConfirmed    Boolean   @default(false)
   barcodeType             String?
   category                String?
   discount                Float?

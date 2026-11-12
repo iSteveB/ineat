@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsIn,
   IsISO8601,
   IsInt,
   IsNumber,
@@ -42,6 +43,13 @@ export class UpdateInvoiceItemDto {
   @IsOptional()
   @IsString({ message: 'La catégorie doit être une chaîne de caractères' })
   category?: string;
+
+  @ApiPropertyOptional({ enum: ['FRESH', 'BULK', 'PACKAGED'] })
+  @IsOptional()
+  @IsIn(['FRESH', 'BULK', 'PACKAGED'], {
+    message: 'Le choix de création du produit doit être valide',
+  })
+  productForm?: 'FRESH' | 'BULK' | 'PACKAGED';
 
   @ApiPropertyOptional()
   @IsOptional()

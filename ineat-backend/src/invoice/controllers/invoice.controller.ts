@@ -209,6 +209,28 @@ export class InvoiceController {
     );
   }
 
+  @Post(':id/items/:itemId/retry-openfoodfacts')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Relancer la recherche OpenFoodFacts d’une ligne' })
+  @ApiParam({ name: 'id', description: 'ID de la facture' })
+  @ApiParam({ name: 'itemId', description: 'ID de la ligne de facture' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Recherche OpenFoodFacts relancée',
+    type: InvoiceItemResponseDto,
+  })
+  async retryInvoiceItemOpenFoodFacts(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') invoiceId: string,
+    @Param('itemId') itemId: string,
+  ): Promise<InvoiceItemResponseDto> {
+    return this.invoiceService.retryInvoiceItemOpenFoodFactsForUser(
+      req.user.id,
+      invoiceId,
+      itemId,
+    );
+  }
+
   @Post(':id/validate')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

@@ -27,6 +27,7 @@ export interface InvoiceItem {
 	validated: boolean;
 	productCode?: string | null;
 	productForm?: 'FRESH' | 'BULK' | 'PACKAGED' | 'UNKNOWN' | null;
+	productFormConfirmed?: boolean;
 	barcodeType?: 'GTIN' | 'STORE_REFERENCE' | 'NONE' | 'UNKNOWN' | null;
 	category?: string | null;
 	discount?: number | null;
@@ -124,6 +125,7 @@ export interface UpdateInvoiceItemInput {
 	unitPrice?: number;
 	totalPrice?: number;
 	category?: string;
+	productForm?: 'FRESH' | 'BULK' | 'PACKAGED';
 	productId?: string | null;
 	expiryDate?: string;
 	storageLocation?: string;
@@ -194,6 +196,16 @@ export const invoiceService = {
 		return apiClient.patch<InvoiceItem>(
 			`/invoices/${invoiceId}/items/${itemId}`,
 			data
+		);
+	},
+
+	async retryInvoiceItemOpenFoodFacts(
+		invoiceId: string,
+		itemId: string
+	): Promise<InvoiceItem> {
+		return apiClient.post<InvoiceItem>(
+			`/invoices/${invoiceId}/items/${itemId}/retry-openfoodfacts`,
+			{}
 		);
 	},
 

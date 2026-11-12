@@ -2696,6 +2696,7 @@ export const InvoiceItemScalarFieldEnum = {
   validated: 'validated',
   productCode: 'productCode',
   productForm: 'productForm',
+  productFormConfirmed: 'productFormConfirmed',
   barcodeType: 'barcodeType',
   category: 'category',
   discount: 'discount',

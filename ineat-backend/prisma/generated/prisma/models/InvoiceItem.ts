@@ -56,6 +56,7 @@ export type InvoiceItemMinAggregateOutputType = {
   validated: boolean | null
   productCode: string | null
   productForm: string | null
+  productFormConfirmed: boolean | null
   barcodeType: string | null
   category: string | null
   discount: number | null
@@ -87,6 +88,7 @@ export type InvoiceItemMaxAggregateOutputType = {
   validated: boolean | null
   productCode: string | null
   productForm: string | null
+  productFormConfirmed: boolean | null
   barcodeType: string | null
   category: string | null
   discount: number | null
@@ -118,6 +120,7 @@ export type InvoiceItemCountAggregateOutputType = {
   validated: number
   productCode: number
   productForm: number
+  productFormConfirmed: number
   barcodeType: number
   category: number
   discount: number
@@ -172,6 +175,7 @@ export type InvoiceItemMinAggregateInputType = {
   validated?: true
   productCode?: true
   productForm?: true
+  productFormConfirmed?: true
   barcodeType?: true
   category?: true
   discount?: true
@@ -203,6 +207,7 @@ export type InvoiceItemMaxAggregateInputType = {
   validated?: true
   productCode?: true
   productForm?: true
+  productFormConfirmed?: true
   barcodeType?: true
   category?: true
   discount?: true
@@ -234,6 +239,7 @@ export type InvoiceItemCountAggregateInputType = {
   validated?: true
   productCode?: true
   productForm?: true
+  productFormConfirmed?: true
   barcodeType?: true
   category?: true
   discount?: true
@@ -355,6 +361,7 @@ export type InvoiceItemGroupByOutputType = {
   validated: boolean
   productCode: string | null
   productForm: string | null
+  productFormConfirmed: boolean
   barcodeType: string | null
   category: string | null
   discount: number | null
@@ -412,6 +419,7 @@ export type InvoiceItemWhereInput = {
   validated?: Prisma.BoolFilter<"InvoiceItem"> | boolean
   productCode?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   productForm?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  productFormConfirmed?: Prisma.BoolFilter<"InvoiceItem"> | boolean
   barcodeType?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   category?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   discount?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
@@ -449,6 +457,7 @@ export type InvoiceItemOrderByWithRelationInput = {
   validated?: Prisma.SortOrder
   productCode?: Prisma.SortOrderInput | Prisma.SortOrder
   productForm?: Prisma.SortOrderInput | Prisma.SortOrder
+  productFormConfirmed?: Prisma.SortOrder
   barcodeType?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrderInput | Prisma.SortOrder
   discount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -489,6 +498,7 @@ export type InvoiceItemWhereUniqueInput = Prisma.AtLeast<{
   validated?: Prisma.BoolFilter<"InvoiceItem"> | boolean
   productCode?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   productForm?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  productFormConfirmed?: Prisma.BoolFilter<"InvoiceItem"> | boolean
   barcodeType?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   category?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   discount?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
@@ -526,6 +536,7 @@ export type InvoiceItemOrderByWithAggregationInput = {
   validated?: Prisma.SortOrder
   productCode?: Prisma.SortOrderInput | Prisma.SortOrder
   productForm?: Prisma.SortOrderInput | Prisma.SortOrder
+  productFormConfirmed?: Prisma.SortOrder
   barcodeType?: Prisma.SortOrderInput | Prisma.SortOrder
   category?: Prisma.SortOrderInput | Prisma.SortOrder
   discount?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -568,6 +579,7 @@ export type InvoiceItemScalarWhereWithAggregatesInput = {
   validated?: Prisma.BoolWithAggregatesFilter<"InvoiceItem"> | boolean
   productCode?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   productForm?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
+  productFormConfirmed?: Prisma.BoolWithAggregatesFilter<"InvoiceItem"> | boolean
   barcodeType?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   category?: Prisma.StringNullableWithAggregatesFilter<"InvoiceItem"> | string | null
   discount?: Prisma.FloatNullableWithAggregatesFilter<"InvoiceItem"> | number | null
@@ -600,6 +612,7 @@ export type InvoiceItemCreateInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -637,6 +650,7 @@ export type InvoiceItemUncheckedCreateInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -670,6 +684,7 @@ export type InvoiceItemUpdateInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -707,6 +722,7 @@ export type InvoiceItemUncheckedUpdateInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -742,6 +758,7 @@ export type InvoiceItemCreateManyInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -774,6 +791,7 @@ export type InvoiceItemUpdateManyMutationInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -808,6 +826,7 @@ export type InvoiceItemUncheckedUpdateManyInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -857,6 +876,7 @@ export type InvoiceItemCountOrderByAggregateInput = {
   validated?: Prisma.SortOrder
   productCode?: Prisma.SortOrder
   productForm?: Prisma.SortOrder
+  productFormConfirmed?: Prisma.SortOrder
   barcodeType?: Prisma.SortOrder
   category?: Prisma.SortOrder
   discount?: Prisma.SortOrder
@@ -900,6 +920,7 @@ export type InvoiceItemMaxOrderByAggregateInput = {
   validated?: Prisma.SortOrder
   productCode?: Prisma.SortOrder
   productForm?: Prisma.SortOrder
+  productFormConfirmed?: Prisma.SortOrder
   barcodeType?: Prisma.SortOrder
   category?: Prisma.SortOrder
   discount?: Prisma.SortOrder
@@ -931,6 +952,7 @@ export type InvoiceItemMinOrderByAggregateInput = {
   validated?: Prisma.SortOrder
   productCode?: Prisma.SortOrder
   productForm?: Prisma.SortOrder
+  productFormConfirmed?: Prisma.SortOrder
   barcodeType?: Prisma.SortOrder
   category?: Prisma.SortOrder
   discount?: Prisma.SortOrder
@@ -1073,6 +1095,7 @@ export type InvoiceItemCreateWithoutExpenseInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1109,6 +1132,7 @@ export type InvoiceItemUncheckedCreateWithoutExpenseInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1157,6 +1181,7 @@ export type InvoiceItemUpdateWithoutExpenseInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1193,6 +1218,7 @@ export type InvoiceItemUncheckedUpdateWithoutExpenseInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1225,6 +1251,7 @@ export type InvoiceItemCreateWithoutProductInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1260,6 +1287,7 @@ export type InvoiceItemUncheckedCreateWithoutProductInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1324,6 +1352,7 @@ export type InvoiceItemScalarWhereInput = {
   validated?: Prisma.BoolFilter<"InvoiceItem"> | boolean
   productCode?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   productForm?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
+  productFormConfirmed?: Prisma.BoolFilter<"InvoiceItem"> | boolean
   barcodeType?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   category?: Prisma.StringNullableFilter<"InvoiceItem"> | string | null
   discount?: Prisma.FloatNullableFilter<"InvoiceItem"> | number | null
@@ -1356,6 +1385,7 @@ export type InvoiceItemCreateWithoutInvoiceInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1391,6 +1421,7 @@ export type InvoiceItemUncheckedCreateWithoutInvoiceInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1451,6 +1482,7 @@ export type InvoiceItemCreateManyProductInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1483,6 +1515,7 @@ export type InvoiceItemUpdateWithoutProductInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1518,6 +1551,7 @@ export type InvoiceItemUncheckedUpdateWithoutProductInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1552,6 +1586,7 @@ export type InvoiceItemUncheckedUpdateManyWithoutProductInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1585,6 +1620,7 @@ export type InvoiceItemCreateManyInvoiceInput = {
   validated?: boolean
   productCode?: string | null
   productForm?: string | null
+  productFormConfirmed?: boolean
   barcodeType?: string | null
   category?: string | null
   discount?: number | null
@@ -1617,6 +1653,7 @@ export type InvoiceItemUpdateWithoutInvoiceInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1652,6 +1689,7 @@ export type InvoiceItemUncheckedUpdateWithoutInvoiceInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1686,6 +1724,7 @@ export type InvoiceItemUncheckedUpdateManyWithoutInvoiceInput = {
   validated?: Prisma.BoolFieldUpdateOperationsInput | boolean
   productCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   productForm?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  productFormConfirmed?: Prisma.BoolFieldUpdateOperationsInput | boolean
   barcodeType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   discount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
@@ -1722,6 +1761,7 @@ export type InvoiceItemSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   validated?: boolean
   productCode?: boolean
   productForm?: boolean
+  productFormConfirmed?: boolean
   barcodeType?: boolean
   category?: boolean
   discount?: boolean
@@ -1759,6 +1799,7 @@ export type InvoiceItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   validated?: boolean
   productCode?: boolean
   productForm?: boolean
+  productFormConfirmed?: boolean
   barcodeType?: boolean
   category?: boolean
   discount?: boolean
@@ -1795,6 +1836,7 @@ export type InvoiceItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   validated?: boolean
   productCode?: boolean
   productForm?: boolean
+  productFormConfirmed?: boolean
   barcodeType?: boolean
   category?: boolean
   discount?: boolean
@@ -1831,6 +1873,7 @@ export type InvoiceItemSelectScalar = {
   validated?: boolean
   productCode?: boolean
   productForm?: boolean
+  productFormConfirmed?: boolean
   barcodeType?: boolean
   category?: boolean
   discount?: boolean
@@ -1853,7 +1896,7 @@ export type InvoiceItemSelectScalar = {
   updatedAt?: boolean
 }
 
-export type InvoiceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceId" | "productId" | "detectedName" | "quantity" | "unitPrice" | "totalPrice" | "confidence" | "validated" | "productCode" | "productForm" | "barcodeType" | "category" | "discount" | "selectedEan" | "suggestedEans" | "externalProductProvider" | "externalProductStatus" | "externalProductData" | "externalProductError" | "ciqualCode" | "ciqualName" | "ciqualMatchConfidence" | "ciqualNutrients" | "expiryDate" | "expiryDateSource" | "preservationCategory" | "storageLocation" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["invoiceItem"]>
+export type InvoiceItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "invoiceId" | "productId" | "detectedName" | "quantity" | "unitPrice" | "totalPrice" | "confidence" | "validated" | "productCode" | "productForm" | "productFormConfirmed" | "barcodeType" | "category" | "discount" | "selectedEan" | "suggestedEans" | "externalProductProvider" | "externalProductStatus" | "externalProductData" | "externalProductError" | "ciqualCode" | "ciqualName" | "ciqualMatchConfidence" | "ciqualNutrients" | "expiryDate" | "expiryDateSource" | "preservationCategory" | "storageLocation" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["invoiceItem"]>
 export type InvoiceItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   Expense?: boolean | Prisma.InvoiceItem$ExpenseArgs<ExtArgs>
   Invoice?: boolean | Prisma.InvoiceDefaultArgs<ExtArgs>
@@ -1887,6 +1930,7 @@ export type $InvoiceItemPayload<ExtArgs extends runtime.Types.Extensions.Interna
     validated: boolean
     productCode: string | null
     productForm: string | null
+    productFormConfirmed: boolean
     barcodeType: string | null
     category: string | null
     discount: number | null
@@ -2344,6 +2388,7 @@ export interface InvoiceItemFieldRefs {
   readonly validated: Prisma.FieldRef<"InvoiceItem", 'Boolean'>
   readonly productCode: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly productForm: Prisma.FieldRef<"InvoiceItem", 'String'>
+  readonly productFormConfirmed: Prisma.FieldRef<"InvoiceItem", 'Boolean'>
   readonly barcodeType: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly category: Prisma.FieldRef<"InvoiceItem", 'String'>
   readonly discount: Prisma.FieldRef<"InvoiceItem", 'Float'>

@@ -49,6 +49,7 @@ describe('InvoiceService', () => {
       update: jest.fn(),
     },
     invoiceItem: {
+      findFirst: jest.fn(),
       update: jest.fn(),
     },
     category: {
@@ -78,6 +79,7 @@ describe('InvoiceService', () => {
 
   const openFoodFactsInvoiceEnrichmentService = {
     enrichItems: jest.fn(),
+    enrichItem: jest.fn(),
   };
 
   const ciqualReferenceService = {
@@ -554,6 +556,7 @@ describe('InvoiceService', () => {
         quantity: 3,
         totalPrice: 6.75,
         category: 'fruits-et-legumes',
+        productForm: 'FRESH',
         storageLocation: ' Réfrigérateur ',
       },
     );
@@ -579,6 +582,8 @@ describe('InvoiceService', () => {
         quantity: 3,
         totalPrice: 6.75,
         category: 'fruits-et-legumes',
+        productForm: 'FRESH',
+        productFormConfirmed: true,
         storageLocation: 'Réfrigérateur',
       }),
       include: {
@@ -595,6 +600,46 @@ describe('InvoiceService', () => {
       quantity: 3,
       totalPrice: 6.75,
     });
+  });
+
+  it('relance une recherche OpenFoodFacts en erreur pour une ligne', async () => {
+    const failedItem = {
+      ...completedInvoice.InvoiceItem[0],
+      externalProductStatus: 'ERROR',
+      selectedEan: '3564700012345',
+      Product: null,
+    };
+    const enrichedItem = {
+      ...failedItem,
+      externalProductStatus: 'FOUND',
+      externalProductProvider: 'openfoodfacts',
+      externalProductData: {
+        source: 'openfoodfacts',
+        barcode: '3564700012345',
+        name: 'Pommes',
+      },
+      externalProductError: null,
+    };
+    prisma.invoiceItem.findFirst.mockResolvedValue(failedItem);
+    openFoodFactsInvoiceEnrichmentService.enrichItem.mockResolvedValue(
+      enrichedItem,
+    );
+    prisma.invoiceItem.update.mockResolvedValue(enrichedItem);
+
+    const result = await service.retryInvoiceItemOpenFoodFactsForUser(
+      'user-1',
+      'invoice-1',
+      'item-1',
+    );
+
+    expect(openFoodFactsInvoiceEnrichmentService.enrichItem).toHaveBeenCalled();
+    expect(prisma.invoiceItem.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'item-1' },
+        data: expect.objectContaining({ externalProductStatus: 'FOUND' }),
+      }),
+    );
+    expect(result.externalProductStatus).toBe('FOUND');
   });
 
   it('refuse une catégorie qui ne vient pas de la liste interne', async () => {

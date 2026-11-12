@@ -45,6 +45,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useInventoryActions } from '@/stores/inventoryStore';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 import {
+	canChooseInvoiceProductCreation,
 	getInvoiceTotals,
 	getBarcodeFreeProductLabel,
 	hasInvoiceItemBarcode,
@@ -86,6 +87,12 @@ const COOKING_MESSAGES = [
 const MINIMUM_COOKING_DURATION_MS = 4_500;
 const COOKING_MESSAGE_INTERVAL_MS = 3_000;
 
+const PRODUCT_CREATION_OPTIONS = [
+	{ value: 'FRESH', label: 'Produit frais' },
+	{ value: 'BULK', label: 'Produit en vrac' },
+	{ value: 'PACKAGED', label: 'Créer un nouveau produit' }
+] as const;
+
 type InvoiceItemDraft = Pick<
 	InvoiceItem,
 	| 'detectedName'
@@ -93,6 +100,8 @@ type InvoiceItemDraft = Pick<
 	| 'unitPrice'
 	| 'totalPrice'
 	| 'category'
+	| 'productForm'
+	| 'productFormConfirmed'
 	| 'expiryDate'
 	| 'expiryDateSource'
 	| 'storageLocation'
@@ -140,6 +149,8 @@ const createDraft = (item: InvoiceItem): InvoiceItemDraft => ({
 	unitPrice: item.unitPrice,
 	totalPrice: item.totalPrice,
 	category: item.category,
+	productForm: item.productForm,
+	productFormConfirmed: item.productFormConfirmed,
 	expiryDate: item.expiryDate,
 	expiryDateSource: item.expiryDateSource,
 	storageLocation: item.storageLocation,
@@ -175,22 +186,28 @@ const getReviewStatus = (item: InvoiceItem) => {
 		return { label: 'Enrichi automatiquement', variant: 'success' as const };
 	}
 
-	if (
-		item.productForm === 'FRESH' ||
-		item.productForm === 'BULK' ||
-		item.barcodeType === 'STORE_REFERENCE' ||
-		item.barcodeType === 'NONE'
-	) {
-		return {
-			label: getBarcodeFreeProductLabel(item),
-			variant: 'secondary' as const
-		};
+	if (item.productId || item.product) {
+		return { label: 'Produit InEat existant', variant: 'success' as const };
 	}
 
 	if (item.externalProductStatus === 'ERROR') {
 		return {
-			label: 'OFF indisponible · à vérifier',
+			label: 'OFF indisponible · réessayer',
 			variant: 'warning' as const
+		};
+	}
+
+	if (canChooseInvoiceProductCreation(item)) {
+		if (!item.productFormConfirmed) {
+			return { label: 'Choix requis', variant: 'warning' as const };
+		}
+
+		return {
+			label:
+				item.productForm === 'PACKAGED'
+					? 'Nouveau produit'
+					: getBarcodeFreeProductLabel(item),
+			variant: 'secondary' as const
 		};
 	}
 
@@ -199,14 +216,6 @@ const getReviewStatus = (item: InvoiceItem) => {
 			label: getBarcodeFreeProductLabel(item),
 			variant: 'secondary' as const
 		};
-	}
-
-	if (item.externalProductStatus === 'NOT_FOUND') {
-		return { label: 'Absent d’OpenFoodFacts', variant: 'warning' as const };
-	}
-
-	if (item.externalProductStatus === 'SKIPPED') {
-		return { label: 'Sans EAN · à vérifier', variant: 'warning' as const };
 	}
 
 	return { label: 'Informations incomplètes', variant: 'warning' as const };
@@ -428,6 +437,35 @@ function DriveInvoiceImportPage() {
 		}
 	});
 
+	const retryOpenFoodFactsMutation = useMutation({
+		mutationFn: (itemId: string) => {
+			if (!invoice) throw new Error('Facture introuvable');
+			return invoiceService.retryInvoiceItemOpenFoodFacts(invoice.id, itemId);
+		},
+		onSuccess: (updatedItem) => {
+			setInvoice((current) =>
+				current
+					? {
+							...current,
+							items: current.items.map((item) =>
+								item.id === updatedItem.id ? updatedItem : item
+							)
+						}
+					: current
+			);
+			setDrafts((current) => ({
+				...current,
+				[updatedItem.id]: createDraft(updatedItem)
+			}));
+			if (updatedItem.externalProductStatus === 'ERROR') {
+				toast.error('OpenFoodFacts reste indisponible');
+			} else {
+				toast.success('Recherche OpenFoodFacts terminée');
+			}
+		},
+		onError: (error: Error) => toast.error(error.message)
+	});
+
 	const validateMutation = useMutation({
 		mutationFn: (invoiceItemIds?: string[]) => {
 			if (!invoice) {
@@ -529,6 +567,12 @@ function DriveInvoiceImportPage() {
 		unitPrice: draft.unitPrice ?? undefined,
 		totalPrice: getLineTotal(draft),
 		category: draft.category ?? undefined,
+		productForm:
+			draft.productFormConfirmed &&
+			draft.productForm !== 'UNKNOWN' &&
+			draft.productForm !== null
+				? draft.productForm
+				: undefined,
 		productId: draft.productId === null ? null : (draft.productId ?? undefined),
 		expiryDate: draft.expiryDate ?? undefined,
 		storageLocation:
@@ -552,6 +596,24 @@ function DriveInvoiceImportPage() {
 				revision
 			});
 		}, 700);
+	};
+
+	const chooseProductCreation = (
+		itemId: string,
+		productForm: 'FRESH' | 'BULK' | 'PACKAGED'
+	) => {
+		setDrafts((current) => {
+			const draft = current[itemId];
+			if (!draft) return current;
+
+			const nextDraft = {
+				...draft,
+				productForm,
+				productFormConfirmed: true
+			};
+			scheduleDraftAutosave(itemId, nextDraft);
+			return { ...current, [itemId]: nextDraft };
+		});
 	};
 
 	const updateDraft = (
@@ -898,8 +960,16 @@ function DriveInvoiceImportPage() {
 										const isExpanded = expandedItemId === item.id;
 										const suggestedEans = getSuggestedEans(item);
 										const imageUrl = getItemImageUrl(item);
-										const reviewStatus = getReviewStatus(item);
-										const needsCorrection = requiresInvoiceItemCorrection(item);
+										const reviewedItem = {
+											...item,
+											productForm: draft.productForm,
+											productFormConfirmed: draft.productFormConfirmed
+										};
+										const reviewStatus = getReviewStatus(reviewedItem);
+										const needsCorrection =
+											requiresInvoiceItemCorrection(reviewedItem);
+										const canChooseCreation =
+											canChooseInvoiceProductCreation(reviewedItem);
 										const saveState = saveStates[item.id] ?? 'idle';
 
 										return (
@@ -994,6 +1064,66 @@ function DriveInvoiceImportPage() {
 														/>
 													</button>
 												</div>
+
+												{canChooseCreation && (
+													<div className="border-t border-neutral-100 px-4 py-3">
+														<p className="mb-2 text-xs font-medium text-neutral-700">
+															Ce produit n’a pas été trouvé dans OpenFoodFacts. Comment
+															voulez-vous l’ajouter ?
+														</p>
+														<div
+															role="radiogroup"
+															aria-label="Mode de création du produit"
+															className="flex flex-wrap gap-2"
+														>
+															{PRODUCT_CREATION_OPTIONS.map((option) => {
+																const isActive =
+																	draft.productFormConfirmed &&
+																	draft.productForm === option.value;
+
+																return (
+																	<Button
+																		key={option.value}
+																		type="button"
+																		role="radio"
+																		aria-checked={isActive}
+																		variant={isActive ? 'primary' : 'outline'}
+																		onClick={() =>
+																			chooseProductCreation(item.id, option.value)
+																		}
+																		disabled={item.validated}
+																	>
+																		{option.label}
+																	</Button>
+																);
+															})}
+														</div>
+													</div>
+												)}
+
+												{item.externalProductStatus === 'ERROR' &&
+													!item.productId &&
+													!item.product && (
+														<div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 px-4 py-3">
+															<p className="text-xs text-warning-700">
+																OpenFoodFacts était indisponible. Ce produit n’est pas
+																encore considéré comme introuvable.
+															</p>
+															<Button
+																type="button"
+																variant="outline"
+																onClick={() => retryOpenFoodFactsMutation.mutate(item.id)}
+																disabled={retryOpenFoodFactsMutation.isPending}
+															>
+																{retryOpenFoodFactsMutation.isPending ? (
+																	<Loader2 className="mr-2 size-4 animate-spin" />
+																) : (
+																	<RotateCcw className="mr-2 size-4" />
+																)}
+																Réessayer
+															</Button>
+														</div>
+													)}
 
 												{isExpanded && (
 													<div className="border-t border-neutral-100 p-4">

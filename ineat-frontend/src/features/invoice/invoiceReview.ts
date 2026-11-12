@@ -33,6 +33,12 @@ export const shouldUseOpenFoodFacts = (item: InvoiceItem): boolean =>
 	item.barcodeType === 'GTIN' ||
 	(item.barcodeType == null && hasInvoiceItemBarcode(item));
 
+export const canChooseInvoiceProductCreation = (item: InvoiceItem): boolean =>
+	!item.validated &&
+	!item.productId &&
+	!item.product &&
+	['NOT_FOUND', 'SKIPPED'].includes(item.externalProductStatus ?? '');
+
 export const getInvoiceItemTotal = (item: {
 	quantity?: number;
 	unitPrice?: number | null;
@@ -50,10 +56,11 @@ export const requiresInvoiceItemCorrection = (item: InvoiceItem): boolean =>
 	item.quantity <= 0 ||
 	getInvoiceItemTotal(item) === null ||
 	item.confidence < RELIABLE_INVOICE_CONFIDENCE ||
-	(shouldUseOpenFoodFacts(item) &&
-		['ERROR', 'NOT_FOUND', 'INCOMPLETE'].includes(
-			item.externalProductStatus ?? ''
-		));
+	(!item.productId &&
+		!item.product &&
+		(['ERROR', 'INCOMPLETE'].includes(item.externalProductStatus ?? '') ||
+			(canChooseInvoiceProductCreation(item) &&
+				!item.productFormConfirmed)));
 
 export const sortInvoiceItemsForReview = (
 	items: InvoiceItem[]

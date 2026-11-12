@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { InvoiceItem } from '@/services/invoiceService';
 import {
+	canChooseInvoiceProductCreation,
 	getBarcodeFreeProductLabel,
 	getInvoiceTotals,
 	getReliableInvoiceItemIds,
@@ -48,10 +49,11 @@ describe('invoiceReview', () => {
 		expect(requiresInvoiceItemCorrection(items[1])).toBe(true);
 	});
 
-	it('ne demande pas de correction OpenFoodFacts pour un produit sans code-barres', () => {
+	it('demande un choix pour un produit non trouvé sans code-barres', () => {
 		const barcodeFreeItem = item({ externalProductStatus: 'NOT_FOUND' });
 
-		expect(requiresInvoiceItemCorrection(barcodeFreeItem)).toBe(false);
+		expect(canChooseInvoiceProductCreation(barcodeFreeItem)).toBe(true);
+		expect(requiresInvoiceItemCorrection(barcodeFreeItem)).toBe(true);
 	});
 
 	it('adapte le libellé des produits sans code-barres', () => {
@@ -80,7 +82,7 @@ describe('invoiceReview', () => {
 		).toBe('Produit sans code-barres');
 	});
 
-	it('ignore les erreurs OpenFoodFacts pour une référence interne', () => {
+	it('distingue une erreur OpenFoodFacts d’un produit non trouvé', () => {
 		const freshItem = item({
 			productForm: 'FRESH',
 			barcodeType: 'STORE_REFERENCE',
@@ -88,8 +90,30 @@ describe('invoiceReview', () => {
 			productCode: '2012345678901'
 		});
 
-		expect(requiresInvoiceItemCorrection(freshItem)).toBe(false);
+		expect(canChooseInvoiceProductCreation(freshItem)).toBe(false);
+		expect(requiresInvoiceItemCorrection(freshItem)).toBe(true);
 		expect(getBarcodeFreeProductLabel(freshItem)).toBe('Produit frais');
+	});
+
+	it('valide un produit non trouvé après le choix explicite de l’utilisateur', () => {
+		const confirmedItem = item({
+			externalProductStatus: 'NOT_FOUND',
+			productForm: 'FRESH',
+			productFormConfirmed: true
+		});
+
+		expect(canChooseInvoiceProductCreation(confirmedItem)).toBe(true);
+		expect(requiresInvoiceItemCorrection(confirmedItem)).toBe(false);
+	});
+
+	it('ne propose pas de création si un produit InEat est déjà associé', () => {
+		const existingItem = item({
+			externalProductStatus: 'NOT_FOUND',
+			productId: 'product-1'
+		});
+
+		expect(canChooseInvoiceProductCreation(existingItem)).toBe(false);
+		expect(requiresInvoiceItemCorrection(existingItem)).toBe(false);
 	});
 
 	it('calcule la somme des lignes et l’écart avec la facture', () => {

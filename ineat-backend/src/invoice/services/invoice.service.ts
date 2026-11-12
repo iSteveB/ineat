@@ -29,6 +29,7 @@ import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
 import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
 import { CiqualReferenceService } from '../../ciqual/ciqual-reference.service';
 import { estimateExpiryDate } from '../../inventory/services/expiry-estimation.service';
+import { AnalyzedInvoiceItem } from './providers/invoice-analysis-provider';
 
 export interface InvoiceUser {
   id: string;
@@ -454,6 +455,11 @@ export class InvoiceService {
       updateData.category = category || null;
     }
 
+    if (updateDto.productForm !== undefined) {
+      updateData.productForm = updateDto.productForm;
+      updateData.productFormConfirmed = true;
+    }
+
     if (updateDto.productId !== undefined) {
       updateData.productId = updateDto.productId;
     }
@@ -522,6 +528,57 @@ export class InvoiceService {
           },
         },
       },
+    });
+
+    return this.formatInvoiceItem(updatedItem);
+  }
+
+  async retryInvoiceItemOpenFoodFactsForUser(
+    userId: string,
+    invoiceId: string,
+    itemId: string,
+  ) {
+    const invoiceItem = await this.prisma.invoiceItem.findFirst({
+      where: { id: itemId, invoiceId, Invoice: { userId } },
+      include: { Product: { include: { Category: true } } },
+    });
+
+    if (!invoiceItem) {
+      throw new NotFoundException('Ligne de facture non trouvée');
+    }
+
+    if (invoiceItem.validated) {
+      throw new BadRequestException(
+        'Une ligne déjà validée ne peut plus être enrichie',
+      );
+    }
+
+    if (invoiceItem.externalProductStatus !== 'ERROR') {
+      throw new BadRequestException(
+        'Seule une recherche OpenFoodFacts en erreur peut être relancée',
+      );
+    }
+
+    const enriched =
+      await this.openFoodFactsInvoiceEnrichmentService.enrichItem(
+        invoiceItem as unknown as AnalyzedInvoiceItem,
+      );
+    const updatedItem = await this.prisma.invoiceItem.update({
+      where: { id: itemId },
+      data: {
+        category: enriched.category,
+        storageLocation: enriched.storageLocation,
+        selectedEan: enriched.selectedEan,
+        suggestedEans: enriched.suggestedEans ?? [],
+        externalProductProvider: enriched.externalProductProvider,
+        externalProductStatus: enriched.externalProductStatus,
+        externalProductData: enriched.externalProductData
+          ? (enriched.externalProductData as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        externalProductError: enriched.externalProductError,
+        updatedAt: new Date(),
+      },
+      include: { Product: { include: { Category: true } } },
     });
 
     return this.formatInvoiceItem(updatedItem);
@@ -913,6 +970,7 @@ export class InvoiceService {
             confidence: item.confidence,
             productCode: item.productCode,
             productForm: item.productForm,
+            productFormConfirmed: false,
             barcodeType: item.barcodeType,
             category: item.category,
             preservationCategory: item.preservationCategory,
@@ -1516,6 +1574,7 @@ export class InvoiceService {
       validated: item.validated,
       productCode: item.productCode,
       productForm: item.productForm,
+      productFormConfirmed: item.productFormConfirmed,
       barcodeType: item.barcodeType,
       category: item.category,
       discount: item.discount,
