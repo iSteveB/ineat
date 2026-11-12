@@ -26,6 +26,8 @@ export interface InvoiceItem {
 	confidence: number;
 	validated: boolean;
 	productCode?: string | null;
+	productForm?: 'FRESH' | 'BULK' | 'PACKAGED' | 'UNKNOWN' | null;
+	barcodeType?: 'GTIN' | 'STORE_REFERENCE' | 'NONE' | 'UNKNOWN' | null;
 	category?: string | null;
 	discount?: number | null;
 	selectedEan?: string | null;

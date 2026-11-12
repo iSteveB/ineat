@@ -74,6 +74,8 @@ const INVOICE_EXTRACTION_SCHEMA = {
           'detectedName',
           'lineType',
           'isFood',
+          'productForm',
+          'barcodeType',
           'quantity',
           'unit',
           'unitPrice',
@@ -102,6 +104,18 @@ const INVOICE_EXTRACTION_SCHEMA = {
             type: 'boolean',
             description:
               'true uniquement pour un aliment ou une boisson destiné à la consommation humaine; false pour toutes les autres lignes, notamment hygiène, entretien, maison et beauté.',
+          },
+          productForm: {
+            type: 'string',
+            enum: ['FRESH', 'BULK', 'PACKAGED', 'UNKNOWN'],
+            description:
+              'Mode de présentation du produit, déterminé sémantiquement même si le libellé ne contient pas le mot vrac.',
+          },
+          barcodeType: {
+            type: 'string',
+            enum: ['GTIN', 'STORE_REFERENCE', 'NONE', 'UNKNOWN'],
+            description:
+              'Nature du code visible : véritable GTIN fabricant, référence interne enseigne, aucun code, ou incertain.',
           },
           quantity: { type: ['number', 'null'] },
           unit: { type: ['string', 'null'] },
@@ -141,6 +155,11 @@ const INVOICE_ANALYSIS_PROMPT = [
   'Classe chaque ligne avec lineType: product, fee, discount, total, payment ou unknown.',
   'Pour chaque ligne, indique isFood=true uniquement si elle correspond à un aliment ou une boisson destiné à la consommation humaine; utilise false dans tous les autres cas.',
   'Les produits d’hygiène, beauté, entretien, maison et tous les autres produits non alimentaires doivent avoir isFood=false.',
+  'Pour productForm, classe sémantiquement chaque aliment comme FRESH, BULK, PACKAGED ou UNKNOWN sans dépendre de la présence du mot « vrac » dans le libellé.',
+  'FRESH désigne notamment fruits, légumes, viande, poisson et produits à la coupe; BULK les produits vendus en vrac ou au poids; PACKAGED les produits emballés avec un GTIN fabricant.',
+  'Pour les lignes qui ne sont pas des produits alimentaires, utilise productForm=UNKNOWN.',
+  'Pour barcodeType, distingue un véritable GTIN fabricant d’une référence interne de l’enseigne. Les codes de poids/prix variable et les références propres au magasin sont STORE_REFERENCE.',
+  'Utilise barcodeType=NONE lorsqu’aucun code n’est visible et UNKNOWN lorsqu’un code visible ne peut pas être identifié avec certitude.',
   'Ne transforme pas les frais, totaux, moyens de paiement ou remises globales en produits.',
   'Les prix sont en euros TTC sauf mention contraire.',
   'Pour chaque produit, quantity est un entier positif correspondant au nombre d’unités achetées affiché sur la facture.',
@@ -156,9 +175,9 @@ const INVOICE_ANALYSIS_PROMPT = [
 
 export const OPENAI_INVOICE_VERSIONS = {
   pipeline: 'invoice-analysis-v1',
-  prompt: 'drive-invoice-fr-v5',
-  schema: 'drive-invoice-v5',
-  normalizer: 'openai-invoice-normalizer-v3',
+  prompt: 'drive-invoice-fr-v6',
+  schema: 'drive-invoice-v6',
+  normalizer: 'openai-invoice-normalizer-v4',
 } as const;
 
 @Injectable()

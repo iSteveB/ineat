@@ -316,6 +316,28 @@ describe('OpenFoodFactsInvoiceEnrichmentService', () => {
     });
   });
 
+  it('ignore une référence interne même si elle ressemble à un code-barres', async () => {
+    const [result] = await service.enrichItems([
+      {
+        detectedName: 'Raisins blancs',
+        quantity: 1,
+        confidence: 0.95,
+        productForm: 'BULK',
+        barcodeType: 'STORE_REFERENCE',
+        selectedEan: '2012345678901',
+        productCode: '2012345678901',
+      },
+    ]);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result).toMatchObject({
+      productForm: 'BULK',
+      barcodeType: 'STORE_REFERENCE',
+      externalProductStatus: 'SKIPPED',
+      externalProductData: null,
+    });
+  });
+
   it('utilise productCode lorsque selectedEan est présent mais invalide', async () => {
     fetchMock.mockResolvedValue({
       ok: true,

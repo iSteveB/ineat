@@ -292,6 +292,8 @@ model InvoiceItem {
   confidence              Float
   validated               Boolean   @default(false)
   productCode             String?
+  productForm             String?
+  barcodeType             String?
   category                String?
   discount                Float?
   selectedEan             String?

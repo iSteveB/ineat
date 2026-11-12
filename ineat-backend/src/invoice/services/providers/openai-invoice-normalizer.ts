@@ -2,6 +2,8 @@ import { Prisma } from '../../../../prisma/generated/prisma/client';
 import {
   AnalyzedInvoice,
   AnalyzedInvoiceItem,
+  InvoiceBarcodeType,
+  InvoiceProductForm,
 } from './invoice-analysis-provider';
 import { InvoiceAnalysisVersions } from './invoice-analysis-contracts';
 import {
@@ -28,6 +30,8 @@ export interface OpenAIExtractedInvoiceLine {
   lineType: OpenAIInvoiceLineType;
   /** Optional for compatibility with analyses produced before schema v5. */
   isFood?: boolean;
+  productForm?: InvoiceProductForm;
+  barcodeType?: InvoiceBarcodeType;
   quantity: number | null;
   unit: string | null;
   unitPrice: number | null;
@@ -165,7 +169,10 @@ function normalizeInvoiceLine(
     hasTotalPrice: totalPrice !== null,
     hasPriceMismatch: prices.hasPriceMismatch,
   });
-  const ean = normalizeBarcode(line.ean);
+  const barcodeClassification = normalizeBarcodeClassification(
+    line.ean,
+    line.barcodeType,
+  );
   const preservationCategory = PRESERVATION_CATEGORIES.includes(
     line.preservationCategory as PreservationCategory,
   ) && line.storageLocation
@@ -178,9 +185,13 @@ function normalizeInvoiceLine(
     unitPrice,
     totalPrice,
     confidence,
-    productCode: ean,
-    selectedEan: ean,
-    suggestedEans: ean ? [ean] : [],
+    productCode: barcodeClassification.gtin,
+    selectedEan: barcodeClassification.gtin,
+    suggestedEans: barcodeClassification.gtin
+      ? [barcodeClassification.gtin]
+      : [],
+    productForm: normalizeProductForm(line.productForm),
+    barcodeType: barcodeClassification.type,
     category,
     storageLocation: line.storageLocation ?? storageLocation,
     preservationCategory,
@@ -215,7 +226,56 @@ function adjustLineConfidence(
 
 function normalizeBarcode(value: unknown): string | null {
   const cleaned = cleanString(value);
-  return cleaned && /^\d{8,13}$/.test(cleaned) ? cleaned : null;
+  return cleaned && /^(?:\d{8}|\d{12}|\d{13})$/.test(cleaned)
+    ? cleaned
+    : null;
+}
+
+function hasValidGtinCheckDigit(barcode: string): boolean {
+  const digits = barcode.split('').map(Number);
+  const checkDigit = digits.pop();
+  if (checkDigit === undefined) return false;
+
+  const sum = digits
+    .reverse()
+    .reduce((total, digit, index) => total + digit * (index % 2 === 0 ? 3 : 1), 0);
+  return (10 - (sum % 10)) % 10 === checkDigit;
+}
+
+function normalizeProductForm(value: unknown): InvoiceProductForm {
+  return ['FRESH', 'BULK', 'PACKAGED', 'UNKNOWN'].includes(String(value))
+    ? (value as InvoiceProductForm)
+    : 'UNKNOWN';
+}
+
+function normalizeBarcodeClassification(
+  value: unknown,
+  declaredType: unknown,
+): { gtin: string | null; type: InvoiceBarcodeType } {
+  const barcode = normalizeBarcode(value);
+  const type = ['GTIN', 'STORE_REFERENCE', 'NONE', 'UNKNOWN'].includes(
+    String(declaredType),
+  )
+    ? (declaredType as InvoiceBarcodeType)
+    : barcode
+      ? 'GTIN'
+      : 'NONE';
+
+  if (!barcode) return { gtin: null, type: type === 'GTIN' ? 'UNKNOWN' : type };
+
+  // Les préfixes 20–29 sont réservés aux références internes et articles
+  // à poids/prix variable : ils ne doivent pas être envoyés à OpenFoodFacts.
+  if (/^2\d/.test(barcode) || type === 'STORE_REFERENCE') {
+    return { gtin: null, type: 'STORE_REFERENCE' };
+  }
+
+  if (type === 'GTIN' && !hasValidGtinCheckDigit(barcode)) {
+    return { gtin: null, type: 'UNKNOWN' };
+  }
+
+  return type === 'GTIN'
+    ? { gtin: barcode, type }
+    : { gtin: null, type };
 }
 
 function normalizeConfidence(value: unknown, fallback: number): number {

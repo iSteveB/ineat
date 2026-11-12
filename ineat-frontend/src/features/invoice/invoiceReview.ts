@@ -5,20 +5,33 @@ export const RELIABLE_INVOICE_CONFIDENCE = 0.75;
 const VALID_BARCODE_PATTERN = /^\d{8,13}$/;
 
 export const hasInvoiceItemBarcode = (item: InvoiceItem): boolean =>
+	item.barcodeType !== 'STORE_REFERENCE' &&
+	item.barcodeType !== 'NONE' &&
 	[item.selectedEan, item.productCode].some(
 		(value) => typeof value === 'string' && VALID_BARCODE_PATTERN.test(value)
 	);
 
 export const getBarcodeFreeProductLabel = (item: InvoiceItem): string => {
-	if (/\bvrac\b/i.test(item.detectedName)) return 'Produit en vrac';
+	if (item.productForm === 'BULK') return 'Produit en vrac';
+	if (item.productForm === 'FRESH') return 'Produit frais';
+
+	// Compatibilité avec les factures analysées avant l'ajout de productForm.
+	if (!item.productForm && /\bvrac\b/i.test(item.detectedName)) {
+		return 'Produit en vrac';
+	}
 	if (
-		item.category === 'fruits-et-legumes' ||
-		item.category === 'viandes-et-poissons'
+		!item.productForm &&
+		(item.category === 'fruits-et-legumes' ||
+			item.category === 'viandes-et-poissons')
 	) {
 		return 'Produit frais';
 	}
 	return 'Produit sans code-barres';
 };
+
+export const shouldUseOpenFoodFacts = (item: InvoiceItem): boolean =>
+	item.barcodeType === 'GTIN' ||
+	(item.barcodeType == null && hasInvoiceItemBarcode(item));
 
 export const getInvoiceItemTotal = (item: {
 	quantity?: number;
@@ -37,8 +50,10 @@ export const requiresInvoiceItemCorrection = (item: InvoiceItem): boolean =>
 	item.quantity <= 0 ||
 	getInvoiceItemTotal(item) === null ||
 	item.confidence < RELIABLE_INVOICE_CONFIDENCE ||
-	['ERROR', 'INCOMPLETE'].includes(item.externalProductStatus ?? '') ||
-	(item.externalProductStatus === 'NOT_FOUND' && hasInvoiceItemBarcode(item));
+	(shouldUseOpenFoodFacts(item) &&
+		['ERROR', 'NOT_FOUND', 'INCOMPLETE'].includes(
+			item.externalProductStatus ?? ''
+		));
 
 export const sortInvoiceItemsForReview = (
 	items: InvoiceItem[]

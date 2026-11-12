@@ -57,12 +57,20 @@ describe('invoiceReview', () => {
 	it('adapte le libellé des produits sans code-barres', () => {
 		expect(
 			getBarcodeFreeProductLabel(
-				item({ detectedName: 'Poireaux vrac', category: 'fruits-et-legumes' })
+				item({
+					detectedName: 'Poireaux en botte',
+					category: 'fruits-et-legumes',
+					productForm: 'BULK'
+				})
 			)
 		).toBe('Produit en vrac');
 		expect(
 			getBarcodeFreeProductLabel(
-				item({ detectedName: 'Filet mignon', category: 'viandes-et-poissons' })
+				item({
+					detectedName: 'Filet mignon',
+					category: 'viandes-et-poissons',
+					productForm: 'FRESH'
+				})
 			)
 		).toBe('Produit frais');
 		expect(
@@ -70,6 +78,18 @@ describe('invoiceReview', () => {
 				item({ detectedName: 'Produit artisanal', category: 'autres' })
 			)
 		).toBe('Produit sans code-barres');
+	});
+
+	it('ignore les erreurs OpenFoodFacts pour une référence interne', () => {
+		const freshItem = item({
+			productForm: 'FRESH',
+			barcodeType: 'STORE_REFERENCE',
+			externalProductStatus: 'ERROR',
+			productCode: '2012345678901'
+		});
+
+		expect(requiresInvoiceItemCorrection(freshItem)).toBe(false);
+		expect(getBarcodeFreeProductLabel(freshItem)).toBe('Produit frais');
 	});
 
 	it('calcule la somme des lignes et l’écart avec la facture', () => {

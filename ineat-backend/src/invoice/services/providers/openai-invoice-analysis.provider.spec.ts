@@ -179,6 +179,88 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
     expect(result.items[0].detectedName).toBe('Pommes Golden');
   });
 
+  it('conserve la classification sémantique sans dépendre du mot vrac', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          {
+            ...nominalPayload.lines[0],
+            rawLabel: 'Poireaux en botte',
+            detectedName: 'Poireaux en botte',
+            ean: '2012345678901',
+            productForm: 'BULK',
+            barcodeType: 'STORE_REFERENCE',
+          },
+        ],
+      },
+    });
+
+    expect(result.items[0]).toMatchObject({
+      detectedName: 'Poireaux en botte',
+      productForm: 'BULK',
+      barcodeType: 'STORE_REFERENCE',
+      productCode: null,
+      selectedEan: null,
+      suggestedEans: [],
+    });
+  });
+
+  it('traite les codes à préfixe 20–29 comme références internes', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          {
+            ...nominalPayload.lines[0],
+            ean: '2712345678901',
+            productForm: 'FRESH',
+            barcodeType: 'GTIN',
+          },
+        ],
+      },
+    });
+
+    expect(result.items[0]).toMatchObject({
+      productForm: 'FRESH',
+      barcodeType: 'STORE_REFERENCE',
+      productCode: null,
+      selectedEan: null,
+    });
+  });
+
+  it('rejette un GTIN dont la clé de contrôle est invalide', () => {
+    const result = normalizeOpenAIInvoiceAnalysis({
+      pdfUrl: 'https://example.com/invoice.pdf',
+      model: 'gpt-5.5',
+      providerResponse: {},
+      payload: {
+        ...nominalPayload,
+        lines: [
+          {
+            ...nominalPayload.lines[0],
+            ean: '3564700012346',
+            productForm: 'PACKAGED',
+            barcodeType: 'GTIN',
+          },
+        ],
+      },
+    });
+
+    expect(result.items[0]).toMatchObject({
+      productForm: 'PACKAGED',
+      barcodeType: 'UNKNOWN',
+      productCode: null,
+      selectedEan: null,
+    });
+  });
+
   it('gère quantité multiple, remise ligne et total recalculé', () => {
     const result = normalizeOpenAIInvoiceAnalysis({
       pdfUrl: 'https://example.com/invoice.pdf',

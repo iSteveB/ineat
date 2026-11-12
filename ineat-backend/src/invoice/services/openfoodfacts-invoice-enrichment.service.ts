@@ -130,6 +130,16 @@ export class OpenFoodFactsInvoiceEnrichmentService {
   }
 
   async enrichItem(item: AnalyzedInvoiceItem): Promise<AnalyzedInvoiceItem> {
+    if (item.barcodeType && item.barcodeType !== 'GTIN') {
+      return {
+        ...item,
+        externalProductProvider: OPENFOODFACTS_PROVIDER,
+        externalProductStatus: 'SKIPPED',
+        externalProductData: null,
+        externalProductError: null,
+      };
+    }
+
     const barcode = this.getFirstValidBarcode(
       item.selectedEan,
       item.productCode,

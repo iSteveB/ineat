@@ -175,6 +175,18 @@ const getReviewStatus = (item: InvoiceItem) => {
 		return { label: 'Enrichi automatiquement', variant: 'success' as const };
 	}
 
+	if (
+		item.productForm === 'FRESH' ||
+		item.productForm === 'BULK' ||
+		item.barcodeType === 'STORE_REFERENCE' ||
+		item.barcodeType === 'NONE'
+	) {
+		return {
+			label: getBarcodeFreeProductLabel(item),
+			variant: 'secondary' as const
+		};
+	}
+
 	if (item.externalProductStatus === 'ERROR') {
 		return {
 			label: 'OFF indisponible · à vérifier',

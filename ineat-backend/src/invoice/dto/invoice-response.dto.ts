@@ -66,6 +66,14 @@ export class InvoiceItemResponseDto {
   @ApiPropertyOptional()
   productCode?: string | null;
 
+  @ApiPropertyOptional({ enum: ['FRESH', 'BULK', 'PACKAGED', 'UNKNOWN'] })
+  productForm?: string | null;
+
+  @ApiPropertyOptional({
+    enum: ['GTIN', 'STORE_REFERENCE', 'NONE', 'UNKNOWN'],
+  })
+  barcodeType?: string | null;
+
   @ApiPropertyOptional()
   category?: string | null;
 

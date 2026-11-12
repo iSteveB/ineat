@@ -12,6 +12,13 @@ export type InvoiceExternalProductStatus =
   | 'INCOMPLETE'
   | 'ERROR';
 
+export type InvoiceProductForm = 'FRESH' | 'BULK' | 'PACKAGED' | 'UNKNOWN';
+export type InvoiceBarcodeType =
+  | 'GTIN'
+  | 'STORE_REFERENCE'
+  | 'NONE'
+  | 'UNKNOWN';
+
 export interface InvoiceExternalProductData {
   source: 'openfoodfacts';
   barcode: string;
@@ -45,6 +52,8 @@ export interface AnalyzedInvoiceItem {
   totalPrice?: number | null;
   confidence: number;
   productCode?: string | null;
+  productForm?: InvoiceProductForm | null;
+  barcodeType?: InvoiceBarcodeType | null;
   category?: string | null;
   storageLocation?: string | null;
   preservationCategory?: PreservationCategory | null;
