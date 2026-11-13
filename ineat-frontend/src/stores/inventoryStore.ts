@@ -20,6 +20,7 @@ import {
 // ===== IMPORTS SERVICES =====
 import { inventoryService } from '@/services/inventoryService';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
+import { invalidateInventoryQueries } from '@/lib/query-client';
 
 // ===== INTERFACES DU STORE =====
 
@@ -388,6 +389,7 @@ export const useInventoryStore = create<InventoryState>()(
 
 						// Recharger l'inventaire pour avoir la structure complète
 						await get().fetchInventoryItems();
+						await invalidateInventoryQueries();
 
 						// Réinitialiser le formulaire
 						get().clearDraftProduct();
@@ -420,6 +422,7 @@ export const useInventoryStore = create<InventoryState>()(
 						// Un élément affiché peut regrouper plusieurs lots. Recharger permet
 						// de recalculer les totaux et le lot portant la prochaine péremption.
 						await get().fetchInventoryItems();
+						await invalidateInventoryQueries();
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,
@@ -478,6 +481,7 @@ export const useInventoryStore = create<InventoryState>()(
 					try {
 						await inventoryService.consumeInventoryItem(id, data);
 						await get().fetchInventoryItems();
+						await invalidateInventoryQueries();
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,
@@ -507,6 +511,7 @@ export const useInventoryStore = create<InventoryState>()(
 						// La suppression vise un lot, pas nécessairement tout le produit.
 						// Recharger conserve les autres lots et recalcule leur agrégat.
 						await get().fetchInventoryItems();
+						await invalidateInventoryQueries();
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,
@@ -541,6 +546,7 @@ export const useInventoryStore = create<InventoryState>()(
 							),
 							isLoading: false,
 						}));
+						await invalidateInventoryQueries();
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,

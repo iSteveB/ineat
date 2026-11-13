@@ -28,6 +28,7 @@ import { inventoryService } from "@/services/inventoryService";
 import { ApiRequestError } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/authStore";
 import { PrimaryGoal } from "@/schemas";
+import { inventoryKeys } from "@/hooks/useInventory";
 
 type DashboardAction = {
   title: string;
@@ -93,7 +94,7 @@ const Dashboard: FC = () => {
     isLoading: isLoadingInventory,
     error: inventoryError,
   } = useQuery({
-    queryKey: ["dashboardScoreInventory"],
+    queryKey: inventoryKeys.list({ limit: 100 }),
     queryFn: () => inventoryService.getInventory({ limit: 100 }),
     staleTime: 5 * 60 * 1000,
   });
@@ -103,7 +104,7 @@ const Dashboard: FC = () => {
     isLoading: isLoadingStats,
     error: statsError,
   } = useQuery({
-    queryKey: ["inventoryStats"],
+    queryKey: inventoryKeys.stats(),
     queryFn: () => inventoryService.getInventoryStats(),
     staleTime: 2 * 60 * 1000,
   });
@@ -114,7 +115,7 @@ const Dashboard: FC = () => {
     isLoading: isLoadingRecent,
     error: recentError,
   } = useQuery({
-    queryKey: ["recentProducts"],
+    queryKey: [...inventoryKeys.all, "recent", 5],
     queryFn: () => inventoryService.getRecentProducts(5),
     staleTime: 60 * 1000,
   });
@@ -125,7 +126,7 @@ const Dashboard: FC = () => {
     isLoading: isLoadingExpiring,
     error: expiringError,
   } = useQuery({
-    queryKey: ["expiringProducts"],
+    queryKey: inventoryKeys.list({ expiringWithinDays: 7, limit: 20 }),
     queryFn: () =>
       inventoryService.getInventory({ expiringWithinDays: 7, limit: 20 }),
     staleTime: 60 * 1000,

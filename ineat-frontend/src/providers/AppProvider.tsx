@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/authStore';
+import { queryClient } from '@/lib/query-client';
 
 const QueryDevtools = import.meta.env.DEV
 	? lazy(() =>
@@ -14,25 +15,6 @@ const QueryDevtools = import.meta.env.DEV
 interface AppProviderProps {
 	children: ReactNode;
 }
-
-// Configuration du client de requête avec des options par défaut
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			// Considérer les données comme "fraîches" pendant 5 minutes
-			staleTime: 1000 * 60 * 5,
-
-			// Réessayer les requêtes échouées une seule fois
-			retry: 1,
-
-			// Ne pas rafraîchir automatiquement lors de la reprise de focus
-			refetchOnWindowFocus: false,
-
-			// Conserver les données en cache pendant 10 minutes
-			gcTime: 1000 * 60 * 10,
-		},
-	},
-});
 
 /**
  * Composant Provider qui initialise les outils nécessaires pour l'application
