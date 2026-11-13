@@ -685,6 +685,26 @@ export class InvoiceService {
             continue;
           }
 
+          if (
+            ['ERROR', 'INCOMPLETE'].includes(item.externalProductStatus ?? '')
+          ) {
+            throw new BadRequestException(
+              `La recherche OpenFoodFacts doit être terminée pour "${item.detectedName}"`,
+            );
+          }
+
+          if (
+            !item.productId &&
+            ['NOT_FOUND', 'SKIPPED'].includes(
+              item.externalProductStatus ?? '',
+            ) &&
+            !item.productFormConfirmed
+          ) {
+            throw new BadRequestException(
+              `Choisissez comment ajouter "${item.detectedName}"`,
+            );
+          }
+
           const product = await this.resolveProductForInvoiceItem(
             tx,
             item,

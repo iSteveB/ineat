@@ -360,6 +360,16 @@ function DriveInvoiceImportPage() {
 	const hasUnsavedChanges = Object.values(saveStates).some(
 		(state) => state === 'idle' || state === 'saving' || state === 'error'
 	);
+	const hasBlockingSelectedItems = selectedItems.some((item) => {
+		const reviewedItem = { ...item, ...(drafts[item.id] ?? {}) };
+		return (
+			['ERROR', 'INCOMPLETE'].includes(
+				reviewedItem.externalProductStatus ?? ''
+			) ||
+			(canChooseInvoiceProductCreation(reviewedItem) &&
+				!reviewedItem.productFormConfirmed)
+		);
+	});
 
 	const importMutation = useMutation({
 		mutationFn: invoiceService.importDriveInvoice,
@@ -434,6 +444,64 @@ function DriveInvoiceImportPage() {
 				[variables.itemId]: 'error'
 			}));
 			if (!variables.autosave) toast.error(error.message);
+		}
+	});
+
+	const confirmProductCreationMutation = useMutation({
+		mutationFn: ({
+			itemId,
+			productForm
+		}: {
+			itemId: string;
+			productForm: 'FRESH' | 'BULK' | 'PACKAGED';
+		}) => {
+			if (!invoice) throw new Error('Facture introuvable');
+			return invoiceService.updateInvoiceItem(invoice.id, itemId, {
+				productForm
+			});
+		},
+		onMutate: ({ itemId, productForm }) => {
+			clearTimeout(autosaveTimers.current[itemId]);
+			setSaveStates((current) => ({ ...current, [itemId]: 'saving' }));
+			setDrafts((current) => ({
+				...current,
+				[itemId]: {
+					...current[itemId],
+					productForm,
+					productFormConfirmed: true
+				}
+			}));
+		},
+		onSuccess: (updatedItem) => {
+			setInvoice((current) =>
+				current
+					? {
+							...current,
+							items: current.items.map((item) =>
+								item.id === updatedItem.id ? updatedItem : item
+							)
+						}
+					: current
+			);
+			setDrafts((current) => ({
+				...current,
+				[updatedItem.id]: createDraft(updatedItem)
+			}));
+			setSaveStates((current) => ({
+				...current,
+				[updatedItem.id]: 'saved'
+			}));
+		},
+		onError: (error: Error, { itemId }) => {
+			const persistedItem = invoice?.items.find((item) => item.id === itemId);
+			if (persistedItem) {
+				setDrafts((current) => ({
+					...current,
+					[itemId]: createDraft(persistedItem)
+				}));
+			}
+			setSaveStates((current) => ({ ...current, [itemId]: 'saved' }));
+			toast.error(`Le choix n’a pas été enregistré : ${error.message}`);
 		}
 	});
 
@@ -567,12 +635,6 @@ function DriveInvoiceImportPage() {
 		unitPrice: draft.unitPrice ?? undefined,
 		totalPrice: getLineTotal(draft),
 		category: draft.category ?? undefined,
-		productForm:
-			draft.productFormConfirmed &&
-			draft.productForm !== 'UNKNOWN' &&
-			draft.productForm !== null
-				? draft.productForm
-				: undefined,
 		productId: draft.productId === null ? null : (draft.productId ?? undefined),
 		expiryDate: draft.expiryDate ?? undefined,
 		storageLocation:
@@ -602,18 +664,7 @@ function DriveInvoiceImportPage() {
 		itemId: string,
 		productForm: 'FRESH' | 'BULK' | 'PACKAGED'
 	) => {
-		setDrafts((current) => {
-			const draft = current[itemId];
-			if (!draft) return current;
-
-			const nextDraft = {
-				...draft,
-				productForm,
-				productFormConfirmed: true
-			};
-			scheduleDraftAutosave(itemId, nextDraft);
-			return { ...current, [itemId]: nextDraft };
-		});
+		confirmProductCreationMutation.mutate({ itemId, productForm });
 	};
 
 	const updateDraft = (
@@ -940,7 +991,8 @@ function DriveInvoiceImportPage() {
 										disabled={
 											selectedItems.length === 0 ||
 											validateMutation.isPending ||
-											hasUnsavedChanges
+											hasUnsavedChanges ||
+											hasBlockingSelectedItems
 										}
 									>
 										{validateMutation.isPending ? (
@@ -1091,7 +1143,10 @@ function DriveInvoiceImportPage() {
 																		onClick={() =>
 																			chooseProductCreation(item.id, option.value)
 																		}
-																		disabled={item.validated}
+																		disabled={
+																			item.validated ||
+																			confirmProductCreationMutation.isPending
+																		}
 																	>
 																		{option.label}
 																	</Button>
