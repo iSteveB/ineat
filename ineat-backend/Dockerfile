@@ -6,11 +6,11 @@ RUN corepack enable \
     && apt-get install -y --no-install-recommends openssl \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json pnpm-lock.yaml ./
-COPY prisma ./prisma
-COPY prisma.config.ts ./prisma.config.ts
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
-RUN pnpm prisma generate && pnpm run build
+RUN DATABASE_URL=postgresql://build:build@localhost:5432/build \
+    pnpm prisma generate \
+    && pnpm run build
 
 FROM node:22-bookworm-slim AS runtime
 
