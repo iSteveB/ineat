@@ -6,6 +6,8 @@ RUN corepack enable \
     && apt-get install -y --no-install-recommends openssl \
     && rm -rf /var/lib/apt/lists/*
 COPY package.json pnpm-lock.yaml ./
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm prisma generate && pnpm run build
