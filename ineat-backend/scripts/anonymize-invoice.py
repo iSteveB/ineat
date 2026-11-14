@@ -35,25 +35,24 @@ MAX_PAGES = 20
 MAX_RENDERED_PIXELS = 30_000_000
 OCR_TIMEOUT_SECONDS = 30
 PII_ENTITIES = [
-    "PERSON",
-    "LOCATION",
     "EMAIL_ADDRESS",
     "PHONE_NUMBER",
     "IBAN_CODE",
-    "FR_POSTAL_CODE",
-    "POSTAL_ADDRESS",
     "CUSTOMER_IDENTIFIER",
     "ORDER_IDENTIFIER",
 ]
 SENSITIVE_ANCHORS = re.compile(
-    r"\b(client|cliente|livr(?:é|e|aison)|destinataire|factur(?:é|e|ation)|"
-    r"adresse|coordonn(?:é|e)es|t(?:é|e)l(?:éphone)?|mobile|courriel|e-?mail|"
+    r"\b(client|cliente|destinataire|adresse\s+(?:de\s+)?(?:livraison|facturation)|"
+    r"livr(?:é|e)e?\s+[àa]|factur(?:é|e)e?\s+[àa]|coordonn(?:é|e)es\s+(?:du\s+)?client|"
+    r"t(?:é|e)l(?:éphone)?|mobile|courriel|e-?mail|"
     r"fid(?:é|e)lit(?:é|e)|iban|titulaire|porteur)\b",
     re.IGNORECASE,
 )
 STOP_ANCHORS = re.compile(
     r"\b(d(?:é|e)signation|article|produit|libell(?:é|e)|quantit(?:é|e)|qte|"
-    r"prix\s+unitaire|total\s+ttc|d(?:é|e)tail\s+de\s+la\s+commande)\b",
+    r"prix\s+unitaire|d(?:é|e)tail\s+de\s+la\s+commande|"
+    r"sous[- ]?total|total(?:\s+(?:ht|ttc))?|montant(?:\s+(?:ht|ttc))?|"
+    r"tva|taxe|remise|net\s+[àa]\s+payer)\b",
     re.IGNORECASE,
 )
 
@@ -235,10 +234,11 @@ def redact_page(image: Image.Image, analyzer: AnalyzerEngine) -> int:
     for words in lines:
         text = line_text_with_offsets(words)
 
-        if STOP_ANCHORS.search(text):
+        protected_business_line = bool(STOP_ANCHORS.search(text))
+        if protected_business_line:
             redact_following_lines = 0
 
-        anchored = bool(SENSITIVE_ANCHORS.search(text))
+        anchored = not protected_business_line and bool(SENSITIVE_ANCHORS.search(text))
         if anchored:
             redact_following_lines = 4
 
