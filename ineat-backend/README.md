@@ -64,6 +64,9 @@ Variables principales:
 | `CLOUDINARY_API_KEY`                | Uploads                     | Cloudinary API key                                              |
 | `CLOUDINARY_API_SECRET`             | Uploads                     | Cloudinary API secret                                           |
 | `CLOUDINARY_AVATAR_PRESET`          | Uploads d'avatars           | Preset Cloudinary dedie aux avatars                             |
+| `INVOICE_ANONYMIZER_PYTHON`         | Anonymisation des factures  | Executable Python, `python3` par defaut                         |
+| `INVOICE_ANONYMIZER_SCRIPT`         | Anonymisation des factures  | Chemin du script; `scripts/anonymize-invoice.py` par defaut     |
+| `INVOICE_ANONYMIZER_TIMEOUT_MS`     | Anonymisation des factures  | Delai maximal; `120000` ms par defaut                           |
 | `STRIPE_ENABLED`                    | Non                         | Active la validation Stripe hors production quand `true`        |
 | `STRIPE_SECRET_KEY`                 | Billing prod / Stripe actif | Cle secrete Stripe backend                                      |
 | `STRIPE_PRICE_PREMIUM_MONTHLY_EUR`  | Billing prod / Stripe actif | Price ID Stripe du catalogue Premium mensuel 5,99 EUR TTC       |

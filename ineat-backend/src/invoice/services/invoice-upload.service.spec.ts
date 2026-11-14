@@ -8,6 +8,9 @@ describe('InvoiceUploadService', () => {
   const cloudinaryService = {
     uploadRawFile: jest.fn(),
   };
+  const invoiceAnonymizationService = {
+    anonymizePdf: jest.fn(),
+  };
 
   let service: InvoiceUploadService;
 
@@ -24,7 +27,13 @@ describe('InvoiceUploadService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new InvoiceUploadService(cloudinaryService as any);
+    invoiceAnonymizationService.anonymizePdf.mockResolvedValue(
+      Buffer.from('%PDF-anonymized'),
+    );
+    service = new InvoiceUploadService(
+      cloudinaryService as any,
+      invoiceAnonymizationService as any,
+    );
   });
 
   it('accepte et upload un PDF valide', async () => {
@@ -34,12 +43,26 @@ describe('InvoiceUploadService', () => {
 
     const result = await service.uploadInvoicePdf('user-1', createFile());
 
+    expect(invoiceAnonymizationService.anonymizePdf).toHaveBeenCalledWith(
+      Buffer.from('%PDF-1.4'),
+    );
     expect(cloudinaryService.uploadRawFile).toHaveBeenCalledWith(
-      expect.any(Buffer),
+      Buffer.from('%PDF-anonymized'),
       'invoices/user-1',
       expect.stringMatching(/\.pdf$/),
     );
     expect(result).toContain('https://res.cloudinary.com');
+  });
+
+  it("n'upload jamais le PDF lorsque l'anonymisation échoue", async () => {
+    invoiceAnonymizationService.anonymizePdf.mockRejectedValue(
+      new Error('anonymization failed'),
+    );
+
+    await expect(
+      service.uploadInvoicePdf('user-1', createFile()),
+    ).rejects.toThrow('anonymization failed');
+    expect(cloudinaryService.uploadRawFile).not.toHaveBeenCalled();
   });
 
   it('refuse un fichier absent', () => {

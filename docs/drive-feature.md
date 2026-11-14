@@ -46,8 +46,8 @@ References:
    - bouton `Valider`
    - bouton `Annuler`
 4. Si l'utilisateur valide, le PDF est envoye au backend.
-5. Le backend stocke le PDF, cree la facture et ajoute son analyse a la file
-   BullMQ.
+5. Le backend anonymise et aplatit le PDF localement, stocke uniquement cette
+   copie anonymisee, cree la facture et ajoute son analyse a la file BullMQ.
 6. Le worker telecharge le PDF, l'analyse, enrichit les lignes et fait passer
    la facture a l'etat `READY_FOR_REVIEW`.
 7. Le frontend suit la progression; l'utilisateur selectionne ensuite les
@@ -94,11 +94,12 @@ Traitement:
 
 1. Verifie la capability `canImportDrive`.
 2. Verifie le quota `DRIVE_IMPORT`.
-3. Upload le PDF dans Cloudinary.
-4. Cree une facture en statut `PROCESSING`, etape `UPLOADED`.
-5. Passe la facture a l'etape `QUEUED`.
-6. Publie le job `invoice-analysis/analyze` dans BullMQ.
-7. Retourne HTTP 202 sans attendre OpenAI.
+3. Anonymise localement le PDF avec Presidio, Tesseract et PyMuPDF.
+4. Upload uniquement le PDF anonymise dans Cloudinary.
+5. Cree une facture en statut `PROCESSING`, etape `UPLOADED`.
+6. Passe la facture a l'etape `QUEUED`.
+7. Publie le job `invoice-analysis/analyze` dans BullMQ.
+8. Retourne HTTP 202 sans attendre OpenAI.
 
 Le worker telecharge ensuite le PDF depuis Cloudinary, verifie sa signature
 `%PDF-`, l'analyse, enrichit les lignes via OpenFoodFacts, resout les produits,
@@ -178,7 +179,19 @@ Le resume renvoye contient:
 
 Service: `InvoiceUploadService`
 
-Le PDF est uploade en fichier brut Cloudinary dans le dossier:
+Avant l'upload, `InvoiceAnonymizationService` execute localement
+`scripts/anonymize-invoice.py`. Chaque page est rasterisee, analysee par
+Tesseract et Presidio, masquee au niveau des pixels, puis reconstruite par
+PyMuPDF dans un nouveau PDF sans texte cache ni metadonnees d'origine.
+
+Les noms, adresses, e-mails, telephones, IBAN, cartes, identifiants client et QR
+codes detectes sont retires. Les EAN produit a 8, 12 ou 13 chiffres restent
+disponibles pour l'enrichissement. L'original est ecrit uniquement dans un
+repertoire temporaire prive, supprime dans un bloc `finally`. Si
+l'anonymisation echoue ou produit un document invalide, l'import est bloque et
+Cloudinary n'est jamais appele.
+
+Seul le PDF anonymise est uploade en fichier brut Cloudinary dans le dossier:
 
 ```text
 invoices/{userId}
@@ -463,6 +476,11 @@ Backend et worker:
   diagnostic local cible.
 - `OPENAI_API_KEY_INVOICE`: requis sur le processus qui execute l'analyse.
 - `OPENAI_INVOICE_MODEL`: `gpt-5.5` par defaut.
+- `INVOICE_ANONYMIZER_PYTHON`: executable Python, `python3` par defaut.
+- `INVOICE_ANONYMIZER_SCRIPT`: chemin du script d'anonymisation; par defaut
+  `scripts/anonymize-invoice.py` depuis le repertoire de travail.
+- `INVOICE_ANONYMIZER_TIMEOUT_MS`: delai maximal d'anonymisation, 120 secondes
+  par defaut.
 - `REDIS_URL` et `REDIS_KEY_PREFIX`: connexion et isolation des files BullMQ.
 - `OPENFOODFACTS_BASE_URL`: optionnel, defaut
   `https://world.openfoodfacts.org`.

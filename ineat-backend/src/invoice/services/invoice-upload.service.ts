@@ -1,13 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { CloudinaryService } from '../../cloudinary/cloudinary.service';
+import { InvoiceAnonymizationService } from './invoice-anonymization.service';
 
 export const INVOICE_MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const PDF_MIME_TYPES = ['application/pdf', 'application/x-pdf'];
 
 @Injectable()
 export class InvoiceUploadService {
-  constructor(private readonly cloudinaryService: CloudinaryService) {}
+  constructor(
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly invoiceAnonymizationService: InvoiceAnonymizationService,
+  ) {}
 
   validatePdf(file?: Express.Multer.File): asserts file is Express.Multer.File {
     if (!file) {
@@ -33,8 +37,12 @@ export class InvoiceUploadService {
   ): Promise<string> {
     this.validatePdf(file);
 
-    return this.cloudinaryService.uploadRawFile(
+    const anonymizedPdf = await this.invoiceAnonymizationService.anonymizePdf(
       file.buffer,
+    );
+
+    return this.cloudinaryService.uploadRawFile(
+      anonymizedPdf,
       `invoices/${userId}`,
       `${randomUUID()}.pdf`,
     );

@@ -4,6 +4,7 @@ import {
   InvoiceStatus,
 } from '../../../prisma/generated/prisma/client';
 import { InvoiceService, InvoiceUser } from './invoice.service';
+import { InvoiceAnonymizationError } from './invoice-anonymization.service';
 
 describe('InvoiceService', () => {
   const tx = {
@@ -181,7 +182,9 @@ describe('InvoiceService', () => {
       ok: true,
       arrayBuffer: jest
         .fn()
-        .mockResolvedValue(Uint8Array.from(Buffer.from('%PDF-1.4')).buffer),
+        .mockResolvedValue(
+          Uint8Array.from(Buffer.from('%PDF-anonymized')).buffer,
+        ),
     } as any);
     loggerSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     service = new InvoiceService(
@@ -322,8 +325,9 @@ describe('InvoiceService', () => {
     );
     expect(invoiceAnalysisService.analyzePdf).toHaveBeenCalledWith(
       createdInvoice.pdfUrl,
-      file.buffer,
+      Buffer.from('%PDF-anonymized'),
     );
+    expect(global.fetch).toHaveBeenCalledWith(createdInvoice.pdfUrl);
     expect(invoiceProcessingStateService.transition).toHaveBeenCalledWith(
       'invoice-1',
       InvoiceProcessingStage.ANALYZING,
@@ -471,6 +475,19 @@ describe('InvoiceService', () => {
     expect(loggerSpy).toHaveBeenCalledWith(
       expect.stringContaining('invoice_import_upload_failed'),
     );
+  });
+
+  it("bloque explicitement l'import si l'anonymisation échoue", async () => {
+    invoiceUploadService.uploadInvoicePdf.mockRejectedValue(
+      new InvoiceAnonymizationError('internal anonymizer details'),
+    );
+
+    await expect(service.importDriveInvoice(user, file)).rejects.toThrow(
+      "La facture n'a pas pu être anonymisée de manière sûre",
+    );
+
+    expect(prisma.invoice.create).not.toHaveBeenCalled();
+    expect(usageQuotaService.recordSuccessfulUsage).not.toHaveBeenCalled();
   });
 
   it("masque aussi les BadRequest techniques du provider d'analyse", async () => {

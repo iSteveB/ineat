@@ -5,6 +5,7 @@ import { InvoiceProductResolverService } from './services/invoice-product-resolv
 import { InvoiceProcessingStateService } from './services/invoice-processing-state.service';
 import { InvoiceService } from './services/invoice.service';
 import { InvoiceUploadService } from './services/invoice-upload.service';
+import { InvoiceAnonymizationService } from './services/invoice-anonymization.service';
 import { OpenFoodFactsInvoiceEnrichmentService } from './services/openfoodfacts-invoice-enrichment.service';
 import { MockInvoiceAnalysisProvider } from './services/providers/mock-invoice-analysis.provider';
 import { OpenAIInvoiceAnalysisProvider } from './services/providers/openai-invoice-analysis.provider';
@@ -16,6 +17,7 @@ import { OpenFoodFactsModule } from '../openfoodfacts/openfoodfacts.module';
   controllers: [InvoiceController],
   providers: [
     InvoiceService,
+    InvoiceAnonymizationService,
     InvoiceUploadService,
     InvoiceAnalysisService,
     InvoiceProductResolverService,

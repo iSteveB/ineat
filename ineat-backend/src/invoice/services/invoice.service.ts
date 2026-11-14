@@ -23,6 +23,7 @@ import {
 import { InvoiceProductResolverService } from './invoice-product-resolver.service';
 import { InvoiceProcessingStateService } from './invoice-processing-state.service';
 import { InvoiceUploadService } from './invoice-upload.service';
+import { InvoiceAnonymizationError } from './invoice-anonymization.service';
 import { OpenFoodFactsInvoiceEnrichmentService } from './openfoodfacts-invoice-enrichment.service';
 import { isInvoiceStorageLocation } from './invoice-product-classification';
 import { UpdateInvoiceItemDto } from '../dto/update-invoice-item.dto';
@@ -89,6 +90,12 @@ export class InvoiceService {
         throw error;
       }
 
+      if (error instanceof InvoiceAnonymizationError) {
+        throw new BadRequestException(
+          "La facture n'a pas pu être anonymisée de manière sûre",
+        );
+      }
+
       throw new BadRequestException("La facture n'a pas pu être chargée");
     }
 
@@ -133,7 +140,9 @@ export class InvoiceService {
     }
 
     try {
-      await this.processInvoiceAnalysis(invoice, user, file.buffer, 1);
+      // Always analyze the sanitized Cloudinary copy. Passing file.buffer here
+      // would bypass anonymization when the synchronous mode is enabled.
+      await this.processInvoiceAnalysis(invoice, user, undefined, 1);
       return this.getInvoiceForUser(user.id, invoice.id);
     } catch {
       throw new BadRequestException("La facture n'a pas pu être analysée");
