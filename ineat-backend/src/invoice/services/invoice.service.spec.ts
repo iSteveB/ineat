@@ -47,7 +47,9 @@ describe('InvoiceService', () => {
     invoice: {
       create: jest.fn(),
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
     invoiceItem: {
       findFirst: jest.fn(),
@@ -102,6 +104,10 @@ describe('InvoiceService', () => {
     get: jest.fn((key: string, fallback?: unknown) =>
       key === 'INVOICE_PROCESSING_MODE' ? 'sync' : fallback,
     ),
+  };
+
+  const cloudinary = {
+    deleteResourceFromUrl: jest.fn().mockResolvedValue(undefined),
   };
 
   let service: InvoiceService;
@@ -198,6 +204,7 @@ describe('InvoiceService', () => {
       usageQuotaService as any,
       queues as any,
       config as any,
+      cloudinary as any,
     );
     prisma.$transaction.mockImplementation((callback) => callback(tx));
     tx.invoiceItem.count.mockResolvedValue(1);
@@ -402,6 +409,40 @@ describe('InvoiceService', () => {
     );
     expect(invoiceAnalysisService.analyzePdf).not.toHaveBeenCalled();
     expect(result).toMatchObject({ id: 'invoice-1' });
+  });
+
+  it('supprime le PDF anonymisé si la création de l’import échoue', async () => {
+    prisma.invoice.create.mockRejectedValueOnce(new Error('database down'));
+
+    await expect(service.importDriveInvoice(user, file)).rejects.toThrow(
+      'database down',
+    );
+
+    expect(cloudinary.deleteResourceFromUrl).toHaveBeenCalledWith(
+      createdInvoice.pdfUrl,
+      'raw',
+    );
+  });
+
+  it('classe en échec un import impossible à mettre en file', async () => {
+    config.get.mockImplementation((key: string, fallback?: unknown) =>
+      key === 'INVOICE_PROCESSING_MODE' ? 'bullmq' : fallback,
+    );
+    queues.add.mockRejectedValueOnce(new Error('redis down'));
+
+    await expect(service.importDriveInvoice(user, file)).rejects.toThrow(
+      'redis down',
+    );
+
+    expect(invoiceProcessingStateService.transition).toHaveBeenLastCalledWith(
+      'invoice-1',
+      InvoiceProcessingStage.FAILED,
+      { errorCode: 'QUEUE_FAILED' },
+    );
+    expect(prisma.invoice.update).toHaveBeenCalledWith({
+      where: { id: 'invoice-1' },
+      data: expect.objectContaining({ status: InvoiceStatus.FAILED }),
+    });
   });
 
   it('télécharge le PDF pour une facture en file et consomme le quota de façon idempotente', async () => {
@@ -1396,5 +1437,54 @@ describe('InvoiceService', () => {
     ).rejects.toThrow(
       "Une facture en échec d'analyse ne peut pas être validée",
     );
+  });
+
+  it('supprime le PDF Cloudinary après validation complète', async () => {
+    await service.validateInvoiceForUser('user-1', 'invoice-1', {
+      invoiceItemIds: ['item-1'],
+    });
+
+    expect(cloudinary.deleteResourceFromUrl).toHaveBeenCalledWith(
+      completedInvoice.pdfUrl,
+      'raw',
+    );
+    expect(prisma.invoice.updateMany).toHaveBeenCalledWith({
+      where: { id: 'invoice-1', pdfUrl: completedInvoice.pdfUrl },
+      data: { pdfUrl: null, updatedAt: expect.any(Date) },
+    });
+  });
+
+  it('purge les documents validés, échoués depuis 24 h ou non validés depuis 7 jours', async () => {
+    const now = new Date('2026-11-15T12:00:00.000Z');
+    prisma.invoice.findMany.mockResolvedValue([
+      { id: 'validated', pdfUrl: 'https://cloudinary.com/validated.pdf' },
+      { id: 'expired', pdfUrl: 'https://cloudinary.com/expired.pdf' },
+    ]);
+
+    const result = await service.purgeExpiredInvoiceDocuments(now);
+
+    expect(prisma.invoice.findMany).toHaveBeenCalledWith({
+      where: {
+        pdfUrl: { not: null },
+        OR: [
+          { status: InvoiceStatus.VALIDATED },
+          {
+            status: InvoiceStatus.FAILED,
+            updatedAt: { lte: new Date('2026-11-14T12:00:00.000Z') },
+          },
+          {
+            status: {
+              in: [InvoiceStatus.PROCESSING, InvoiceStatus.COMPLETED],
+            },
+            createdAt: { lte: new Date('2026-11-08T12:00:00.000Z') },
+          },
+        ],
+      },
+      select: { id: true, pdfUrl: true },
+      orderBy: { createdAt: 'asc' },
+      take: 100,
+    });
+    expect(cloudinary.deleteResourceFromUrl).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ deletedCount: 2, failedCount: 0 });
   });
 });

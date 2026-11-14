@@ -37,7 +37,10 @@ describe('WorkerRuntimeService', () => {
   const deliveries = { retryPendingDeliveries: jest.fn() };
   const weeklyDigests = { sendDueDigests: jest.fn() };
   const dailyDigests = { sendDueDigests: jest.fn() };
-  const invoices = { processQueuedInvoice: jest.fn() };
+  const invoices = {
+    processQueuedInvoice: jest.fn(),
+    purgeExpiredInvoiceDocuments: jest.fn(),
+  };
 
   const createService = () =>
     new WorkerRuntimeService(
@@ -67,7 +70,7 @@ describe('WorkerRuntimeService', () => {
     await service.onModuleInit();
 
     expect(Worker).toHaveBeenCalledTimes(7);
-    expect(queues.upsertScheduler).toHaveBeenCalledTimes(7);
+    expect(queues.upsertScheduler).toHaveBeenCalledTimes(8);
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.system,
       'admin-audit-retention-daily',
@@ -79,6 +82,12 @@ describe('WorkerRuntimeService', () => {
       'account-anonymization-daily',
       { pattern: '0 4 * * *' },
       { name: 'anonymize-scheduled-accounts', data: {} },
+    );
+    expect(queues.upsertScheduler).toHaveBeenCalledWith(
+      QUEUE_NAMES.system,
+      'invoice-document-retention-hourly',
+      { pattern: '15 * * * *' },
+      { name: 'purge-invoice-documents', data: {} },
     );
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.notificationsSync,
@@ -116,7 +125,7 @@ describe('WorkerRuntimeService', () => {
     await service.onModuleInit();
 
     expect(Worker).toHaveBeenCalledTimes(2);
-    expect(queues.upsertScheduler).toHaveBeenCalledTimes(2);
+    expect(queues.upsertScheduler).toHaveBeenCalledTimes(3);
     expect(queues.upsertScheduler).toHaveBeenCalledWith(
       QUEUE_NAMES.system,
       'admin-audit-retention-daily',

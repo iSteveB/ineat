@@ -228,7 +228,7 @@ model Product {
 model Invoice {
   id                  String                   @id
   userId              String
-  pdfUrl              String
+  pdfUrl              String?
   status              InvoiceStatus            @default(PROCESSING)
   processingStage     InvoiceProcessingStage   @default(UPLOADED)
   processingProgress  Int                      @default(10)

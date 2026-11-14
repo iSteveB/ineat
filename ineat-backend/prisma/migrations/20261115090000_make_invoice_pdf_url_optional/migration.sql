@@ -1,0 +1,1 @@
+ALTER TABLE "Invoice" ALTER COLUMN "pdfUrl" DROP NOT NULL;

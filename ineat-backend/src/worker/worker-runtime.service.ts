@@ -160,6 +160,9 @@ export class WorkerRuntimeService
     if (job.name === 'anonymize-scheduled-accounts') {
       return this.anonymizeScheduledAccounts();
     }
+    if (job.name === 'purge-invoice-documents') {
+      return this.invoices.purgeExpiredInvoiceDocuments();
+    }
     throw new Error(`Unsupported system job: ${job.name}`);
   }
 
@@ -207,6 +210,12 @@ export class WorkerRuntimeService
       'account-anonymization-daily',
       { pattern: '0 4 * * *' },
       { name: 'anonymize-scheduled-accounts', data: {} },
+    );
+    await this.queues.upsertScheduler(
+      QUEUE_NAMES.system,
+      'invoice-document-retention-hourly',
+      { pattern: '15 * * * *' },
+      { name: 'purge-invoice-documents', data: {} },
     );
   }
 

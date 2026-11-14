@@ -91,7 +91,7 @@ export interface InvoiceItem {
 export interface Invoice {
 	id: string;
 	userId: string;
-	pdfUrl: string;
+	pdfUrl: string | null;
 	status: InvoiceStatus;
 	processingStage?: InvoiceProcessingStage;
 	processingProgress?: number;

@@ -135,8 +135,8 @@ export class InvoiceResponseDto {
   @ApiProperty()
   userId: string;
 
-  @ApiProperty()
-  pdfUrl: string;
+  @ApiPropertyOptional({ nullable: true })
+  pdfUrl: string | null;
 
   @ApiProperty({ enum: InvoiceStatus })
   status: InvoiceStatus;

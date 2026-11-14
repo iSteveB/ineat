@@ -31,6 +31,7 @@ import { ValidateInvoiceDto } from '../dto/validate-invoice.dto';
 import { CiqualReferenceService } from '../../ciqual/ciqual-reference.service';
 import { estimateExpiryDate } from '../../inventory/services/expiry-estimation.service';
 import { AnalyzedInvoiceItem } from './providers/invoice-analysis-provider';
+import { CloudinaryService } from '../../cloudinary/cloudinary.service';
 
 export interface InvoiceUser {
   id: string;
@@ -53,6 +54,9 @@ interface InvoiceValidationContext {
 }
 
 const INVOICE_VALIDATION_TRANSACTION_TIMEOUT_MS = 15_000;
+const INVOICE_DOCUMENT_BATCH_SIZE = 100;
+const UNVALIDATED_INVOICE_RETENTION_MS = 7 * 24 * 60 * 60_000;
+const FAILED_INVOICE_RETENTION_MS = 24 * 60 * 60_000;
 
 @Injectable()
 export class InvoiceService {
@@ -69,6 +73,7 @@ export class InvoiceService {
     private readonly usageQuotaService: UsageQuotaService,
     private readonly queues: QueueService,
     private readonly config: ConfigService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   async importDriveInvoice(user: InvoiceUser, file: Express.Multer.File) {
@@ -102,40 +107,63 @@ export class InvoiceService {
     const now = new Date();
     const invoiceId = randomUUID();
 
-    const invoice = await this.prisma.invoice.create({
-      data: {
-        id: invoiceId,
-        userId: user.id,
-        pdfUrl,
-        status: InvoiceStatus.PROCESSING,
-        processingStage: InvoiceProcessingStage.UPLOADED,
-        processingProgress: 10,
-        processingAttempt: 1,
-        stageStartedAt: now,
-        updatedAt: now,
-        ProcessingEvent: {
-          create: {
-            id: randomUUID(),
-            stage: InvoiceProcessingStage.UPLOADED,
-            status: InvoiceProcessingEventStatus.STARTED,
-            attempt: 1,
-            startedAt: now,
+    let invoice: Awaited<ReturnType<PrismaService['invoice']['create']>>;
+    try {
+      invoice = await this.prisma.invoice.create({
+        data: {
+          id: invoiceId,
+          userId: user.id,
+          pdfUrl,
+          status: InvoiceStatus.PROCESSING,
+          processingStage: InvoiceProcessingStage.UPLOADED,
+          processingProgress: 10,
+          processingAttempt: 1,
+          stageStartedAt: now,
+          updatedAt: now,
+          ProcessingEvent: {
+            create: {
+              id: randomUUID(),
+              stage: InvoiceProcessingStage.UPLOADED,
+              status: InvoiceProcessingEventStatus.STARTED,
+              attempt: 1,
+              startedAt: now,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      await this.deleteOrphanedInvoiceDocument(pdfUrl, invoiceId);
+      throw error;
+    }
 
     if (this.invoiceProcessingMode() === 'bullmq') {
-      await this.invoiceProcessingStateService.transition(
-        invoice.id,
-        InvoiceProcessingStage.QUEUED,
-      );
-      await this.queues.add(
-        QUEUE_NAMES.invoiceAnalysis,
-        'analyze',
-        { invoiceId: invoice.id, userId: user.id },
-        { jobId: invoice.id },
-      );
+      try {
+        await this.invoiceProcessingStateService.transition(
+          invoice.id,
+          InvoiceProcessingStage.QUEUED,
+        );
+        await this.queues.add(
+          QUEUE_NAMES.invoiceAnalysis,
+          'analyze',
+          { invoiceId: invoice.id, userId: user.id },
+          { jobId: invoice.id },
+        );
+      } catch (error) {
+        await this.invoiceProcessingStateService.transition(
+          invoice.id,
+          InvoiceProcessingStage.FAILED,
+          { errorCode: 'QUEUE_FAILED' },
+        );
+        await this.prisma.invoice.update({
+          where: { id: invoice.id },
+          data: {
+            status: InvoiceStatus.FAILED,
+            errorMessage: "La facture n'a pas pu être mise en traitement",
+            updatedAt: new Date(),
+          },
+        });
+        throw error;
+      }
       return this.getInvoiceForUser(user.id, invoice.id);
     }
 
@@ -186,6 +214,10 @@ export class InvoiceService {
         `invoice:${invoice.id}`,
       );
       return;
+    }
+
+    if (!invoice.pdfUrl) {
+      throw new BadRequestException('Le document de la facture a expiré');
     }
 
     await this.processInvoiceAnalysis(invoice, user, undefined, attempt);
@@ -832,9 +864,99 @@ export class InvoiceService {
         invoiceId,
         InvoiceProcessingStage.VALIDATED,
       );
+      await this.deleteStoredInvoiceDocument(
+        invoiceId,
+        invoice.pdfUrl,
+        'validated',
+      );
     }
 
     return summary;
+  }
+
+  async purgeExpiredInvoiceDocuments(now = new Date()) {
+    const unvalidatedCutoff = new Date(
+      now.getTime() - UNVALIDATED_INVOICE_RETENTION_MS,
+    );
+    const failedCutoff = new Date(now.getTime() - FAILED_INVOICE_RETENTION_MS);
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        pdfUrl: { not: null },
+        OR: [
+          { status: InvoiceStatus.VALIDATED },
+          {
+            status: InvoiceStatus.FAILED,
+            updatedAt: { lte: failedCutoff },
+          },
+          {
+            status: {
+              in: [InvoiceStatus.PROCESSING, InvoiceStatus.COMPLETED],
+            },
+            createdAt: { lte: unvalidatedCutoff },
+          },
+        ],
+      },
+      select: { id: true, pdfUrl: true },
+      orderBy: { createdAt: 'asc' },
+      take: INVOICE_DOCUMENT_BATCH_SIZE,
+    });
+
+    let deletedCount = 0;
+    let failedCount = 0;
+    for (const invoice of invoices) {
+      const deleted = await this.deleteStoredInvoiceDocument(
+        invoice.id,
+        invoice.pdfUrl,
+        'retention',
+      );
+      if (deleted) deletedCount += 1;
+      else failedCount += 1;
+    }
+
+    this.logger.log(
+      `Invoice document retention completed: ${deletedCount} deleted, ${failedCount} failed`,
+    );
+    return { deletedCount, failedCount };
+  }
+
+  private async deleteStoredInvoiceDocument(
+    invoiceId: string,
+    pdfUrl: string | null,
+    reason: 'validated' | 'retention',
+  ): Promise<boolean> {
+    if (!pdfUrl) return true;
+
+    try {
+      await this.cloudinary.deleteResourceFromUrl(pdfUrl, 'raw');
+      await this.prisma.invoice.updateMany({
+        where: { id: invoiceId, pdfUrl },
+        data: { pdfUrl: null, updatedAt: new Date() },
+      });
+      this.logInvoiceEvent({
+        event: 'invoice_document_deleted',
+        invoiceId,
+        reason,
+      });
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Invoice document deletion failed invoiceId=${invoiceId} reason=${reason}: ${JSON.stringify(this.serializeError(error))}`,
+      );
+      return false;
+    }
+  }
+
+  private async deleteOrphanedInvoiceDocument(
+    pdfUrl: string,
+    invoiceId: string,
+  ): Promise<void> {
+    try {
+      await this.cloudinary.deleteResourceFromUrl(pdfUrl, 'raw');
+    } catch (error) {
+      this.logger.error(
+        `Orphaned invoice document deletion failed invoiceId=${invoiceId}: ${JSON.stringify(this.serializeError(error))}`,
+      );
+    }
   }
 
   private async prepareInvoiceValidationContext(

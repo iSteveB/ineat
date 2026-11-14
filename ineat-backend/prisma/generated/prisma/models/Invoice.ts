@@ -296,7 +296,7 @@ export type InvoiceGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type InvoiceGroupByOutputType = {
   id: string
   userId: string
-  pdfUrl: string
+  pdfUrl: string | null
   status: $Enums.InvoiceStatus
   processingStage: $Enums.InvoiceProcessingStage
   processingProgress: number
@@ -344,7 +344,7 @@ export type InvoiceWhereInput = {
   NOT?: Prisma.InvoiceWhereInput | Prisma.InvoiceWhereInput[]
   id?: Prisma.StringFilter<"Invoice"> | string
   userId?: Prisma.StringFilter<"Invoice"> | string
-  pdfUrl?: Prisma.StringFilter<"Invoice"> | string
+  pdfUrl?: Prisma.StringNullableFilter<"Invoice"> | string | null
   status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFilter<"Invoice"> | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFilter<"Invoice"> | number
@@ -373,7 +373,7 @@ export type InvoiceWhereInput = {
 export type InvoiceOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  pdfUrl?: Prisma.SortOrder
+  pdfUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   processingStage?: Prisma.SortOrder
   processingProgress?: Prisma.SortOrder
@@ -405,7 +405,7 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.InvoiceWhereInput[]
   NOT?: Prisma.InvoiceWhereInput | Prisma.InvoiceWhereInput[]
   userId?: Prisma.StringFilter<"Invoice"> | string
-  pdfUrl?: Prisma.StringFilter<"Invoice"> | string
+  pdfUrl?: Prisma.StringNullableFilter<"Invoice"> | string | null
   status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFilter<"Invoice"> | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFilter<"Invoice"> | number
@@ -434,7 +434,7 @@ export type InvoiceWhereUniqueInput = Prisma.AtLeast<{
 export type InvoiceOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
-  pdfUrl?: Prisma.SortOrder
+  pdfUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   processingStage?: Prisma.SortOrder
   processingProgress?: Prisma.SortOrder
@@ -467,7 +467,7 @@ export type InvoiceScalarWhereWithAggregatesInput = {
   NOT?: Prisma.InvoiceScalarWhereWithAggregatesInput | Prisma.InvoiceScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
   userId?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
-  pdfUrl?: Prisma.StringWithAggregatesFilter<"Invoice"> | string
+  pdfUrl?: Prisma.StringNullableWithAggregatesFilter<"Invoice"> | string | null
   status?: Prisma.EnumInvoiceStatusWithAggregatesFilter<"Invoice"> | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageWithAggregatesFilter<"Invoice"> | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntWithAggregatesFilter<"Invoice"> | number
@@ -491,7 +491,7 @@ export type InvoiceScalarWhereWithAggregatesInput = {
 
 export type InvoiceCreateInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -520,7 +520,7 @@ export type InvoiceCreateInput = {
 export type InvoiceUncheckedCreateInput = {
   id: string
   userId: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -547,7 +547,7 @@ export type InvoiceUncheckedCreateInput = {
 
 export type InvoiceUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -576,7 +576,7 @@ export type InvoiceUpdateInput = {
 export type InvoiceUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -604,7 +604,7 @@ export type InvoiceUncheckedUpdateInput = {
 export type InvoiceCreateManyInput = {
   id: string
   userId: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -628,7 +628,7 @@ export type InvoiceCreateManyInput = {
 
 export type InvoiceUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -653,7 +653,7 @@ export type InvoiceUpdateManyMutationInput = {
 export type InvoiceUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -888,7 +888,7 @@ export type InvoiceUncheckedUpdateManyWithoutUserNestedInput = {
 
 export type InvoiceCreateWithoutExpenseInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -916,7 +916,7 @@ export type InvoiceCreateWithoutExpenseInput = {
 export type InvoiceUncheckedCreateWithoutExpenseInput = {
   id: string
   userId: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -958,7 +958,7 @@ export type InvoiceUpdateToOneWithWhereWithoutExpenseInput = {
 
 export type InvoiceUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -986,7 +986,7 @@ export type InvoiceUpdateWithoutExpenseInput = {
 export type InvoiceUncheckedUpdateWithoutExpenseInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1012,7 +1012,7 @@ export type InvoiceUncheckedUpdateWithoutExpenseInput = {
 
 export type InvoiceCreateWithoutProcessingEventInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1040,7 +1040,7 @@ export type InvoiceCreateWithoutProcessingEventInput = {
 export type InvoiceUncheckedCreateWithoutProcessingEventInput = {
   id: string
   userId: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1082,7 +1082,7 @@ export type InvoiceUpdateToOneWithWhereWithoutProcessingEventInput = {
 
 export type InvoiceUpdateWithoutProcessingEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1110,7 +1110,7 @@ export type InvoiceUpdateWithoutProcessingEventInput = {
 export type InvoiceUncheckedUpdateWithoutProcessingEventInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1136,7 +1136,7 @@ export type InvoiceUncheckedUpdateWithoutProcessingEventInput = {
 
 export type InvoiceCreateWithoutInvoiceItemInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1164,7 +1164,7 @@ export type InvoiceCreateWithoutInvoiceItemInput = {
 export type InvoiceUncheckedCreateWithoutInvoiceItemInput = {
   id: string
   userId: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1206,7 +1206,7 @@ export type InvoiceUpdateToOneWithWhereWithoutInvoiceItemInput = {
 
 export type InvoiceUpdateWithoutInvoiceItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1234,7 +1234,7 @@ export type InvoiceUpdateWithoutInvoiceItemInput = {
 export type InvoiceUncheckedUpdateWithoutInvoiceItemInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1260,7 +1260,7 @@ export type InvoiceUncheckedUpdateWithoutInvoiceItemInput = {
 
 export type InvoiceCreateWithoutUserInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1287,7 +1287,7 @@ export type InvoiceCreateWithoutUserInput = {
 
 export type InvoiceUncheckedCreateWithoutUserInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1344,7 +1344,7 @@ export type InvoiceScalarWhereInput = {
   NOT?: Prisma.InvoiceScalarWhereInput | Prisma.InvoiceScalarWhereInput[]
   id?: Prisma.StringFilter<"Invoice"> | string
   userId?: Prisma.StringFilter<"Invoice"> | string
-  pdfUrl?: Prisma.StringFilter<"Invoice"> | string
+  pdfUrl?: Prisma.StringNullableFilter<"Invoice"> | string | null
   status?: Prisma.EnumInvoiceStatusFilter<"Invoice"> | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFilter<"Invoice"> | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFilter<"Invoice"> | number
@@ -1368,7 +1368,7 @@ export type InvoiceScalarWhereInput = {
 
 export type InvoiceCreateManyUserInput = {
   id: string
-  pdfUrl: string
+  pdfUrl?: string | null
   status?: $Enums.InvoiceStatus
   processingStage?: $Enums.InvoiceProcessingStage
   processingProgress?: number
@@ -1392,7 +1392,7 @@ export type InvoiceCreateManyUserInput = {
 
 export type InvoiceUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1419,7 +1419,7 @@ export type InvoiceUpdateWithoutUserInput = {
 
 export type InvoiceUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1446,7 +1446,7 @@ export type InvoiceUncheckedUpdateWithoutUserInput = {
 
 export type InvoiceUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  pdfUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  pdfUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumInvoiceStatusFieldUpdateOperationsInput | $Enums.InvoiceStatus
   processingStage?: Prisma.EnumInvoiceProcessingStageFieldUpdateOperationsInput | $Enums.InvoiceProcessingStage
   processingProgress?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1650,7 +1650,7 @@ export type $InvoicePayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     userId: string
-    pdfUrl: string
+    pdfUrl: string | null
     status: $Enums.InvoiceStatus
     processingStage: $Enums.InvoiceProcessingStage
     processingProgress: number
