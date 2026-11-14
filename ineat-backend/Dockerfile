@@ -1,7 +1,10 @@
 FROM node:22-bookworm-slim AS build
 
 WORKDIR /app
-RUN corepack enable
+RUN corepack enable \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
