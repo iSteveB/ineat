@@ -111,7 +111,7 @@ export function useCategoryLabel(slug: string | undefined) {
 	const { data: categories } = useCategories();
 
 	if (!slug || !categories) {
-		return slug || 'Catégorie inconnue';
+		return slug || 'Sans catégorie';
 	}
 
 	const category = categories.find((cat) => cat.slug === slug);

@@ -84,7 +84,7 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 			try {
 				// Validation du fichier
 				if (!file.type.startsWith('image/')) {
-					const errorMsg = 'Le fichier doit être une image';
+					const errorMsg = 'Choisissez un fichier image';
 					setState((prev) => ({ ...prev, error: errorMsg }));
 					toast.error(errorMsg);
 					return null;
@@ -93,7 +93,7 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 				// Limite de 5MB
 				const maxSize = 5 * 1024 * 1024;
 				if (file.size > maxSize) {
-					const errorMsg = "L'image ne doit pas dépasser 5MB";
+					const errorMsg = 'Choisissez une image de 5\u00A0Mo maximum';
 					setState((prev) => ({ ...prev, error: errorMsg }));
 					toast.error(errorMsg);
 					return null;
@@ -161,12 +161,12 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 					isUploading: false,
 				}));
 
-				toast.success('Photo de profil mise à jour avec succès');
+				toast.success('Photo de profil mise à jour');
 				return response.avatarUrl;
 			} catch (error) {
 				const errorMsg = getUserFacingErrorMessage(
 					error,
-					"Impossible de mettre à jour la photo de profil. Veuillez réessayer."
+					'Impossible de mettre à jour la photo de profil. Réessayez dans un instant.'
 				);
 				setState((prev) => ({
 					...prev,
@@ -201,12 +201,12 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 
 			setState((prev) => ({ ...prev, isUploading: false }));
 
-			toast.success('Photo de profil supprimée avec succès');
+			toast.success('Photo de profil supprimée');
 			return true;
 		} catch (error) {
 			const errorMsg = getUserFacingErrorMessage(
 				error,
-				'Impossible de supprimer la photo de profil. Veuillez réessayer.'
+				'Impossible de supprimer la photo de profil. Réessayez dans un instant.'
 			);
 			setState((prev) => ({
 				...prev,

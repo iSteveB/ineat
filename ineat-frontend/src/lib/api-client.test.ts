@@ -148,7 +148,7 @@ describe('apiClient', () => {
 				expect(error).toBeInstanceOf(ApiRequestError);
 				expect((error as ApiRequestError).status).toBe(500);
 				expect((error as ApiRequestError).message).toBe(
-					'Une erreur est survenue. Veuillez réessayer.'
+					'Un souci technique nous empêche de continuer. Réessayez dans un instant.'
 				);
 			}
 		});
@@ -181,7 +181,7 @@ describe('apiClient', () => {
 					expect(error).toBeInstanceOf(ApiRequestError);
 					expect((error as ApiRequestError).status).toBe(500);
 					expect((error as ApiRequestError).message).toBe(
-						'Impossible de mettre à jour la photo de profil. Veuillez réessayer.'
+						'Impossible de mettre à jour la photo de profil. Réessayez dans un instant.'
 					);
 					expect((error as ApiRequestError).requestId).toBe(
 						'req-500'
@@ -235,7 +235,7 @@ describe('apiClient', () => {
 
 			await expect(apiClient.fetch('/inventory/add')).rejects.toMatchObject({
 				status: 403,
-				message: 'Cette action nécessite Premium.',
+				message: 'Cette fonctionnalité est réservée à Premium.',
 			});
 		});
 
@@ -309,7 +309,7 @@ describe('apiClient', () => {
 				expect(error).toBeInstanceOf(ApiRequestError);
 				expect((error as ApiRequestError).status).toBe(408);
 				expect((error as ApiRequestError).message).toBe(
-					'La requête a expiré'
+					'InEat met trop de temps à répondre. Réessayez dans un instant.'
 				);
 			}
 		});
@@ -327,7 +327,7 @@ describe('apiClient', () => {
 				expect(error).toBeInstanceOf(ApiRequestError);
 				expect((error as ApiRequestError).status).toBe(0);
 				expect((error as ApiRequestError).message).toBe(
-					'Impossible de joindre le serveur. Vérifiez votre connexion.'
+					'Impossible de joindre InEat. Vérifiez votre connexion internet.'
 				);
 				expect((error as ApiRequestError).rawMessage).toBe(
 					'Network error'

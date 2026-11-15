@@ -26,9 +26,9 @@ const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replac
 	/\/$/,
 	''
 );
-const DEFAULT_ERROR_MESSAGE = 'Une erreur est survenue. Veuillez réessayer.';
+const DEFAULT_ERROR_MESSAGE = 'Un souci technique nous empêche de continuer. Réessayez dans un instant.';
 const NETWORK_ERROR_MESSAGE =
-	'Impossible de joindre le serveur. Vérifiez votre connexion.';
+	'Impossible de joindre InEat. Vérifiez votre connexion internet.';
 
 interface FetchOptions extends RequestInit {
 	timeoutMs?: number;
@@ -98,27 +98,27 @@ const getEndpointFallbackMessage = (
 	status: number
 ): string => {
 	if (status === 401) {
-		return 'Votre session a expiré. Veuillez vous reconnecter.';
+		return 'Votre session a expiré. Reconnectez-vous pour continuer.';
 	}
 
 	if (status === 403) {
-		return "Vous n'avez pas les droits nécessaires pour effectuer cette action.";
+		return 'Votre compte ne permet pas cette action.';
 	}
 
 	if (endpoint.includes('/auth/')) {
-		return "Impossible de finaliser l'authentification. Veuillez réessayer.";
+		return 'Impossible de vous connecter pour le moment. Réessayez dans un instant.';
 	}
 
 	if (endpoint.includes('/avatar')) {
-		return 'Impossible de mettre à jour la photo de profil. Veuillez réessayer.';
+		return 'Impossible de mettre à jour la photo de profil. Réessayez dans un instant.';
 	}
 
 	if (endpoint.includes('/inventory')) {
-		return "Impossible de mettre à jour l'inventaire. Veuillez réessayer.";
+		return 'Impossible de mettre à jour votre stock. Réessayez dans un instant.';
 	}
 
 	if (endpoint.includes('/budget') || endpoint.includes('/expense')) {
-		return 'Impossible de mettre à jour le budget. Veuillez réessayer.';
+		return 'Impossible de mettre à jour votre budget. Réessayez dans un instant.';
 	}
 
 	return DEFAULT_ERROR_MESSAGE;
@@ -131,7 +131,7 @@ const getPublicErrorMessage = (
 	rawMessage?: string
 ): string => {
 	if (status === 403 && /premium|abonnement/i.test(rawMessage || '')) {
-		return 'Cette action nécessite Premium.';
+		return 'Cette fonctionnalité est réservée à Premium.';
 	}
 
 	if (errorData?.code && PUBLIC_ERROR_MESSAGES_BY_CODE[errorData.code]) {
@@ -224,7 +224,7 @@ export const apiClient = {
 
 			if (error instanceof Error) {
 				if (error.name === 'AbortError') {
-					throw new ApiRequestError('La requête a expiré', 408);
+					throw new ApiRequestError('InEat met trop de temps à répondre. Réessayez dans un instant.', 408);
 				}
 				throw new ApiRequestError(NETWORK_ERROR_MESSAGE, 0, {
 					rawMessage: error.message,

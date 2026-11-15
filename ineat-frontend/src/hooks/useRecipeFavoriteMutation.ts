@@ -84,10 +84,10 @@ export function useRecipeFavoriteMutation() {
 					context.previousDetail
 				);
 			}
-			toast.error('Favori non modifié', {
+			toast.error('Impossible de modifier vos favoris', {
 				description: getUserFacingErrorMessage(
 					error,
-					'Impossible de modifier cette recette.'
+					'Réessayez dans un instant.'
 				),
 			});
 		},

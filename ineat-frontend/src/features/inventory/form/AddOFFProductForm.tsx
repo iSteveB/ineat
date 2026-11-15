@@ -167,7 +167,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 		e.preventDefault();
 
 		if (!validateForm()) {
-			toast.error('Veuillez corriger les erreurs du formulaire');
+			toast.error('Quelques champs sont à compléter');
 			return;
 		}
 
@@ -176,7 +176,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 			(cat) => cat.slug === formData.category
 		);
 		if (!selectedCategory) {
-			toast.error("La catégorie sélectionnée n'est pas valide");
+			toast.error('Choisissez une catégorie dans la liste');
 			return;
 		}
 

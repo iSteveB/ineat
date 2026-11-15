@@ -46,7 +46,7 @@ export function useInventory(
 		refetchOnWindowFocus: options?.refetchOnWindowFocus ?? true,
 		enabled: options?.enabled ?? true,
 		meta: {
-			errorMessage: 'Impossible de charger votre inventaire',
+			errorMessage: 'Impossible de charger votre stock',
 		},
 	});
 }
@@ -90,7 +90,7 @@ export function useAddManualProduct() {
 			switch (data.type) {
 				case 'success':
 					toast.success(data.message, {
-						description: `${data.productName} ajouté à l'inventaire`,
+						description: `${data.productName} est dans votre stock`,
 					});
 					break;
 				case 'info':
@@ -114,10 +114,10 @@ export function useAddManualProduct() {
 		onError: (error: Error) => {
 			const errorMessage = getUserFacingErrorMessage(
 				error,
-				"Impossible d'ajouter le produit. Veuillez réessayer."
+				'Vérifiez votre connexion, puis réessayez.'
 			);
 
-			toast.error("Erreur lors de l'ajout du produit", {
+			toast.error('Impossible d’ajouter le produit', {
 				description: errorMessage,
 			});
 
@@ -125,7 +125,7 @@ export function useAddManualProduct() {
 		},
 
 		meta: {
-			loadingMessage: 'Ajout du produit en cours...',
+			loadingMessage: 'Ajout du produit…',
 		},
 	});
 }
@@ -163,16 +163,16 @@ export function useUpdateInventoryItem() {
 					queryKey: inventoryKeys.stats(),
 				});
 
-				toast.success('Produit mis à jour avec succès');
+				toast.success('Produit mis à jour');
 			},
 
 			onError: (error: Error) => {
 				const errorMessage = getUserFacingErrorMessage(
 					error,
-					'Impossible de mettre à jour le produit. Veuillez réessayer.'
+					'Vérifiez votre connexion, puis réessayez.'
 				);
 
-				toast.error('Erreur lors de la mise à jour', {
+				toast.error('Impossible de mettre à jour le produit', {
 					description: errorMessage,
 				});
 			},
@@ -214,16 +214,16 @@ export function useRemoveInventoryItem() {
 			// Invalider les stats
 			queryClient.invalidateQueries({ queryKey: inventoryKeys.stats() });
 
-			toast.success('Produit supprimé de votre inventaire');
+			toast.success('Produit retiré de votre stock');
 		},
 
 		onError: (error: Error) => {
 			const errorMessage = getUserFacingErrorMessage(
 				error,
-				'Impossible de supprimer le produit. Veuillez réessayer.'
+				'Vérifiez votre connexion, puis réessayez.'
 			);
 
-			toast.error('Erreur lors de la suppression', {
+			toast.error('Impossible de retirer le produit', {
 				description: errorMessage,
 			});
 		},

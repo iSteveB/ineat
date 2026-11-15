@@ -57,7 +57,7 @@ export const useUpdateProfile = (): UseUpdateProfileReturn => {
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
-        : 'Une erreur est survenue lors de la mise à jour du profil';
+        : 'Impossible de mettre à jour votre profil. Réessayez dans un instant.';
       
       setError(errorMessage);
       throw err;
