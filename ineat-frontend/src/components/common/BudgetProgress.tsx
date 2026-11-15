@@ -25,7 +25,7 @@ const BudgetProgress: FC<BudgetProgressProps> = ({ title, spent, total, daysRema
 	const remaining = total - spent;
 
 	const note = isOver
-		? `Budget dépassé de ${formatCurrency(-remaining)}.`
+		? `Budget dépassé de ${formatCurrency(-remaining)}. Ça arrive, le mois prochain repart à zéro.`
 		: isWarning
 			? `${percentage} % utilisé, il reste ${formatCurrency(remaining)}.`
 			: daysRemaining && daysRemaining > 0

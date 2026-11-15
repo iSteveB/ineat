@@ -143,7 +143,7 @@ describe('AuthGuard', () => {
 				.fn()
 				.mockRejectedValue(
 					new ApiRequestError(
-						'Votre adresse email doit être vérifiée avant de continuer.',
+						'Confirmez votre adresse e-mail pour continuer : le lien vous attend dans votre boîte mail.',
 						403,
 						{ code: 'EMAIL_NOT_VERIFIED' }
 					)

@@ -69,17 +69,17 @@ const subscriptionPlans: SubscriptionPlan[] = [
 		priceDisplay: '0 €',
 		description: 'Pour découvrir InEat.',
 		features: [
-			'Inventaire limité à 50 articles',
+			'Stock limité à 50 produits',
 			'Ajout manuel des produits',
 			'Suivi des dates de péremption',
 			'Budget alimentaire manuel',
 		],
 		limitations: [
 			'Pas de recettes',
-			'Pas de génération IA de recettes',
+			'Pas d’idées de recettes personnalisées',
 			'Pas d’import de facture Drive',
 		],
-		buttonText: 'Plan actuel',
+		buttonText: 'Formule actuelle',
 	},
 	{
 		id: 'PREMIUM_MONTHLY',
@@ -89,12 +89,12 @@ const subscriptionPlans: SubscriptionPlan[] = [
 		period: '/mois',
 		description: 'Sans engagement, facturé chaque mois.',
 		features: [
-			'Tout le plan Gratuit',
-			'Inventaire jusqu’à 500 articles',
-			'Recettes depuis l’inventaire',
-			'100 générations IA de recettes par mois',
+			'Tout ce qu’offre la formule Gratuite',
+			'Stock jusqu’à 500 produits',
+			'Recettes à partir de votre stock',
+			'100 idées de recettes par mois',
 			'25 imports Drive par mois',
-			'Synchronisation avec le budget alimentaire',
+			'Budget mis à jour automatiquement',
 		],
 		buttonText: 'Commencer Premium',
 		checkoutInterval: 'MONTHLY',
@@ -107,9 +107,9 @@ const subscriptionPlans: SubscriptionPlan[] = [
 		period: '/an',
 		description: 'Soit 5,00 € par mois : environ 2 mois offerts.',
 		features: [
-			'Tout le plan Premium mensuel',
-			'Inventaire jusqu’à 500 articles',
-			'100 générations IA de recettes par mois',
+			'Tout ce qu’offre Premium mensuel',
+			'Stock jusqu’à 500 produits',
+			'100 idées de recettes par mois',
 			'25 imports Drive par mois',
 			'Annulation possible avant le renouvellement',
 		],
@@ -122,18 +122,18 @@ const subscriptionPlans: SubscriptionPlan[] = [
 const highlights: { icon: LucideIcon; title: string; text: string }[] = [
 	{
 		icon: ChefHat,
-		title: 'Recettes et IA',
-		text: 'Des idées de repas avec ce que vous avez déjà, et un quota toujours visible.',
+		title: 'Idées de recettes',
+		text: 'Des idées de repas qui utilisent d’abord les produits qui expirent bientôt.',
 	},
 	{
 		icon: FileText,
 		title: 'Import Drive',
-		text: 'Importez vos factures Drive pour remplir votre inventaire d’un coup.',
+		text: 'Importez une facture Drive et toutes vos courses rejoignent votre stock d’un coup.',
 	},
 	{
 		icon: Wallet,
 		title: 'Budget synchronisé',
-		text: 'Les achats importés mettent votre budget alimentaire à jour.',
+		text: 'Vos achats importés mettent votre budget à jour tout seuls.',
 	},
 ];
 
@@ -217,12 +217,12 @@ export const SubscriptionPage: React.FC = () => {
 
 	const handleSubscribe = async (plan: SubscriptionPlan) => {
 		if (plan.id === 'FREE' && currentPlan === 'FREE' && !isTrialExpired) {
-			toast.info('Vous êtes déjà sur ce plan');
+			toast.info('Vous avez déjà cette formule');
 			return;
 		}
 
 		if (!plan.checkoutInterval) {
-			toast.info('Ce changement de plan sera bientôt disponible.');
+			toast.info('Ce changement de formule arrive bientôt.');
 			return;
 		}
 
@@ -235,7 +235,7 @@ export const SubscriptionPage: React.FC = () => {
 			window.location.assign(checkoutSession.url);
 		} catch (error) {
 			const errorMessage =
-				error instanceof Error ? error.message : 'Erreur lors de la souscription';
+				error instanceof Error ? error.message : 'Le paiement n’a pas pu démarrer. Réessayez dans un instant.';
 			toast.error(errorMessage);
 		} finally {
 			setIsProcessing(false);
@@ -248,12 +248,12 @@ export const SubscriptionPage: React.FC = () => {
 		try {
 			await billingService.startTrial();
 			await refreshUser();
-			toast.success('Votre essai Premium est actif pendant 3 jours.');
+			toast.success('Votre essai Premium commence : profitez-en pendant 3 jours.');
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Impossible d'activer l'essai gratuit.";
+					: 'Impossible d’activer l’essai gratuit. Réessayez dans un instant.';
 			toast.error(errorMessage);
 		} finally {
 			setIsTrialStarting(false);
@@ -270,7 +270,7 @@ export const SubscriptionPage: React.FC = () => {
 			const errorMessage =
 				error instanceof Error
 					? error.message
-					: "Impossible d'ouvrir la gestion de l'abonnement.";
+					: 'Impossible d’ouvrir la gestion de l’abonnement. Réessayez dans un instant.';
 			toast.error(errorMessage);
 		} finally {
 			setIsPortalOpening(false);
@@ -383,29 +383,29 @@ export const SubscriptionPage: React.FC = () => {
 				</h2>
 				<ul className='grid grid-cols-2 gap-3 lg:grid-cols-4'>
 					<QuotaCard
-						label='Inventaire'
+						label='Stock'
 						value={plural(capabilities.inventoryLimit, 'article')}
 					/>
 					<QuotaCard
-						label='IA recettes'
+						label='Idées de recettes'
 						value={plural(capabilities.aiRecipeGenerationRemaining, 'restante')}
-						warning={aiQuotaReached ? 'Quota quotidien de recettes atteint.' : undefined}
+						warning={aiQuotaReached ? 'Vous avez utilisé vos idées du jour. Revenez demain.' : undefined}
 					/>
 					<QuotaCard
 						label='Images recettes'
 						value={plural(capabilities.aiRecipeImageGenerationRemaining, 'restante')}
 						warning={
 							aiImageQuotaReached
-								? 'Quota quotidien d’images atteint. Les recettes restent sauvegardables sans image.'
+								? 'Plus de photos de recettes pour aujourd’hui. Vous pouvez quand même ajouter des recettes.'
 								: undefined
 						}
 					/>
 					<QuotaCard
-						label='Drive'
+						label='Imports Drive'
 						value={plural(capabilities.driveImportsRemaining, 'import')}
 						warning={
 							driveQuotaReached
-								? 'Quota Drive atteint. Le prochain import sera disponible au renouvellement.'
+								? 'Vous avez utilisé tous vos imports du mois. Le compteur repart à zéro au renouvellement.'
 								: undefined
 						}
 					/>
@@ -440,7 +440,7 @@ export const SubscriptionPage: React.FC = () => {
 						{isActive && (
 							<Badge variant='premium'>
 								<ShieldCheck aria-hidden='true' />
-								Plan actuel
+								Formule actuelle
 							</Badge>
 						)}
 					</div>
@@ -542,8 +542,7 @@ export const SubscriptionPage: React.FC = () => {
 			<header className='flex flex-col gap-1'>
 				<h1 className='type-h1 text-neutral-900'>Abonnement</h1>
 				<p className='max-w-2xl text-neutral-600'>
-					Premium débloque les recettes, l’IA, les imports Drive, le budget synchronisé et
-					des limites étendues.
+					Premium ajoute les idées de recettes, l’import de factures Drive, le budget automatique et un stock plus grand.
 				</p>
 			</header>
 
@@ -590,7 +589,7 @@ export const SubscriptionPage: React.FC = () => {
 				</li>
 				<li className='flex items-center gap-1.5'>
 					<Sparkles className='size-4' aria-hidden='true' />
-					Après l’essai, le plan Gratuit s’applique automatiquement
+					Après l’essai, vous repassez automatiquement à la formule Gratuite
 				</li>
 			</ul>
 		</div>

@@ -329,14 +329,18 @@ export class NotificationService {
             type: NotificationType.EXPIRY,
             title:
               days < 0
-                ? 'Produit périmé'
+                ? 'Date dépassée'
                 : days <= 2
-                  ? 'Produit à consommer très vite'
-                  : 'Produit bientôt périmé',
+                  ? 'À consommer très vite'
+                  : 'À consommer bientôt',
             message:
               days < 0
-                ? `${productName} est périmé depuis ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}.`
-                : `${productName} expire dans ${days} jour${days > 1 ? 's' : ''}.`,
+                ? `${productName} a dépassé sa date depuis ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}. Vérifiez l’emballage : après une DDM, il est souvent encore bon.`
+                : days === 0
+                  ? `${productName} expire aujourd’hui. C’est le moment de le cuisiner.`
+                  : days === 1
+                    ? `${productName} expire demain.`
+                    : `${productName} expire dans ${days} jours.`,
             referenceId: item.id,
             referenceType: 'inventory_item',
           });
@@ -407,18 +411,18 @@ export class NotificationService {
         ? {
             key: 'over_budget',
             title: 'Budget dépassé',
-            message: `Votre budget est dépassé de ${(spent - budget.amount).toFixed(2)}€.`,
+            message: `Votre budget est dépassé de ${(spent - budget.amount).toFixed(2).replace('.', ',')}\u00A0€. Le mois prochain repart à zéro.`,
           }
         : percentage >= 90
           ? {
               key: 'threshold_90',
               title: 'Budget presque épuisé',
-              message: `Vous avez utilisé ${percentage.toFixed(0)}% de votre budget mensuel.`,
+              message: `Vous avez utilisé ${percentage.toFixed(0)}\u00A0% de votre budget du mois.`,
             }
           : {
               key: 'threshold_75',
               title: 'Budget à surveiller',
-              message: `Vous avez utilisé ${percentage.toFixed(0)}% de votre budget mensuel.`,
+              message: `Vous avez utilisé ${percentage.toFixed(0)}\u00A0% de votre budget du mois.`,
             };
 
     await this.createOrUpdateNotification({

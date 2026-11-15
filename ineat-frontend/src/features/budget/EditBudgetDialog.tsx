@@ -33,7 +33,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 		try {
 			return budgetService.formatBudgetPeriod(budget);
 		} catch {
-			return 'Erreur de formatage';
+			return 'Période inconnue';
 		}
 	}, [budget]);
 
@@ -41,12 +41,12 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 		const budgetAmount = parseFloat(amount);
 
 		if (!budgetAmount || budgetAmount <= 0) {
-			setError('Veuillez saisir un montant valide');
+			setError('Indiquez un montant en euros, par exemple 350');
 			return;
 		}
 
 		if (budgetAmount === budget.amount) {
-			setError('Le montant est identique au montant actuel');
+			setError('C’est déjà votre montant actuel');
 			return;
 		}
 
@@ -62,7 +62,7 @@ const EditBudgetDialog: FC<EditBudgetDialogProps> = ({
 			setIsOpen(false);
 			onBudgetUpdated();
 		} catch {
-			setError('Erreur lors de la modification du budget');
+			setError('Impossible de modifier votre budget. Réessayez dans un instant.');
 		} finally {
 			setIsUpdating(false);
 		}

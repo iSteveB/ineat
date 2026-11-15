@@ -35,7 +35,7 @@ export class SessionAuthGuard {
     if (!user.emailVerified) {
       throw new ForbiddenException({
         code: 'EMAIL_NOT_VERIFIED',
-        message: 'Votre adresse email doit être vérifiée avant de continuer.',
+        message: 'Confirmez votre adresse e-mail pour continuer : le lien vous attend dans votre boîte mail.',
       });
     }
 

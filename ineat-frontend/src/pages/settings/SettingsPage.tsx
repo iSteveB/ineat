@@ -64,7 +64,7 @@ const SettingsPage = () => {
 			title: 'Informations personnelles',
 			href: '/app/settings/personal-info',
 			icon: User,
-			description: 'Nom, email, photo de profil',
+			description: 'Nom, adresse e-mail, photo de profil',
 		},
 		{
 			title: 'Restrictions alimentaires',

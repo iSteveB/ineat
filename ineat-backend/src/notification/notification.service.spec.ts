@@ -64,7 +64,7 @@ describe('NotificationService', () => {
       create: expect.objectContaining({
         userId: 'user-1',
         type: 'EXPIRY',
-        title: 'Produit à consommer très vite',
+        title: 'À consommer très vite',
         referenceId: 'item-1',
         referenceType: 'inventory_item',
       }),
@@ -194,7 +194,7 @@ describe('NotificationService', () => {
     prisma.budget.findFirst.mockResolvedValue(null);
     prisma.notification.findUnique.mockResolvedValue({
       id: 'notification-1',
-      title: 'Produit à consommer très vite',
+      title: 'À consommer très vite',
       isRead: true,
       resolvedAt: null,
     });
@@ -224,7 +224,7 @@ describe('NotificationService', () => {
     prisma.budget.findFirst.mockResolvedValue(null);
     prisma.notification.findUnique.mockResolvedValue({
       id: 'notification-1',
-      title: 'Produit bientôt périmé',
+      title: 'À consommer bientôt',
       isRead: true,
       resolvedAt: null,
     });
@@ -256,7 +256,7 @@ describe('NotificationService', () => {
     const input = {
       userId: 'user-1',
       type: 'EXPIRY',
-      title: 'Produit bientôt périmé',
+      title: 'À consommer bientôt',
       message: 'Le lait expire bientôt.',
       referenceId: 'item-1',
       referenceType: 'inventory_item',

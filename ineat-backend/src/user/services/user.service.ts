@@ -84,7 +84,7 @@ export class UserService {
       });
 
       if (emailExists) {
-        throw new BadRequestException('Cette adresse email est déjà utilisée');
+        throw new BadRequestException('Cette adresse e-mail est déjà utilisée. Connectez-vous ou choisissez-en une autre.');
       }
     }
 

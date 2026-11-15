@@ -10,7 +10,7 @@ describe('NotificationDeliveryService', () => {
     id: 'notification-1',
     userId: 'user-1',
     type: NotificationType.EXPIRY,
-    title: 'Produit bientôt périmé',
+    title: 'À consommer bientôt',
     message: 'Le lait expire demain.',
     isRead: false,
     referenceId: 'item-1',

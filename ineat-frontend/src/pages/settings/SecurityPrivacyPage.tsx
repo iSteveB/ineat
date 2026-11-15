@@ -89,7 +89,7 @@ const SecurityPrivacyPage = () => {
 				newPassword: passwordInfo.newPassword,
 			});
 
-			toast.success(response.message || 'Mot de passe mis à jour avec succès');
+			toast.success(response.message || 'Mot de passe modifié');
 			setPasswordInfo({
 				currentPassword: '',
 				newPassword: '',
@@ -99,7 +99,7 @@ const SecurityPrivacyPage = () => {
 			const message =
 				error instanceof Error
 					? error.message
-					: 'Impossible de mettre à jour le mot de passe';
+					: 'Impossible de modifier le mot de passe. Réessayez dans un instant.';
 			toast.error(message);
 		} finally {
 			setIsSubmittingPassword(false);
@@ -126,7 +126,7 @@ const SecurityPrivacyPage = () => {
 
 		try {
 			const response = await userService.deleteAccount(deleteConfirmation);
-			toast.success(response.message || 'Compte supprimé avec succès');
+			toast.success(response.message || 'Compte supprimé. Merci d’avoir utilisé InEat.');
 			setDeleteConfirmOpen(false);
 			clearUser();
 			navigate({ to: '/', replace: true });
@@ -134,7 +134,7 @@ const SecurityPrivacyPage = () => {
 			const message =
 				error instanceof Error
 					? error.message
-					: 'Impossible de supprimer le compte';
+					: 'Impossible de supprimer le compte. Réessayez dans un instant.';
 			toast.error(message);
 		} finally {
 			setIsDeletingAccount(false);
@@ -167,8 +167,8 @@ const SecurityPrivacyPage = () => {
 				</Link>
 			</Button>
 			<header>
-				<h1 className='type-h1 text-neutral-900'>Sécurité & Confidentialité</h1>
-				<p className='text-neutral-600'>Gérez vos paramètres de sécurité et de confidentialité</p>
+				<h1 className='type-h1 text-neutral-900'>Sécurité et confidentialité</h1>
+				<p className='text-neutral-600'>Votre mot de passe et l’usage de vos données.</p>
 			</header>
 
 			<div className='flex flex-col gap-4 lg:gap-6'>
@@ -182,7 +182,7 @@ const SecurityPrivacyPage = () => {
 							Modifier mon mot de passe
 						</CardTitle>
 						<CardDescription className='text-neutral-900'>
-							Assurez-vous d'utiliser un mot de passe fort et unique
+							Choisissez un mot de passe que vous n’utilisez nulle part ailleurs.
 						</CardDescription>
 					</CardHeader>
 					<form onSubmit={handlePasswordSubmit}>
@@ -221,7 +221,7 @@ const SecurityPrivacyPage = () => {
 								{passwordInfo.newPassword.length > 0 &&
 									passwordInfo.newPassword.length < 8 && (
 										<p className='text-sm text-danger-700'>
-											Le mot de passe doit contenir au moins 8 caractères
+											8 caractères minimum
 										</p>
 									)}
 							</div>
@@ -247,7 +247,7 @@ const SecurityPrivacyPage = () => {
 								/>
 								{passwordInfo.confirmPassword.length > 0 && !passwordsMatch && (
 									<p className='text-sm text-danger-700'>
-										Les mots de passe ne correspondent pas
+										Les deux mots de passe sont différents
 									</p>
 								)}
 							</div>
@@ -261,27 +261,27 @@ const SecurityPrivacyPage = () => {
 								{isSubmittingPassword ? (
 									<>
 										<Loader2 className='size-4 mr-2 animate-spin' />
-										Mise à jour...
+										Enregistrement…
 									</>
 								) : (
-									'Mettre à jour le mot de passe'
+									'Modifier le mot de passe'
 								)}
 							</Button>
 						</CardFooter>
 					</form>
 				</Card>
 
-				{/* Section Confidentialité des Données */}
+				{/* Section Confidentialité des données */}
 				<Card className='border-0 bg-surface shadow-xl'>
 					<CardHeader>
 						<CardTitle className='flex items-center gap-3'>
 							<div className='flex size-10 items-center justify-center rounded-md bg-accent-50 text-accent-800'>
 								<Shield className='size-5 text-accent-700' />
 							</div>
-							Confidentialité des Données
+							Confidentialité des données
 						</CardTitle>
 						<CardDescription className='text-neutral-900'>
-							Gérez vos données personnelles et leur utilisation
+							Décidez de ce qu’InEat peut utiliser.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className='space-y-4'>
@@ -374,10 +374,7 @@ const SecurityPrivacyPage = () => {
 									Comment sécuriser mon compte ?
 								</AccordionTrigger>
 								<AccordionContent className='text-neutral-900'>
-									Pour une sécurité optimale, nous vous recommandons d'activer
-									l'authentification à deux facteurs, d'utiliser un mot de passe
-									fort et unique, et de surveiller régulièrement les activités
-									de votre compte.
+									Utilisez un mot de passe que vous n’employez nulle part ailleurs, et déconnectez-vous des appareils que vous partagez.
 								</AccordionContent>
 							</AccordionItem>
 							<AccordionItem value='item-3' className='border-neutral-100'>
@@ -385,9 +382,7 @@ const SecurityPrivacyPage = () => {
 									Comment désactiver les notifications ?
 								</AccordionTrigger>
 								<AccordionContent className='text-neutral-900'>
-									Vous pouvez gérer vos préférences de notification dans la
-									section "Notifications" de votre profil. Vous pouvez y
-									désactiver les notifications par type ou complètement.
+									Rendez-vous dans Paramètres, puis Notifications. Vous pouvez y couper chaque type d’alerte, ou toutes à la fois.
 								</AccordionContent>
 							</AccordionItem>
 						</Accordion>
@@ -470,7 +465,7 @@ const SecurityPrivacyPage = () => {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							Êtes-vous sûr de vouloir supprimer votre compte ?
+							Supprimer définitivement votre compte&nbsp;?
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							Pour confirmer, saisissez exactement la phrase suivante :

@@ -118,7 +118,7 @@ describe('SubscriptionPage', () => {
 		});
 		expect(refreshUserMock).toHaveBeenCalledTimes(1);
 		expect(toast.success).toHaveBeenCalledWith(
-			'Votre essai Premium est actif pendant 3 jours.'
+			'Votre essai Premium commence : profitez-en pendant 3 jours.'
 		);
 	});
 

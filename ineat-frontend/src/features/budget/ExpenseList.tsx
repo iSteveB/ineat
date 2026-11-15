@@ -44,8 +44,7 @@ const ExpenseList: FC<ExpenseListProps> = ({ expenses, isLoading }) => {
 				<div className='flex items-center gap-3 rounded-md bg-neutral-50 p-4'>
 					<Receipt className='size-6 shrink-0 text-neutral-600' aria-hidden='true' />
 					<p className='text-sm text-neutral-700'>
-						Les dépenses apparaissent ici quand vous ajoutez des produits avec un prix
-						d’achat.
+						Ajoutez un produit avec son prix : la dépense apparaîtra ici automatiquement.
 					</p>
 				</div>
 			) : (

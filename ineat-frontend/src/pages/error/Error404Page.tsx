@@ -15,7 +15,7 @@ interface Error404Props {
  * (qui porte déjà le <main>) ; ailleurs, elle porte son propre <main> et le logo.
  */
 export const Error404Page: React.FC<Error404Props> = ({
-	message = 'Cette page n’existe pas ou a été déplacée.',
+	message = 'Cette page a dû finir au fond du frigo.',
 }) => {
 	const isInApp = useMatches({
 		select: (matches) => matches.some((match) => match.routeId.startsWith('/app')),

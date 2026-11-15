@@ -165,7 +165,7 @@ describe('RegisterForm', () => {
 			register: registerMock,
 			setError: setErrorMock,
 			isLoading: false,
-			error: 'Cette adresse email est déjà utilisée',
+			error: 'Cette adresse e-mail est déjà utilisée. Connectez-vous ou choisissez-en une autre.',
 		});
 
 		render(<RegisterForm />);
@@ -173,7 +173,7 @@ describe('RegisterForm', () => {
 		// Vérifier que l'erreur est affichée
 		expect(screen.getByTestId('error-container')).toBeInTheDocument();
 		expect(screen.getByTestId('error-message')).toHaveTextContent(
-			'Cette adresse email est déjà utilisée'
+			'Cette adresse e-mail est déjà utilisée. Connectez-vous ou choisissez-en une autre.'
 		);
 	});
 

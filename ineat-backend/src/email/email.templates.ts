@@ -391,7 +391,7 @@ export function createWeeklyProductDigestEmail(
       .join('\n');
   const sections = [
     input.totals.expired
-      ? `Produits périmés (${input.totals.expired})\n${itemText(input.expired)}`
+      ? `Date dépassée (${input.totals.expired})\n${itemText(input.expired)}`
       : '',
     input.totals.expiringSoon
       ? `À consommer dans les 7 jours (${input.totals.expiringSoon})\n${itemText(input.expiringSoon)}`
@@ -410,7 +410,7 @@ export function createWeeklyProductDigestEmail(
 
   return {
     subject: 'Votre semaine InEat : produits à consommer et budget',
-    text: `${greeting}\n\nVoici les informations utiles pour préparer votre semaine.\n\n${sections.join('\n\n')}\n\nVoir mon inventaire : ${input.inventoryUrl}${input.budget ? `\nVoir mon budget : ${input.budgetUrl}` : ''}`,
+    text: `${greeting}\n\nVoici les informations utiles pour préparer votre semaine.\n\n${sections.join('\n\n')}\n\nVoir mon stock : ${input.inventoryUrl}${input.budget ? `\nVoir mon budget : ${input.budgetUrl}` : ''}`,
     html: `<!doctype html>
 <html lang="fr">
   <body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
@@ -419,12 +419,12 @@ export function createWeeklyProductDigestEmail(
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border-radius:16px;padding:32px"><tr><td>
         <p style="margin:0 0 20px;font-size:16px">${escapeHtml(greeting)}</p>
         <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25">Préparez votre semaine avec InEat</h1>
-        <p style="margin:0 0 20px;font-size:16px;line-height:1.6">Voici les informations utiles de votre inventaire.</p>
+        <p style="margin:0 0 20px;font-size:16px;line-height:1.6">Voici les informations utiles de votre stock.</p>
         ${renderDigestSection('À consommer maintenant', input.expired, input.totals.expired, input.inventoryUrl)}
         ${renderDigestSection('À consommer dans les 7 jours', input.expiringSoon, input.totals.expiringSoon, input.inventoryUrl)}
         ${budgetHtml}
         ${renderDigestSection('Ajoutés cette semaine', input.recentlyAdded, input.totals.recentlyAdded, input.inventoryUrl)}
-        <p style="margin:28px 0 0"><a href="${inventoryUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir mon inventaire</a></p>
+        <p style="margin:28px 0 0"><a href="${inventoryUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir mon stock</a></p>
         <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#7b8794">Vous pouvez désactiver ce récapitulatif dans les paramètres de notification InEat.</p>
       </td></tr></table>
     </td></tr></table>
@@ -458,8 +458,8 @@ export function createDailyProductDigestEmail(input: DailyProductDigestInput) {
     .join('\n');
 
   return {
-    subject: 'Actions du jour dans votre inventaire InEat',
-    text: `${greeting}\n\nVoici ce qui demande votre attention aujourd'hui.\n\n${itemsText}${input.budgetAlert ? `\n\nBudget\n${input.budgetAlert}\n${input.budgetUrl}` : ''}\n\nVoir mon inventaire : ${input.inventoryUrl}`,
+    subject: 'Actions du jour dans votre stock InEat',
+    text: `${greeting}\n\nVoici ce qui demande votre attention aujourd'hui.\n\n${itemsText}${input.budgetAlert ? `\n\nBudget\n${input.budgetAlert}\n${input.budgetUrl}` : ''}\n\nVoir mon stock : ${input.inventoryUrl}`,
     html: `<!doctype html>
 <html lang="fr"><body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px"><tr><td align="center">
@@ -469,7 +469,7 @@ export function createDailyProductDigestEmail(input: DailyProductDigestInput) {
       <p style="margin:0 0 20px;font-size:16px;line-height:1.6">Voici ce qui demande votre attention dans InEat.</p>
       ${itemsHtml ? `<h2 style="margin:24px 0 10px;font-size:18px">Produits urgents</h2><ul style="margin:0;padding-left:20px;line-height:1.5">${itemsHtml}</ul>${more}` : ''}
       ${budgetHtml}
-      <p style="margin:28px 0 0"><a href="${inventoryUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir mon inventaire</a></p>
+      <p style="margin:28px 0 0"><a href="${inventoryUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Voir mon stock</a></p>
       <p style="margin:24px 0 0;font-size:12px;line-height:1.6;color:#7b8794">Vous recevez ce message car le récapitulatif quotidien est activé dans vos paramètres InEat.</p>
     </td></tr></table>
   </td></tr></table>
@@ -488,7 +488,7 @@ export function createPasswordResetEmail(input: {
 
   return {
     subject: 'Réinitialisez votre mot de passe InEat',
-    text: `${greeting}\n\nUne demande de réinitialisation de votre mot de passe InEat a été effectuée.\n\nChoisissez un nouveau mot de passe : ${input.resetUrl}\n\nCe lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.`,
+    text: `${greeting}\n\nUne demande de réinitialisation de votre mot de passe InEat a été effectuée.\n\nChoisissez un nouveau mot de passe : ${input.resetUrl}\n\nCe lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.`,
     html: `<!doctype html>
 <html lang="fr">
   <body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
@@ -503,7 +503,7 @@ export function createPasswordResetEmail(input: {
             <p style="margin:0 0 24px">
               <a href="${safeResetUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Choisir un nouveau mot de passe</a>
             </p>
-            <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#52606d">Ce lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+            <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#52606d">Ce lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p>
             <p style="margin:0;font-size:12px;line-height:1.6;color:#7b8794;word-break:break-all">Si le bouton ne fonctionne pas, copiez ce lien : ${safeResetUrl}</p>
           </td></tr>
         </table>
@@ -524,23 +524,23 @@ export function createEmailVerificationEmail(input: {
   const safeVerificationUrl = escapeHtml(input.verificationUrl);
 
   return {
-    subject: 'Confirmez votre adresse email InEat',
-    text: `${greeting}\n\nBienvenue sur InEat. Confirmez votre adresse email pour activer votre compte : ${input.verificationUrl}\n\nCe lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email.`,
+    subject: 'Confirmez votre adresse e-mail InEat',
+    text: `${greeting}\n\nBienvenue sur InEat. Confirmez votre adresse e-mail pour activer votre compte : ${input.verificationUrl}\n\nCe lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette inscription, ignorez cet e-mail.`,
     html: `<!doctype html>
 <html lang="fr">
   <body style="margin:0;background:#f6f7f4;color:#1f2933;font-family:Arial,sans-serif">
-    <div style="display:none;max-height:0;overflow:hidden">Confirmez votre adresse email InEat dans les 60 minutes.</div>
+    <div style="display:none;max-height:0;overflow:hidden">Confirmez votre adresse e-mail InEat dans les 60 minutes.</div>
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f7f4;padding:32px 16px">
       <tr><td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border-radius:16px;padding:32px">
           <tr><td>
             <p style="margin:0 0 20px;font-size:16px">${safeGreeting}</p>
-            <h1 style="margin:0 0 16px;font-size:26px;line-height:1.25">Confirmez votre adresse email</h1>
+            <h1 style="margin:0 0 16px;font-size:26px;line-height:1.25">Confirmez votre adresse e-mail</h1>
             <p style="margin:0 0 24px;font-size:16px;line-height:1.6">Bienvenue sur InEat. Confirmez votre adresse pour activer votre compte et commencer à mieux gérer vos produits alimentaires.</p>
             <p style="margin:0 0 24px">
               <a href="${safeVerificationUrl}" style="display:inline-block;background:#2f6b3c;color:#ffffff;text-decoration:none;font-weight:700;padding:13px 20px;border-radius:8px">Confirmer mon adresse</a>
             </p>
-            <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#52606d">Ce lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email.</p>
+            <p style="margin:0 0 12px;font-size:14px;line-height:1.6;color:#52606d">Ce lien expire dans 60 minutes. Si vous n'êtes pas à l'origine de cette inscription, ignorez cet e-mail.</p>
             <p style="margin:0;font-size:12px;line-height:1.6;color:#7b8794;word-break:break-all">Si le bouton ne fonctionne pas, copiez ce lien : ${safeVerificationUrl}</p>
           </td></tr>
         </table>

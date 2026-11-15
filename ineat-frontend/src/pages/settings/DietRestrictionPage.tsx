@@ -34,7 +34,7 @@ const DietaryRestrictionsPage = () => {
         setSelectedDiets(preferences.diets || []);
       } catch (error) {
         console.error("Erreur lors du chargement des préférences:", error);
-        toast.error("Impossible de charger vos préférences alimentaires.");
+        toast.error("Impossible d’afficher vos préférences alimentaires. Réessayez dans un instant.");
       } finally {
         setIsLoading(false);
       }
@@ -63,10 +63,10 @@ const DietaryRestrictionsPage = () => {
       });
       await refreshProfile();
 
-      toast.success("Vos préférences alimentaires ont été enregistrées.");
+      toast.success("Préférences alimentaires enregistrées");
     } catch (error) {
       console.error("Erreur lors de la sauvegarde:", error);
-      toast.error("Impossible de sauvegarder vos préférences.");
+      toast.error("Impossible d’enregistrer vos préférences. Réessayez dans un instant.");
     } finally {
       setIsSaving(false);
     }
@@ -92,7 +92,7 @@ const DietaryRestrictionsPage = () => {
       </Button>
       <header>
         <h1 className="type-h1 text-neutral-900">Restrictions alimentaires</h1>
-        <p className="text-neutral-600">Gérez vos préférences alimentaires</p>
+        <p className="text-neutral-600">Pour des idées de recettes adaptées à votre table.</p>
       </header>
 
       <div className="flex flex-col gap-4 lg:gap-6">
@@ -104,8 +104,7 @@ const DietaryRestrictionsPage = () => {
               Allergies et intolérances
             </CardTitle>
             <CardDescription>
-              Sélectionnez les aliments auxquels vous êtes allergique ou
-              intolérant.
+              Sélectionnez ce que vous ne pouvez pas manger.
             </CardDescription>
           </CardHeader>
           <CardContent>

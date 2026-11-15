@@ -31,7 +31,7 @@ export const BudgetSchema = z
 			return startDate < endDate;
 		},
 		{
-			message: 'La date de fin doit être postérieure à la date de début',
+			message: 'Choisissez une date de fin après la date de début',
 			path: ['periodEnd'],
 		}
 	);
@@ -49,11 +49,11 @@ export const ExpenseSchema = z
 		date: z.string().datetime(),
 		source: z
 			.string()
-			.max(100, 'La source ne peut pas dépasser 100 caractères')
+			.max(100, '100 caractères maximum')
 			.optional(),
 		category: z
 			.string()
-			.max(50, 'La catégorie ne peut pas dépasser 50 caractères')
+			.max(50, '50 caractères maximum')
 			.optional(),
 		notes: MediumTextSchema.optional(),
 	})
@@ -92,7 +92,7 @@ export const CreateBudgetSchema = BaseBudgetSchema.refine(
 		return startDate < endDate;
 	},
 	{
-		message: 'La date de fin doit être postérieure à la date de début',
+		message: 'Choisissez une date de fin après la date de début',
 		path: ['periodEnd'],
 	}
 ).refine(
@@ -103,7 +103,7 @@ export const CreateBudgetSchema = BaseBudgetSchema.refine(
 		return startDate >= today;
 	},
 	{
-		message: 'La date de début ne peut pas être dans le passé',
+		message: 'Choisissez une date de début à partir d’aujourd’hui',
 		path: ['periodStart'],
 	}
 );
@@ -118,14 +118,14 @@ export const CreateExpenseSchema = z.object({
 		const today = new Date();
 		today.setHours(23, 59, 59, 999);
 		return expenseDate <= today;
-	}, 'La date de dépense ne peut pas être dans le futur'),
+	}, 'Choisissez une date de dépense passée ou aujourd’hui'),
 	source: z
 		.string()
-		.max(100, 'La source ne peut pas dépasser 100 caractères')
+		.max(100, '100 caractères maximum')
 		.optional(),
 	category: z
 		.string()
-		.max(50, 'La catégorie ne peut pas dépasser 50 caractères')
+		.max(50, '50 caractères maximum')
 		.optional(),
 	notes: MediumTextSchema.optional(),
 });
@@ -399,11 +399,11 @@ export const formatBudgetMessage = (
 	productName: string
 ): string => {
 	if (!budgetImpact.expenseCreated) {
-		return `${productName} ajouté à l'inventaire (prix non renseigné)`;
+		return `${productName} ajouté à votre stock. Sans prix, il ne compte pas dans votre budget`;
 	}
 
 	return (
-		budgetImpact.message || `${productName} ajouté avec impact budgétaire`
+		budgetImpact.message || `${productName} ajouté, son prix compte dans votre budget`
 	);
 };
 
@@ -585,7 +585,7 @@ export const safeFormatBudgetPeriod = (
 	budget: Budget | null | undefined
 ): string => {
 	if (!isValidBudget(budget)) {
-		return 'Budget non disponible';
+		return 'Pas encore de budget';
 	}
 
 	return formatBudgetPeriod(budget);
@@ -693,15 +693,15 @@ export const generateBudgetSuggestions = (stats: BudgetStats): string[] => {
 
 	if (stats.isOverBudget) {
 		suggestions.push(
-			'Votre budget est dépassé. Essayez de réduire vos dépenses non essentielles.'
+			'Budget dépassé ce mois-ci. Puisez d’abord dans votre stock avant de racheter.'
 		);
 	} else if (stats.riskLevel === 'HIGH') {
 		suggestions.push(
-			'Attention : vous risquez de dépasser votre budget. Surveillez vos prochains achats.'
+			'À ce rythme, le budget sera dépassé avant la fin du mois. Cuisinez ce que vous avez déjà.'
 		);
 	} else if (stats.riskLevel === 'MEDIUM') {
 		suggestions.push(
-			'Vous êtes sur la bonne voie, mais restez vigilant sur vos dépenses.'
+			'Vous êtes dans les clous. Continuez comme ça.'
 		);
 	}
 
@@ -710,9 +710,9 @@ export const generateBudgetSuggestions = (stats: BudgetStats): string[] => {
 		stats.suggestedDailyBudget < stats.averageDailySpending
 	) {
 		suggestions.push(
-			`Essayez de limiter vos dépenses à ${stats.suggestedDailyBudget.toFixed(
-				2
-			)}€ par jour.`
+			`Pour tenir le mois, visez ${stats.suggestedDailyBudget
+				.toFixed(2)
+				.replace('.', ',')}\u00A0€ par jour.`
 		);
 	}
 
@@ -733,7 +733,7 @@ export const validateExpenseForBudget = (
 	if (expenseDate < budgetStart || expenseDate > budgetEnd) {
 		return {
 			isValid: false,
-			error: 'La date de la dépense doit être comprise dans la période du budget',
+			error: 'Choisissez une date comprise dans la période du budget',
 		};
 	}
 
@@ -770,7 +770,7 @@ export const formatBudgetPeriod = (budget: Budget): string => {
 			periodStart: budget.periodStart,
 			budget: budget,
 		});
-		return 'Date invalide';
+		return 'Date illisible';
 	}
 
 	try {
@@ -780,7 +780,7 @@ export const formatBudgetPeriod = (budget: Budget): string => {
 		}).format(start);
 	} catch (error) {
 		console.error('Erreur lors du formatage de la date:', error, budget);
-		return 'Erreur de formatage';
+		return 'Période inconnue';
 	}
 };
 

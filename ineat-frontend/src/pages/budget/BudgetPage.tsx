@@ -60,13 +60,13 @@ export const BudgetPage: FC = () => {
 		}
 
 		if (!isValidBudget(selectedBudget)) {
-			return 'Budget invalide';
+			return 'Période inconnue';
 		}
 
 		try {
 			return budgetService.formatBudgetPeriod(selectedBudget);
 		} catch {
-			return 'Erreur de formatage';
+			return 'Période inconnue';
 		}
 	}, [selectedBudget]);
 

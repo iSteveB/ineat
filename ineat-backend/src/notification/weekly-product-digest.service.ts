@@ -218,9 +218,9 @@ export class WeeklyProductDigestService {
         quantity: item.quantity,
         detail:
           days < 0
-            ? `périmé depuis ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
+            ? `date dépassée depuis ${Math.abs(days)} jour${Math.abs(days) > 1 ? 's' : ''}`
             : days === 0
-              ? "expire aujourd'hui"
+              ? 'expire aujourd’hui'
               : `expire dans ${days} jour${days > 1 ? 's' : ''}`,
       };
     };

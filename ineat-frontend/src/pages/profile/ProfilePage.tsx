@@ -208,7 +208,7 @@ const ProfilePage = () => {
 					</div>
 					{insightsQuery.isError && (
 						<p className='mt-3 text-sm text-danger-700'>
-							Les statistiques de recettes sont temporairement indisponibles.
+							Vos statistiques de recettes reviennent bientôt.
 						</p>
 					)}
 				</section>
@@ -263,7 +263,7 @@ const ProfilePage = () => {
 												</Badge>
 											))
 										) : (
-											<span className='font-medium'>Aucune restriction</span>
+											<span className='font-medium'>Aucun régime ni allergie renseigné</span>
 										)}
 									</div>
 								</div>
@@ -295,7 +295,7 @@ const ProfilePage = () => {
 								<div className='flex items-center gap-3'>
 									<WandSparkles className='size-5 text-neutral-500' />
 									<div>
-										<p className='text-sm text-neutral-500'>Générations IA restantes</p>
+										<p className='text-sm text-neutral-500'>Idées de recettes restantes</p>
 										<p className='font-semibold'>
 											{user?.capabilities.aiRecipeGenerationRemaining ?? 0}
 										</p>
@@ -353,7 +353,7 @@ const ProfilePage = () => {
 									</div>
 								) : insightsQuery.isError ? (
 									<div className='flex h-48 items-center justify-center text-danger-700'>
-										Les dépenses sont temporairement indisponibles.
+										Vos dépenses reviennent bientôt.
 									</div>
 								) : insights ? (
 									<>
@@ -378,7 +378,7 @@ const ProfilePage = () => {
 										</div>
 										{!hasSpending && (
 											<p className='mb-2 text-sm text-neutral-500'>
-												Aucune dépense enregistrée sur cette période.
+												Pas encore de dépenses. Ajoutez un produit avec son prix pour commencer.
 											</p>
 										)}
 										<SpendingChart data={insights.spendingTrend} />

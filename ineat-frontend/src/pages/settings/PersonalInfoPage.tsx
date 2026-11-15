@@ -66,7 +66,7 @@ const PersonalInfoPage = () => {
   // Afficher un toast de succès quand la mise à jour réussit
   useEffect(() => {
     if (isSuccess) {
-      toast.success("Profil mis à jour avec succès");
+      toast.success("Profil mis à jour");
       setIsEditing(false);
     }
   }, [isSuccess]);
@@ -95,7 +95,7 @@ const PersonalInfoPage = () => {
       return true;
     }
     if (personalInfo.email !== personalInfo.emailConfirmation) {
-      setEmailError("Les adresses email ne correspondent pas");
+      setEmailError("Les deux adresses e-mail sont différentes");
       return false;
     }
     setEmailError("");
@@ -140,7 +140,7 @@ const PersonalInfoPage = () => {
       </Button>
       <header>
         <h1 className="type-h1 text-neutral-900">Informations personnelles</h1>
-        <p className="text-neutral-600">Gérez vos données</p>
+        <p className="text-neutral-600">Votre nom, votre adresse e-mail et vos habitudes.</p>
       </header>
 
       <div className="flex flex-col gap-4 lg:gap-6">
@@ -203,7 +203,7 @@ const PersonalInfoPage = () => {
               Informations de base
             </CardTitle>
             <CardDescription>
-              Mettez à jour vos informations personnelles
+              Ces informations restent privées.
             </CardDescription>
           </CardHeader>
           <div>
@@ -234,7 +234,7 @@ const PersonalInfoPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Adresse e-mail</Label>
                 <Input
                   id="email"
                   name="email"
@@ -251,7 +251,7 @@ const PersonalInfoPage = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="emailConfirmation">Confirmer l'email</Label>
+                <Label htmlFor="emailConfirmation">Confirmer l’adresse e-mail</Label>
                 <Input
                   id="emailConfirmation"
                   name="emailConfirmation"
@@ -289,7 +289,7 @@ const PersonalInfoPage = () => {
                           d="M5 13l4 4L19 7"
                         />
                       </svg>
-                      <span>Les emails correspondent</span>
+                      <span>Les deux adresses sont identiques</span>
                     </div>
                   )}
               </div>
@@ -329,7 +329,7 @@ const PersonalInfoPage = () => {
                     }}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   >
-                    <option value="">Aucun objectif sélectionné</option>
+                    <option value="">Choisir un objectif</option>
                     <option value="REDUCE_WASTE">Réduire le gaspillage</option>
                     <option value="SAVE_MONEY">Économiser</option>
                     <option value="EAT_BETTER">Mieux manger</option>

@@ -57,7 +57,7 @@ const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 		const budgetAmount = parseFloat(amount);
 
 		if (!budgetAmount || budgetAmount <= 0) {
-			setError('Veuillez saisir un montant valide');
+			setError('Indiquez un montant en euros, par exemple 350');
 			return;
 		}
 
@@ -78,7 +78,7 @@ const CreateBudget: FC<{ onBudgetCreated: () => void; month: string }> = ({
 			setAmount('');
 			onBudgetCreated();
 		} catch {
-			setError('Erreur lors de la sauvegarde du budget');
+			setError('Impossible d’enregistrer votre budget. Réessayez dans un instant.');
 		} finally {
 			setIsCreating(false);
 		}

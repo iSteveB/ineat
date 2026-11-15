@@ -92,8 +92,8 @@ export function PwaInstallBottomSheet() {
 
 					<DialogPrimitive.Title className='pr-10 type-h2 text-neutral-900'>
 						{showIosInstructions
-							? 'Ajouter INEAT sur iPhone'
-							: 'Installer INEAT'}
+							? 'Ajouter InEat sur iPhone'
+							: 'Installer InEat'}
 					</DialogPrimitive.Title>
 
 					<DialogPrimitive.Description
@@ -101,7 +101,7 @@ export function PwaInstallBottomSheet() {
 						className='mt-2 text-sm leading-relaxed text-neutral-600'>
 						{showIosInstructions
 							? "Dans Safari, utilisez le menu de partage pour installer l’application."
-							: "Ajouter l’application à votre écran d’accueil"}
+							: "Ajoutez InEat à votre écran d’accueil pour l’ouvrir en un geste."}
 					</DialogPrimitive.Description>
 
 					{showIosInstructions && (

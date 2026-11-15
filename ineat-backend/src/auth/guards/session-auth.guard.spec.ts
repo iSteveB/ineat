@@ -46,7 +46,7 @@ describe('SessionAuthGuard', () => {
     await expect(guard.canActivate(context)).rejects.toMatchObject({
       response: {
         code: 'EMAIL_NOT_VERIFIED',
-        message: 'Votre adresse email doit être vérifiée avant de continuer.',
+        message: 'Confirmez votre adresse e-mail pour continuer : le lien vous attend dans votre boîte mail.',
       },
     });
     expect(request.user).toBeUndefined();

@@ -95,7 +95,7 @@ describe('sendPasswordResetEmail', () => {
     const message = send.mock.calls[0][0] as TransactionalEmailMessage;
     expect(message).toMatchObject({
       to: 'person@example.com',
-      subject: 'Confirmez votre adresse email InEat',
+      subject: 'Confirmez votre adresse e-mail InEat',
       type: 'email_verification',
     });
     expect(message.html).toContain('Confirmer mon adresse');

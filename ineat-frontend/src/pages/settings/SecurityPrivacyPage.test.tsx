@@ -56,7 +56,7 @@ describe('SecurityPrivacyPage password update', () => {
 		);
 		await user.click(
 			screen.getByRole('button', {
-				name: 'Mettre à jour le mot de passe',
+				name: 'Modifier le mot de passe',
 			})
 		);
 
@@ -89,7 +89,7 @@ describe('SecurityPrivacyPage password update', () => {
 		);
 		await user.click(
 			screen.getByRole('button', {
-				name: 'Mettre à jour le mot de passe',
+				name: 'Modifier le mot de passe',
 			})
 		);
 
@@ -121,7 +121,7 @@ describe('SecurityPrivacyPage password update', () => {
 
 		expect(
 			screen.getByRole('button', {
-				name: 'Mettre à jour le mot de passe',
+				name: 'Modifier le mot de passe',
 			})
 		).toBeDisabled();
 		expect(userService.updatePassword).not.toHaveBeenCalled();

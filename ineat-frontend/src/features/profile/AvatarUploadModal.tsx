@@ -99,7 +99,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 						Modifier votre photo de profil
 					</DialogTitle>
 					<DialogDescription>
-						Choisissez une nouvelle photo de profil ou supprimez l'actuelle
+						Choisissez une nouvelle photo ou supprimez l’actuelle.
 					</DialogDescription>
 				</DialogHeader>
 
@@ -188,7 +188,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 							<AlertDescription className='text-sm text-neutral-900'>
 								<strong>Formats acceptés :</strong> JPG, PNG, GIF
 								<br />
-								<strong>Taille maximale :</strong> 5 MB
+								<strong>Taille maximale :</strong> 5&nbsp;Mo
 							</AlertDescription>
 						</Alert>
 					)}

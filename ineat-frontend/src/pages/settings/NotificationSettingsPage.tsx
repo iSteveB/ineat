@@ -59,7 +59,7 @@ export default function NotificationSettingsPage() {
 			});
 			toast.success('Préférences enregistrées');
 		},
-		onError: () => toast.error("Impossible d'enregistrer les préférences"),
+		onError: () => toast.error('Impossible d’enregistrer vos préférences. Réessayez dans un instant.'),
 	});
 
 	const update = (
@@ -74,7 +74,7 @@ export default function NotificationSettingsPage() {
 	if (isError || !preferences) {
 		return (
 			<div className='p-8 text-center text-danger-700'>
-				Impossible de charger les préférences de notification.
+				Impossible d’afficher vos préférences de notification. Réessayez dans un instant.
 			</div>
 		);
 	}
@@ -92,7 +92,7 @@ export default function NotificationSettingsPage() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Récapitulatifs email</CardTitle>
+					<CardTitle>Récapitulatifs par e-mail</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<PreferenceRow
@@ -107,7 +107,7 @@ export default function NotificationSettingsPage() {
 					/>
 					<PreferenceRow
 						title='Récapitulatif quotidien'
-						description='Chaque matin : produits urgents et nouveaux seuils budgétaires.'
+						description='Chaque matin : produits à consommer vite et point sur le budget.'
 						checked={preferences.dailyDigestEnabled}
 						disabled={mutation.isPending}
 						onCheckedChange={(checked) =>
@@ -131,8 +131,8 @@ export default function NotificationSettingsPage() {
 						icon={<Bell className='size-5' />}
 					/>
 					<PreferenceRow
-						title='Email'
-						description='Recevez les alertes métier importantes par email.'
+						title='E-mail'
+						description='Les alertes importantes, directement dans votre boîte mail.'
 						checked={preferences.emailEnabled}
 						disabled={mutation.isPending}
 						onCheckedChange={(checked) => update('emailEnabled', checked)}
@@ -150,12 +150,12 @@ export default function NotificationSettingsPage() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle>Types d’alertes in-app</CardTitle>
+					<CardTitle>Alertes dans l’application</CardTitle>
 				</CardHeader>
 				<CardContent>
 					<PreferenceRow
 						title='Péremption'
-						description='Produits bientôt périmés ou déjà expirés.'
+						description='Produits qui expirent bientôt ou ont dépassé leur date.'
 						checked={preferences.expiry}
 						disabled={!preferences.inAppEnabled || mutation.isPending}
 						onCheckedChange={(checked) => update('expiry', checked)}
@@ -163,7 +163,7 @@ export default function NotificationSettingsPage() {
 					/>
 					<PreferenceRow
 						title='Budget'
-						description='Seuils de consommation et dépassements.'
+						description='Quand votre budget approche de sa limite ou la dépasse.'
 						checked={preferences.budget}
 						disabled={!preferences.inAppEnabled || mutation.isPending}
 						onCheckedChange={(checked) => update('budget', checked)}

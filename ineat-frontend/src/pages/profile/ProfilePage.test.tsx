@@ -127,7 +127,7 @@ describe('ProfilePage', () => {
 		renderPage();
 
 		expect(
-			await screen.findByText('Aucune dépense enregistrée sur cette période.'),
+			await screen.findByText('Pas encore de dépenses. Ajoutez un produit avec son prix pour commencer.'),
 		).toBeInTheDocument();
 	});
 });

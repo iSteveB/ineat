@@ -169,7 +169,7 @@ export function NotificationCenter({
 			{isError ? (
 				<Alert variant='error'>
 					<AlertTriangle aria-hidden='true' />
-					<AlertTitle>Impossible de charger les notifications.</AlertTitle>
+					<AlertTitle>Impossible d’afficher vos notifications.</AlertTitle>
 					<AlertDescription>
 						<Button
 							className='mt-2'
@@ -185,9 +185,9 @@ export function NotificationCenter({
 					<span className='flex size-12 items-center justify-center rounded-full bg-accent-50 text-accent-700'>
 						<BellOff className='size-6' aria-hidden='true' />
 					</span>
-					<p className='type-h3 text-neutral-900'>Aucune notification</p>
+					<p className='type-h3 text-neutral-900'>Tout est calme</p>
 					<p className='text-sm text-neutral-600'>
-						Les alertes de péremption et de budget apparaîtront ici.
+						On vous prévient ici dès qu’un produit approche de sa date ou que votre budget s’emballe.
 					</p>
 				</div>
 			) : (

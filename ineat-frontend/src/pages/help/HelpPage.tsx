@@ -40,22 +40,22 @@ const FAQ_SECTIONS = [
 		],
 	},
 	{
-		title: 'Inventaire',
+		title: 'Stock',
 		items: [
 			{
-				question: 'Comment ajouter un produit à mon inventaire ?',
+				question: 'Comment ajouter un produit à mon stock ?',
 				answer:
-					'Utilisez le bouton + de la navigation. Vous pouvez ensuite choisir la méthode proposée : ajout manuel, recherche, scan ou import de justificatif.',
+					'Touchez le bouton + de la navigation, puis choisissez : scanner le code-barres, rechercher le produit ou importer une facture Drive.',
 			},
 			{
-				question: "Comment modifier un produit ou sa date d'expiration ?",
+				question: 'Comment modifier un produit ou sa date de péremption ?',
 				answer:
-					'Ouvrez le produit depuis votre inventaire pour consulter ses détails et modifier les informations disponibles.',
+					'Ouvrez le produit depuis votre stock, puis touchez Modifier sur l’achat concerné.',
 			},
 			{
-				question: "Comment fonctionnent les alertes d'expiration ?",
+				question: 'Comment fonctionnent les alertes de péremption ?',
 				answer:
-					'InEat utilise les dates enregistrées dans votre inventaire pour identifier les produits expirés ou à consommer bientôt. Les préférences de notification se règlent dans Paramètres.',
+					'InEat utilise les dates enregistrées dans votre stock pour identifier les produits expirés ou à consommer bientôt. Les préférences de notification se règlent dans Paramètres.',
 			},
 		],
 	},
@@ -65,7 +65,7 @@ const FAQ_SECTIONS = [
 			{
 				question: 'Comment obtenir des idées de recettes ?',
 				answer:
-					'Ouvrez Recettes pour parcourir vos recettes et accéder aux suggestions basées sur les informations disponibles dans InEat.',
+					'Ouvrez Recettes et touchez Trouver des idées : InEat propose des plats qui utilisent d’abord les produits qui expirent bientôt.',
 			},
 			{
 				question: 'Où gérer mon abonnement ?',
@@ -87,7 +87,7 @@ export default function HelpPage() {
 	const trimmedMessage = message.trim();
 	const messageError =
 		trimmedMessage.length > 0 && trimmedMessage.length < 10
-			? 'Votre message doit contenir au moins 10 caractères.'
+			? 'Encore quelques mots : 10 caractères minimum.'
 			: null;
 	const placeholder =
 		subject === 'FEATURE_REQUEST'
@@ -100,7 +100,7 @@ export default function HelpPage() {
 		setSuccess(false);
 
 		if (trimmedMessage.length < 10 || trimmedMessage.length > 2000) {
-			setError('Votre message doit contenir entre 10 et 2 000 caractères.');
+			setError('Écrivez entre 10 et 2\u00A0000 caractères.');
 			return;
 		}
 
@@ -113,7 +113,7 @@ export default function HelpPage() {
 			setError(
 				caughtError instanceof ApiRequestError
 					? caughtError.message
-					: "Votre message n'a pas pu être envoyé. Veuillez réessayer."
+					: 'Votre message n’est pas parti. Réessayez dans un instant.'
 			);
 		} finally {
 			setIsSending(false);
@@ -245,7 +245,7 @@ export default function HelpPage() {
 						<Alert variant='success' role='status'>
 							<CheckCircle2 aria-hidden='true' />
 							<AlertTitle>Message envoyé</AlertTitle>
-							<AlertDescription>Votre message a bien été transmis au support.</AlertDescription>
+							<AlertDescription>Merci, nous vous répondons par e-mail dès que possible.</AlertDescription>
 						</Alert>
 					)}
 					{error && (
@@ -261,7 +261,7 @@ export default function HelpPage() {
 						disabled={isSending || trimmedMessage.length < 10}
 						className='w-full sm:w-auto sm:self-start'>
 						<Send aria-hidden='true' />
-						{isSending ? 'Envoi en cours…' : 'Envoyer le message'}
+						{isSending ? 'Envoi…' : 'Envoyer le message'}
 					</Button>
 				</form>
 			</section>

@@ -16,8 +16,7 @@ function SubscriptionSuccessPage() {
 				</span>
 				<h1 className='type-h1 text-neutral-900'>Paiement confirmé</h1>
 				<p className='text-neutral-600'>
-					Votre abonnement Premium est en cours d’activation. Vos droits seront
-					synchronisés automatiquement dès la confirmation de Stripe.
+					Merci&nbsp;! Premium s’active dans quelques instants, dès que notre prestataire de paiement nous le confirme.
 				</p>
 				<Button asChild>
 					<Link to='/app'>Retour à l’accueil</Link>

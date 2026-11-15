@@ -75,7 +75,7 @@ const BudgetOnboardingCard: FC = () => {
 					{isCreating ? (
 						<>
 							<Loader2 className='animate-spin' aria-hidden='true' />
-							Création en cours…
+							Création…
 						</>
 					) : (
 						<>
