@@ -33,23 +33,6 @@ const AddProductPage: React.FC = () => {
 			<ul className='flex flex-col gap-3'>
 				<li>
 					<AddMethodCard
-						icon={<ScanLine className='size-6' aria-hidden='true' />}
-						title='Scanner un code-barre'
-						description='Le plus rapide : nom, Nutri-Score et date estimée sont remplis automatiquement.'
-						to='/app/inventory/add/scan'
-						isRecommended
-					/>
-				</li>
-				<li>
-					<AddMethodCard
-						icon={<PencilLine className='size-6' aria-hidden='true' />}
-						title='Ajout manuel'
-						description='Recherchez un produit par son nom ou saisissez ses informations.'
-						to='/app/inventory/add/search'
-					/>
-				</li>
-				<li>
-					<AddMethodCard
 						icon={<FileText className='size-6' aria-hidden='true' />}
 						title='Importer une facture Drive'
 						description={
@@ -59,6 +42,23 @@ const AddProductPage: React.FC = () => {
 						}
 						to={canImportDrive ? '/app/inventory/add/drive' : '/app/subscription'}
 						isPremium={!hasDriveAccess}
+						isRecommended
+					/>
+				</li>
+				<li>
+					<AddMethodCard
+						icon={<ScanLine className='size-6' aria-hidden='true' />}
+						title='Scanner un code-barre'
+						description='Le plus rapide : nom, Nutri-Score et date estimée sont remplis automatiquement.'
+						to='/app/inventory/add/scan'
+					/>
+				</li>
+				<li>
+					<AddMethodCard
+						icon={<PencilLine className='size-6' aria-hidden='true' />}
+						title='Ajout manuel'
+						description='Recherchez un produit par son nom ou saisissez ses informations.'
+						to='/app/inventory/add/search'
 					/>
 				</li>
 			</ul>
