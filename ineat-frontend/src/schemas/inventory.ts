@@ -119,7 +119,7 @@ export const AddInventoryItemSchema = z
 			.optional(),
 
 		// Contenu et média
-		imageUrl: z.string().url("URL d'image invalide").optional(),
+		imageUrl: z.string().url("URL d’image invalide").optional(),
 		ingredients: z
 			.string()
 			.max(

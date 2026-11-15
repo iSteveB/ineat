@@ -93,8 +93,8 @@ export const OFF_ERROR_MESSAGES = {
 		'Produit non trouvé dans la base de données OpenFoodFacts.',
 	INVALID_BARCODE: 'Code-barre invalide. Veuillez vérifier le format.',
 	RATE_LIMIT: 'Trop de requêtes. Veuillez patienter quelques instants.',
-	TIMEOUT: "Délai d'attente dépassé. Vérifiez votre connexion.",
-	UNKNOWN_ERROR: "Une erreur inattendue s'est produite.",
+	TIMEOUT: "Délai d’attente dépassé. Vérifiez votre connexion.",
+	UNKNOWN_ERROR: "Une erreur inattendue s’est produite.",
 } as const;
 
 // Regex pour validation des codes-barres

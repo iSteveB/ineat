@@ -74,7 +74,7 @@ describe('SecurityPrivacyPage password update', () => {
 		expect(screen.getByLabelText('Confirmer le mot de passe')).toHaveValue('');
 	});
 
-	it("affiche l'erreur et conserve les champs en cas d'échec", async () => {
+	it("affiche l’erreur et conserve les champs en cas d’échec", async () => {
 		(userService.updatePassword as ReturnType<typeof vi.fn>).mockRejectedValue(
 			new Error('Le mot de passe actuel est incorrect')
 		);
@@ -168,7 +168,7 @@ describe('SecurityPrivacyPage password update', () => {
 		});
 	});
 
-	it("affiche l'erreur et conserve la session locale si la suppression échoue", async () => {
+	it("affiche l’erreur et conserve la session locale si la suppression échoue", async () => {
 		(userService.deleteAccount as ReturnType<typeof vi.fn>).mockRejectedValue(
 			new Error('Impossible de supprimer le compte')
 		);

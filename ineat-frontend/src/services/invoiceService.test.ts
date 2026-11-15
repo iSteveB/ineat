@@ -76,7 +76,7 @@ describe('invoiceService', () => {
 		timeoutSpy.mockRestore();
 	});
 
-	it("relance l'analyse d'une facture interrompue", async () => {
+	it("relance l’analyse d’une facture interrompue", async () => {
 		server.use(
 			http.post(`${API_URL}/invoices/${invoice.id}/retry`, () =>
 				HttpResponse.json({

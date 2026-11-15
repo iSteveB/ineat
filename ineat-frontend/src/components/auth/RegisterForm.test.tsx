@@ -41,7 +41,7 @@ describe('RegisterForm', () => {
 		});
 	});
 
-	it("rend correctement le formulaire d'inscription", () => {
+	it("rend correctement le formulaire d’inscription", () => {
 		render(<RegisterForm />);
 
 		expect(screen.getByText('Créer un compte')).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('RegisterForm', () => {
 		expect(registerMock).not.toHaveBeenCalled();
 	});
 
-	it("affiche une erreur provenant du store d'authentification", async () => {
+	it("affiche une erreur provenant du store d’authentification", async () => {
 		// Simuler une erreur dans le store d'authentification
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			register: registerMock,
@@ -245,7 +245,7 @@ describe('RegisterForm', () => {
 		expect(screen.queryByTestId('error-container')).not.toBeInTheDocument();
 	});
 
-	it("efface l'erreur globale au montage", () => {
+	it("efface l’erreur globale au montage", () => {
 		render(<RegisterForm />);
 
 		expect(setErrorMock).toHaveBeenCalledWith(null);

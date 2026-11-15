@@ -17,7 +17,7 @@ export function useCategories() {
 		queryFn: () => inventoryService.getCategories(),
 		staleTime: 5 * 60 * 1000, // 5 minutes - les catégories changent rarement
 		gcTime: 10 * 60 * 1000, // 10 minutes en cache
-		retry: 2, // Réessayer 2 fois en cas d'échec
+		retry: 2, // Réessayer 2 fois en cas d’échec
 	});
 }
 
@@ -36,7 +36,7 @@ export function useCategory(categoryId: string | undefined) {
 			const categories = await inventoryService.getCategories();
 			return categories.find((cat) => cat.id === categoryId);
 		},
-		enabled: !!categoryId, // N'exécuter que si categoryId est défini
+		enabled: !!categoryId, // N’exécuter que si categoryId est défini
 		staleTime: 5 * 60 * 1000,
 		gcTime: 10 * 60 * 1000,
 	});

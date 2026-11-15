@@ -113,7 +113,7 @@ export const authService: AuthServiceMethods = {
 		// Validation des données d'entrée
 		const validation = validateSchema(RegisterDataSchema, data);
 		if (!validation.success) {
-			throw new Error(`Données d'inscription invalides: ${validation.error}`);
+			throw new Error(`Données d’inscription invalides: ${validation.error}`);
 		}
 
 		try {
@@ -236,7 +236,7 @@ export const authService: AuthServiceMethods = {
 			const validation = validateSchema(AuthCheckResponseSchema, response);
 			if (!validation.success) {
 				console.warn(
-					"Réponse de vérification d'authentification invalide:",
+					"Réponse de vérification d’authentification invalide:",
 					validation.error
 				);
 				console.warn('Réponse reçue:', response);
@@ -259,13 +259,13 @@ export const authService: AuthServiceMethods = {
 				throw error;
 			}
 			console.error(
-				"Erreur lors de la vérification d'authentification:",
+				"Erreur lors de la vérification d’authentification:",
 				error
 			);
 			// Retourner une réponse par défaut en cas d'erreur
 			return {
 				success: true,
-				message: "Erreur de vérification d'authentification",
+				message: "Erreur de vérification d’authentification",
 				data: {
 					isAuthenticated: false,
 					user: undefined,

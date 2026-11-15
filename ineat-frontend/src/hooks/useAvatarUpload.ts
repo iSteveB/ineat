@@ -130,7 +130,7 @@ export const useAvatarUpload = (): UseAvatarUploadResult => {
 				);
 
 				if (!cloudinaryResponse.ok) {
-					throw new Error("Erreur lors de l'upload vers Cloudinary");
+					throw new Error("Erreur lors de l’upload vers Cloudinary");
 				}
 
 				const cloudinaryData: CloudinaryUploadResponse =

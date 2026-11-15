@@ -80,7 +80,7 @@ function unwrapApiData<T>(response: T | ApiDataResponse<T>): T {
 function processBudgetResponse(response: CreateBudgetApiResponse): Budget {
 	// Vérifier le succès de l'opération
 	if (!response.success) {
-		throw new Error(response.message || "Échec de l'opération budget");
+		throw new Error(response.message || "Échec de l’opération budget");
 	}
 
 	// Extraire les données du budget depuis le wrapper

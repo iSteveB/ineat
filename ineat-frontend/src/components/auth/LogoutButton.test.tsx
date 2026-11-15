@@ -37,7 +37,7 @@ describe('LogoutButton', () => {
 		vi.clearAllMocks();
 	});
 
-	it("rend correctement avec le texte et l'icône", () => {
+	it("rend correctement avec le texte et l’icône", () => {
 		render(<LogoutButton />);
 
 		// Vérifier que le bouton est présent
@@ -52,7 +52,7 @@ describe('LogoutButton', () => {
 		expect(button).toHaveTextContent('Se déconnecter');
 	});
 
-	it("appelle logout et navigate lorsqu'on clique sur le bouton", async () => {
+	it("appelle logout et navigate lorsqu’on clique sur le bouton", async () => {
 		render(<LogoutButton />);
 
 		const button = screen.getByTestId('logout-button');

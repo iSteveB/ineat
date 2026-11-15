@@ -121,7 +121,7 @@ export const useAuthStore = create<AuthState>()(
 						error:
 							error instanceof Error
 								? error.message
-								: "Une erreur est survenue lors de l'inscription",
+								: "Une erreur est survenue lors de l’inscription",
 					});
 					throw error;
 				}
@@ -211,7 +211,7 @@ export const useAuthStore = create<AuthState>()(
 						error:
 							error instanceof Error
 								? error.message
-								: "Erreur de vérification d'authentification",
+								: "Erreur de vérification d’authentification",
 					});
 					return false;
 				}
@@ -261,7 +261,7 @@ export const useAuthStore = create<AuthState>()(
 						error:
 							error instanceof Error
 								? error.message
-								: "Erreur de vérification d'authentification",
+								: "Erreur de vérification d’authentification",
 					});
 					return false;
 				}

@@ -65,7 +65,7 @@ describe('AuthGuard', () => {
 		expect(screen.queryByTestId('outlet-content')).not.toBeInTheDocument();
 	});
 
-	it("redirige vers la landing si l'utilisateur n'est pas authentifié côté serveur", async () => {
+	it("redirige vers la landing si l’utilisateur n’est pas authentifié côté serveur", async () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			checkAuthentication: mockCheckAuthentication.mockResolvedValue(false),
 		});
@@ -88,7 +88,7 @@ describe('AuthGuard', () => {
 		expect(mockCheckAuthentication).toHaveBeenCalledTimes(1);
 	});
 
-	it("redirige si la vérification d'authentification échoue", async () => {
+	it("redirige si la vérification d’authentification échoue", async () => {
 		// Configuration du store avec authentification locale mais vérification serveur qui échoue
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: { id: '1', name: 'Test User' },
@@ -112,7 +112,7 @@ describe('AuthGuard', () => {
 		});
 	});
 
-	it("redirige si la vérification d'authentification génère une erreur", async () => {
+	it("redirige si la vérification d’authentification génère une erreur", async () => {
 		// Configuration du store avec authentification locale mais vérification serveur qui échoue avec une erreur
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			checkAuthentication: vi
@@ -137,7 +137,7 @@ describe('AuthGuard', () => {
 		});
 	});
 
-	it("redirige une session non vérifiée vers l'écran de validation", async () => {
+	it("redirige une session non vérifiée vers l’écran de validation", async () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			checkAuthentication: vi
 				.fn()
@@ -166,7 +166,7 @@ describe('AuthGuard', () => {
 		expect(screen.queryByTestId('outlet-content')).not.toBeInTheDocument();
 	});
 
-	it("rend les composants enfants si l'authentification réussit", async () => {
+	it("rend les composants enfants si l’authentification réussit", async () => {
 		// Configuration du store avec authentification réussie
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			checkAuthentication: vi.fn().mockResolvedValue(true),

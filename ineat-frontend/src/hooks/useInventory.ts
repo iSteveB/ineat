@@ -75,7 +75,7 @@ export function useAddManualProduct() {
 
 	return useMutation<
 		ProductAddedWithBudgetResult, // Type de retour correct
-		Error, // Type d'erreur
+		Error, // Type d’erreur
 		AddInventoryItemData // Type des variables
 	>({
 		mutationFn: (productData: AddInventoryItemData) =>
@@ -189,7 +189,7 @@ export function useRemoveInventoryItem() {
 	return useMutation<
 		void, // Le service de suppression ne retourne rien
 		Error,
-		string // ID de l'item à supprimer
+		string // ID de l’item à supprimer
 	>({
 		mutationFn: (inventoryItemId: string) =>
 			inventoryService.removeInventoryItem(inventoryItemId),

@@ -47,7 +47,7 @@ vi.mock('@tanstack/react-query', () => ({
 	useQueryClient: vi.fn(),
 }));
 
-describe("Hooks d'authentification", () => {
+describe("Hooks d’authentification", () => {
 	let mockUser: User;
 	let mockSetUser: ReturnType<typeof vi.fn>;
 	let mockQueryClient: {
@@ -96,7 +96,7 @@ describe("Hooks d'authentification", () => {
 	});
 
 	describe('useUser', () => {
-		it("devrait récupérer le profil utilisateur quand l'utilisateur est authentifié", async () => {
+		it("devrait récupérer le profil utilisateur quand l’utilisateur est authentifié", async () => {
 			// Mock du hook useQuery
 			vi.mocked(reactQuery.useQuery).mockReturnValue({
 				isLoading: true,
@@ -142,7 +142,7 @@ describe("Hooks d'authentification", () => {
 			}
 		});
 
-		it("ne devrait pas effectuer de requête quand l'utilisateur n'est pas authentifié", () => {
+		it("ne devrait pas effectuer de requête quand l’utilisateur n’est pas authentifié", () => {
 			// Mock du store pour un utilisateur non authentifié
 			vi.mocked(useAuthStore).mockReturnValue({
 				isAuthenticated: false,
@@ -270,7 +270,7 @@ describe("Hooks d'authentification", () => {
 	});
 
 	describe('useHasRole', () => {
-		it("devrait retourner true si l'utilisateur a le rôle spécifié", () => {
+		it("devrait retourner true si l’utilisateur a le rôle spécifié", () => {
 			// Mock du store avec un utilisateur ayant le bon rôle
 			vi.mocked(useAuthStore).mockReturnValue({
 				user: { ...mockUser, role: 'ADMIN' },
@@ -280,7 +280,7 @@ describe("Hooks d'authentification", () => {
 			expect(useHasRole('ADMIN')).toBe(true);
 		});
 
-		it("devrait retourner false si l'utilisateur n'a pas le rôle spécifié", () => {
+		it("devrait retourner false si l’utilisateur n’a pas le rôle spécifié", () => {
 			// Mock du store avec un utilisateur ayant un rôle différent
 			vi.mocked(useAuthStore).mockReturnValue({
 				user: { ...mockUser, role: 'USER' },
@@ -290,7 +290,7 @@ describe("Hooks d'authentification", () => {
 			expect(useHasRole('ADMIN')).toBe(false);
 		});
 
-		it("devrait retourner false si l'utilisateur n'est pas défini", () => {
+		it("devrait retourner false si l’utilisateur n’est pas défini", () => {
 			// Mock du store sans utilisateur
 			vi.mocked(useAuthStore).mockReturnValue({
 				user: null,
@@ -302,7 +302,7 @@ describe("Hooks d'authentification", () => {
 	});
 
 	describe('useHasCapability', () => {
-		it("devrait retourner true si l'utilisateur a la capacité demandée", () => {
+		it("devrait retourner true si l’utilisateur a la capacité demandée", () => {
 			vi.mocked(useAuthStore).mockReturnValue({
 				user: {
 					...mockUser,
@@ -316,7 +316,7 @@ describe("Hooks d'authentification", () => {
 			expect(useHasCapability('canImportDrive')).toBe(true);
 		});
 
-		it("devrait retourner false si l'utilisateur n'a pas la capacité demandée", () => {
+		it("devrait retourner false si l’utilisateur n’a pas la capacité demandée", () => {
 			vi.mocked(useAuthStore).mockReturnValue({
 				user: {
 					...mockUser,
@@ -330,7 +330,7 @@ describe("Hooks d'authentification", () => {
 			expect(useHasCapability('canImportDrive')).toBe(false);
 		});
 
-		it("devrait retourner false si l'utilisateur n'est pas défini", () => {
+		it("devrait retourner false si l’utilisateur n’est pas défini", () => {
 			vi.mocked(useAuthStore).mockReturnValue({
 				user: null,
 			} as AuthStore);

@@ -92,7 +92,7 @@ export const ProductContentSection: React.FC<ProductContentSectionProps> = ({
 										e.target.value
 									)
 								}
-								placeholder='Ex: Farine de blé, eau, levure, sel...'
+								placeholder='Ex: Farine de blé, eau, levure, sel…'
 								rows={4}
 								className={getTextareaClassName()}
 								disabled={isFieldDisabled}

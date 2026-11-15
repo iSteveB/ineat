@@ -183,7 +183,7 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 		if (!nutriGood) suggestions.push('des aliments plus nutritifs');
 		if (!ecoGood)
 			suggestions.push(
-				"des produits plus respectueux de l'environnement"
+				"des produits plus respectueux de l’environnement"
 			);
 		if (!novaGood) suggestions.push('des aliments moins transformés');
 

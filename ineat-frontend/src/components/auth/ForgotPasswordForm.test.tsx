@@ -84,7 +84,7 @@ describe('ForgotPasswordForm', () => {
 		expect(errorMessage).toHaveTextContent('Indiquez une adresse e-mail valide');
 	});
 
-	it("affiche une erreur si l'email est vide", async () => {
+	it("affiche une erreur si l’email est vide", async () => {
 		render(<ForgotPasswordForm />);
 
 		const form = screen.getByTestId('reset-form');
@@ -138,7 +138,7 @@ describe('ForgotPasswordForm', () => {
 		expect(screen.queryByTestId('reset-form')).not.toBeInTheDocument();
 	});
 
-	it("affiche une erreur si l'API renvoie une erreur", async () => {
+	it("affiche une erreur si l’API renvoie une erreur", async () => {
 		// Mock de l'erreur API
 		(
 			authClient.requestPasswordReset as ReturnType<typeof vi.fn>
@@ -207,7 +207,7 @@ describe('ForgotPasswordForm', () => {
 		);
 	});
 
-	it("efface l'erreur lors de la modification de l'email", async () => {
+	it("efface l’erreur lors de la modification de l’email", async () => {
 		render(<ForgotPasswordForm />);
 
 		const emailInput = screen.getByTestId('email-input');

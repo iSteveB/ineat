@@ -45,7 +45,7 @@ const COMPOUND_TERMS: { phrase: string; label: string | null }[] = [
 	{ phrase: 'beurre de karité', label: null },
 	{ phrase: 'crème de marrons', label: null },
 	{ phrase: 'lait d’amande', label: 'Fruits à coque' },
-	{ phrase: "lait d'amande", label: 'Fruits à coque' },
+	{ phrase: "lait d’amande", label: 'Fruits à coque' },
 	{ phrase: 'beurre de cacahuète', label: 'Arachides' },
 	{ phrase: 'noix de saint-jacques', label: 'Mollusques' },
 ];

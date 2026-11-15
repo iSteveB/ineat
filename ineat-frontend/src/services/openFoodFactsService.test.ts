@@ -325,7 +325,7 @@ describe('OpenFoodFactsService', () => {
 			expect(localProduct.brand).toBe('-');
 		});
 
-		it("devrait prioriser les noms selon l'ordre prévu", () => {
+		it("devrait prioriser les noms selon l’ordre prévu", () => {
 			const offProduct: OffProduct = {
 				code: '1234567890123',
 				product_name: 'Nom principal',
@@ -364,7 +364,7 @@ describe('OpenFoodFactsService', () => {
 	});
 
 	describe('getProductImageUrl', () => {
-		it("devrait retourner null si pas d'image", () => {
+		it("devrait retourner null si pas d’image", () => {
 			const offProduct: OffProduct = {
 				code: '1234567890123',
 			};
@@ -409,7 +409,7 @@ describe('OpenFoodFactsService', () => {
 			);
 		});
 
-		it("devrait construire l'URL avec la bonne taille pour images complexes", () => {
+		it("devrait construire l’URL avec la bonne taille pour images complexes", () => {
 			const offProduct: OffProduct = {
 				code: '3017624010701',
 				images: {
@@ -571,7 +571,7 @@ describe('OFF_UTILS', () => {
 	});
 
 	describe('getErrorMessage', () => {
-		it("devrait retourner les messages d'erreur corrects", () => {
+		it("devrait retourner les messages d’erreur corrects", () => {
 			expect(OFF_UTILS.getErrorMessage('NETWORK_ERROR')).toBe(
 				OFF_ERROR_MESSAGES.NETWORK_ERROR
 			);

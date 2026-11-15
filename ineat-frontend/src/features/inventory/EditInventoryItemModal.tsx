@@ -226,7 +226,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 					<div>
 						<Label htmlFor='purchaseDate' className='flex items-center gap-2'>
 							<Calendar className='size-4' aria-hidden='true' />
-							Date d'achat
+							Date d’achat
 						</Label>
 						<Input
 							id='purchaseDate'

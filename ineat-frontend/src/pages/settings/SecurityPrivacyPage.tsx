@@ -294,7 +294,7 @@ const SecurityPrivacyPage = () => {
 									Partage des données
 								</Label>
 								<p className='text-sm text-neutral-900'>
-									Autoriser le partage anonyme à des fins d'amélioration
+									Autoriser le partage anonyme à des fins d’amélioration
 								</p>
 							</div>
 							<Switch
@@ -313,7 +313,7 @@ const SecurityPrivacyPage = () => {
 									Suivi de localisation
 								</Label>
 								<p className='text-sm text-neutral-900'>
-									Autoriser l'application à utiliser votre localisation
+									Autoriser l’application à utiliser votre localisation
 								</p>
 							</div>
 							<Switch
@@ -497,7 +497,7 @@ const SecurityPrivacyPage = () => {
 							{isDeletingAccount ? (
 								<>
 									<Loader2 className='size-4 mr-2 animate-spin' />
-									Suppression...
+									Suppression…
 								</>
 							) : (
 								'Supprimer définitivement mon compte'

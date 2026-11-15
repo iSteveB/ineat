@@ -260,7 +260,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 			setFlowData({
 				offProductData: initialProductData,
 				scannedBarcode: initialProductData.barcode,
-				isNewProduct: true, // Par défaut, on suppose que c'est nouveau
+				isNewProduct: true, // Par défaut, on suppose que c’est nouveau
 			});
 
 			// Vérifier si le produit existe déjà en arrière-plan

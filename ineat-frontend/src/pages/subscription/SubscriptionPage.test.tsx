@@ -214,7 +214,7 @@ describe('SubscriptionPage', () => {
 		);
 	});
 
-	it("affiche l'erreur Stripe quand le Customer Portal ne peut pas s'ouvrir", async () => {
+	it("affiche l’erreur Stripe quand le Customer Portal ne peut pas s’ouvrir", async () => {
 		const user = userEvent.setup();
 		mockUser({
 			...baseUser,
@@ -237,7 +237,7 @@ describe('SubscriptionPage', () => {
 		(
 			billingService.createPortalSession as ReturnType<typeof vi.fn>
 		).mockRejectedValue(
-			new Error("Aucun abonnement Stripe n'est encore associé à votre compte.")
+			new Error("Aucun abonnement Stripe n’est encore associé à votre compte.")
 		);
 
 		render(<SubscriptionPage />);
@@ -246,7 +246,7 @@ describe('SubscriptionPage', () => {
 
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith(
-				"Aucun abonnement Stripe n'est encore associé à votre compte."
+				"Aucun abonnement Stripe n’est encore associé à votre compte."
 			);
 		});
 		expect(assignMock).not.toHaveBeenCalled();

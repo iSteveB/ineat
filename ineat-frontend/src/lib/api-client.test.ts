@@ -128,7 +128,7 @@ describe('apiClient', () => {
 			}
 		});
 
-		it("devrait utiliser un message d'erreur par défaut si la réponse d'erreur n'a pas de JSON valide", async () => {
+		it("devrait utiliser un message d’erreur par défaut si la réponse d’erreur n’a pas de JSON valide", async () => {
 			// Préparation de la réponse mock avec erreur
 			const mockResponse = {
 				ok: false,
@@ -290,7 +290,7 @@ describe('apiClient', () => {
 			clearTimeoutSpy.mockRestore();
 		});
 
-		it("devrait gérer les erreurs d'expiration", async () => {
+		it("devrait gérer les erreurs d’expiration", async () => {
 			// Simuler une erreur AbortError
 			const abortError = new Error('The operation was aborted');
 			abortError.name = 'AbortError';

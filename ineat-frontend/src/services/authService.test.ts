@@ -40,7 +40,7 @@ describe('getBetterAuthErrorMessage', () => {
 });
 
 describe('normalizeAuthEmail', () => {
-	it("normalise la casse et les espaces avant l'authentification", () => {
+	it("normalise la casse et les espaces avant l’authentification", () => {
 		expect(normalizeAuthEmail('  UsER@Example.COM ')).toBe(
 			'user@example.com'
 		);
@@ -72,7 +72,7 @@ describe('getEmailVerificationCallbackUrl', () => {
 });
 
 describe('isValidUser', () => {
-	it("accepte l'identifiant opaque généré par Better Auth", () => {
+	it("accepte l’identifiant opaque généré par Better Auth", () => {
 		expect(
 			isValidUser({
 				id: 'BXmlY6a3OKsOF5XhKoDk6duOngptUIVJ',

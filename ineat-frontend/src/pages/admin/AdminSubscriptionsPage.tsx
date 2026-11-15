@@ -291,7 +291,7 @@ export default function AdminSubscriptionsPage() {
 								/>
 							</Field>
 						)}
-						<Field label="Date d'expiration">
+						<Field label="Date d’expiration">
 							<Input
 								type='datetime-local'
 								value={form.expiresAt ?? ''}
@@ -305,7 +305,7 @@ export default function AdminSubscriptionsPage() {
 								}
 							/>
 						</Field>
-						<Field label="Nombre maximal d'utilisations">
+						<Field label="Nombre maximal d’utilisations">
 							<Input
 								type='number'
 								min={1}

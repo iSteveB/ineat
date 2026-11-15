@@ -154,7 +154,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 								{isUploading ? (
 									<>
 										<Loader2 className='size-4 mr-2 animate-spin' />
-										Suppression...
+										Suppression…
 									</>
 								) : (
 									<>
@@ -234,7 +234,7 @@ export const AvatarUploadModal: React.FC<AvatarUploadModalProps> = ({
 							{isUploading ? (
 								<>
 									<Loader2 className='size-4 mr-2 animate-spin' />
-									Upload...
+									Upload…
 								</>
 							) : (
 								<>

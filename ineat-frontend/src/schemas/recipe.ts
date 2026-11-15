@@ -23,7 +23,7 @@ export const RecipeIngredientSchema = z.object({
 	recipeId: UuidSchema,
 	product: ProductSummarySchema,
 	quantity: QuantitySchema,
-	unit: z.string().max(20, "L'unité ne peut pas dépasser 20 caractères"),
+	unit: z.string().max(20, "L’unité ne peut pas dépasser 20 caractères"),
 	notes: z
 		.string()
 		.max(200, 'Les notes ne peuvent pas dépasser 200 caractères')
@@ -64,7 +64,7 @@ export const RecipeSchema = z
 			.min(1, 'Le nombre de portions doit être supérieur à 0')
 			.max(50, 'Le nombre de portions semble trop élevé'),
 		difficulty: RecipeDifficultySchema,
-		imageUrl: z.string().url("URL d'image invalide").optional(),
+		imageUrl: z.string().url("URL d’image invalide").optional(),
 		tags: z.array(z.string()).default([]), // ex: ["rapide", "économique", "végétarien"]
 		dietTypes: z.array(DietTypeSchema).default([]), // Types de régimes compatibles
 		cuisine: z
@@ -120,7 +120,7 @@ export type RecipeSummary = z.infer<typeof RecipeSummarySchema>;
 export const CreateRecipeIngredientSchema = z.object({
 	productId: UuidSchema,
 	quantity: QuantitySchema,
-	unit: z.string().max(20, "L'unité ne peut pas dépasser 20 caractères"),
+	unit: z.string().max(20, "L’unité ne peut pas dépasser 20 caractères"),
 	notes: z
 		.string()
 		.max(200, 'Les notes ne peuvent pas dépasser 200 caractères')
@@ -145,7 +145,7 @@ export const CreateRecipeSchema = z.object({
 	cookingTime: z.coerce.number().int().min(1).max(600).optional(),
 	servings: z.coerce.number().int().min(1).max(50),
 	difficulty: RecipeDifficultySchema,
-	imageUrl: z.string().url("URL d'image invalide").optional(),
+	imageUrl: z.string().url("URL d’image invalide").optional(),
 	tags: z.array(z.string()).default([]),
 	dietTypes: z.array(DietTypeSchema).default([]),
 	cuisine: z.string().max(50).optional(),

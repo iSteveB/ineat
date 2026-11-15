@@ -75,7 +75,7 @@ describe('buildRecipeSuggestions', () => {
 		expect(pasta?.missingIngredients.length).toBeLessThanOrEqual(2);
 	});
 
-	it("retourne un état vide quand l'inventaire est insuffisant", () => {
+	it("retourne un état vide quand l’inventaire est insuffisant", () => {
 		expect(buildRecipeSuggestions([item('item-1', 'Yaourt nature')])).toEqual(
 			[]
 		);

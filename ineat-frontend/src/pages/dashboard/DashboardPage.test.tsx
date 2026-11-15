@@ -267,7 +267,7 @@ describe("DashboardPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("priorise l'ajout quand l'inventaire est vide", async () => {
+  it("priorise l’ajout quand l’inventaire est vide", async () => {
     (inventoryService.getInventory as ReturnType<typeof vi.fn>)
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([]);

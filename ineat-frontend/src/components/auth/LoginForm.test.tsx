@@ -106,7 +106,7 @@ describe('LoginForm', () => {
 		});
 	});
 
-	it("redirige vers l'URL spécifiée après connexion réussie", async () => {
+	it("redirige vers l’URL spécifiée après connexion réussie", async () => {
 		// Simuler un paramètre de redirection et une connexion réussie
 		(useSearch as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			redirect: encodeURIComponent('/dashboard/inventory'),
@@ -158,7 +158,7 @@ describe('LoginForm', () => {
 		expect(loginMock).not.toHaveBeenCalled();
 	});
 
-	it("affiche une erreur provenant du store d'authentification", async () => {
+	it("affiche une erreur provenant du store d’authentification", async () => {
 		// Simuler une erreur dans le store d'authentification
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			login: loginMock,
@@ -207,7 +207,7 @@ describe('LoginForm', () => {
 		);
 	});
 
-	it("propose un lien vers l'inscription", () => {
+	it("propose un lien vers l’inscription", () => {
 		render(<LoginForm />);
 
 		expect(screen.getByRole('link', { name: 'Créer un compte' })).toHaveAttribute(
@@ -216,7 +216,7 @@ describe('LoginForm', () => {
 		);
 	});
 
-	it("efface l'erreur globale au montage", () => {
+	it("efface l’erreur globale au montage", () => {
 		render(<LoginForm />);
 
 		expect(setErrorMock).toHaveBeenCalledWith(null);

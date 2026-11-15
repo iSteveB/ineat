@@ -300,7 +300,7 @@ export const useInventoryStore = create<InventoryState>()(
 						set(() => ({ inventoryFilters: filters }));
 					} else {
 						console.warn(
-							"Filtres d'inventaire invalides:",
+							"Filtres d’inventaire invalides:",
 							filters
 						);
 					}
@@ -343,7 +343,7 @@ export const useInventoryStore = create<InventoryState>()(
 						set({
 							error: getUserFacingErrorMessage(
 								error,
-								"Impossible de charger l'inventaire. Veuillez réessayer."
+								"Impossible de charger l’inventaire. Veuillez réessayer."
 							),
 							isLoading: false,
 						});
@@ -396,7 +396,7 @@ export const useInventoryStore = create<InventoryState>()(
 					} catch (error) {
 						const errorMessage = getUserFacingErrorMessage(
 							error,
-							"Impossible d'ajouter le produit. Veuillez réessayer."
+							"Impossible d’ajouter le produit. Veuillez réessayer."
 						);
 
 						set({
@@ -412,7 +412,7 @@ export const useInventoryStore = create<InventoryState>()(
 				 */
 				updateInventoryItem: async (id, updates) => {
 					if (!id || typeof id !== 'string') {
-						throw new Error("ID d'item invalide");
+						throw new Error("ID d’item invalide");
 					}
 
 					set({ isLoading: true, error: null });
@@ -439,13 +439,13 @@ export const useInventoryStore = create<InventoryState>()(
 
 				updateInventoryFavorite: async (id, isFavorite) => {
 					if (!id || typeof id !== 'string') {
-						throw new Error("ID d'item invalide");
+						throw new Error("ID d’item invalide");
 					}
 
 					const previousItems = get().items;
 					const target = previousItems.find((item) => item.id === id);
 					if (!target) {
-						throw new Error("Élément d'inventaire non trouvé");
+						throw new Error("Élément d’inventaire non trouvé");
 					}
 
 					set((state) => ({
@@ -474,7 +474,7 @@ export const useInventoryStore = create<InventoryState>()(
 				 */
 				consumeInventoryItem: async (id, data) => {
 					if (!id || typeof id !== 'string') {
-						throw new Error("ID d'item invalide");
+						throw new Error("ID d’item invalide");
 					}
 
 					set({ isLoading: true, error: null });
@@ -501,7 +501,7 @@ export const useInventoryStore = create<InventoryState>()(
 				 */
 				removeInventoryItem: async (id) => {
 					if (!id || typeof id !== 'string') {
-						throw new Error("ID d'item invalide");
+						throw new Error("ID d’item invalide");
 					}
 
 					set({ isLoading: true, error: null });
@@ -603,7 +603,7 @@ export const useInventoryStore = create<InventoryState>()(
 					// Migration vers la version 2 (schémas Zod)
 					if (version < 2) {
 						console.log(
-							'Migration du store inventaire vers les schémas Zod...'
+							'Migration du store inventaire vers les schémas Zod…'
 						);
 
 						return {

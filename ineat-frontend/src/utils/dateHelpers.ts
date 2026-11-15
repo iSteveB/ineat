@@ -71,7 +71,7 @@ export const formatExpiryLabel = (
 	);
 
 	if (diffDays < 0) return 'Expiré';
-	if (diffDays === 0) return "Aujourd'hui";
+	if (diffDays === 0) return "Aujourd’hui";
 	if (diffDays === 1) return 'Demain';
 	if (diffDays <= 30) return `Dans ${diffDays} jours`;
 	if (diffDays <= 365) {

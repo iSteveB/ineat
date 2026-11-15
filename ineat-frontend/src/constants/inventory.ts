@@ -145,7 +145,7 @@ export const VALIDATION_MESSAGES = {
 	TOO_LONG_NAME: `Le nom ne peut pas dépasser ${INVENTORY_LIMITS.MAX_NAME_LENGTH} caractères`,
 	TOO_LONG_BRAND: `La marque ne peut pas dépasser ${INVENTORY_LIMITS.MAX_BRAND_LENGTH} caractères`,
 	TOO_LONG_NOTES: `Les notes ne peuvent pas dépasser ${INVENTORY_LIMITS.MAX_NOTES_LENGTH} caractères`,
-	TOO_LONG_INGREDIENTS: `La liste d'ingrédients ne peut pas dépasser ${INVENTORY_LIMITS.MAX_INGREDIENTS_LENGTH} caractères`,
+	TOO_LONG_INGREDIENTS: `La liste d’ingrédients ne peut pas dépasser ${INVENTORY_LIMITS.MAX_INGREDIENTS_LENGTH} caractères`,
 
 	// Dates
 	EXPIRY_BEFORE_PURCHASE: 'La date de péremption doit être postérieure à la date d\'achat',
@@ -154,7 +154,7 @@ export const VALIDATION_MESSAGES = {
 
 	// Logique métier
 	INVALID_CATEGORY: 'La catégorie sélectionnée n\'est pas valide',
-	QUANTITY_TOO_SMALL: `La quantité doit être d'au moins ${INVENTORY_LIMITS.MIN_QUANTITY}`,
+	QUANTITY_TOO_SMALL: `La quantité doit être d’au moins ${INVENTORY_LIMITS.MIN_QUANTITY}`,
 	QUANTITY_TOO_LARGE: `La quantité ne peut pas dépasser ${INVENTORY_LIMITS.MAX_QUANTITY}`,
 	PRICE_TOO_LARGE: `Le prix ne peut pas dépasser ${INVENTORY_LIMITS.MAX_PRICE}€`,
 } as const;

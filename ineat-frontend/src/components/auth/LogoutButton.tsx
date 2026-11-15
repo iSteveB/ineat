@@ -21,7 +21,7 @@ export function LogoutButton(props: ButtonProps) {
 			// Naviguer vers la landing après la déconnexion
 			navigate({
 				to: '/',
-				replace: true, // Remplacer l'entrée de l'historique pour éviter de revenir en arrière
+				replace: true, // Remplacer l’entrée de l’historique pour éviter de revenir en arrière
 			});
 		} catch (error) {
 			console.error('Erreur lors de la déconnexion:', error);

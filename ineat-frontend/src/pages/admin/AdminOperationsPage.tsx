@@ -379,7 +379,7 @@ export default function AdminOperationsPage({
 					<label className='space-y-1 text-sm font-medium'>
 						Source
 						<select
-							aria-label="Type d'incident"
+							aria-label="Type d’incident"
 							className='block h-10 rounded-md border border-neutral-400 bg-white px-3'
 							value={incidentType}
 							onChange={(event) => {

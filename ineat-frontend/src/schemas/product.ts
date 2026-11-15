@@ -107,7 +107,7 @@ export const ProductSchema = z
 		nutriscore: nullableOptional(NutriScoreSchema),
 		ecoscore: nullableOptional(EcoscoreSchema),
 		novascore: nullableOptional(NovascoreSchema),
-		imageUrl: nullableOptional(z.string().url("URL d'image invalide")),
+		imageUrl: nullableOptional(z.string().url("URL d’image invalide")),
 		externalId: nullableOptional(z.string()), // ID OpenFoodFacts
 		ciqualCode: nullableOptional(z.string()),
 		ciqualName: nullableOptional(z.string()),
@@ -151,7 +151,7 @@ export const CreateProductSchema = z.object({
 	nutriscore: NutriScoreSchema.optional(),
 	ecoscore: EcoscoreSchema.optional(),
 	novascore: NovascoreSchema.optional(),
-	imageUrl: z.string().url("URL d'image invalide").optional(),
+	imageUrl: z.string().url("URL d’image invalide").optional(),
 	nutrients: NutritionalInfoSchema.optional(),
 	ingredients: z.string().optional(),
 });

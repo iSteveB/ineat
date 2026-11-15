@@ -202,6 +202,6 @@ describe('inventoryService', () => {
 				quantity: 1,
 				purchaseDate: '2026-05-20',
 			}),
-		).rejects.toThrow("L'ID du produit est requis");
+		).rejects.toThrow("L’ID du produit est requis");
 	});
 });

@@ -77,7 +77,7 @@ describe('UserMenu', () => {
 		);
 	});
 
-	it("ne rend rien si l'utilisateur n'est pas défini", () => {
+	it("ne rend rien si l’utilisateur n’est pas défini", () => {
 		// Simuler l'absence d'utilisateur
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: null,
@@ -90,7 +90,7 @@ describe('UserMenu', () => {
 		expect(container.firstChild).toBeNull();
 	});
 
-	it("affiche correctement les informations de l'utilisateur", () => {
+	it("affiche correctement les informations de l’utilisateur", () => {
 		// Simuler un utilisateur connecté
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
@@ -114,7 +114,7 @@ describe('UserMenu', () => {
 		expect(screen.queryByTestId('user-profile-type')).not.toBeInTheDocument();
 	});
 
-	it("affiche la photo de profil lorsqu'elle est définie", () => {
+	it("affiche la photo de profil lorsqu’elle est définie", () => {
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
 				firstName: 'John',
@@ -138,7 +138,7 @@ describe('UserMenu', () => {
 		);
 	});
 
-	it("gère correctement l'absence de nom et prénom", () => {
+	it("gère correctement l’absence de nom et prénom", () => {
 		// Simuler un utilisateur sans nom ni prénom
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
@@ -154,7 +154,7 @@ describe('UserMenu', () => {
 		expect(screen.getByTestId('avatar-initials')).toHaveTextContent('??');
 	});
 
-	it("navigue vers la page de profil quand on clique sur l'élément correspondant", () => {
+	it("navigue vers la page de profil quand on clique sur l’élément correspondant", () => {
 		// Simuler un utilisateur connecté
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
@@ -186,7 +186,7 @@ describe('UserMenu', () => {
 		expect(navigateMock).toHaveBeenCalledWith({ to: '/app/profile' });
 	});
 
-	it("navigue vers la page des paramètres quand on clique sur l'élément correspondant", () => {
+	it("navigue vers la page des paramètres quand on clique sur l’élément correspondant", () => {
 		// Simuler un utilisateur connecté
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {
@@ -220,7 +220,7 @@ describe('UserMenu', () => {
 		});
 	});
 
-	it("se déconnecte et redirige vers la page de connexion quand on clique sur l'élément correspondant", async () => {
+	it("se déconnecte et redirige vers la page de connexion quand on clique sur l’élément correspondant", async () => {
 		// Simuler un utilisateur connecté
 		(useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
 			user: {

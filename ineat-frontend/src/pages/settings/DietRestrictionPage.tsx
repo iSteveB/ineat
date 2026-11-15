@@ -212,7 +212,7 @@ const DietaryRestrictionsPage = () => {
             {isSaving ? (
               <>
                 <Loader2 className="size-4 mr-2 animate-spin" />
-                Enregistrement...
+                Enregistrement…
               </>
             ) : (
               <>

@@ -308,7 +308,7 @@ export const inventoryService = {
 		}
 
 		if (productData.imageUrl && !isValidUrl(productData.imageUrl)) {
-			throw new Error("URL d'image invalide");
+			throw new Error("URL d’image invalide");
 		}
 
 		const response = await apiClient.post<AddProductResponse>(
@@ -335,7 +335,7 @@ export const inventoryService = {
 			// Réponse classique sans budget (fallback)
 			return {
 				productName: productData.name,
-				message: `${productData.name} ajouté à l'inventaire`,
+				message: `${productData.name} ajouté à l’inventaire`,
 				type: 'success' as const,
 				shouldRefreshBudget: false,
 				budgetInfo: {
@@ -356,7 +356,7 @@ export const inventoryService = {
 	): Promise<ProductAddedWithBudgetResult> {
 		// Validation des données
 		if (!data.productId) {
-			throw new Error("L'ID du produit est requis");
+			throw new Error("L’ID du produit est requis");
 		}
 
 		if (!data.quantity || data.quantity <= 0) {

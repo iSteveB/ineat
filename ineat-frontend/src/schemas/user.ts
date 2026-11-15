@@ -54,7 +54,7 @@ export const UserSchema = z
 		email: EmailSchema,
 		firstName: z.string().max(100).default(''),
 		lastName: z.string().max(100).default(''),
-		avatarUrl: z.string().url("URL d'avatar invalide").nullish(),
+		avatarUrl: z.string().url("URL d’avatar invalide").nullish(),
 		defaultServings: z.coerce.number().int().min(1).max(20).default(4),
 		primaryGoal: PrimaryGoalSchema.nullable().default(null),
 		profileOnboardingCompletedAt: z.string().datetime().nullable().default(null),
@@ -181,7 +181,7 @@ export type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
 export const UpdateProfileSchema = z.object({
 	firstName: ShortTextSchema.optional(),
 	lastName: ShortTextSchema.optional(),
-	avatarUrl: z.string().url("URL d'avatar invalide").optional(),
+	avatarUrl: z.string().url("URL d’avatar invalide").optional(),
 	defaultServings: z.number().int().min(1).max(20).optional(),
 	primaryGoal: PrimaryGoalSchema.nullable().optional(),
 });

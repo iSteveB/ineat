@@ -208,7 +208,7 @@ export const ProductBasicsSection: React.FC<ProductBasicsSectionProps> = ({
 								<SelectContent className='bg-surface border border-neutral-200 rounded-xl shadow-sm'>
 									{categories.length === 0 ? (
 										<SelectItem value='loading' disabled>
-											Chargement...
+											Chargement…
 										</SelectItem>
 									) : (
 										categories.map((category) => (

@@ -124,7 +124,7 @@ export default function NotificationSettingsPage() {
 				</CardHeader>
 				<CardContent>
 					<PreferenceRow
-						title="Notifications dans l'application"
+						title="Notifications dans l’application"
 						description='Alertes accessibles depuis la cloche.'
 						checked={preferences.inAppEnabled}
 						onCheckedChange={(checked) => update('inAppEnabled', checked)}

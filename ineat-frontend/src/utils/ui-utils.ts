@@ -61,7 +61,7 @@ export const formatRelativeDate = (
 
 	// Gestion des dates futures
 	if (diffDays === 0) {
-		return "Expire aujourd'hui";
+		return "Expire aujourd’hui";
 	} else if (diffDays === 1) {
 		return 'Expire demain';
 	} else if (diffDays >= 365) {

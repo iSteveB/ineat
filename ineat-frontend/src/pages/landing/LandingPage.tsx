@@ -42,7 +42,7 @@ const features: Feature[] = [
 		icon: ChefHat,
 		title: 'Recettes anti-gaspi',
 		description:
-			"Des idées de repas qui utilisent d'abord les produits qui doivent partir.",
+			"Des idées de repas qui utilisent d’abord les produits qui doivent partir.",
 		tone: 'bg-accent-50 text-accent-800',
 	},
 	{
@@ -130,7 +130,7 @@ const LandingHeader = ({
 const AppPreview = () => (
 	<figure
 		role='img'
-		aria-label="Aperçu de l'application : produits à consommer bientôt, idée de recette et budget du mois"
+		aria-label="Aperçu de l’application : produits à consommer bientôt, idée de recette et budget du mois"
 		className='mx-auto w-full max-w-[340px] rounded-[2rem] border-8 border-neutral-950 bg-canvas p-4 shadow-xl'>
 		<div aria-hidden='true' className='flex flex-col gap-3'>
 			<div>
@@ -223,7 +223,7 @@ const LandingPage = () => {
 								Mangez mieux, gaspillez moins.
 							</h1>
 							<p className='mt-4 text-lg leading-7 text-neutral-700'>
-								InEat suit vos produits, vous prévient avant qu'ils ne se perdent
+								InEat suit vos produits, vous prévient avant qu’ils ne se perdent
 								et vous propose des recettes avec ce que vous avez déjà.
 							</p>
 
@@ -240,7 +240,7 @@ const LandingPage = () => {
 							</div>
 
 							<p className='mt-5 text-sm text-accent-800'>
-								Gratuit et sans engagement. S'installe sur mobile comme une app.
+								Gratuit et sans engagement. S’installe sur mobile comme une app.
 							</p>
 						</div>
 
