@@ -108,7 +108,7 @@ export type PublicUser = z.infer<typeof PublicUserSchema>;
 // Identifiants de connexion
 export const LoginCredentialsSchema = z.object({
 	email: EmailSchema,
-	password: z.string().min(1, 'Le mot de passe est requis'),
+	password: z.string().min(1, 'Indiquez votre mot de passe'),
 });
 export type LoginCredentials = z.infer<typeof LoginCredentialsSchema>;
 
@@ -126,9 +126,9 @@ export type RegisterData = z.infer<typeof RegisterDataSchema>;
 export const RegisterFormSchema = RegisterDataSchema.extend({
 	confirmPassword: z
 		.string()
-		.min(1, 'La confirmation du mot de passe est requise'),
+		.min(1, 'Confirmez votre mot de passe'),
 }).refine((data) => data.password === data.confirmPassword, {
-	message: 'Les mots de passe ne correspondent pas',
+	message: 'Les deux mots de passe sont différents',
 	path: ['confirmPassword'],
 });
 export type RegisterFormData = z.infer<typeof RegisterFormSchema>;
@@ -167,10 +167,10 @@ export const ResetPasswordSchema = z
 		password: PasswordSchema,
 		confirmPassword: z
 			.string()
-			.min(1, 'La confirmation du mot de passe est requise'),
+			.min(1, 'Confirmez votre mot de passe'),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
-		message: 'Les mots de passe ne correspondent pas',
+		message: 'Les deux mots de passe sont différents',
 		path: ['confirmPassword'],
 	});
 export type ResetPasswordData = z.infer<typeof ResetPasswordSchema>;
@@ -202,19 +202,19 @@ export type UpdateUiPreferencesData = z.infer<typeof UpdateUiPreferencesSchema>;
 
 export const ChangePasswordSchema = z
 	.object({
-		currentPassword: z.string().min(1, 'Le mot de passe actuel est requis'),
+		currentPassword: z.string().min(1, 'Indiquez votre mot de passe actuel'),
 		newPassword: PasswordSchema,
 		confirmNewPassword: z
 			.string()
-			.min(1, 'La confirmation du nouveau mot de passe est requise'),
+			.min(1, 'Confirmez votre nouveau mot de passe'),
 	})
 	.refine((data) => data.newPassword === data.confirmNewPassword, {
-		message: 'Les nouveaux mots de passe ne correspondent pas',
+		message: 'Les deux nouveaux mots de passe sont différents',
 		path: ['confirmNewPassword'],
 	})
 	.refine((data) => data.currentPassword !== data.newPassword, {
 		message:
-			'Le nouveau mot de passe doit être différent du mot de passe actuel',
+			'Choisissez un mot de passe différent de l’actuel',
 		path: ['newPassword'],
 	});
 export type ChangePasswordData = z.infer<typeof ChangePasswordSchema>;
@@ -250,7 +250,7 @@ export type EmailValidationData = z.infer<typeof EmailValidationSchema>;
 
 export const DeleteAccountSchema = z.object({
 	confirmation: z.literal('SUPPRIMER DÉFINITIVEMENT MON COMPTE', {
-		errorMap: () => ({ message: 'La phrase de confirmation est incorrecte' }),
+		errorMap: () => ({ message: 'Recopiez la phrase exactement, en majuscules' }),
 	}),
 });
 export type DeleteAccountData = z.infer<typeof DeleteAccountSchema>;

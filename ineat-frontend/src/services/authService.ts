@@ -80,9 +80,9 @@ export const authService: AuthServiceMethods = {
 				throw new Error(
 					getBetterAuthErrorMessage(
 						error,
-						'Connexion impossible. Veuillez réessayer.',
+						'Connexion impossible. Réessayez dans un instant.',
 						{
-							INVALID_EMAIL_OR_PASSWORD: 'Identifiants incorrects',
+							INVALID_EMAIL_OR_PASSWORD: 'Adresse e-mail ou mot de passe incorrect',
 						}
 					)
 				);
@@ -138,7 +138,7 @@ export const authService: AuthServiceMethods = {
 				throw new Error(
 					getBetterAuthErrorMessage(
 						error,
-						"Impossible de finaliser l'inscription"
+						'Impossible de créer le compte. Réessayez dans un instant.'
 					)
 				);
 			}
@@ -158,7 +158,7 @@ export const authService: AuthServiceMethods = {
 
 		if (error) {
 			throw new Error(
-				"Impossible de renvoyer l'email pour le moment. Réessayez dans quelques instants."
+				'Impossible de renvoyer l’e-mail pour le moment. Réessayez dans un instant.'
 			);
 		}
 	},

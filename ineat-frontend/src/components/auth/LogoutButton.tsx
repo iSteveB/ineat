@@ -43,7 +43,7 @@ export function LogoutButton(props: ButtonProps) {
 			data-testid='logout-button'
 			{...props}>
 			<LogOut className='mr-2 size-4' />
-			{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}
+			{isLoggingOut ? 'Déconnexion…' : 'Se déconnecter'}
 		</Button>
 	);
 }

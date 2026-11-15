@@ -26,7 +26,7 @@ describe('EmailVerificationPending', () => {
 		render(<EmailVerificationPending email='test@example.com' />);
 
 		expect(screen.getByText('test@example.com')).toBeInTheDocument();
-		const button = screen.getByRole('button', { name: "Renvoyer l'email" });
+		const button = screen.getByRole('button', { name: "Renvoyer l’e-mail" });
 		fireEvent.click(button);
 		fireEvent.click(button);
 
@@ -40,15 +40,15 @@ describe('EmailVerificationPending', () => {
 
 	it('affiche une erreur de renvoi sans révéler l’existence du compte', async () => {
 		vi.mocked(authService.resendVerificationEmail).mockRejectedValue(
-			new Error("Impossible de renvoyer l'email.")
+			new Error("Impossible de renvoyer l’e-mail. Réessayez dans un instant.")
 		);
 		render(<EmailVerificationPending email='test@example.com' />);
 
-		fireEvent.click(screen.getByRole('button', { name: "Renvoyer l'email" }));
+		fireEvent.click(screen.getByRole('button', { name: "Renvoyer l’e-mail" }));
 
 		await waitFor(() =>
 			expect(screen.getByTestId('resend-error')).toHaveTextContent(
-				"Impossible de renvoyer l'email."
+				"Impossible de renvoyer l’e-mail. Réessayez dans un instant."
 			)
 		);
 	});

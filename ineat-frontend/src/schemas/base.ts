@@ -94,7 +94,7 @@ export const UserIdSchema = z
 	.max(128, 'Identifiant utilisateur invalide');
 
 // Email valide
-export const EmailSchema = z.string().email("Format d'email invalide");
+export const EmailSchema = z.string().email('Indiquez une adresse e-mail valide, par exemple prenom@exemple.fr');
 
 // Date au format ISO string
 export const DateStringSchema = z.string().datetime('Format de date invalide');
@@ -107,8 +107,8 @@ export const DateInputSchema = z
 // Mot de passe sécurisé
 export const PasswordSchema = z
 	.string()
-	.min(8, 'Le mot de passe doit contenir au moins 8 caractères')
-	.max(100, 'Le mot de passe est trop long')
+	.min(8, 'Choisissez un mot de passe d’au moins 8 caractères')
+	.max(100, 'Choisissez un mot de passe de 100 caractères maximum')
 	.regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
 	.regex(/[a-z]/, 'Le mot de passe doit contenir au moins une minuscule')
 	.regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre');
@@ -116,32 +116,32 @@ export const PasswordSchema = z
 // Prix (nombre positif avec maximum raisonnable)
 export const PriceSchema = z.coerce
 	.number()
-	.min(0, 'Le prix ne peut pas être négatif')
-	.max(10000, 'Le prix semble trop élevé');
+	.min(0, 'Indiquez un prix positif')
+	.max(10000, 'Ce prix semble trop élevé, vérifiez-le');
 
 // Quantité (nombre positif)
 export const QuantitySchema = z.coerce
 	.number()
-	.min(0.001, 'La quantité doit être supérieure à 0')
-	.max(100000, 'La quantité semble trop importante');
+	.min(0.001, 'Indiquez une quantité supérieure à 0')
+	.max(100000, 'Cette quantité semble trop importante, vérifiez-la');
 
 // Texte court (noms, titres)
 export const ShortTextSchema = z
 	.string()
-	.min(1, 'Ce champ est obligatoire')
-	.max(100, 'Le texte ne peut pas dépasser 100 caractères')
+	.min(1, 'Ce champ est à remplir')
+	.max(100, '100 caractères maximum')
 	.transform((val) => val.trim());
 
 // Texte moyen (descriptions)
 export const MediumTextSchema = z
 	.string()
-	.max(500, 'Le texte ne peut pas dépasser 500 caractères')
+	.max(500, '500 caractères maximum')
 	.transform((val) => val.trim());
 
 // Texte long (instructions, notes)
 export const LongTextSchema = z
 	.string()
-	.max(2000, 'Le texte ne peut pas dépasser 2000 caractères')
+	.max(2000, '2000 caractères maximum')
 	.transform((val) => val.trim());
 
 // ===== UTILITAIRES =====

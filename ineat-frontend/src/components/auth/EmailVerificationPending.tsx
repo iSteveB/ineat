@@ -42,14 +42,14 @@ const EmailVerificationPending = ({ email }: EmailVerificationPendingProps) => {
 		try {
 			await authService.resendVerificationEmail(email);
 			setMessage(
-				"Si cette adresse correspond à un compte en attente, un nouvel email vient d'être envoyé."
+				'Si un compte attend cette adresse, un nouvel e-mail vient de partir.'
 			);
 			setCooldownSeconds(60);
 		} catch (caughtError) {
 			setError(
 				caughtError instanceof Error
 					? caughtError.message
-					: "Impossible de renvoyer l'email."
+					: 'Impossible de renvoyer l’e-mail. Réessayez dans un instant.'
 			);
 		} finally {
 			setIsSending(false);
@@ -91,7 +91,7 @@ const EmailVerificationPending = ({ email }: EmailVerificationPendingProps) => {
 						? 'Envoi en cours…'
 						: cooldownSeconds > 0
 							? `Renvoyer dans ${cooldownSeconds} s`
-							: "Renvoyer l'email"}
+							: 'Renvoyer l’e-mail'}
 				</Button>
 			</CardContent>
 			<CardFooter className='justify-center'>

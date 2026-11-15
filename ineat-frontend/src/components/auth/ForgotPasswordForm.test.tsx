@@ -45,12 +45,12 @@ describe('ForgotPasswordForm', () => {
 		expect(
 			screen.getByText('Réinitialisation de mot de passe')
 		).toBeInTheDocument();
-		expect(screen.getByLabelText('Email')).toBeInTheDocument();
+		expect(screen.getByLabelText('Adresse e-mail')).toBeInTheDocument();
 		expect(
-			screen.getByPlaceholderText('votre.email@exemple.com')
+			screen.getByPlaceholderText('prenom@exemple.fr')
 		).toBeInTheDocument();
 		expect(
-			screen.getByText('Envoyer le lien de réinitialisation')
+			screen.getByText('Recevoir le lien')
 		).toBeInTheDocument();
 		expect(screen.getByText('Retour à la connexion')).toBeInTheDocument();
 
@@ -81,7 +81,7 @@ describe('ForgotPasswordForm', () => {
 
 		// Vérifier le contenu de l'erreur
 		const errorMessage = screen.getByTestId('error-message');
-		expect(errorMessage).toHaveTextContent("Format d'email invalide");
+		expect(errorMessage).toHaveTextContent('Indiquez une adresse e-mail valide');
 	});
 
 	it("affiche une erreur si l'email est vide", async () => {
@@ -101,7 +101,7 @@ describe('ForgotPasswordForm', () => {
 
 		// Vérifier le contenu de l'erreur
 		const errorMessage = screen.getByTestId('error-message');
-		expect(errorMessage).toHaveTextContent("Format d'email invalide");
+		expect(errorMessage).toHaveTextContent('Indiquez une adresse e-mail valide');
 	});
 
 	it('soumet le formulaire avec un email valide et affiche le message de succès', async () => {
@@ -163,7 +163,7 @@ describe('ForgotPasswordForm', () => {
 		// Vérifier le contenu de l'erreur
 		const errorMessageContent = screen.getByTestId('error-message');
 		expect(errorMessageContent).toHaveTextContent(
-			"Impossible d'envoyer le lien de réinitialisation"
+			"Impossible d’envoyer le lien. Réessayez dans un instant."
 		);
 	});
 
@@ -188,7 +188,7 @@ describe('ForgotPasswordForm', () => {
 		await user.click(submitButton);
 
 		// Vérifier que le bouton affiche l'état de chargement et est désactivé
-		expect(screen.getByText('Envoi en cours...')).toBeInTheDocument();
+		expect(screen.getByText('Envoi…')).toBeInTheDocument();
 		expect(submitButton).toBeDisabled();
 		expect(emailInput).toBeDisabled();
 

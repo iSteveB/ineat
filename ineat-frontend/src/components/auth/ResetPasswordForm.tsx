@@ -25,14 +25,14 @@ const getBetterAuthResetErrorMessage = (
 	error: { code?: string; message?: string } | null | undefined
 ) => {
 	if (error?.code === 'INVALID_TOKEN') {
-		return 'Le lien de réinitialisation est invalide ou a expiré.';
+		return 'Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.';
 	}
 
 	if (error?.code === 'PASSWORD_TOO_SHORT') {
-		return 'Le mot de passe doit contenir au moins 8 caractères.';
+		return 'Choisissez un mot de passe d’au moins 8 caractères.';
 	}
 
-	return 'Impossible de réinitialiser le mot de passe.';
+	return 'Impossible de changer le mot de passe. Réessayez dans un instant.';
 };
 
 const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
@@ -40,9 +40,9 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 	const [confirmPassword, setConfirmPassword] = useState('');
 	const [formError, setFormError] = useState<string | null>(
 		error === 'INVALID_TOKEN'
-			? 'Le lien de réinitialisation est invalide ou a expiré.'
+			? 'Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.'
 			: !token
-				? 'Le lien de réinitialisation est incomplet.'
+				? 'Ce lien est incomplet. Copiez-le en entier depuis l’e-mail reçu.'
 				: null
 	);
 	const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +65,7 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 				return false;
 			}
 
-			setFormError('Erreur de validation du formulaire');
+			setFormError('Vérifiez les champs du formulaire');
 			return false;
 		}
 	};
@@ -94,7 +94,7 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 			setPassword('');
 			setConfirmPassword('');
 		} catch {
-			setFormError('Impossible de réinitialiser le mot de passe.');
+			setFormError('Impossible de changer le mot de passe. Réessayez dans un instant.');
 		} finally {
 			setIsLoading(false);
 		}
@@ -113,8 +113,7 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 					<Alert variant='success' className='mb-4' data-testid='success-alert'>
 						<CircleCheck aria-hidden='true' />
 						<AlertDescription>
-							Votre mot de passe a été réinitialisé. Vous pouvez
-							vous connecter avec votre nouveau mot de passe.
+							Mot de passe modifié. Vous pouvez vous connecter avec le nouveau.
 						</AlertDescription>
 					</Alert>
 				) : (
@@ -178,8 +177,8 @@ const ResetPasswordForm = ({ token, error }: ResetPasswordFormProps) => {
 							disabled={isLoading || !token}
 							data-testid='submit-button'>
 							{isLoading
-								? 'Réinitialisation...'
-								: 'Réinitialiser le mot de passe'}
+								? 'Enregistrement…'
+								: 'Enregistrer le mot de passe'}
 						</Button>
 					</form>
 				)}

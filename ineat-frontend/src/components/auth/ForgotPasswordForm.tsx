@@ -36,7 +36,7 @@ const ForgotPasswordForm = () => {
 				const errors = error.errors.map((err) => err.message);
 				setFormError(errors.join('. '));
 			} else {
-				setFormError('Erreur de validation du formulaire');
+				setFormError('Vérifiez votre adresse e-mail');
 			}
 			return false;
 		}
@@ -61,7 +61,7 @@ const ForgotPasswordForm = () => {
 
 			if (error) {
 				throw new Error(
-					"Impossible d'envoyer le lien de réinitialisation"
+					'Impossible d’envoyer le lien. Réessayez dans un instant.'
 				);
 			}
 
@@ -73,7 +73,7 @@ const ForgotPasswordForm = () => {
 				setFormError(error.message);
 			} else {
 				setFormError(
-					'Une erreur est survenue lors de la demande de réinitialisation'
+					'Impossible d’envoyer le lien. Réessayez dans un instant.'
 				);
 			}
 		} finally {
@@ -86,8 +86,7 @@ const ForgotPasswordForm = () => {
 			<CardHeader>
 				<h1 className='type-h1 text-neutral-900'>Réinitialisation de mot de passe</h1>
 				<CardDescription>
-					Entrez votre adresse email pour recevoir un lien de
-					réinitialisation
+					Indiquez votre adresse e-mail, nous vous envoyons un lien pour choisir un nouveau mot de passe.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -95,9 +94,7 @@ const ForgotPasswordForm = () => {
 					<Alert variant='success' className='mb-4' data-testid='success-alert'>
 						<CircleCheck aria-hidden='true' />
 						<AlertDescription>
-							Si un compte existe avec cette adresse email, vous
-							recevrez un email contenant les instructions pour
-							réinitialiser votre mot de passe.
+							Si un compte existe avec cette adresse, un e-mail vient de partir. Pensez à vérifier vos courriers indésirables.
 						</AlertDescription>
 					</Alert>
 				) : (
@@ -121,11 +118,11 @@ const ForgotPasswordForm = () => {
 
 						{/* Champ email */}
 						<div className='space-y-2'>
-							<Label htmlFor='email'>Email</Label>
+							<Label htmlFor='email'>Adresse e-mail</Label>
 							<Input
 								id='email'
 								type='email'
-								placeholder='votre.email@exemple.com'
+								placeholder='prenom@exemple.fr'
 								value={email}
 								onChange={(e) => {
 									setEmail(e.target.value);
@@ -144,8 +141,8 @@ const ForgotPasswordForm = () => {
 							disabled={isLoading}
 							data-testid='submit-button'>
 							{isLoading
-								? 'Envoi en cours...'
-								: 'Envoyer le lien de réinitialisation'}
+								? 'Envoi…'
+								: 'Recevoir le lien'}
 						</Button>
 					</form>
 				)}

@@ -35,7 +35,7 @@ describe('ResetPasswordForm', () => {
 		render(<ResetPasswordForm />);
 
 		expect(screen.getByTestId('error-message')).toHaveTextContent(
-			'Le lien de réinitialisation est incomplet.'
+			'Ce lien est incomplet. Copiez-le en entier depuis l’e-mail reçu.'
 		);
 		expect(screen.getByTestId('submit-button')).toBeDisabled();
 	});
@@ -74,7 +74,7 @@ describe('ResetPasswordForm', () => {
 		await user.click(screen.getByTestId('submit-button'));
 
 		expect(screen.getByTestId('error-message')).toHaveTextContent(
-			'Les mots de passe ne correspondent pas'
+			'Les deux mots de passe sont différents'
 		);
 		expect(authClient.resetPassword).not.toHaveBeenCalled();
 	});
@@ -95,7 +95,7 @@ describe('ResetPasswordForm', () => {
 
 		await waitFor(() => {
 			expect(screen.getByTestId('error-message')).toHaveTextContent(
-				'Le lien de réinitialisation est invalide ou a expiré.'
+				'Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.'
 			);
 		});
 	});

@@ -129,7 +129,7 @@ describe('RegisterForm', () => {
 		await waitFor(() => {
 			expect(screen.getByTestId('error-container')).toBeInTheDocument();
 			expect(screen.getByTestId('error-message')).toHaveTextContent(
-				'Le mot de passe doit contenir au moins 8 caractères'
+				'Choisissez un mot de passe d’au moins 8 caractères'
 			);
 		});
 
@@ -153,7 +153,7 @@ describe('RegisterForm', () => {
 
 		await waitFor(() => {
 			expect(screen.getByTestId('error-message')).toHaveTextContent(
-				'Les mots de passe ne correspondent pas'
+				'Les deux mots de passe sont différents'
 			);
 		});
 		expect(registerMock).not.toHaveBeenCalled();
@@ -211,7 +211,7 @@ describe('RegisterForm', () => {
 
 		// Vérifier que le texte du bouton d'inscription indique l'état de chargement
 		expect(screen.getByTestId('register-submit-button')).toHaveTextContent(
-			'Inscription en cours...'
+			'Création du compte…'
 		);
 	});
 

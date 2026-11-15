@@ -9,9 +9,9 @@ import {
 } from '../ui/card';
 
 const errorMessages: Record<string, string> = {
-	TOKEN_EXPIRED: 'Ce lien de vérification a expiré.',
-	INVALID_TOKEN: "Ce lien de vérification n'est pas valide ou a déjà été utilisé.",
-	USER_NOT_FOUND: "Ce lien de vérification n'est plus valide.",
+	TOKEN_EXPIRED: 'Ce lien a expiré. Connectez-vous pour en recevoir un nouveau.',
+	INVALID_TOKEN: 'Ce lien n’est pas valide ou a déjà servi.',
+	USER_NOT_FOUND: 'Ce lien n’est plus valide.',
 };
 
 interface EmailVerificationResultProps {
@@ -30,12 +30,12 @@ const EmailVerificationResult = ({ error }: EmailVerificationResultProps) => {
 					<CircleCheck className='mx-auto mb-2 size-10 text-primary' aria-hidden />
 				)}
 				<h1 className='type-h1 text-neutral-900'>
-					{hasError ? 'Lien non valide' : 'Adresse email vérifiée'}
+					{hasError ? 'Lien non valide' : 'Adresse e-mail confirmée'}
 				</h1>
 				<CardDescription>
 					{hasError
-						? errorMessages[error ?? ''] ?? "Ce lien n'a pas pu être vérifié."
-						: 'Votre compte est maintenant actif. Vous pouvez accéder à InEat.'}
+						? errorMessages[error ?? ''] ?? 'Ce lien n’a pas pu être vérifié.'
+						: 'Votre compte est prêt. Il ne reste plus qu’à remplir votre frigo virtuel.'}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>

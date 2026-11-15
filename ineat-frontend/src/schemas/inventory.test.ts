@@ -44,14 +44,14 @@ describe('inventory schemas', () => {
 				...validManualProduct,
 				quantity: 0,
 			}).error?.issues[0].message,
-		).toBe('La quantité doit être supérieure à 0');
+		).toBe('Indiquez une quantité supérieure à 0');
 
 		expect(
 			AddInventoryItemSchema.safeParse({
 				...validManualProduct,
 				purchasePrice: -1,
 			}).error?.issues[0].message,
-		).toBe('Le prix ne peut pas être négatif');
+		).toBe('Indiquez un prix positif');
 
 		expect(
 			AddInventoryItemSchema.safeParse({
@@ -92,7 +92,7 @@ describe('inventory schemas', () => {
 			UpdateInventoryItemSchema.safeParse({
 				quantity: -1,
 			}).error?.issues[0].message,
-		).toBe('La quantité doit être supérieure à 0');
+		).toBe('Indiquez une quantité supérieure à 0');
 	});
 
 	it('acceptent un produit inventaire groupé avec plusieurs lots', () => {

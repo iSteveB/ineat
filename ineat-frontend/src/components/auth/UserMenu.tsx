@@ -118,7 +118,7 @@ export function UserMenu() {
           disabled={isLoggingOut}
         >
           <LogOut className="mr-2 size-4" />
-          <span>{isLoggingOut ? 'Déconnexion...' : 'Se déconnecter'}</span>
+          <span>{isLoggingOut ? 'Déconnexion…' : 'Se déconnecter'}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -19,7 +19,7 @@ describe('EmailVerificationResult', () => {
 	it('confirme une vérification réussie et ouvre l’application', () => {
 		render(<EmailVerificationResult />);
 
-		expect(screen.getByText('Adresse email vérifiée')).toBeInTheDocument();
+		expect(screen.getByText('Adresse e-mail confirmée')).toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Continuer vers InEat' })).toHaveAttribute(
 			'href',
 			'/app'
@@ -29,7 +29,7 @@ describe('EmailVerificationResult', () => {
 	it('explique un lien expiré sans afficher le détail technique', () => {
 		render(<EmailVerificationResult error='TOKEN_EXPIRED' />);
 
-		expect(screen.getByText('Ce lien de vérification a expiré.')).toBeInTheDocument();
+		expect(screen.getByText('Ce lien a expiré. Connectez-vous pour en recevoir un nouveau.')).toBeInTheDocument();
 		expect(screen.getByRole('link', { name: 'Retour à la connexion' })).toHaveAttribute(
 			'href',
 			'/login'

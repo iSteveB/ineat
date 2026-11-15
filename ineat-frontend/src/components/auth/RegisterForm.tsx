@@ -63,7 +63,7 @@ const RegisterForm = () => {
 				const errors = error.errors.map((err) => err.message);
 				setFormError(errors.join('. '));
 			} else {
-				setFormError('Erreur de validation du formulaire');
+				setFormError('Vérifiez les champs du formulaire');
 			}
 			return false;
 		}
@@ -138,12 +138,12 @@ const RegisterForm = () => {
 
 				{/* Champ email */}
 				<div className='space-y-2'>
-					<Label htmlFor='email'>Email</Label>
+					<Label htmlFor='email'>Adresse e-mail</Label>
 					<Input
 						id='email'
 						name='email'
 						type='email'
-						placeholder='votre.email@exemple.com'
+						placeholder='prenom@exemple.fr'
 						autoComplete='email'
 						value={formData.email}
 						onChange={handleChange}
@@ -160,7 +160,7 @@ const RegisterForm = () => {
 						id='password'
 						name='password'
 						type='password'
-						placeholder='Choisissez un mot de passe'
+						placeholder='8 caractères minimum'
 						autoComplete='new-password'
 						value={formData.password}
 						onChange={handleChange}
@@ -199,7 +199,7 @@ const RegisterForm = () => {
 					className='w-full'
 					disabled={isLoading}
 					data-testid='register-submit-button'>
-					{isLoading ? 'Inscription en cours...' : "S'inscrire"}
+					{isLoading ? 'Création du compte…' : 'Créer mon compte'}
 				</Button>
 			</form>
 		);
@@ -210,7 +210,7 @@ const RegisterForm = () => {
 			<CardHeader>
 				<h1 className='type-h1 text-neutral-900'>Créer un compte</h1>
 				<CardDescription>
-					Rejoignez InEat pour mieux gérer vos stocks alimentaires
+					Gardez un œil sur vos dates de péremption et gaspillez moins.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>

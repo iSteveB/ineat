@@ -38,7 +38,7 @@ const GOALS: Array<{ value: PrimaryGoal; label: string; description: string }> =
     {
       value: "FIND_MEAL_IDEAS",
       label: "Trouver des idées",
-      description: "Transformer plus facilement mon inventaire en repas.",
+      description: "Transformer plus facilement mon stock en repas.",
     },
   ];
 
@@ -78,13 +78,13 @@ export default function ProfileOnboardingPage() {
       await refreshProfile();
       toast.success(
         saveAnswers
-          ? "Votre profil est personnalisé."
-          : "Vous pourrez personnaliser votre profil plus tard.",
+          ? "C’est parti\u00A0!"
+          : "Vous pourrez compléter votre profil dans les paramètres.",
       );
       await navigate({ to: "/app", replace: true });
     } catch (error) {
       console.error("Impossible de terminer la personnalisation", error);
-      toast.error("Impossible d’enregistrer votre profil. Réessayez.");
+      toast.error("Impossible d’enregistrer vos réponses. Réessayez dans un instant.");
     } finally {
       setIsSaving(false);
     }
@@ -102,9 +102,9 @@ export default function ProfileOnboardingPage() {
           <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-accent-600/15 text-success-700">
             <Sparkles className="size-5" />
           </div>
-          <CardTitle>Personnalisons votre expérience</CardTitle>
+          <CardTitle>Faisons connaissance</CardTitle>
           <CardDescription>
-            Trois réponses suffisent et restent modifiables dans vos paramètres.
+            Trois questions pour des suggestions à votre goût. Vous pourrez tout modifier plus tard.
           </CardDescription>
         </CardHeader>
         <CardContent>

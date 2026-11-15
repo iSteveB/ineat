@@ -151,7 +151,7 @@ describe('LoginForm', () => {
 
 		// Vérifier le contenu de l'erreur
 		expect(screen.getByTestId('error-message')).toHaveTextContent(
-			"Format d'email invalide"
+			'Indiquez une adresse e-mail valide'
 		);
 
 		// Vérifier que la fonction login n'a pas été appelée
@@ -194,7 +194,7 @@ describe('LoginForm', () => {
 
 		// Vérifier que le texte du bouton de connexion indique le chargement
 		expect(screen.getByTestId('submit-button')).toHaveTextContent(
-			'Connexion en cours...'
+			'Connexion…'
 		);
 	});
 
@@ -210,7 +210,7 @@ describe('LoginForm', () => {
 	it("propose un lien vers l'inscription", () => {
 		render(<LoginForm />);
 
-		expect(screen.getByRole('link', { name: "S'inscrire" })).toHaveAttribute(
+		expect(screen.getByRole('link', { name: 'Créer un compte' })).toHaveAttribute(
 			'href',
 			'/register'
 		);

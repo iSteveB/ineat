@@ -9,7 +9,7 @@ import {
 } from './authService';
 
 describe('getBetterAuthErrorMessage', () => {
-	const fallback = 'Connexion impossible. Veuillez réessayer.';
+	const fallback = 'Connexion impossible. Réessayez dans un instant.';
 
 	it('traduit les identifiants invalides avec un message public', () => {
 		expect(

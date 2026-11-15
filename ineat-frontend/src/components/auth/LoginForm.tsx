@@ -56,7 +56,7 @@ const LoginForm = () => {
 				const errors = error.errors.map((err) => err.message);
 				setFormError(errors.join('. '));
 			} else {
-				setFormError('Erreur de validation du formulaire');
+				setFormError('Vérifiez les champs du formulaire');
 			}
 			return false;
 		}
@@ -92,8 +92,7 @@ const LoginForm = () => {
 			<CardHeader>
 				<h1 className='type-h1 text-neutral-900'>Connexion</h1>
 				<CardDescription>
-					Accédez à votre compte pour gérer votre inventaire
-					alimentaire.
+					Retrouvez votre stock et vos dates de péremption.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -109,8 +108,7 @@ const LoginForm = () => {
 							data-testid='session-expired-alert'>
 							<TriangleAlert aria-hidden='true' />
 							<AlertDescription>
-								Votre session a expiré. Veuillez vous
-								reconnecter.
+								Votre session a expiré. Reconnectez-vous pour continuer.
 							</AlertDescription>
 						</Alert>
 					)}
@@ -129,11 +127,11 @@ const LoginForm = () => {
 
 					{/* Champ email */}
 					<div className='space-y-2'>
-						<Label htmlFor='email'>Email</Label>
+						<Label htmlFor='email'>Adresse e-mail</Label>
 						<Input
 							id='email'
 							type='email'
-							placeholder='votre.email@exemple.com'
+							placeholder='prenom@exemple.fr'
 							autoComplete='email'
 							value={email}
 							onChange={(e) => {
@@ -180,17 +178,17 @@ const LoginForm = () => {
 						className='w-full'
 						disabled={isLoading}
 						data-testid='submit-button'>
-						{isLoading ? 'Connexion en cours...' : 'Se connecter'}
+						{isLoading ? 'Connexion…' : 'Se connecter'}
 					</Button>
 
 				</form>
 			</CardContent>
 			<CardFooter className='flex justify-center'>
 				<p className='text-sm text-neutral-600'>
-					Vous n'avez pas de compte ?{' '}
+					Pas encore de compte ?{' '}
 					<Button asChild variant='link' className='h-auto p-0'>
 						<Link to='/register' data-testid='register-button'>
-							S'inscrire
+							Créer un compte
 						</Link>
 					</Button>
 				</p>
