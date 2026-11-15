@@ -50,39 +50,39 @@ export type CategoryWithChildren = z.infer<typeof CategoryWithChildrenSchema>;
 export const NutritionalInfoSchema = z.object({
 	energy: z.coerce
 		.number()
-		.min(0, "L'énergie ne peut pas être négative")
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // kcal pour 100g
 	proteins: z.coerce
 		.number()
-		.min(0, 'Les protéines ne peuvent pas être négatives')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	carbohydrates: z.coerce
 		.number()
-		.min(0, 'Les glucides ne peuvent pas être négatifs')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	sugars: z.coerce
 		.number()
-		.min(0, 'Les sucres ne peuvent pas être négatifs')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	fats: z.coerce
 		.number()
-		.min(0, 'Les lipides ne peuvent pas être négatifs')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	saturatedFats: z.coerce
 		.number()
-		.min(0, 'Les graisses saturées ne peuvent pas être négatives')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	salt: z.coerce
 		.number()
-		.min(0, 'Le sel ne peut pas être négatif')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	sodium: z.coerce
 		.number()
-		.min(0, 'Le sodium ne peut pas être négatif')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 	fiber: z.coerce
 		.number()
-		.min(0, 'Les fibres ne peuvent pas être négatives')
+		.min(0, 'Indiquez une valeur positive')
 		.optional(), // g pour 100g
 });
 export type NutritionalInfo = z.infer<typeof NutritionalInfoSchema>;
@@ -146,7 +146,7 @@ export const CreateProductSchema = z.object({
 			'Le code-barres doit contenir entre 8 et 13 chiffres'
 		)
 		.optional(),
-	category: z.string().min(1, 'La catégorie est obligatoire'), // Slug de la catégorie
+	category: z.string().min(1, 'Choisissez une catégorie'), // Slug de la catégorie
 	unitType: UnitTypeSchema,
 	nutriscore: NutriScoreSchema.optional(),
 	ecoscore: EcoscoreSchema.optional(),
@@ -177,7 +177,7 @@ export type ProductFilters = z.infer<typeof ProductFiltersSchema>;
 
 // Paramètres de recherche dans OpenFoodFacts
 export const OpenFoodFactsSearchSchema = z.object({
-	query: z.string().min(1, 'Le terme de recherche ne peut pas être vide'),
+	query: z.string().min(1, 'Saisissez un nom, une marque ou un code-barres'),
 	page: z.coerce.number().int().min(1).default(1),
 	pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });

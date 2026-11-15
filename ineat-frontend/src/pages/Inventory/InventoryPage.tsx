@@ -44,7 +44,20 @@ const CATEGORY_TO_STORAGE_MAPPING: Record<StorageLocationFilter, string[]> = {
 	ALL: [],
 	FRESH: ['refrigerator', 'fridge', 'frigo', 'réfrigérateur'],
 	FREEZER: ['freezer', 'congélateur', 'congelateur'],
-	PANTRY: ['pantry', 'placard', 'cupboard', 'épicerie', 'epicerie', 'other'],
+	PANTRY: [
+		'pantry',
+		'placard',
+		'garde-manger',
+		'cupboard',
+		'épicerie',
+		'epicerie',
+		'cave',
+		'cellier',
+		'fruits et légumes',
+		'fruitier',
+		'autre',
+		'other',
+	],
 } as const;
 
 const InventoryPage: React.FC = () => {

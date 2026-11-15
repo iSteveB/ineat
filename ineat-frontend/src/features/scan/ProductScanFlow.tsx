@@ -174,13 +174,13 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 				case 'info':
 					toast.info(result.message, {
 						description: result.budgetInfo.expenseCreated
-							? `Dépense ajoutée au budget`
-							: 'Prix non renseigné - aucune dépense créée',
+							? 'Prix compté dans votre budget'
+							: 'Sans prix, ce produit ne compte pas dans votre budget',
 					});
 					break;
 				case 'warning':
 					toast.warning(result.message, {
-						description: 'Attention à votre budget !',
+						description: 'Votre budget du mois est presque épuisé',
 					});
 					break;
 			}
@@ -198,10 +198,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 			}, 1500);
 		},
 		onError: (error: Error) => {
-			toast.error("Erreur lors de l'ajout", {
+			toast.error('Impossible d’ajouter le produit', {
 				description: getUserFacingErrorMessage(
 					error,
-					"Impossible d'ajouter le produit. Veuillez réessayer."
+					'Vérifiez votre connexion, puis réessayez.'
 				),
 			});
 		},
@@ -219,13 +219,13 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 				case 'info':
 					toast.info(result.message, {
 						description: result.budgetInfo.expenseCreated
-							? `Dépense ajoutée au budget`
-							: 'Prix non renseigné - aucune dépense créée',
+							? 'Prix compté dans votre budget'
+							: 'Sans prix, ce produit ne compte pas dans votre budget',
 					});
 					break;
 				case 'warning':
 					toast.warning(result.message, {
-						description: 'Attention à votre budget !',
+						description: 'Votre budget du mois est presque épuisé',
 					});
 					break;
 			}
@@ -243,10 +243,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 			}, 1500);
 		},
 		onError: (error: Error) => {
-			toast.error("Erreur lors de l'ajout", {
+			toast.error('Impossible d’ajouter le produit', {
 				description: getUserFacingErrorMessage(
 					error,
-					"Impossible d'ajouter le produit. Veuillez réessayer."
+					'Vérifiez votre connexion, puis réessayez.'
 				),
 			});
 		},
@@ -429,11 +429,10 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									<Alert className='mb-6 border-brand-300 bg-canvas'>
 										<Package className='size-5 text-brand-800' />
 										<AlertTitle className='text-brand-800'>
-											Produit déjà dans votre inventaire
+											Produit déjà connu
 										</AlertTitle>
 										<AlertDescription className='text-brand-800'>
-											Ce produit existe déjà. Vous pouvez
-											l'ajouter directement.
+											Indiquez la quantité et la date, il rejoindra votre stock.
 										</AlertDescription>
 									</Alert>
 								)}
@@ -444,12 +443,12 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									<Alert className='mb-6 border-neutral-200 bg-canvas'>
 										<Plus className='size-5 text-neutral-600' />
 										<AlertTitle className='text-neutral-600'>
-											Nouveau produit scanné
+											Nouveau produit
 										</AlertTitle>
 										<AlertDescription className='text-success-700'>
 											{flowData.offProductData?.barcode
-												? 'Ce produit sera ajouté à votre inventaire avec ses informations.'
-												: "Vous pouvez l'ajouter directement."}
+												? 'Ses informations sont pré-remplies, vérifiez-les avant d’ajouter.'
+												: 'Indiquez la quantité et la date pour l’ajouter.'}
 										</AlertDescription>
 									</Alert>
 								)}
@@ -504,8 +503,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 								<Alert variant='warning' className='mt-6'>
 									<AlertTriangle className='size-5' />
 									<AlertTitle>
-										Erreur lors de l'ajout
-									</AlertTitle>
+										Impossible d’ajouter le produit </AlertTitle>
 									<AlertDescription>
 										{addManualProductMutation.error
 											?.message ||
@@ -539,12 +537,9 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 									</div>
 									<div>
 										<h1 className='text-xl font-bold text-neutral-900'>
-											Produit non trouvé
-										</h1>
+											Produit inconnu </h1>
 										<p className='text-sm text-neutral-600'>
-											Ce produit n'existe pas dans
-											OpenFoodFacts
-										</p>
+											Ce code-barres n’est pas dans notre base. </p>
 									</div>
 								</div>
 							</div>
@@ -558,16 +553,13 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 										<AlertTriangle className='size-20 text-warning-700 mx-auto' />
 										<div>
 											<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
-												Produit introuvable
-											</CardTitle>
+												Ce produit nous est inconnu </CardTitle>
 											<CardDescription className='text-neutral-600 mb-4'>
-												Ce produit n'existe pas dans la
-												base OpenFoodFacts.
-											</CardDescription>
+												Pas de panique : créez-le en quelques secondes, il sera reconnu la prochaine fois. </CardDescription>
 											{flowData.scannedBarcode && (
 												<div className='inline-flex items-center px-3 py-2 bg-neutral-50 rounded-lg'>
 													<span className='text-sm text-neutral-600 font-medium'>
-														Code-barre :
+														Code-barres&nbsp;:
 													</span>
 													<span className='text-sm text-neutral-900 font-mono ml-2'>
 														{
@@ -586,7 +578,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 											size='lg'>
 											<Plus className='size-5 mr-2' />
 											<span>
-												Créer ce produit manuellement
+												Créer ce produit
 											</span>
 										</Button>
 
@@ -604,8 +596,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 
 									<div className='pt-6 border-t border-neutral-100'>
 										<p className='text-xs text-neutral-500 mb-3'>
-											Vous pouvez aider en ajoutant ce
-											produit à OpenFoodFacts
+											Envie d’aider ? Ajoutez ce produit à Open Food Facts, la base collaborative qui alimente InEat.
 										</p>
 										<a
 											href='https://fr.openfoodfacts.org/contribuer'
@@ -614,7 +605,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 											className='inline-flex items-center gap-2 text-sm text-brand-800 hover:text-brand-800 transition-colors'>
 											<ExternalLink className='size-4' />
 											<span>
-												Contribuer à OpenFoodFacts
+												Contribuer à Open Food Facts
 											</span>
 										</a>
 									</div>
@@ -632,12 +623,12 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 								<CheckCircle2 className='size-20 text-accent-700 mx-auto animate-pulse' />
 								<div>
 									<CardTitle className='text-xl font-semibold text-neutral-900 mb-2'>
-										Produit ajouté avec succès !
+										Produit ajouté&nbsp;!
 									</CardTitle>
 									<CardDescription className='text-neutral-600'>
 										{flowData.offProductData?.name ||
 											'Le produit'}{' '}
-										a été ajouté à votre inventaire.
+										a rejoint votre stock.
 									</CardDescription>
 								</div>
 								<div className='w-32 h-2 bg-neutral-100 rounded-full mx-auto overflow-hidden'>
@@ -649,7 +640,7 @@ export const ProductScanFlow: React.FC<ProductScanFlowProps> = ({
 				);
 
 			default:
-				return <div>État inconnu</div>;
+				return <div>Un souci est survenu. Revenez au scan pour réessayer.</div>;
 		}
 	};
 

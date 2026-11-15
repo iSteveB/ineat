@@ -20,6 +20,7 @@ import type { OpenFoodFactsMapping } from '@/schemas/openfoodfact-mapping';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 import { z } from 'zod';
 
 interface AddOFFProductFormProps {
@@ -52,16 +53,6 @@ const UNIT_TYPE_OPTIONS = [
 	{ value: 'L', label: 'Litre(s)' },
 	{ value: 'ML', label: 'Millilitre(s)' },
 ] as const;
-
-const STORAGE_LOCATION_OPTIONS = [
-	'Réfrigérateur',
-	'Congélateur',
-	'Placard',
-	'Cave',
-	'Garde-manger',
-	'Fruitier',
-	'Autre',
-];
 
 export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 	categories,
@@ -196,7 +187,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 					<div className='p-2 rounded-md bg-info-50'>
 						<PackagePlus className='size-5 text-info-700' />
 					</div>
-					Ajouter un produit scanné
+					Compléter le produit scanné
 				</CardTitle>
 			</CardHeader>
 			<CardContent className='p-6 space-y-6'>
@@ -244,7 +235,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 						</div>
 						<span className='text-xs text-neutral-500 mt-2'>
 							Qualité: {Math.round((enrichedProduct.quality.completeness || 0) * 100)}%
-							• Données pré-remplies automatiquement
+							• Infos pré-remplies
 						</span>
 					</AlertDescription>
 				</Alert>
@@ -499,7 +490,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 								id='notes'
 								value={formData.notes}
 								onChange={(e) => handleInputChange('notes', e.target.value)}
-								placeholder='Ajoutez une note sur ce produit...'
+								placeholder='Ex. : entamé, à finir vite'
 								rows={3}
 								className='bg-surface border border-neutral-200 rounded-xl shadow-sm focus:ring-2 focus:ring-accent-600/20 focus:border-accent-700 resize-none'
 								disabled={isSubmitting}
@@ -524,7 +515,7 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							{isSubmitting ? (
 								<>
 									<Loader2 className='size-4 mr-2 animate-spin' />
-									Ajout en cours...
+									Ajout…
 								</>
 							) : (
 								'Ajouter le produit'

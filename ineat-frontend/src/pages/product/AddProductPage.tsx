@@ -13,8 +13,8 @@ const AddProductPage: React.FC = () => {
 	const driveImportsRemaining = user?.capabilities.driveImportsRemaining ?? 0;
 	const canImportDrive = hasDriveAccess && driveImportsRemaining > 0;
 	const driveBlockedMessage = hasDriveAccess
-		? 'Quota atteint : le prochain import sera disponible au renouvellement.'
-		: 'Analyse automatique de vos factures Drive, avec Premium.';
+		? 'Vous avez utilisé tous vos imports du mois. Le compteur repart à zéro au renouvellement.'
+		: 'Ajoutez toutes vos courses Drive en un import. Disponible avec Premium.';
 
 	return (
 		<div className='mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-4 sm:px-6 lg:py-6'>
@@ -48,7 +48,7 @@ const AddProductPage: React.FC = () => {
 				<li>
 					<AddMethodCard
 						icon={<ScanLine className='size-6' aria-hidden='true' />}
-						title='Scanner un code-barre'
+						title='Scanner un code-barres'
 						description='Le plus rapide : nom, Nutri-Score et date estimée sont remplis automatiquement.'
 						to='/app/inventory/add/scan'
 					/>
@@ -56,7 +56,7 @@ const AddProductPage: React.FC = () => {
 				<li>
 					<AddMethodCard
 						icon={<PencilLine className='size-6' aria-hidden='true' />}
-						title='Ajout manuel'
+						title='Rechercher ou saisir un produit'
 						description='Recherchez un produit par son nom ou saisissez ses informations.'
 						to='/app/inventory/add/search'
 					/>

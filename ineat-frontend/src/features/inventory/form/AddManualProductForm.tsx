@@ -66,7 +66,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 				{hasPrefilledData && (
 					<Alert className='border-accent-600/20 bg-accent-600/10'>
 						<AlertDescription className='flex flex-col text-neutral-900'>
-							<strong>Données récupérées du scan :</strong>
+							<strong>Infos récupérées grâce au scan :</strong>
 							{defaultProductName && <span>Nom: {defaultProductName}</span>}
 							{defaultBrand && <span>Marque: {defaultBrand}</span>}
 							{defaultBarcode && <span>Code-barre: {defaultBarcode}</span>}
@@ -209,7 +209,7 @@ export const AddManualProductForm: React.FC<AddManualProductFormProps> = ({
 							{isSubmitting ? (
 								<>
 									<Loader2 className='size-4 mr-2 animate-spin' />
-									Ajout en cours...
+									Ajout…
 								</>
 							) : (
 								'Ajouter le produit'

@@ -269,7 +269,7 @@ describe('InvoiceService', () => {
           totalPrice: 4.5,
           confidence: 0.93,
           category: 'fruits-et-legumes',
-          storageLocation: 'Fruitier',
+          storageLocation: 'Fruits et légumes',
         },
       ],
     });
@@ -363,7 +363,7 @@ describe('InvoiceService', () => {
           invoiceId: 'invoice-1',
           detectedName: 'Pommes',
           totalPrice: 4.5,
-          storageLocation: 'Fruitier',
+          storageLocation: 'Fruits et légumes',
           externalProductProvider: 'openfoodfacts',
           externalProductStatus: 'FOUND',
         }),

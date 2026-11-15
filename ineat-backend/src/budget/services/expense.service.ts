@@ -120,7 +120,7 @@ export class ExpenseService {
         expense: null,
         budgetId,
         budgetUpdated: false,
-        message: `Produit "${data.productName}" ajouté sans impact sur le budget (prix non renseigné)`,
+        message: `« ${data.productName} » ajouté. Sans prix, il ne compte pas dans votre budget`,
       };
     }
 
@@ -145,7 +145,7 @@ export class ExpenseService {
         expense,
         budgetId,
         budgetUpdated: true,
-        message: `Dépense de ${data.amount.toFixed(2)}€ ajoutée au budget pour "${data.productName}"`,
+        message: `${data.amount.toFixed(2).replace('.', ',')}\u00A0€ ajoutés à votre budget pour « ${data.productName} »`,
       };
     }
 

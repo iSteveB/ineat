@@ -17,9 +17,16 @@ export interface ShelfLifeRule {
 export const STORAGE_ALIASES: Record<StorageGroup, string[]> = {
 	fridge: ['frigo', 'refrigerateur', 'réfrigérateur', 'refrigerator'],
 	freezer: ['congelateur', 'congélateur', 'freezer'],
-	pantry: ['placard', 'pantry', 'epicerie', 'épicerie'],
+	pantry: ['placard', 'garde-manger', 'pantry', 'epicerie', 'épicerie'],
 	cellar: ['cellier', 'cave', 'cellar'],
-	ambient: ['plan-de-travail', 'plan de travail', 'ambient'],
+	ambient: [
+		'fruits et légumes',
+		'fruits et legumes',
+		'fruitier',
+		'plan-de-travail',
+		'plan de travail',
+		'ambient',
+	],
 	other: ['autre', 'other'],
 };
 

@@ -19,7 +19,7 @@ export const ProductSearchBar: React.FC<ProductSearchBarProps> = ({
 	onSearch,
 	onClear,
 	isLoading = false,
-	placeholder = 'Rechercher un produit (nom, marque, code-barres)...',
+	placeholder = 'Nom, marque ou code-barres',
 	autoFocus = true,
 	className,
 	minSearchLength = 2,

@@ -42,7 +42,7 @@ export const InventoryItemSchema = z
 		storageLocation: nullableOptional(
 			z
 				.string()
-				.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères'),
+				.max(50, '50 caractères maximum pour le lieu de stockage'),
 		),
 		notes: nullableOptional(MediumTextSchema),
 		isFavorite: z.boolean().default(false),
@@ -84,11 +84,11 @@ export const AddInventoryItemSchema = z
 		// Informations produit (si nouveau produit)
 		name: z
 			.string()
-			.min(1, 'Le nom du produit est obligatoire')
-			.max(100, 'Le nom ne peut pas dépasser 100 caractères'),
+			.min(1, 'Indiquez le nom du produit')
+			.max(100, '100 caractères maximum pour le nom'),
 		brand: z
 			.string()
-			.max(50, 'La marque ne peut pas dépasser 50 caractères')
+			.max(50, '50 caractères maximum pour la marque')
 			.optional(),
 		barcode: z
 			.string()
@@ -97,7 +97,7 @@ export const AddInventoryItemSchema = z
 				'Le code-barres doit contenir entre 8 et 13 chiffres',
 			)
 			.optional(),
-		category: z.string().min(1, 'La catégorie est obligatoire'), // Slug de la catégorie
+		category: z.string().min(1, 'Choisissez une catégorie'), // Slug de la catégorie
 
 		// Scores nutritionnels et environnementaux
 		nutriscore: z.enum(['A', 'B', 'C', 'D', 'E']).optional(),
@@ -136,12 +136,12 @@ export const AddInventoryItemSchema = z
 			const now = new Date();
 			now.setHours(23, 59, 59, 999);
 			return parsed <= now;
-		}, "La date d'achat ne peut pas être dans le futur"),
+		}, 'Choisissez une date d’achat passée ou aujourd’hui'),
 		expiryDate: DateInputSchema.optional(),
 		purchasePrice: PriceSchema.optional(),
 		storageLocation: z
 			.string()
-			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
+			.max(50, '50 caractères maximum pour le lieu de stockage')
 			.optional(),
 		notes: MediumTextSchema.optional(),
 	})
@@ -156,7 +156,7 @@ export const AddInventoryItemSchema = z
 			return true;
 		},
 		{
-			message: "La date de péremption doit être postérieure à la date d'achat",
+			message: 'Choisissez une date de péremption après la date d’achat',
 			path: ['expiryDate'],
 		},
 	);
@@ -173,12 +173,12 @@ export const AddExistingProductToInventorySchema = z
 			const now = new Date();
 			now.setHours(23, 59, 59, 999);
 			return parsed <= now;
-		}, "La date d'achat ne peut pas être dans le futur"),
+		}, 'Choisissez une date d’achat passée ou aujourd’hui'),
 		expiryDate: DateInputSchema.optional(),
 		purchasePrice: PriceSchema.optional(),
 		storageLocation: z
 			.string()
-			.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
+			.max(50, '50 caractères maximum pour le lieu de stockage')
 			.optional(),
 		notes: MediumTextSchema.optional(),
 	})
@@ -192,7 +192,7 @@ export const AddExistingProductToInventorySchema = z
 			return true;
 		},
 		{
-			message: "La date de péremption doit être postérieure à la date d'achat",
+			message: 'Choisissez une date de péremption après la date d’achat',
 			path: ['expiryDate'],
 		},
 	);
@@ -211,12 +211,12 @@ export const UpdateInventoryItemSchema = z.object({
 		const now = new Date();
 		now.setHours(23, 59, 59, 999);
 		return parsed <= now;
-	}, "La date d'achat ne peut pas être dans le futur").optional(),
+	}, 'Choisissez une date d’achat passée ou aujourd’hui').optional(),
 	purchasePrice: PriceSchema.optional(),
 	unitType: z.enum(['KG', 'G', 'L', 'ML', 'UNIT']).optional(),
 	storageLocation: z
 		.string()
-		.max(50, 'Le lieu de stockage ne peut pas dépasser 50 caractères')
+		.max(50, '50 caractères maximum pour le lieu de stockage')
 		.optional(),
 	notes: MediumTextSchema.optional(),
 });
@@ -227,7 +227,7 @@ export const ConsumeInventoryItemSchema = z.object({
 	quantityConsumed: QuantitySchema,
 	notes: z
 		.string()
-		.max(200, 'Les notes ne peuvent pas dépasser 200 caractères')
+		.max(200, '200 caractères maximum pour les notes')
 		.optional(),
 });
 export type ConsumeInventoryItemData = z.infer<

@@ -65,7 +65,7 @@ const AddManualProductPage: React.FC = () => {
 			? result.budgetInfo.remainingBudget !== undefined
 				? `Budget restant : ${formatCurrency(result.budgetInfo.remainingBudget)}`
 				: 'Dépense ajoutée au budget'
-			: "Aucune dépense n'a été créée";
+			: 'Sans prix, ce produit ne compte pas dans votre budget';
 
 		switch (result.type) {
 			case 'success':
@@ -99,9 +99,7 @@ const AddManualProductPage: React.FC = () => {
 	): void => {
 		toast.error(
 			error.message ||
-				`Erreur lors de l'ajout${
-					productName ? ` de ${productName}` : ' du produit'
-				}`
+				`Impossible d’ajouter ${productName ? `« ${productName} »` : 'le produit'}. Réessayez dans un instant.`
 		);
 	};
 
@@ -140,7 +138,7 @@ const AddManualProductPage: React.FC = () => {
 			setSearchResults(results);
 		} catch (error) {
 			console.error('Erreur lors de la recherche:', error);
-			toast.error('Erreur lors de la recherche');
+			toast.error('La recherche n’a pas abouti. Réessayez dans un instant.');
 			setSearchResults([]);
 		} finally {
 			setIsSearching(false);
@@ -329,7 +327,7 @@ const AddManualProductPage: React.FC = () => {
 					{enrichedProductData && (
 						<Alert variant='info' role='status'>
 							<Star aria-hidden='true' />
-							<AlertTitle>Données Open Food Facts trouvées</AlertTitle>
+							<AlertTitle>Produit trouvé dans notre base</AlertTitle>
 							<AlertDescription>
 								Le formulaire est pré-rempli avec les informations disponibles (
 								{Math.round(enrichedProductData.quality.completeness * 100)} % complètes).

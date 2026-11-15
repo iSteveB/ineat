@@ -79,7 +79,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 	const handleScannerError = useCallback(
 		(err: unknown): void => {
 			const errorMessage =
-				err instanceof Error ? err.message : 'Erreur inconnue';
+				err instanceof Error ? err.message : '';
 
 			let userFriendlyMessage: string;
 
@@ -88,14 +88,14 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 				errorMessage.includes('NotAllowedError')
 			) {
 				userFriendlyMessage =
-					"Accès caméra refusé. Veuillez autoriser l'accès dans les paramètres de votre navigateur.";
+					'InEat n’a pas accès à la caméra. Autorisez-la dans les réglages de votre navigateur, ou saisissez le code-barres.';
 			} else if (errorMessage.includes('Requested device not found')) {
-				userFriendlyMessage = 'Aucune caméra trouvée sur cet appareil.';
+				userFriendlyMessage = 'Aucune caméra détectée. Saisissez le code-barres à la main.';
 			} else if (errorMessage.includes('NotSupportedError')) {
 				userFriendlyMessage =
-					'Votre navigateur ne supporte pas cette fonctionnalité.';
+					'Votre navigateur ne permet pas de scanner. Saisissez le code-barres à la main.';
 			} else {
-				userFriendlyMessage = `Erreur du scanner : ${errorMessage}`;
+				userFriendlyMessage = 'Le scanner n’a pas démarré. Réessayez ou saisissez le code-barres.';
 			}
 
 			setError(userFriendlyMessage);
@@ -128,7 +128,7 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 				// Rechercher dans OpenFoodFacts avec données enrichies
 				searchByBarcode(barcode).catch((err: unknown) => {
 					console.error('Erreur recherche OpenFoodFacts:', err);
-					onError?.('Erreur lors de la recherche du produit');
+					onError?.('La recherche du produit n’a pas abouti. Réessayez.');
 				});
 			} else if (scanError && !(scanError instanceof NotFoundException)) {
 				console.error('Erreur scan:', scanError);
@@ -346,11 +346,11 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({
 									)}
 									<span>
 										{state === 'initializing' &&
-											'Autorisation et lancement du scan...'}
+											'Lancement de la caméra…'}
 										{state === 'scanning' &&
 											'Gardez le téléphone stable quelques secondes.'}
 										{state === 'searching' &&
-											'Recherche dans OpenFoodFacts...'}
+											'Recherche du produit…'}
 									</span>
 								</div>
 							</div>

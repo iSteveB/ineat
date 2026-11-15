@@ -53,25 +53,25 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 		{ 
 			key: 'energy' as keyof NutritionalData, 
 			label: 'Énergie (kcal)', 
-			placeholder: 'Ex: 245',
+			placeholder: 'Ex. : 245',
 			step: '1'
 		},
 		{ 
 			key: 'proteins' as keyof NutritionalData, 
 			label: 'Protéines (g)', 
-			placeholder: 'Ex: 12.5',
+			placeholder: 'Ex. : 12.5',
 			step: '0.1'
 		},
 		{ 
 			key: 'carbohydrates' as keyof NutritionalData, 
 			label: 'Glucides (g)', 
-			placeholder: 'Ex: 58.7',
+			placeholder: 'Ex. : 58.7',
 			step: '0.1'
 		},
 		{ 
 			key: 'fats' as keyof NutritionalData, 
 			label: 'Lipides (g)', 
-			placeholder: 'Ex: 3.2',
+			placeholder: 'Ex. : 3.2',
 			step: '0.1'
 		},
 	];
@@ -80,25 +80,25 @@ export const NutritionalInfoSection: React.FC<NutritionalInfoSectionProps> = ({
 		{ 
 			key: 'sugars' as keyof NutritionalData, 
 			label: 'dont Sucres (g)', 
-			placeholder: 'Ex: 2.1',
+			placeholder: 'Ex. : 2.1',
 			step: '0.1'
 		},
 		{ 
 			key: 'fiber' as keyof NutritionalData, 
 			label: 'Fibres (g)', 
-			placeholder: 'Ex: 1.8',
+			placeholder: 'Ex. : 1.8',
 			step: '0.1'
 		},
 		{ 
 			key: 'salt' as keyof NutritionalData, 
 			label: 'Sel (g)', 
-			placeholder: 'Ex: 0.89',
+			placeholder: 'Ex. : 0.89',
 			step: '0.01'
 		},
 		{ 
 			key: 'saturatedFats' as keyof NutritionalData, 
 			label: 'Graisses sat. (g)', 
-			placeholder: 'Ex: 0.7',
+			placeholder: 'Ex. : 0.7',
 			step: '0.1'
 		},
 	];

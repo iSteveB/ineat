@@ -19,12 +19,48 @@ export const STORAGE_LOCATION_OPTIONS = [
 	'Congélateur',
 	'Placard',
 	'Cave',
-	'Garde-manger',
-	'Fruitier',
+	'Fruits et légumes',
 	'Autre',
 ] as const;
 
 export type StorageLocationOption = typeof STORAGE_LOCATION_OPTIONS[number];
+
+export const DEFAULT_STORAGE_LOCATION: StorageLocationOption = 'Placard';
+
+// Anciennes valeurs encore présentes en base (codes en minuscules, libellés retirés)
+const LEGACY_STORAGE_LOCATIONS: Record<string, StorageLocationOption> = {
+	refrigerateur: 'Réfrigérateur',
+	congelateur: 'Congélateur',
+	placard: 'Placard',
+	'garde-manger': 'Placard',
+	cellier: 'Cave',
+	cave: 'Cave',
+	fruitier: 'Fruits et légumes',
+	autre: 'Autre',
+};
+
+const normalizeKey = (value: string): string =>
+	value
+		.trim()
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '');
+
+/**
+ * Ramène une valeur de lieu de stockage (actuelle ou ancienne) à un libellé de la liste.
+ */
+export const normalizeStorageLocation = (
+	value: string | null | undefined
+): StorageLocationOption | undefined => {
+	if (!value) return undefined;
+	const exact = STORAGE_LOCATION_OPTIONS.find((option) => option === value);
+	if (exact) return exact;
+	const key = normalizeKey(value);
+	const byLabel = STORAGE_LOCATION_OPTIONS.find(
+		(option) => normalizeKey(option) === key
+	);
+	return byLabel ?? LEGACY_STORAGE_LOCATIONS[key];
+};
 
 // ===== OPTIONS DES SCORES NUTRITIONNELS =====
 

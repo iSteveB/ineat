@@ -9,6 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 import { Euro } from 'lucide-react';
 
 export interface ProductExtrasData {
@@ -24,19 +25,11 @@ interface ProductExtrasSectionProps {
 	readonly?: boolean;
 	showTitle?: boolean;
 	errors?: Partial<Record<keyof ProductExtrasData, string>>;
-	storageLocationOptions?: string[];
+	storageLocationOptions?: readonly string[];
 	className?: string;
 }
 
-const DEFAULT_STORAGE_LOCATION_OPTIONS = [
-	'Réfrigérateur',
-	'Congélateur',
-	'Placard',
-	'Cave',
-	'Garde-manger',
-	'Fruitier',
-	'Autre',
-];
+const DEFAULT_STORAGE_LOCATION_OPTIONS: readonly string[] = STORAGE_LOCATION_OPTIONS;
 
 export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 	values,
@@ -172,7 +165,7 @@ export const ProductExtraSection: React.FC<ProductExtrasSectionProps> = ({
 						onChange={(e) =>
 							handleFieldChange('notes', e.target.value)
 						}
-						placeholder='Ajoutez une note sur ce produit...'
+						placeholder='Ex. : entamé, à finir vite'
 						rows={3}
 						className={getInputClassName('notes')}
 						disabled={isFieldDisabled}

@@ -20,7 +20,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 	onProductNotFound,
 	onError,
 	disabled = false,
-	placeholder = 'Saisissez le code-barre (8-13 chiffres)',
+	placeholder = 'Code-barres (8 à 13 chiffres)',
 	className = '',
 }) => {
 	const [barcode, setBarcode] = useState<string>('');
@@ -43,15 +43,15 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 		}
 
 		if (value.length < 8) {
-			return 'Le code-barre doit contenir au moins 8 chiffres';
+			return 'Un code-barres compte au moins 8 chiffres';
 		}
 
 		if (value.length > 13) {
-			return 'Le code-barre ne peut pas contenir plus de 13 chiffres';
+			return 'Un code-barres compte 13 chiffres au maximum';
 		}
 
 		if (!OFF_UTILS.isValidBarcode(value)) {
-			return 'Le code-barre ne doit contenir que des chiffres';
+			return 'Saisissez uniquement des chiffres';
 		}
 
 		return null; // Valide
@@ -90,7 +90,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 			}
 
 			if (trimmedBarcode.length === 0) {
-				setValidationError('Veuillez saisir un code-barre');
+				setValidationError('Saisissez le code-barres');
 				return;
 			}
 
@@ -105,7 +105,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 				const errorMessage =
 					err instanceof Error
 						? err.message
-						: 'Erreur lors de la recherche';
+						: 'La recherche n’a pas abouti. Réessayez.';
 				onError?.(errorMessage);
 			}
 		},
@@ -245,7 +245,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 					{loading ? (
 						<>
 							<Loader2 className='size-4 mr-2 animate-spin' />
-							Recherche en cours...
+							Recherche…
 						</>
 					) : (
 						<>
@@ -262,7 +262,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 					• Codes-barres acceptés : EAN-8 (8 chiffres) ou EAN-13 (13
 					chiffres)
 				</p>
-				<p>• La recherche se fait dans la base OpenFoodFacts</p>
+				<p>• Les produits viennent de la base collaborative Open Food Facts</p>
 				{barcode.length > 0 && !validationError && (
 					<p className='text-accent-700'>
 						• Code-barre valide : {barcode} ({barcode.length}{' '}
@@ -287,8 +287,7 @@ export const ManualBarcodeInput: React.FC<ManualBarcodeInputProps> = ({
 
 					{product.quality.completeness < 0.7 && (
 						<p className='text-xs text-neutral-600 mt-1'>
-							Données partielles - certaines informations peuvent
-							être manquantes
+							Fiche incomplète : vérifiez les informations avant d’ajouter
 						</p>
 					)}
 				</div>

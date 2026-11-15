@@ -19,7 +19,7 @@ export class MockInvoiceAnalysisProvider implements InvoiceAnalysisProvider {
         totalPrice: 4.98,
         confidence: 0.94,
         category: 'fruits-et-legumes',
-        storageLocation: 'Fruitier',
+        storageLocation: 'Fruits et légumes',
         suggestedEans: [],
       },
       {

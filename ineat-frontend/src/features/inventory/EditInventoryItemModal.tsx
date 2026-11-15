@@ -20,6 +20,7 @@ import {
 import { Loader2, Package, Calendar, MapPin, FileText } from 'lucide-react';
 import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import { normalizeStorageLocation, STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 
 interface EditInventoryItemModalProps {
 	item: InventoryItemWithStatus | null;
@@ -29,15 +30,6 @@ interface EditInventoryItemModalProps {
 	isSubmitting?: boolean;
 }
 
-// Lieux de stockage prédéfinis
-const STORAGE_LOCATIONS = [
-	{ value: 'refrigerateur', label: 'Réfrigérateur' },
-	{ value: 'congelateur', label: 'Congélateur' },
-	{ value: 'placard', label: 'Placard' },
-	{ value: 'cellier', label: 'Cellier' },
-	{ value: 'cave', label: 'Cave' },
-	{ value: 'autre', label: 'Autre' },
-];
 
 // Fonction pour formater une date au format yyyy-MM-dd
 const formatDate = (dateString: string | undefined): string => {
@@ -73,7 +65,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 	useEffect(() => {
 		if (item) {
 			setQuantity(item.quantity);
-			setStorageLocation(item.storageLocation || '');
+			setStorageLocation(normalizeStorageLocation(item.storageLocation) ?? '');
 			setExpiryDate(formatDate(item.expiryDate));
 			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
 			setPurchaseDate(formatDate(item.purchaseDate));
@@ -85,7 +77,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 	useEffect(() => {
 		if (!isOpen && item) {
 			setQuantity(item.quantity);
-			setStorageLocation(item.storageLocation || '');
+			setStorageLocation(normalizeStorageLocation(item.storageLocation) ?? '');
 			setExpiryDate(formatDate(item.expiryDate));
 			setExpiryDateSource(item.expiryDateSource || 'MANUAL');
 			setPurchaseDate(formatDate(item.purchaseDate));
@@ -204,9 +196,9 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 								<SelectValue placeholder='Sélectionner un lieu' />
 							</SelectTrigger>
 							<SelectContent className='bg-neutral-50'>
-								{STORAGE_LOCATIONS.map((location) => (
-									<SelectItem key={location.value} value={location.value}>
-										{location.label}
+								{STORAGE_LOCATION_OPTIONS.map((location) => (
+									<SelectItem key={location} value={location}>
+										{location}
 									</SelectItem>
 								))}
 							</SelectContent>

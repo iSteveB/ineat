@@ -233,9 +233,9 @@ export class InventoryController {
       await this.inventoryService.addManualProduct(req.user.id, addProductDto);
 
     // Construire le message principal basé sur l'impact budgétaire
-    let mainMessage = "Produit ajouté à l'inventaire";
+    let mainMessage = 'Produit ajouté à votre stock';
     if (result.budgetImpact.expenseCreated && addProductDto.purchasePrice) {
-      mainMessage = `Produit ajouté et ${addProductDto.purchasePrice.toFixed(2)}€ déduit du budget`;
+      mainMessage = `Produit ajouté, ${addProductDto.purchasePrice.toFixed(2).replace('.', ',')}\u00A0€ comptés dans votre budget`;
     }
 
     return {
@@ -375,9 +375,9 @@ export class InventoryController {
       );
 
     // Construire le message principal basé sur l'impact budgétaire
-    let mainMessage = "Produit ajouté à l'inventaire";
+    let mainMessage = 'Produit ajouté à votre stock';
     if (result.budgetImpact.expenseCreated && quickAddDto.purchasePrice) {
-      mainMessage = `Produit ajouté et ${quickAddDto.purchasePrice.toFixed(2)}€ déduit du budget`;
+      mainMessage = `Produit ajouté, ${quickAddDto.purchasePrice.toFixed(2).replace('.', ',')}\u00A0€ comptés dans votre budget`;
     }
 
     return {

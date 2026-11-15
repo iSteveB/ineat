@@ -84,7 +84,7 @@ describe('ExpenseService', () => {
       expense,
       budgetId: 'budget-february',
       budgetUpdated: true,
-      message: 'Dépense de 12.50€ ajoutée au budget pour "Pommes"',
+      message: '12,50\u00A0€ ajoutés à votre budget pour « Pommes »',
     });
   });
 

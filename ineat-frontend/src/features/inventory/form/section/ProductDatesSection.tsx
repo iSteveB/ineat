@@ -71,7 +71,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 		const expiryDate = new Date(values.expiryDate);
 
 		if (expiryDate <= purchaseDate) {
-			return "La date de péremption doit être postérieure à la date d'achat";
+			return 'Choisissez une date de péremption après la date d’achat';
 		}
 
 		return null;

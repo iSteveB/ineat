@@ -212,7 +212,7 @@ export const COMMON_STORAGE_LOCATIONS = [
   'Congélateur',
   'Placard',
   'Cave',
-  'Garage',
+  'Fruits et légumes',
   'Autre',
 ] as const;
 

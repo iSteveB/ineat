@@ -26,6 +26,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { ProductSearchResult } from '@/services/inventoryService';
 import ScoreBadge from '@/components/common/ScoreBadge';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
+import { DEFAULT_STORAGE_LOCATION, STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
 
 // NOUVEAU: Type spécifique pour le QuickAddForm avec category
 export interface QuickAddFormDataWithCategory {
@@ -45,15 +46,6 @@ interface QuickAddFormProps {
 	isSubmitting?: boolean;
 }
 
-// Lieux de stockage prédéfinis
-const STORAGE_LOCATIONS = [
-	{ value: 'refrigerateur', label: 'Réfrigérateur' },
-	{ value: 'congelateur', label: 'Congélateur' },
-	{ value: 'placard', label: 'Placard' },
-	{ value: 'cellier', label: 'Cellier' },
-	{ value: 'cave', label: 'Cave' },
-	{ value: 'autre', label: 'Autre' },
-];
 
 // Fonction pour formater une date au format yyyy-MM-dd
 const formatDate = (date: Date): string => {
@@ -82,7 +74,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 		'MANUAL' | 'ESTIMATED'
 	>('ESTIMATED');
 	const [purchasePrice, setPurchasePrice] = useState('');
-	const [storageLocation, setStorageLocation] = useState('placard');
+	const [storageLocation, setStorageLocation] = useState<string>(DEFAULT_STORAGE_LOCATION);
 	const [notes, setNotes] = useState('');
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -143,22 +135,22 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 
 		const quantityNum = parseFloat(quantity);
 		if (!quantity || isNaN(quantityNum) || quantityNum <= 0) {
-			newErrors.quantity = 'La quantité doit être supérieure à 0';
+			newErrors.quantity = 'Indiquez une quantité supérieure à 0';
 		}
 
 		if (!category) {
-			newErrors.category = 'La catégorie est obligatoire';
+			newErrors.category = 'Choisissez une catégorie';
 		}
 
 		if (!purchaseDate) {
-			newErrors.purchaseDate = "La date d'achat est obligatoire";
+			newErrors.purchaseDate = 'Indiquez la date d’achat';
 		}
 
 		if (
 			purchasePrice &&
 			(isNaN(parseFloat(purchasePrice)) || parseFloat(purchasePrice) < 0)
 		) {
-			newErrors.purchasePrice = 'Le prix doit être un nombre positif';
+			newErrors.purchasePrice = 'Indiquez un prix positif, par exemple 2,50';
 		}
 
 		// Validation des dates
@@ -168,7 +160,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 
 			if (expiryDateObj <= purchaseDateObj) {
 				newErrors.expiryDate =
-					"La date de péremption doit être postérieure à la date d'achat";
+					'Choisissez une date de péremption après la date d’achat';
 			}
 		}
 
@@ -327,11 +319,11 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							<SelectContent>
 								{categoriesLoading ? (
 									<SelectItem value='loading' disabled>
-										Chargement des catégories...
+										Chargement des catégories…
 									</SelectItem>
 								) : categories.length === 0 ? (
 									<SelectItem value='empty' disabled>
-										Aucune catégorie disponible
+										Catégories indisponibles pour le moment
 									</SelectItem>
 								) : (
 									categories.map((cat) => (
@@ -365,9 +357,9 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								{STORAGE_LOCATIONS.map((location) => (
-									<SelectItem key={location.value} value={location.value}>
-										{location.label}
+								{STORAGE_LOCATION_OPTIONS.map((location) => (
+									<SelectItem key={location} value={location}>
+										{location}
 									</SelectItem>
 								))}
 							</SelectContent>
@@ -453,7 +445,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 							<p className='text-xs text-danger-700'>{errors.purchasePrice}</p>
 						)}
 						<p className='text-xs text-neutral-600'>
-							Optionnel - nécessaire pour le suivi budgétaire
+							Facultatif, sert au suivi de votre budget
 						</p>
 					</div>
 				</div>
@@ -464,7 +456,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 					<Textarea
 						id='notes'
 						rows={3}
-						placeholder='Informations complémentaires...'
+						placeholder='Ex. : entamé, à finir vite'
 						value={notes}
 						onChange={(e) => setNotes(e.target.value)}
 						disabled={isSubmitting}
@@ -491,12 +483,12 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						{isSubmitting ? (
 							<>
 								<Loader2 className='size-4 mr-2 animate-spin' />
-								Ajout en cours...
+								Ajout…
 							</>
 						) : (
 							<>
 								<Save className='size-4 mr-2' />
-								Ajouter à l'inventaire
+								Ajouter au stock
 							</>
 						)}
 					</Button>

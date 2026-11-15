@@ -55,8 +55,7 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 							Aucun produit ne correspond à "{searchQuery}"
 						</p>
 						<p className='text-sm text-neutral-600 mt-2'>
-							Vous pouvez créer un nouveau produit en utilisant le
-							formulaire complet.
+							Vérifiez l’orthographe ou créez le produit en quelques secondes.
 						</p>
 					</div>
 				</div>
@@ -158,7 +157,7 @@ export const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
 					{results.length >= 10 && (
 						<p className='text-xs text-neutral-600 mt-1'>
 							<AlertCircle className='inline size-3 mr-1' />
-							Affinez votre recherche pour voir plus de résultats
+							Précisez votre recherche pour voir d’autres résultats
 						</p>
 					)}
 				</div>

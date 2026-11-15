@@ -83,7 +83,7 @@ describe('normalizeOpenAIInvoiceAnalysis', () => {
           productCode: '3564700012345',
           selectedEan: '3564700012345',
           category: 'fruits-et-legumes',
-          storageLocation: 'Fruitier',
+          storageLocation: 'Fruits et légumes',
           suggestedEans: ['3564700012345'],
         },
       ],

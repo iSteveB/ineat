@@ -183,11 +183,11 @@ const getReviewStatus = (item: InvoiceItem) => {
 	}
 
 	if (item.externalProductStatus === 'FOUND' && item.confidence >= 0.75) {
-		return { label: 'Enrichi automatiquement', variant: 'success' as const };
+		return { label: 'Reconnu', variant: 'success' as const };
 	}
 
 	if (item.productId || item.product) {
-		return { label: 'Produit InEat existant', variant: 'success' as const };
+		return { label: 'Déjà connu', variant: 'success' as const };
 	}
 
 	if (item.externalProductStatus === 'ERROR') {
@@ -199,7 +199,7 @@ const getReviewStatus = (item: InvoiceItem) => {
 
 	if (canChooseInvoiceProductCreation(item)) {
 		if (!item.productFormConfirmed) {
-			return { label: 'Choix requis', variant: 'warning' as const };
+			return { label: 'À choisir', variant: 'warning' as const };
 		}
 
 		return {
@@ -218,7 +218,7 @@ const getReviewStatus = (item: InvoiceItem) => {
 		};
 	}
 
-	return { label: 'Informations incomplètes', variant: 'warning' as const };
+	return { label: 'À compléter', variant: 'warning' as const };
 };
 
 const formatProductScore = (score?: string | null): string =>
@@ -382,7 +382,7 @@ function DriveInvoiceImportPage() {
 				search: { invoiceId: importedInvoice.id },
 				replace: true
 			});
-			toast.success('Facture reçue, analyse lancée');
+			toast.success('Facture reçue, l’analyse commence');
 			void getProfile().catch(() => undefined);
 		},
 		onError: (error: Error) => {
@@ -436,7 +436,7 @@ function DriveInvoiceImportPage() {
 					[updatedItem.id]: 'saved'
 				}));
 			}
-			if (!variables.autosave) toast.success('Ligne mise à jour');
+			if (!variables.autosave) toast.success('Ligne enregistrée');
 		},
 		onError: (error: Error, variables) => {
 			setSaveStates((current) => ({
@@ -501,7 +501,7 @@ function DriveInvoiceImportPage() {
 				}));
 			}
 			setSaveStates((current) => ({ ...current, [itemId]: 'saved' }));
-			toast.error(`Le choix n’a pas été enregistré : ${error.message}`);
+			toast.error('Votre choix n’a pas été enregistré', { description: error.message });
 		}
 	});
 
@@ -526,9 +526,9 @@ function DriveInvoiceImportPage() {
 				[updatedItem.id]: createDraft(updatedItem)
 			}));
 			if (updatedItem.externalProductStatus === 'ERROR') {
-				toast.error('OpenFoodFacts reste indisponible');
+				toast.error('Notre base de produits ne répond pas. Réessayez plus tard.');
 			} else {
-				toast.success('Recherche OpenFoodFacts terminée');
+				toast.success('Recherche terminée');
 			}
 		},
 		onError: (error: Error) => toast.error(error.message)
@@ -551,7 +551,11 @@ function DriveInvoiceImportPage() {
 
 			if (remainingCount > 0) {
 				await invoiceQuery.refetch();
-				toast.success('Lignes fiables ajoutées. Vérifiez les exceptions.');
+				const addedCount = validatedIds?.length ?? selectedItems.length;
+				const plural = addedCount > 1 ? 's' : '';
+				toast.success(
+					`${addedCount} produit${plural} ajouté${plural}. ${remainingCount} ${remainingCount > 1 ? 'restent' : 'reste'} à vérifier.`
+				);
 				return;
 			}
 
@@ -563,7 +567,7 @@ function DriveInvoiceImportPage() {
 				queryClient.invalidateQueries({ queryKey: ['budget', 'current'] }),
 				queryClient.invalidateQueries({ queryKey: ['budget', 'stats'] })
 			]);
-			toast.success('Produits ajoutés');
+			toast.success('Produits ajoutés à votre stock');
 		},
 		onError: (error: Error) => toast.error(error.message)
 	});
@@ -585,10 +589,10 @@ function DriveInvoiceImportPage() {
 		onSuccess: (retriedInvoice) => {
 			setInvoice(retriedInvoice);
 			queryClient.setQueryData(['invoice', retriedInvoice.id], retriedInvoice);
-			toast.success('Nouvelle tentative lancée');
+			toast.success('Nouvelle analyse lancée');
 		},
 		onError: () => {
-			toast.error("L’analyse ne peut pas être relancée pour le moment.");
+			toast.error('Impossible de relancer l’analyse pour le moment. Réessayez dans quelques minutes.');
 		}
 	});
 
@@ -812,8 +816,8 @@ function DriveInvoiceImportPage() {
 								</h2>
 								<p className="mt-1 text-sm text-neutral-600">
 									{hasDriveAccess
-										? 'Quota Drive atteint pour la période en cours.'
-										: 'Cette action nécessite Premium.'}
+										? 'Vous avez utilisé tous vos imports du mois.'
+										: 'L’import de factures Drive est réservé à Premium.'}
 								</p>
 							</div>
 							<Button onClick={() => navigate({ to: '/app/subscription' })}>
@@ -837,7 +841,7 @@ function DriveInvoiceImportPage() {
 									<FileText className="size-8 text-accent-700" aria-hidden="true" />
 									<div className="max-w-full">
 										<p className="text-base font-medium text-neutral-900">
-											Analyser ce fichier ?
+											Analyser ce fichier&nbsp;?
 										</p>
 										<p className="mt-1 max-w-full truncate text-sm text-neutral-600">
 											{pendingInvoiceFile.name}
@@ -878,10 +882,10 @@ function DriveInvoiceImportPage() {
 										<p className="text-base font-medium text-neutral-900">
 											{importMutation.isPending
 												? 'Analyse en cours…'
-												: 'Charger un PDF'}
+												: 'Choisir un PDF'}
 										</p>
 										<p className="mt-1 text-sm text-neutral-600">
-											PDF, 5 Mo max
+											PDF, 5&nbsp;Mo maximum
 										</p>
 									</div>
 									<input
@@ -971,7 +975,7 @@ function DriveInvoiceImportPage() {
 											orderedItems.filter(requiresInvoiceItemCorrection)
 												.length
 										}{' '}
-										correction(s) prioritaire(s)
+										à corriger en priorité
 									</p>
 								</div>
 								<div className="flex flex-col gap-2 sm:flex-row">
@@ -984,7 +988,7 @@ function DriveInvoiceImportPage() {
 											hasUnsavedChanges
 										}
 									>
-										Valider les {reliableItemIds.length} fiables
+										Ajouter les {reliableItemIds.length} lignes sûres
 									</Button>
 									<Button
 										onClick={() => validateMutation.mutate(undefined)}
@@ -1000,7 +1004,7 @@ function DriveInvoiceImportPage() {
 										) : (
 											<Check className="mr-2 size-4" />
 										)}
-										Valider la sélection ({selectedItems.length})
+										Ajouter la sélection ({selectedItems.length})
 									</Button>
 								</div>
 							</CardHeader>
@@ -1088,7 +1092,7 @@ function DriveInvoiceImportPage() {
 															</Badge>
 															<p className="mt-2 text-xs text-neutral-600">
 																Confiance {Math.round(item.confidence * 100)} %
-																{needsCorrection ? ' · correction requise' : ' · fiable'}
+																{needsCorrection ? ' · à corriger' : ' · sûr'}
 															</p>
 														</div>
 														<div className="grid shrink-0 grid-cols-2 gap-2 text-right sm:min-w-44">
@@ -1120,8 +1124,7 @@ function DriveInvoiceImportPage() {
 												{canChooseCreation && (
 													<div className="border-t border-neutral-100 px-4 py-3">
 														<p className="mb-2 text-xs font-medium text-neutral-700">
-															Ce produit n’a pas été trouvé dans OpenFoodFacts. Comment
-															voulez-vous l’ajouter ?
+															Ce produit n’est pas dans notre base. Comment voulez-vous l’ajouter&nbsp;?
 														</p>
 														<div
 															role="radiogroup"
@@ -1161,8 +1164,7 @@ function DriveInvoiceImportPage() {
 													!item.product && (
 														<div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 px-4 py-3">
 															<p className="text-xs text-warning-700">
-																OpenFoodFacts était indisponible. Ce produit n’est pas
-																encore considéré comme introuvable.
+																Notre base de produits n’a pas répondu. On peut retenter la recherche.
 															</p>
 															<Button
 																type="button"
@@ -1185,7 +1187,7 @@ function DriveInvoiceImportPage() {
 														{item.externalProductData && (
 															<div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
 																<p className="text-sm font-semibold text-neutral-900">
-																	Données OpenFoodFacts disponibles
+																	Produit trouvé dans notre base
 																</p>
 																<div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
 																	<div>
@@ -1208,7 +1210,7 @@ function DriveInvoiceImportPage() {
 																	</div>
 																	<div>
 																		<span className="text-neutral-600">
-																			Nutri-score
+																			Nutri-Score
 																		</span>
 																		<p className="font-medium text-neutral-900">
 																			{formatProductScore(
@@ -1218,7 +1220,7 @@ function DriveInvoiceImportPage() {
 																	</div>
 																	<div>
 																		<span className="text-neutral-600">
-																			Eco-score
+																			Eco-Score
 																		</span>
 																		<p className="font-medium text-neutral-900">
 																			{formatProductScore(
@@ -1432,7 +1434,7 @@ function DriveInvoiceImportPage() {
 																	disabled={item.validated}
 																>
 																	<SelectTrigger className="w-full">
-																		<SelectValue placeholder="Stockage" />
+																		<SelectValue placeholder="Lieu de stockage" />
 																	</SelectTrigger>
 																	<SelectContent>
 																		<SelectItem value={NO_STORAGE_VALUE}>
@@ -1453,7 +1455,7 @@ function DriveInvoiceImportPage() {
 															</div>
 															<div className="space-y-1.5">
 													<label className="flex items-center gap-1 text-xs font-medium uppercase text-neutral-600">
-														Date d'expiration
+														Date de péremption
 														{draft.expiryDateSource === 'ESTIMATED' && draft.expiryDate && (
 															<span title="Date estimée" aria-label="Date estimée">
 																<Info className="size-3.5" aria-hidden="true" />
@@ -1487,7 +1489,7 @@ function DriveInvoiceImportPage() {
 																		)
 																	}
 																	disabled={item.validated}
-																	placeholder="Optionnel"
+																	placeholder="Facultatif"
 																/>
 															</div>
 														</div>
@@ -1501,9 +1503,9 @@ function DriveInvoiceImportPage() {
 																role="status"
 															>
 																{saveState === 'saving' && 'Sauvegarde…'}
-																{saveState === 'saved' && 'Modifications sauvegardées'}
+																{saveState === 'saved' && 'Modifications enregistrées'}
 																{saveState === 'error' &&
-																	'Échec de sauvegarde · vos modifications sont conservées'}
+																	'Enregistrement impossible · vos modifications restent sur cet écran'}
 															</p>
 															<Button
 																type="button"
@@ -1584,7 +1586,7 @@ function DriveInvoiceImportPage() {
 							)}
 							<div className="flex flex-col gap-3 sm:flex-row">
 								<Button onClick={() => navigate({ to: '/app/inventory' })}>
-									Retour à l’inventaire
+									Voir mon stock
 								</Button>
 								<Button
 									variant="outline"
@@ -1681,11 +1683,11 @@ function InvoiceProcessingCard({
 					)}
 					<p className="max-w-xl text-lg font-semibold text-neutral-900">
 						{isFailed
-							? "La facture n’a pas pu être analysée. Vous pouvez relancer un import."
+							? "Nous n’avons pas réussi à lire cette facture. Relancez l’analyse ou importez un autre PDF."
 							: isUploading || (!isFetchError && !isLoading)
 								? COOKING_MESSAGES[messageIndex]
 								: isFetchError
-								? 'La mise à jour est momentanément indisponible. Le traitement continue en arrière-plan.'
+								? 'L’affichage de la progression est en pause, mais l’analyse continue en arrière-plan.'
 								: isLoading
 									? 'Récupération de la progression…'
 									: COOKING_MESSAGES[messageIndex]}
@@ -1706,7 +1708,7 @@ function InvoiceProcessingCard({
 				{!isFailed && (
 					<div className="space-y-2">
 						<div className="flex items-center justify-between text-xs text-neutral-600">
-							<span>Préparation en cours</span>
+							<span>Préparation…</span>
 							<span>{progress} %</span>
 						</div>
 						<div

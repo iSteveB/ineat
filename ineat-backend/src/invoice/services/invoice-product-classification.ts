@@ -14,8 +14,7 @@ export const INVOICE_STORAGE_LOCATIONS = [
   'Congélateur',
   'Placard',
   'Cave',
-  'Garde-manger',
-  'Fruitier',
+  'Fruits et légumes',
   'Autre',
 ] as const;
 
@@ -108,7 +107,7 @@ export function suggestInvoiceStorageLocation({
   if (normalizedCategory === 'fruits-et-legumes') {
     const normalizedName = normalize(name);
     if (REFRIGERATED_PRODUCE.test(normalizedName)) return 'Réfrigérateur';
-    if (FRUITIER_PRODUCE.test(normalizedName)) return 'Fruitier';
+    if (FRUITIER_PRODUCE.test(normalizedName)) return 'Fruits et légumes';
     return null;
   }
 

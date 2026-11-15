@@ -67,7 +67,7 @@ describe('inventory schemas', () => {
 				...validManualProduct,
 				purchaseDate: '2999-01-01',
 			}).error?.issues[0].message,
-		).toBe("La date d'achat ne peut pas être dans le futur");
+		).toBe("Choisissez une date d’achat passée ou aujourd’hui");
 
 		expect(
 			AddInventoryItemSchema.safeParse({
@@ -75,7 +75,7 @@ describe('inventory schemas', () => {
 				purchaseDate: '2026-05-10',
 				expiryDate: '2026-05-01',
 			}).error?.issues[0].message,
-		).toBe("La date de péremption doit être postérieure à la date d'achat");
+		).toBe('Choisissez une date de péremption après la date d’achat');
 	});
 
 	it('protègent aussi les ajouts rapides et mises à jour', () => {
@@ -86,7 +86,7 @@ describe('inventory schemas', () => {
 				purchaseDate: '2026-05-10',
 				expiryDate: '2026-05-01',
 			}).error?.issues[0].message,
-		).toBe("La date de péremption doit être postérieure à la date d'achat");
+		).toBe('Choisissez une date de péremption après la date d’achat');
 
 		expect(
 			UpdateInventoryItemSchema.safeParse({
