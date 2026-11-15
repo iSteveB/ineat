@@ -21,7 +21,7 @@ const AddProductPage: React.FC = () => {
 			<Button asChild variant='ghost' className='-ml-3 self-start'>
 				<Link to='/app/inventory'>
 					<ArrowLeft aria-hidden='true' />
-					Inventaire
+					Mon stock
 				</Link>
 			</Button>
 

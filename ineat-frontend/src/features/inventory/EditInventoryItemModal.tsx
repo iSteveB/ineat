@@ -21,6 +21,7 @@ import { Loader2, Package, Calendar, MapPin, FileText } from 'lucide-react';
 import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
 import { normalizeStorageLocation, STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
+import { ExpiryTypeInfo } from '@/components/common/ExpiryTypeInfo';
 
 interface EditInventoryItemModalProps {
 	item: InventoryItemWithStatus | null;
@@ -193,7 +194,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 						</Label>
 						<Select value={storageLocation} onValueChange={setStorageLocation}>
 							<SelectTrigger id='storageLocation' className='mt-1'>
-								<SelectValue placeholder='Sélectionner un lieu' />
+								<SelectValue placeholder='Choisir un lieu' />
 							</SelectTrigger>
 							<SelectContent className='bg-neutral-50'>
 								{STORAGE_LOCATION_OPTIONS.map((location) => (
@@ -210,6 +211,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 						<Label htmlFor='expiryDate' className='flex items-center gap-2'>
 							<Calendar className='size-4' aria-hidden='true' />
 							Date de péremption
+							<ExpiryTypeInfo />
 						</Label>
 						<Input
 							id='expiryDate'
@@ -245,7 +247,7 @@ export const EditInventoryItemModal: React.FC<EditInventoryItemModalProps> = ({
 							id='notes'
 							value={notes}
 							onChange={(e) => setNotes(e.target.value)}
-							placeholder='Ajoutez des notes (optionnel)'
+							placeholder='Facultatif'
 							rows={3}
 							className='mt-1 resize-none'
 						/>

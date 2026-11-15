@@ -24,7 +24,7 @@ export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({ products }
 		<WidgetCard
 			title='Ajouts récents'
 			action={
-				productsWithStatus.length > 0 ? { label: 'Inventaire', to: '/app/inventory' } : undefined
+				productsWithStatus.length > 0 ? { label: 'Stock', to: '/app/inventory' } : undefined
 			}>
 			{productsWithStatus.length > 0 ? (
 				<ul className='divide-y divide-neutral-200'>
@@ -38,7 +38,7 @@ export const RecentProductsWidget: FC<RecentProductsWidgetProps> = ({ products }
 				<div className='flex items-center gap-3 rounded-md bg-neutral-50 p-4'>
 					<Package className='size-6 shrink-0 text-neutral-600' aria-hidden='true' />
 					<div>
-						<p className='font-medium text-neutral-900'>Aucun produit récent</p>
+						<p className='font-medium text-neutral-900'>Vos derniers ajouts apparaîtront ici</p>
 						<Link
 							to='/app/inventory/add'
 							className='rounded-sm text-sm font-medium text-accent-700 underline underline-offset-4'>

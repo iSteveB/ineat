@@ -89,8 +89,8 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 		rows.push({
 			icon: CalendarX,
 			tone: 'bg-danger-50 text-danger-700',
-			title: `${expiredCount} ${plural(expiredCount, 'produit périmé', 'produits périmés')}`,
-			detail: 'À vérifier puis retirer de l’inventaire.',
+			title: `${expiredCount} ${plural(expiredCount, 'produit expiré', 'produits expirés')}`,
+			detail: 'Vérifiez l’emballage : beaucoup restent bons après une DDM.',
 		});
 	}
 	if (criticalCount > 0) {
@@ -121,8 +121,8 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 		rows.push({
 			icon: Package,
 			tone: 'bg-neutral-50 text-neutral-700',
-			title: 'Inventaire vide',
-			detail: 'Commencez par ajouter des produits.',
+			title: 'Votre frigo attend ses premières courses',
+			detail: 'Ajoutez un produit pour suivre ses dates.',
 		});
 	}
 
@@ -131,7 +131,7 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 			<WidgetCard title='État du stock'>
 				<p role='status' className='flex items-center gap-2 py-4 text-sm text-neutral-600'>
 					<Loader2 className='size-5 animate-spin text-accent-600' aria-hidden='true' />
-					Chargement de l’inventaire…
+					Chargement du stock…
 				</p>
 			</WidgetCard>
 		);
@@ -151,7 +151,7 @@ export const InventoryWidget: FC<InventoryWidgetProps> = ({
 		<WidgetCard
 			title='État du stock'
 			subtitle={`${totalProducts} ${plural(totalProducts, 'produit', 'produits')} en stock`}
-			action={{ label: 'Inventaire', to: '/app/inventory' }}>
+			action={{ label: 'Stock', to: '/app/inventory' }}>
 			<ul className='flex flex-col gap-2'>
 				{rows.map((row) => {
 					const Icon = row.icon;

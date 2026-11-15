@@ -2,6 +2,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { ExpiryTypeInfo } from '@/components/common/ExpiryTypeInfo';
 import { Info } from 'lucide-react';
 
 export interface ProductDatesData {
@@ -120,6 +121,7 @@ export const ProductDatesSection: React.FC<ProductDatesSectionProps> = ({
 							<div className='space-y-2'>
 								<Label htmlFor='expiryDate' className='flex items-center gap-1 text-neutral-900'>
 									Date de péremption
+									<ExpiryTypeInfo />
 									{showEstimatedDate && (
 										<span title='Date estimée' aria-label='Date estimée'>
 											<Info className='size-3.5' aria-hidden='true' />

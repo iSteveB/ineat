@@ -16,7 +16,7 @@ export const navigationEntries: NavigationEntry[] = [
 		isActive: (pathname) => pathname === '/app' || pathname === '/app/',
 	},
 	{
-		label: 'Inventaire',
+		label: 'Stock',
 		to: '/app/inventory',
 		icon: Package,
 		isActive: (pathname) => pathname.startsWith('/app/inventory'),

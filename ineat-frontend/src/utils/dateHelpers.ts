@@ -70,7 +70,7 @@ export const formatExpiryLabel = (
 		(targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
 	);
 
-	if (diffDays < 0) return 'Périmé';
+	if (diffDays < 0) return 'Expiré';
 	if (diffDays === 0) return "Aujourd'hui";
 	if (diffDays === 1) return 'Demain';
 	if (diffDays <= 30) return `Dans ${diffDays} jours`;

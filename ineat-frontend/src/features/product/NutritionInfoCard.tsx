@@ -62,7 +62,7 @@ export const NutritionInfoCard: React.FC<NutritionInfoCardProps> = ({
 		return (
 			<WidgetCard title='Valeurs nutritionnelles' className={className}>
 				<p className='text-sm text-neutral-600'>
-					Aucune information nutritionnelle disponible pour ce produit.
+					Pas de valeurs nutritionnelles pour ce produit.
 				</p>
 			</WidgetCard>
 		);

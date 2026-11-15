@@ -227,7 +227,7 @@ describe("DashboardPage", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "Impossible de charger les données du tableau de bord.",
+          "Impossible d’afficher votre tableau de bord.",
         ),
       ).toBeInTheDocument();
     });
@@ -263,7 +263,7 @@ describe("DashboardPage", () => {
       });
     });
     expect(
-      screen.queryByText("Impossible de charger les données du tableau de bord."),
+      screen.queryByText("Impossible d’afficher votre tableau de bord."),
     ).not.toBeInTheDocument();
   });
 
@@ -290,11 +290,11 @@ describe("DashboardPage", () => {
     renderDashboard();
 
     await waitFor(() => {
-      expect(screen.getByText("Inventaire vide")).toBeInTheDocument();
+      expect(screen.getByText("Votre frigo attend ses premières courses")).toBeInTheDocument();
     });
 
     expect(
-      within(screen.getByRole("region", { name: "Inventaire vide" })).getByRole(
+      within(screen.getByRole("region", { name: "Votre frigo attend ses premières courses" })).getByRole(
         "link",
         { name: "Ajouter mon premier produit" },
       ),

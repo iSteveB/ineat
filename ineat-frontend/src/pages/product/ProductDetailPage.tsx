@@ -45,6 +45,7 @@ import { InventoryItemWithStatus, UpdateInventoryItemData } from '@/schemas';
 import { getUserFacingErrorMessage } from '@/utils/errorMessages';
 import { getProductImageUrl } from '@/utils/productPresentation';
 import { formatCurrency } from '@/schemas/budget';
+import { ExpiredProductNotice } from '@/components/common/ExpiryTypeInfo';
 
 const ProductDetailPage: FC = () => {
 	const { productId } = useParams({ from: '/app/inventory/$productId' });
@@ -163,13 +164,13 @@ const ProductDetailPage: FC = () => {
 
 		try {
 			await updateInventoryItem(selectedLotId, updates);
-			toast.success('Lot mis à jour avec succès');
+			toast.success('Achat mis à jour');
 			handleCloseEditModal();
 		} catch (error) {
 			toast.error(
 				getUserFacingErrorMessage(
 					error,
-					'Impossible de mettre à jour le produit. Veuillez réessayer.',
+					'Impossible de mettre à jour le produit. Réessayez dans un instant.',
 				),
 			);
 		} finally {
@@ -184,7 +185,7 @@ const ProductDetailPage: FC = () => {
 		setIsDeleting(true);
 		try {
 			await removeInventoryItem(selectedLotId);
-			toast.success('Lot supprimé de l’inventaire');
+			toast.success('Produit retiré de votre stock');
 			if (purchaseLots.length === 1) {
 				navigate({ to: '/app/inventory' });
 			}
@@ -192,7 +193,7 @@ const ProductDetailPage: FC = () => {
 			toast.error(
 				getUserFacingErrorMessage(
 					error,
-					'Impossible de supprimer le produit. Veuillez réessayer.',
+					'Impossible de retirer le produit. Réessayez dans un instant.',
 				),
 			);
 		} finally {
@@ -218,7 +219,7 @@ const ProductDetailPage: FC = () => {
 			);
 		} catch (error) {
 			toast.error(
-				getUserFacingErrorMessage(error, 'Impossible de modifier ce favori.'),
+				getUserFacingErrorMessage(error, 'Impossible de modifier vos favoris. Réessayez dans un instant.'),
 			);
 		} finally {
 			setIsUpdatingFavorite(false);
@@ -229,7 +230,7 @@ const ProductDetailPage: FC = () => {
 		<Button asChild variant='ghost' className='-ml-3 self-start'>
 			<Link to='/app/inventory'>
 				<ArrowLeft aria-hidden='true' />
-				Inventaire
+				Mon stock
 			</Link>
 		</Button>
 	);
@@ -245,7 +246,7 @@ const ProductDetailPage: FC = () => {
 					</span>
 					<h1 className='type-h2 text-neutral-900'>Produit introuvable</h1>
 					<p className='max-w-md text-neutral-700'>
-						Ce produit n'existe pas ou a été supprimé de votre inventaire.
+						Il a peut-être déjà été retiré de votre stock.
 					</p>
 				</div>
 			</div>
@@ -382,6 +383,16 @@ const ProductDetailPage: FC = () => {
 				</div>
 			</section>
 
+			{expiryStatus === 'EXPIRED' && nextExpiringLot && (
+				<ExpiredProductNotice
+					onKeep={() => handleOpenEditModal(nextExpiringLot.id)}
+					onRemove={() => {
+						setSelectedLotId(nextExpiringLot.id);
+						setIsConfirmingDelete(true);
+					}}
+				/>
+			)}
+
 			<div className='grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-6'>
 				<div className='flex min-w-0 flex-col gap-4 lg:gap-6'>
 					{/* ===== SCORES ===== */}
@@ -434,7 +445,7 @@ const ProductDetailPage: FC = () => {
 						title='Achats'
 						subtitle={
 							hasSeveralLots
-								? `${purchaseLots.length} lots · ${formatUnit(inventoryItem.quantity, product.unitType)} au total${
+								? `${purchaseLots.length} achats ·  ${formatUnit(inventoryItem.quantity, product.unitType)} au total${
 										totalPurchasePrice > 0 ? ` · ${formatCurrency(totalPurchasePrice)}` : ''
 									}`
 								: undefined
@@ -444,7 +455,7 @@ const ProductDetailPage: FC = () => {
 								<li key={lot.id} className='rounded-md border border-neutral-200 p-3'>
 									<div className='flex items-baseline justify-between gap-3'>
 										<p className='font-medium text-neutral-900'>
-											{hasSeveralLots ? `Lot ${index + 1}` : formatUnit(lot.quantity, product.unitType)}
+											{hasSeveralLots ? `Achat ${index + 1}` : formatUnit(lot.quantity, product.unitType)}
 											{hasSeveralLots && (
 												<span className='font-normal text-neutral-600'>
 													{' '}· {formatUnit(lot.quantity, product.unitType)}
@@ -522,12 +533,12 @@ const ProductDetailPage: FC = () => {
 			<AlertDialog open={isConfirmingDelete} onOpenChange={setIsConfirmingDelete}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Supprimer ce lot de {product.name} ?</AlertDialogTitle>
+						<AlertDialogTitle>Retirer cet achat de {product.name}&nbsp;?</AlertDialogTitle>
 						<AlertDialogDescription>
 							{purchaseLots.length === 1
-								? 'Il s’agit du dernier lot : le produit sera retiré de votre inventaire.'
-								: 'Seul ce lot sera retiré de votre inventaire. Les autres lots seront conservés.'}{' '}
-							Cette action est définitive.
+								? 'C’est le dernier achat de ce produit : il sera retiré de votre stock.'
+								: 'Seul cet achat sera retiré. Les autres restent dans votre stock.'}{' '}
+							Vous ne pourrez pas annuler.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -539,7 +550,7 @@ const ProductDetailPage: FC = () => {
 								event.preventDefault();
 								void handleDelete();
 							}}>
-							{isDeleting ? 'Suppression…' : 'Supprimer'}
+							{isDeleting ? 'Retrait…' : 'Retirer'}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

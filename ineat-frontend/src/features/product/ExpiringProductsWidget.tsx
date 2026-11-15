@@ -11,10 +11,10 @@ interface ExpiringProductsWidgetProps {
 }
 
 const getSubtitle = (statuses: ExpiryStatus[]): string => {
-	if (statuses.includes('EXPIRED')) return 'Certains produits sont périmés : vérifiez-les.';
+	if (statuses.includes('EXPIRED')) return 'Certains produits ont dépassé leur date : vérifiez l’emballage.';
 	if (statuses.includes('CRITICAL')) return 'À consommer en priorité.';
 	if (statuses.includes('WARNING')) return 'À prévoir dans vos prochains repas.';
-	return 'Aucune urgence pour le moment.';
+	return 'Rien d’urgent pour le moment.';
 };
 
 export const ExpiringProductsWidget: FC<ExpiringProductsWidgetProps> = ({ products }) => {
@@ -53,9 +53,9 @@ export const ExpiringProductsWidget: FC<ExpiringProductsWidgetProps> = ({ produc
 				<div className='flex items-center gap-3 rounded-md bg-success-50 p-4 text-success-700'>
 					<ShieldCheck className='size-6 shrink-0' aria-hidden='true' />
 					<div>
-						<p className='font-medium'>Tous vos produits sont frais</p>
+						<p className='font-medium'>Rien n’expire cette semaine</p>
 						<p className='text-sm text-neutral-700'>
-							Aucun produit n'expire dans les 7 prochains jours.
+							Votre frigo vous dit merci.
 						</p>
 					</div>
 				</div>

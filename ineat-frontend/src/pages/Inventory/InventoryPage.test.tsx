@@ -97,6 +97,6 @@ describe('InventoryPage favorites filter', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Favoris' }));
 
-		expect(screen.getByText('Aucun produit favori')).toBeInTheDocument();
+		expect(screen.getByText('Pas encore de favoris')).toBeInTheDocument();
 	});
 });

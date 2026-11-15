@@ -54,6 +54,7 @@ import {
 	sortInvoiceItemsForReview
 } from '@/features/invoice/invoiceReview';
 import { formatNovaScore } from '@/utils/productPresentation';
+import { ExpiryTypeInfo } from "@/components/common/ExpiryTypeInfo";
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
 	validateSearch: z.object({
@@ -1456,6 +1457,7 @@ function DriveInvoiceImportPage() {
 															<div className="space-y-1.5">
 													<label className="flex items-center gap-1 text-xs font-medium uppercase text-neutral-600">
 														Date de péremption
+														<ExpiryTypeInfo />
 														{draft.expiryDateSource === 'ESTIMATED' && draft.expiryDate && (
 															<span title="Date estimée" aria-label="Date estimée">
 																<Info className="size-3.5" aria-hidden="true" />

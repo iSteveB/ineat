@@ -27,6 +27,7 @@ import { ProductSearchResult } from '@/services/inventoryService';
 import ScoreBadge from '@/components/common/ScoreBadge';
 import { getExpirySuggestion } from '@/utils/expiryEstimation';
 import { DEFAULT_STORAGE_LOCATION, STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
+import { ExpiryTypeInfo } from '@/components/common/ExpiryTypeInfo';
 
 // NOUVEAU: Type spécifique pour le QuickAddForm avec category
 export interface QuickAddFormDataWithCategory {
@@ -396,6 +397,7 @@ export const QuickAddForm: React.FC<QuickAddFormProps> = ({
 						<Label htmlFor='expiryDate' className='flex items-center gap-1'>
 							<Calendar className='inline size-3 mr-1' />
 							Date de péremption
+							<ExpiryTypeInfo />
 							{expiryDateSource === 'ESTIMATED' && expiryDate && (
 								<span title='Date estimée' aria-label='Date estimée'>
 									<Info className='size-3.5' aria-hidden='true' />

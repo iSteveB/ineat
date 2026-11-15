@@ -44,7 +44,7 @@ describe('formatExpiryLabel', () => {
 	});
 
 	it('uses relative words for the next days', () => {
-		expect(formatExpiryLabel('2026-06-30')).toBe('Périmé');
+		expect(formatExpiryLabel('2026-06-30')).toBe('Expiré');
 		expect(formatExpiryLabel('2026-07-01')).toBe("Aujourd'hui");
 		expect(formatExpiryLabel('2026-07-02')).toBe('Demain');
 		expect(formatExpiryLabel('2026-07-04')).toBe('Dans 3 jours');

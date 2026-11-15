@@ -32,7 +32,7 @@ export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 		return (
 			<WidgetCard title='Ingrédients' className={className}>
 				<p className='text-sm text-neutral-600'>
-					La liste des ingrédients n'est pas disponible pour ce produit.
+					Pas de liste d’ingrédients pour ce produit.
 				</p>
 			</WidgetCard>
 		);
@@ -55,7 +55,7 @@ export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 					<p>
 						<span className='font-medium'>Allergènes possibles : </span>
 						{detectedAllergens.join(', ')}.{' '}
-						<span className='text-neutral-700'>Vérifiez toujours l'étiquette du produit.</span>
+						<span className='text-neutral-700'>Vérifiez toujours l’étiquette.</span>
 					</p>
 				</div>
 			)}

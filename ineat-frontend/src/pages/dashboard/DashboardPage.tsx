@@ -65,8 +65,8 @@ const goalActions: Record<PrimaryGoal, DashboardAction> = {
   EAT_BETTER: {
     title: "Mieux manger au quotidien",
     description:
-      "Consultez la qualité nutritionnelle des produits réellement présents chez vous.",
-    actionLabel: "Voir mon inventaire",
+      "Découvrez la qualité nutritionnelle des produits que vous avez chez vous.",
+    actionLabel: "Voir mon stock",
     icon: HeartPulse,
     to: "/app/inventory",
     tone: "accent",
@@ -74,7 +74,7 @@ const goalActions: Record<PrimaryGoal, DashboardAction> = {
   FIND_MEAL_IDEAS: {
     title: "Que cuisiner aujourd’hui ?",
     description:
-      "Générez des idées de repas à partir des produits de votre inventaire.",
+      "Trouvez des idées de repas avec ce que vous avez déjà.",
     actionLabel: "Trouver une recette",
     icon: ChefHat,
     to: "/app/recipes/suggestions",
@@ -161,7 +161,7 @@ const Dashboard: FC = () => {
       ? {
           title: `${expiringProducts.length} produit${expiringProducts.length > 1 ? "s" : ""} à traiter`,
           description:
-            "Commencez par consommer, déplacer ou retirer les produits qui expirent bientôt.",
+            "Ces produits expirent bientôt : cuisinez-les, congelez-les ou retirez-les.",
           actionLabel: "Voir les produits",
           icon: TriangleAlert,
           to: "/app/inventory",
@@ -169,18 +169,18 @@ const Dashboard: FC = () => {
         }
       : totalInventoryItems === 0
         ? {
-            title: "Inventaire vide",
+            title: "Votre frigo attend ses premières courses",
             description:
-              "Ajoutez votre premier produit pour activer les alertes et le budget alimentaire.",
+              "Ajoutez un produit, on vous prévient avant qu’il expire.",
             actionLabel: "Ajouter mon premier produit",
             icon: Package,
             to: "/app/inventory/add",
             tone: "info",
           }
         : {
-            title: "Inventaire à jour",
+            title: "Rien n’expire bientôt",
             description:
-              "Ajoutez vos derniers achats pour garder le stock fiable.",
+              "Votre frigo vous dit merci. Pensez à ajouter vos derniers achats.",
             actionLabel: "Ajouter mes achats",
             icon: PackagePlus,
             to: "/app/inventory/add",
@@ -281,10 +281,10 @@ const Dashboard: FC = () => {
       <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-12">
         <div role="alert" className="card p-6 text-center">
           <p className="font-medium text-danger-700">
-            Impossible de charger les données du tableau de bord.
+            Impossible d’afficher votre tableau de bord.
           </p>
           <p className="mt-2 text-sm text-neutral-600">
-            {error instanceof Error ? error.message : "Erreur inconnue"}
+            {error instanceof Error ? error.message : "Vérifiez votre connexion, puis réessayez."}
           </p>
           <Button className="mt-4" onClick={() => window.location.reload()}>
             Réessayer
@@ -345,7 +345,7 @@ const Dashboard: FC = () => {
           icon={CalendarX}
           tone={expiredCount > 0 ? "danger" : "accent"}
           value={expiredCount}
-          label={expiredCount > 1 ? "périmés" : "périmé"}
+          label={expiredCount > 1 ? "expirés" : "expiré"}
         />
       </section>
 

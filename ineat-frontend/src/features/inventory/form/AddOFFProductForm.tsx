@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
+import { ExpiryTypeInfo } from '@/components/common/ExpiryTypeInfo';
 import { z } from 'zod';
 
 interface AddOFFProductFormProps {
@@ -404,8 +405,9 @@ export const AddOFFProductForm: React.FC<AddOFFProductFormProps> = ({
 							</div>
 
 							<div className='space-y-2'>
-								<Label htmlFor='expiryDate' className='text-neutral-700'>
+								<Label htmlFor='expiryDate' className='flex items-center gap-1 text-neutral-700'>
 									Date de péremption
+									<ExpiryTypeInfo />
 								</Label>
 								<Input
 									id='expiryDate'

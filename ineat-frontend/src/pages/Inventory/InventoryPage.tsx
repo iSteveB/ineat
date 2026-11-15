@@ -105,7 +105,7 @@ const InventoryPage: React.FC = () => {
 
 	useEffect(() => {
 		if (categoriesError) {
-			toast.error('Erreur lors du chargement des catégories');
+			toast.error('Impossible de charger les catégories. Réessayez dans un instant.');
 		}
 	}, [categoriesError]);
 
@@ -238,7 +238,7 @@ const InventoryPage: React.FC = () => {
 			setIsConfirmingRemoval(false);
 			closeSelectionMode();
 		} catch {
-			toast.error('Erreur lors de la suppression des produits');
+			toast.error('Impossible de retirer les produits. Réessayez dans un instant.');
 		}
 	};
 
@@ -253,7 +253,7 @@ const InventoryPage: React.FC = () => {
 		const category = categories.find(
 			(cat) => cat.id === selectedCategoryId
 		);
-		return category?.name || 'Catégorie inconnue';
+		return category?.name || 'Sans catégorie';
 	};
 
 	const productLabel = (count: number) => `produit${count > 1 ? 's' : ''}`;
@@ -262,7 +262,7 @@ const InventoryPage: React.FC = () => {
 		<div className='mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
 			<header className='flex flex-wrap items-end justify-between gap-3'>
 				<div>
-					<h1 className='type-h1 text-neutral-900'>Inventaire</h1>
+					<h1 className='type-h1 text-neutral-900'>Mon stock</h1>
 					<p className='text-sm text-neutral-600'>
 						{items.length} {productLabel(items.length)} sur {inventoryLimit}
 					</p>
@@ -285,8 +285,8 @@ const InventoryPage: React.FC = () => {
 			{hasReachedInventoryLimit && (
 				<p role='status' className='rounded-lg bg-warning-50 px-4 py-3 text-sm text-warning-700'>
 					{hasExceededInventoryLimit && isFreeLimit
-						? 'Votre inventaire dépasse la limite Free de 50 articles. Supprimez des articles ou passez Premium pour en ajouter.'
-						: `Limite d’inventaire atteinte : ${inventoryLimit} articles. Passez Premium pour en ajouter.`}
+						? 'Votre stock dépasse les 50 produits de l’offre gratuite. Retirez-en quelques-uns ou passez Premium pour en ajouter.'
+						: `Votre stock est plein : ${inventoryLimit} produits maximum avec l’offre gratuite. Passez Premium pour en ajouter.`}
 				</p>
 			)}
 
@@ -504,7 +504,7 @@ const InventoryPage: React.FC = () => {
 			{isLoading ? (
 				<p role='status' className='flex items-center justify-center gap-3 py-16 text-neutral-600'>
 					<Loader2 className='size-6 animate-spin text-accent-600' aria-hidden='true' />
-					Chargement de votre inventaire…
+					Chargement de votre stock…
 				</p>
 			) : sortedItems.length > 0 ? (
 				<ul
@@ -534,17 +534,17 @@ const InventoryPage: React.FC = () => {
 					</span>
 					<h2 className='type-h2 text-neutral-900'>
 						{showFavoritesOnly
-							? 'Aucun produit favori'
+							? 'Pas encore de favoris'
 							: hasActiveFilters
-								? 'Aucun produit trouvé'
-								: 'Votre inventaire est vide'}
+								? 'Aucun produit ne correspond'
+								: 'Votre frigo attend ses premières courses'}
 					</h2>
 					<p className='max-w-md text-neutral-700'>
 						{showFavoritesOnly
-							? 'Ajoutez des produits à vos favoris depuis leur fiche pour les retrouver ici.'
+							? 'Touchez le cœur sur la fiche d’un produit pour le retrouver ici.'
 							: hasActiveFilters
-								? 'Aucun produit ne correspond à vos critères. Essayez de modifier vos filtres.'
-								: 'Ajoutez vos premiers produits pour suivre leurs dates de péremption.'}
+								? 'Essayez un autre mot ou retirez un filtre.'
+								: 'Ajoutez vos courses, on surveille les dates pour vous.'}
 					</p>
 					{hasActiveFilters ? (
 						<Button variant='secondary' onClick={clearAllFilters} className='mt-2'>
@@ -565,11 +565,11 @@ const InventoryPage: React.FC = () => {
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							Supprimer {selectedCount} {productLabel(selectedCount)} ?
+							Retirer {selectedCount} {productLabel(selectedCount)}&nbsp;?
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{selectedCount > 1 ? 'Ces produits seront retirés' : 'Ce produit sera retiré'} de
-							votre inventaire. Cette action est définitive.
+							votre stock. Vous ne pourrez pas annuler.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -581,7 +581,7 @@ const InventoryPage: React.FC = () => {
 								void handleRemoveSelectedItems();
 							}}
 							disabled={isLoading}>
-							{isLoading ? 'Suppression…' : 'Supprimer'}
+							{isLoading ? 'Retrait…' : 'Retirer'}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

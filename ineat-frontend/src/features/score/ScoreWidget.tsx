@@ -172,11 +172,11 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 		const novaGood = novaLetter === 'GROUP_1' || novaLetter === 'GROUP_2';
 
 		if (nutriGood && ecoGood && novaGood) {
-			return 'Excellent ! Votre alimentation est équilibrée, responsable et peu transformée.';
+			return 'Bravo, vos produits sont équilibrés, responsables et peu transformés.';
 		}
 
 		if (!nutriGood && !ecoGood && !novaGood) {
-			return 'Essayez de privilégier des produits frais, locaux et peu transformés pour améliorer vos scores.';
+			return 'Pour améliorer vos scores, misez sur des produits frais, locaux et peu transformés.';
 		}
 
 		const suggestions: string[] = [];
@@ -198,7 +198,7 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 		return (
 			<WidgetCard title='Qualité de votre stock'>
 				<p className='rounded-md bg-neutral-50 p-4 text-sm text-neutral-700'>
-					Scannez des produits pour voir la qualité nutritionnelle de votre stock.
+					Scannez vos produits pour découvrir la qualité de votre stock.
 				</p>
 			</WidgetCard>
 		);
@@ -207,7 +207,7 @@ const ScoreWidget: FC<ScoreWidgetProps> = ({ inventory }) => {
 	return (
 		<WidgetCard
 			title='Qualité de votre stock'
-			subtitle='Moyenne des produits notés de votre inventaire.'>
+			subtitle='Moyenne des produits notés de votre stock.'>
 			{scores.counts.nutri > 0 && (
 				<div className='flex items-center gap-4'>
 					<NutriScoreScale score={scores.nutriScore.letter} />
