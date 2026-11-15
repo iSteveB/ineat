@@ -105,7 +105,7 @@ export default function AdminUsersPage() {
 			closeDialog();
 		},
 		onError: (error: Error) =>
-			toast.error(error.message || 'Action impossible'),
+			toast.error(error.message || 'Impossible de modifier le rôle'),
 	};
 	const updateRoleMutation = useMutation({
 		mutationFn: (change: { userId: string; role: UserRole; reason: string }) =>
@@ -279,13 +279,13 @@ export default function AdminUsersPage() {
 					)}
 					{usersQuery.isError && (
 						<p className="p-6 text-sm text-danger-700">
-							Impossible de charger les utilisateurs.
+							Impossible de charger les utilisateurs. Réessayez dans un instant.
 						</p>
 					)}
 					{!usersQuery.isLoading &&
 						!usersQuery.isError &&
 						users.length === 0 && (
-							<p className="p-6 text-sm text-neutral-600">Aucun utilisateur.</p>
+							<p className="p-6 text-sm text-neutral-600">Aucun utilisateur pour cette recherche.</p>
 						)}
 					{users.length > 0 && (
 						<Table>

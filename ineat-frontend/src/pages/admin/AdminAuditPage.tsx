@@ -176,7 +176,7 @@ export default function AdminAuditPage() {
 							<p className='p-6 text-sm'>Chargement…</p>
 						) : auditQuery.isError ? (
 							<div className='space-y-3 p-6 text-sm text-danger-700'>
-								<p>Impossible de charger le journal d’audit.</p>
+								<p>Impossible de charger le journal d’audit. Réessayez, puis consultez les logs du backend si le problème persiste.</p>
 								<Button
 									variant='secondary'
 									size='sm'
@@ -186,7 +186,7 @@ export default function AdminAuditPage() {
 								</Button>
 							</div>
 						) : logs.length === 0 ? (
-							<p className='p-6 text-sm text-neutral-600'>Aucune entrée.</p>
+							<p className='p-6 text-sm text-neutral-600'>Aucune entrée pour ces filtres.</p>
 						) : (
 							<Table>
 								<TableHeader>

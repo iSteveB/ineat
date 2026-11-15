@@ -83,7 +83,7 @@ export default function AdminUserDetailPage() {
 			toast.success('Statut du compte mis à jour');
 		},
 		onError: (error: Error) =>
-			toast.error(error.message || 'Action impossible'),
+			toast.error(error.message || 'Impossible de modifier le statut du compte'),
 	});
 
 	if (userQuery.isLoading) {

@@ -105,7 +105,7 @@ export default function AdminOperationsPage({
 				queryKey: ['admin', 'queues', selectedQueue],
 			});
 			closeDialog();
-			toast.success('Job replacé dans la file');
+			toast.success('Job remis dans la file d’attente');
 		},
 		onError: (error: Error) => toast.error(error.message),
 	});
@@ -349,7 +349,7 @@ export default function AdminOperationsPage({
 															name: job.name,
 															attemptsMade: job.attemptsMade,
 															failedReason:
-																job.failedReason || 'Erreur non renseignée',
+																job.failedReason || 'Échec sans message d’erreur',
 															failedAt: job.finishedAt || job.createdAt,
 														})
 													}
@@ -508,7 +508,7 @@ export default function AdminOperationsPage({
 			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Relancer ce job en échec ?</AlertDialogTitle>
+						<AlertDialogTitle>Relancer ce job en échec&nbsp;?</AlertDialogTitle>
 						<AlertDialogDescription>
 							Le job sera replacé dans sa file. Son exécution peut déclencher un
 							nouvel envoi ou traitement métier. Cette commande sera auditée.
