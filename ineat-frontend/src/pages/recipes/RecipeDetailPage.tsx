@@ -84,10 +84,10 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 			setIsConfirmOpen(true);
 		},
 		onError: (error) => {
-			toast.error('Action impossible', {
+			toast.error('Impossible de terminer la recette', {
 				description: getUserFacingErrorMessage(
 					error,
-					'Impossible de préparer la confirmation.'
+					'Réessayez dans un instant.'
 				),
 			});
 		},
@@ -108,18 +108,18 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 			setIsConfirmOpen(false);
 			setCompletionPreview(null);
 			setSelectedInventoryItemIds([]);
-			toast.success('Recette marquée comme faite', {
+			toast.success('Bon appétit\u00A0!', {
 				description:
 					data.removedItems.length > 0
-						? `${data.removedItems.length} produit(s) retiré(s) de l’inventaire.`
-						: 'Aucun produit à retirer.',
+						? `${data.removedItems.length} produit${data.removedItems.length > 1 ? 's' : ''} sauvé${data.removedItems.length > 1 ? 's' : ''} du gaspillage et retiré${data.removedItems.length > 1 ? 's' : ''} de votre stock.`
+						: 'Votre stock reste inchangé.',
 			});
 		},
 		onError: (error) => {
-			toast.error('Action impossible', {
+			toast.error('Impossible de terminer la recette', {
 				description: getUserFacingErrorMessage(
 					error,
-					'Impossible de mettre à jour l’inventaire.'
+					'Impossible de mettre à jour votre stock. Réessayez dans un instant.'
 				),
 			});
 		},
@@ -129,7 +129,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 		return (
 			<div className='mx-auto w-full max-w-6xl px-4 py-4 sm:px-6 lg:px-12 lg:py-6'>
 				<p role='status' className='rounded-lg bg-warning-50 p-4 text-warning-700'>
-					Les recettes sont réservées Premium.
+					Les recettes sont réservées à Premium.
 				</p>
 			</div>
 		);
@@ -151,7 +151,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 				<div className='card p-6'>
 					<h1 className='type-h2 text-neutral-900'>Recette indisponible</h1>
 					<p className='mt-1 text-neutral-700'>
-						Cette recette n’existe pas ou n’est plus accessible.
+						Elle a peut-être été supprimée.
 					</p>
 				</div>
 			</div>
@@ -244,10 +244,9 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 			<AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Marquer la recette comme faite ?</AlertDialogTitle>
+						<AlertDialogTitle>Recette terminée&nbsp;?</AlertDialogTitle>
 						<AlertDialogDescription>
-							Choisissez les ingrédients utilisés à retirer de l’inventaire. Les
-							basiques et ingrédients manquants ne seront pas modifiés.
+							Cochez les produits utilisés : ils seront retirés de votre stock. Les basiques et les ingrédients achetés en plus ne changent pas.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					{completionPreview?.items.length ? (
@@ -306,7 +305,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 						</div>
 					) : (
 						<p className='text-sm text-neutral-600'>
-							Aucun produit de l’inventaire ne sera retiré.
+							Aucun produit ne sera retiré de votre stock.
 						</p>
 					)}
 					<AlertDialogFooter>
@@ -362,7 +361,7 @@ function IngredientList({ recipe }: { recipe: SavedRecipe }) {
 	return (
 		<WidgetCard title='Ingrédients'>
 			<div className='flex flex-col gap-4'>
-				<IngredientGroup title='Dans votre inventaire' ingredients={inventoryIngredients} />
+				<IngredientGroup title='Dans votre stock' ingredients={inventoryIngredients} />
 				<IngredientGroup title='Basiques' ingredients={basicIngredients} />
 				<IngredientGroup title='À acheter' ingredients={missingIngredients} tone='warning' />
 			</div>

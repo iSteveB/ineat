@@ -106,8 +106,8 @@ export function RecipeSuggestionsPage() {
 	}, [activeFilter, savedRecipes]);
 
 	const generationBlockedReason = useMemo(() => {
-		if (!canGenerateAiRecipes) return 'La génération IA nécessite Premium.';
-		if (quotaRemaining <= 0) return 'Vous avez utilisé vos 5 générations du jour.';
+		if (!canGenerateAiRecipes) return 'Les idées de recettes sont réservées à Premium.';
+		if (quotaRemaining <= 0) return 'Vous avez utilisé vos 5 générations du jour. Revenez demain pour de nouvelles idées.';
 		if (selectedTypes.length === 0) return 'Choisissez au moins une catégorie.';
 		if (mode === 'STRICT' && nonBasicInventoryCount < 2) {
 			return 'Ajoutez au moins 2 produits pour générer en mode strict.';
@@ -137,13 +137,13 @@ export function RecipeSuggestionsPage() {
 			setGeneratedRecipes(data.recipes);
 			setOpenedRecipeId(data.recipes[0]?.clientId ?? null);
 			await refreshProfile();
-			toast.success('Recettes générées');
+			toast.success('Vos idées de recettes sont prêtes');
 		},
 		onError: (error) => {
-			toast.error('Génération impossible', {
+			toast.error('Impossible de trouver des idées pour le moment', {
 				description: getUserFacingErrorMessage(
 					error,
-					'Impossible de générer les recettes.'
+					'Réessayez dans un instant.'
 				),
 			});
 		},
@@ -157,17 +157,17 @@ export function RecipeSuggestionsPage() {
 			);
 			queryClient.invalidateQueries({ queryKey: ['recipes', 'saved'] });
 			await refreshProfile();
-			toast.success('Recette sauvegardée', {
+			toast.success('Recette ajoutée à vos recettes', {
 				description: savedRecipe.imageUrl
-					? 'Image générée et associée.'
-					: 'Recette sauvegardée sans image.',
+					? 'Avec sa photo, prête à être cuisinée.'
+					: 'La photo n’a pas pu être créée, mais la recette est bien là.',
 			});
 		},
 		onError: (error) => {
-			toast.error('Sauvegarde impossible', {
+			toast.error('Impossible d’ajouter la recette', {
 				description: getUserFacingErrorMessage(
 					error,
-					'Impossible de sauvegarder la recette.'
+					'Réessayez dans un instant.'
 				),
 			});
 		},
@@ -182,10 +182,10 @@ export function RecipeSuggestionsPage() {
 					</span>
 					<h1 className='type-h2 text-neutral-900'>Recettes réservées Premium</h1>
 					<p className='max-w-md text-neutral-700'>
-						Les recettes générées à partir de votre inventaire sont incluses avec Premium.
+						Recevez des idées de repas qui utilisent d’abord les produits qui expirent bientôt. Inclus avec Premium.
 					</p>
 					<Button asChild variant='brand' className='mt-2'>
-						<Link to='/app/subscription'>Voir les plans</Link>
+						<Link to='/app/subscription'>Découvrir Premium</Link>
 					</Button>
 				</section>
 			</div>
@@ -327,7 +327,7 @@ export function RecipeSuggestionsPage() {
 							) : (
 								<Sparkles aria-hidden='true' />
 							)}
-							{generateMutation.isPending ? 'Génération…' : 'Générer'}
+							{generateMutation.isPending ? 'Le chef réfléchit…' : 'Trouver des idées'}
 						</Button>
 					</div>
 				</div>
@@ -397,15 +397,15 @@ export function RecipeSuggestionsPage() {
 					</p>
 				) : isSavedRecipesError ? (
 					<p role='alert' className='rounded-lg bg-danger-50 p-4 text-danger-700'>
-						Impossible de charger vos recettes.
+						Impossible d’afficher vos recettes. Réessayez dans un instant.
 					</p>
 				) : filteredSavedRecipes.length === 0 ? (
 					<p className='card p-6 text-neutral-700'>
 						{savedRecipes.length === 0
 							? 'Aucune recette gardée pour l’instant. Générez des idées puis gardez celles qui vous plaisent.'
 							: activeFilter === 'favorites'
-								? 'Vous n’avez pas encore de recette favorite.'
-								: 'Aucune recette ne correspond à ce filtre.'}
+								? 'Pas encore de favorites. Touchez le cœur d’une recette pour la retrouver ici.'
+								: 'Aucune recette dans cette liste pour l’instant.'}
 					</p>
 				) : (
 					<ul className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>

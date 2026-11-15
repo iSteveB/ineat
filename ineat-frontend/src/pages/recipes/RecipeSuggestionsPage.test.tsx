@@ -182,7 +182,7 @@ describe('RecipeSuggestionsPage', () => {
 		fireEvent.change(screen.getByLabelText(/ingrédients en plus autorisés/i), {
 			target: { value: '5' },
 		});
-		await user.click(screen.getByRole('button', { name: /générer/i }));
+		await user.click(screen.getByRole('button', { name: /trouver des idées/i }));
 
 		await waitFor(() => {
 			expect(recipeService.generateRecipes).toHaveBeenCalledWith({
@@ -230,9 +230,9 @@ describe('RecipeSuggestionsPage', () => {
 		renderRecipeSuggestions();
 
 		expect(
-			screen.getByText('Vous avez utilisé vos 5 générations du jour.')
+			screen.getByText('Vous avez utilisé vos 5 générations du jour. Revenez demain pour de nouvelles idées.')
 		).toBeInTheDocument();
-		expect(screen.getByRole('button', { name: /générer/i })).toBeDisabled();
+		expect(screen.getByRole('button', { name: /trouver des idées/i })).toBeDisabled();
 	});
 
 	it('ajoute une recette sauvegardée aux favoris', async () => {
@@ -248,7 +248,7 @@ describe('RecipeSuggestionsPage', () => {
 		renderRecipeSuggestions();
 
 		await user.click(
-			await screen.findByRole('button', { name: /^Mettre en favori/ })
+			await screen.findByRole('button', { name: /^Ajouter aux favoris/ })
 		);
 
 		await waitFor(() => {
@@ -258,7 +258,7 @@ describe('RecipeSuggestionsPage', () => {
 			);
 		});
 		expect(
-			screen.getByRole('button', { name: /^Mettre en favori/ })
+			screen.getByRole('button', { name: /^Ajouter aux favoris/ })
 		).toHaveAttribute('aria-pressed', 'true');
 	});
 
@@ -274,12 +274,12 @@ describe('RecipeSuggestionsPage', () => {
 		renderRecipeSuggestions();
 
 		await user.click(
-			await screen.findByRole('button', { name: /^Mettre en favori/ })
+			await screen.findByRole('button', { name: /^Ajouter aux favoris/ })
 		);
 
 		await waitFor(() => {
 			expect(
-				screen.getByRole('button', { name: /^Mettre en favori/ })
+				screen.getByRole('button', { name: /^Ajouter aux favoris/ })
 			).toHaveAttribute('aria-pressed', 'false');
 		});
 	});

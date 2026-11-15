@@ -20,7 +20,7 @@ export function FavoriteRecipeButton({
 	recipeName,
 	className,
 }: FavoriteRecipeButtonProps) {
-	const label = recipeName ? `Mettre en favori : ${recipeName}` : 'Mettre en favori';
+	const label = recipeName ? `Ajouter aux favoris : ${recipeName}` : 'Ajouter aux favoris';
 
 	return (
 		<Button

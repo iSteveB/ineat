@@ -168,7 +168,7 @@ describe('RecipeDetailPage', () => {
 
 		expect(
 			await screen.findByRole('alertdialog', {
-				name: /marquer la recette comme faite/i,
+				name: /recette terminée/i,
 			})
 		).toBeInTheDocument();
 		await waitFor(() => {
@@ -208,7 +208,7 @@ describe('RecipeDetailPage', () => {
 		});
 		expect(
 			screen.queryByRole('alertdialog', {
-				name: /marquer la recette comme faite/i,
+				name: /recette terminée/i,
 			})
 		).not.toBeInTheDocument();
 	});
@@ -223,7 +223,7 @@ describe('RecipeDetailPage', () => {
 			screen.getByRole('button', { name: /marquer comme fait/i })
 		);
 		await screen.findByRole('alertdialog', {
-			name: /marquer la recette comme faite/i,
+			name: /recette terminée/i,
 		});
 		await user.click(screen.getByRole('button', { name: /tout conserver/i }));
 		await user.click(screen.getByRole('button', { name: /confirmer/i }));
@@ -246,7 +246,7 @@ describe('RecipeDetailPage', () => {
 			screen.getByRole('button', { name: /marquer comme fait/i })
 		);
 		await screen.findByRole('alertdialog', {
-			name: /marquer la recette comme faite/i,
+			name: /recette terminée/i,
 		});
 		await user.click(screen.getByRole('button', { name: /confirmer/i }));
 
@@ -273,7 +273,7 @@ describe('RecipeDetailPage', () => {
 		renderRecipeDetail();
 
 		expect(
-			screen.getByText('Les recettes sont réservées Premium.')
+			screen.getByText('Les recettes sont réservées à Premium.')
 		).toBeInTheDocument();
 		expect(recipeService.getSavedRecipe).not.toHaveBeenCalled();
 	});
@@ -288,7 +288,7 @@ describe('RecipeDetailPage', () => {
 		renderRecipeDetail();
 
 		await user.click(
-			await screen.findByRole('button', { name: 'Mettre en favori' })
+			await screen.findByRole('button', { name: 'Ajouter aux favoris' })
 		);
 
 		await waitFor(() => {
@@ -298,7 +298,7 @@ describe('RecipeDetailPage', () => {
 			);
 		});
 		expect(
-			screen.getByRole('button', { name: 'Mettre en favori' })
+			screen.getByRole('button', { name: 'Ajouter aux favoris' })
 		).toHaveAttribute('aria-pressed', 'true');
 	});
 });
