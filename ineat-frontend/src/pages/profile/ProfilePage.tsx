@@ -13,6 +13,7 @@ import {
 	Target,
 	Utensils,
 	WandSparkles,
+	WheatOff,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -228,7 +229,7 @@ const ProfilePage = () => {
 								<div className='flex items-center gap-3'>
 									<Utensils className='size-5 text-neutral-500' />
 									<div>
-										<p className='text-sm text-neutral-500'>Nombre de couverts</p>
+										<p className='text-sm text-neutral-500'>Personnes à table</p>
 										<p className='font-medium'>{user?.defaultServings ?? 4}</p>
 									</div>
 								</div>
@@ -244,7 +245,7 @@ const ProfilePage = () => {
 										<p className='font-medium'>
 											{user?.primaryGoal
 												? goalLabels[user.primaryGoal]
-												: 'À définir'}
+												: 'Pas encore choisi'}
 										</p>
 									</div>
 								</div>
@@ -253,18 +254,21 @@ const ProfilePage = () => {
 							<Link
 								to='/app/settings/diet-restrictions'
 								className='group flex items-center justify-between px-6 py-4 transition hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-600'>
-								<div>
-									<p className='text-sm text-neutral-500'>Allergies et régimes</p>
-									<div className='mt-1 flex flex-wrap gap-1.5'>
-										{restrictions.length > 0 ? (
-											restrictions.map((restriction) => (
-												<Badge key={restriction} variant='secondary'>
-													{getDietaryLabel(restriction)}
-												</Badge>
-											))
-										) : (
-											<span className='font-medium'>Aucun régime ni allergie renseigné</span>
-										)}
+								<div className='flex items-center gap-3'>
+									<WheatOff className='size-5 shrink-0 text-neutral-500' />
+									<div>
+										<p className='text-sm text-neutral-500'>Allergies et régimes</p>
+										<div className='mt-1 flex flex-wrap gap-1.5'>
+											{restrictions.length > 0 ? (
+												restrictions.map((restriction) => (
+													<Badge key={restriction} variant='secondary'>
+														{getDietaryLabel(restriction)}
+													</Badge>
+												))
+											) : (
+												<span className='font-medium'>Rien d’indiqué pour l’instant</span>
+											)}
+										</div>
 									</div>
 								</div>
 								<ArrowRight className='size-4 shrink-0 text-neutral-500 group-hover:text-accent-700' />

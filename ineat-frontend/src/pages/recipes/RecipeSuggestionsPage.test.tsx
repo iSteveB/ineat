@@ -163,7 +163,7 @@ describe('RecipeSuggestionsPage', () => {
 		);
 	});
 
-	it('génère en mode avec largesse puis permet de drop ou garder une proposition', async () => {
+	it('génère avec quelques courses puis permet de drop ou garder une proposition', async () => {
 		const user = userEvent.setup();
 		(recipeService.generateRecipes as ReturnType<typeof vi.fn>).mockResolvedValue({
 			recipes: [starterRecipe, dessertRecipe],
@@ -178,8 +178,8 @@ describe('RecipeSuggestionsPage', () => {
 		await user.click(screen.getByRole('button', { name: /entrée/i }));
 		await user.click(screen.getByRole('button', { name: /plat/i }));
 		await user.click(screen.getByRole('button', { name: /dessert/i }));
-		await user.click(screen.getByRole('button', { name: /avec largesse/i }));
-		fireEvent.change(screen.getByLabelText(/ingrédients en plus autorisés/i), {
+		await user.click(screen.getByRole('button', { name: /avec quelques courses/i }));
+		fireEvent.change(screen.getByLabelText(/ingrédients à acheter, au maximum/i), {
 			target: { value: '5' },
 		});
 		await user.click(screen.getByRole('button', { name: /trouver des idées/i }));
@@ -230,7 +230,7 @@ describe('RecipeSuggestionsPage', () => {
 		renderRecipeSuggestions();
 
 		expect(
-			screen.getByText('Vous avez utilisé vos 5 générations du jour. Revenez demain pour de nouvelles idées.')
+			screen.getByText('Vous avez utilisé vos 5 recherches du jour. Revenez demain pour de nouvelles idées.')
 		).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /trouver des idées/i })).toBeDisabled();
 	});

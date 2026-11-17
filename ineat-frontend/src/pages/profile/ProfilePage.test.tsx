@@ -87,7 +87,7 @@ describe('ProfilePage', () => {
 		expect(
 			screen.getByText('Recettes enregistrées').closest('a'),
 		).toHaveAttribute('href', '/app/recipes');
-		expect(screen.getByText('Nombre de couverts').closest('a')).toHaveAttribute(
+		expect(screen.getByText('Personnes à table').closest('a')).toHaveAttribute(
 			'href',
 			'/app/settings/personal-info',
 		);

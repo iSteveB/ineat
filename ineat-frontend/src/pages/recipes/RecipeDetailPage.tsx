@@ -188,7 +188,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 						{recipe.doneAt && (
 							<Badge variant='success'>
 								<CircleCheck className='size-3.5' aria-hidden='true' />
-								Déjà faite
+								Déjà cuisinée
 							</Badge>
 						)}
 					</div>
@@ -236,7 +236,7 @@ export function RecipeDetailPage({ recipeId }: RecipeDetailPageProps) {
 						disabled={Boolean(recipe.doneAt) || previewMutation.isPending}
 						onClick={() => previewMutation.mutate(recipe.id)}>
 						<CheckCircle2 aria-hidden='true' />
-						{recipe.doneAt ? 'Déjà fait' : 'Marquer comme fait'}
+						{recipe.doneAt ? 'Déjà cuisinée' : 'Je l’ai cuisinée'}
 					</Button>
 				</aside>
 			</div>

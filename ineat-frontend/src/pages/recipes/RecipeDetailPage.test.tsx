@@ -156,14 +156,14 @@ describe('RecipeDetailPage', () => {
 		});
 	});
 
-	it('confirme le statut fait et retire uniquement les produits prévus', async () => {
+	it('confirme la recette cuisinée et retire uniquement les produits prévus', async () => {
 		const user = userEvent.setup();
 
 		renderRecipeDetail();
 
 		expect(await screen.findByText('Riz aux petits pois')).toBeInTheDocument();
 		await user.click(
-			screen.getByRole('button', { name: /marquer comme fait/i })
+			screen.getByRole('button', { name: /je l’ai cuisinée/i })
 		);
 
 		expect(
@@ -203,7 +203,7 @@ describe('RecipeDetailPage', () => {
 		});
 		await waitFor(() => {
 			expect(
-				screen.getByRole('button', { name: /déjà fait/i })
+				screen.getByRole('button', { name: /déjà cuisinée/i })
 			).toBeDisabled();
 		});
 		expect(
@@ -220,7 +220,7 @@ describe('RecipeDetailPage', () => {
 
 		await screen.findByText('Riz aux petits pois');
 		await user.click(
-			screen.getByRole('button', { name: /marquer comme fait/i })
+			screen.getByRole('button', { name: /je l’ai cuisinée/i })
 		);
 		await screen.findByRole('alertdialog', {
 			name: /recette terminée/i,
@@ -243,7 +243,7 @@ describe('RecipeDetailPage', () => {
 
 		await screen.findByText('Riz aux petits pois');
 		await user.click(
-			screen.getByRole('button', { name: /marquer comme fait/i })
+			screen.getByRole('button', { name: /je l’ai cuisinée/i })
 		);
 		await screen.findByRole('alertdialog', {
 			name: /recette terminée/i,

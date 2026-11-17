@@ -49,8 +49,8 @@ const difficultyLabels = {
 const savedRecipeFilters: Array<{ value: RecipeFilter; label: string }> = [
 	{ value: 'all', label: 'Toutes' },
 	{ value: 'favorites', label: 'Favoris' },
-	{ value: 'pending', label: 'À faire' },
-	{ value: 'done', label: 'Déjà faites' },
+	{ value: 'pending', label: 'À tester' },
+	{ value: 'done', label: 'Déjà cuisinées' },
 ];
 
 export function RecipeSuggestionsPage() {
@@ -107,13 +107,13 @@ export function RecipeSuggestionsPage() {
 
 	const generationBlockedReason = useMemo(() => {
 		if (!canGenerateAiRecipes) return 'Les idées de recettes sont réservées à Premium.';
-		if (quotaRemaining <= 0) return 'Vous avez utilisé vos 5 générations du jour. Revenez demain pour de nouvelles idées.';
-		if (selectedTypes.length === 0) return 'Choisissez au moins une catégorie.';
+		if (quotaRemaining <= 0) return 'Vous avez utilisé vos 5 recherches du jour. Revenez demain pour de nouvelles idées.';
+		if (selectedTypes.length === 0) return 'Choisissez au moins une entrée, un plat ou un dessert.';
 		if (mode === 'STRICT' && nonBasicInventoryCount < 2) {
-			return 'Ajoutez au moins 2 produits pour générer en mode strict.';
+			return 'Il faut au moins 2 produits dans votre stock. Ajoutez-en, ou choisissez «\u00A0Avec quelques courses\u00A0».';
 		}
 		if (mode === 'FLEXIBLE' && nonBasicInventoryCount < 1) {
-			return 'Ajoutez au moins 1 produit pour générer avec largesse.';
+			return 'Ajoutez au moins 1 produit à votre stock pour trouver des idées.';
 		}
 		return null;
 	}, [
@@ -203,19 +203,20 @@ export function RecipeSuggestionsPage() {
 				</div>
 				<p className='inline-flex items-center gap-1.5 rounded-full bg-accent-50 px-3 py-1 text-sm font-medium text-accent-800'>
 					<Sparkles className='size-4' aria-hidden='true' />
-					{quotaRemaining} génération{quotaRemaining > 1 ? 's' : ''} restante
-					{quotaRemaining > 1 ? 's' : ''} aujourd’hui
+					{quotaRemaining > 0
+						? `Encore ${quotaRemaining} recherche${quotaRemaining > 1 ? 's' : ''} aujourd’hui`
+						: 'Plus de recherche aujourd’hui'}
 				</p>
 			</header>
 
 			<section aria-labelledby='recipe-generator-title' className='card p-4 sm:p-5'>
 				<h2 id='recipe-generator-title' className='type-h2 text-neutral-900'>
-					Générer des idées
+					Qu’est-ce qu’on mange&nbsp;?
 				</h2>
 				<div className='mt-4 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]'>
 					<div className='flex flex-col gap-5'>
 						<fieldset>
-							<legend className='text-sm font-medium text-neutral-900'>Types de recettes</legend>
+							<legend className='text-sm font-medium text-neutral-900'>Que voulez-vous préparer&nbsp;?</legend>
 							<div className='mt-2 flex flex-wrap gap-2'>
 								{recipeTypes.map((type) => {
 									const selected = selectedTypes.includes(type.value);
@@ -262,27 +263,27 @@ export function RecipeSuggestionsPage() {
 								/>
 							</div>
 							<fieldset>
-								<legend className='text-sm font-medium text-neutral-900'>Mode</legend>
+								<legend className='text-sm font-medium text-neutral-900'>Ingrédients</legend>
 								<div className='mt-1.5 grid grid-cols-2 gap-2'>
 									<Button
 										type='button'
 										aria-pressed={mode === 'STRICT'}
 										variant={mode === 'STRICT' ? 'primary' : 'secondary'}
 										onClick={() => setMode('STRICT')}>
-										Strict
+										Mon stock seulement
 									</Button>
 									<Button
 										type='button'
 										aria-pressed={mode === 'FLEXIBLE'}
 										variant={mode === 'FLEXIBLE' ? 'primary' : 'secondary'}
 										onClick={() => setMode('FLEXIBLE')}>
-										Avec largesse
+										Avec quelques courses
 									</Button>
 								</div>
 								<p className='mt-1.5 text-sm text-neutral-600'>
 									{mode === 'STRICT'
-										? 'Uniquement vos produits et les basiques.'
-										: 'Quelques ingrédients à acheter en plus.'}
+										? 'Vos produits, plus sel, poivre, huile et eau.'
+										: 'Vos produits, complétés par quelques achats.'}
 								</p>
 							</fieldset>
 						</div>
@@ -290,7 +291,7 @@ export function RecipeSuggestionsPage() {
 						{mode === 'FLEXIBLE' && (
 							<div className='flex flex-col gap-1.5'>
 								<label htmlFor='extra-ingredients' className='text-sm font-medium text-neutral-900'>
-									Ingrédients en plus autorisés : {extraIngredientLimit}
+									Ingrédients à acheter, au maximum&nbsp;: {extraIngredientLimit}
 								</label>
 								<input
 									id='extra-ingredients'
@@ -311,9 +312,9 @@ export function RecipeSuggestionsPage() {
 							Bon à savoir
 						</p>
 						<ul className='flex list-disc flex-col gap-1.5 pl-5 text-sm text-neutral-700'>
-							<li>Une recette par type coché.</li>
+							<li>Une idée de recette par case cochée.</li>
 							<li>Sel, poivre, eau et huile neutre sont toujours disponibles.</li>
-							<li>La photo de la recette est créée quand vous la gardez.</li>
+							<li>La photo est créée quand vous ajoutez la recette à vos recettes.</li>
 						</ul>
 						<p role='status' className={cn(generationBlockedReason && 'rounded-md bg-warning-50 px-3 py-2 text-sm text-warning-700')}>
 							{generationBlockedReason}
@@ -402,7 +403,7 @@ export function RecipeSuggestionsPage() {
 				) : filteredSavedRecipes.length === 0 ? (
 					<p className='card p-6 text-neutral-700'>
 						{savedRecipes.length === 0
-							? 'Aucune recette gardée pour l’instant. Générez des idées puis gardez celles qui vous plaisent.'
+							? 'Vos recettes préférées vous attendront ici. Trouvez des idées, puis ajoutez celles qui vous font envie.'
 							: activeFilter === 'favorites'
 								? 'Pas encore de favorites. Touchez le cœur d’une recette pour la retrouver ici.'
 								: 'Aucune recette dans cette liste pour l’instant.'}

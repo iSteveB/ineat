@@ -297,7 +297,7 @@ const PersonalInfoPage = () => {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="defaultServings">
-                    Nombre habituel de couverts
+                    Personnes à table, en général
                   </Label>
                   <Input
                     id="defaultServings"

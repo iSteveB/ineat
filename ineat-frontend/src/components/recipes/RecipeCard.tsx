@@ -48,7 +48,7 @@ const RecipeCard: FC<RecipeCardProps> = ({ recipe, filter, isFavoritePending, on
 				{recipe.doneAt && (
 					<Badge variant='success'>
 						<CircleCheck className='size-3.5' aria-hidden='true' />
-						Déjà faite
+						Déjà cuisinée
 					</Badge>
 				)}
 			</div>
