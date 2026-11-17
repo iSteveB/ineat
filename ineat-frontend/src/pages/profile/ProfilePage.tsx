@@ -245,7 +245,7 @@ const ProfilePage = () => {
 										<p className='font-medium'>
 											{user?.primaryGoal
 												? goalLabels[user.primaryGoal]
-												: 'Pas encore choisi'}
+												: 'Choisir un objectif'}
 										</p>
 									</div>
 								</div>
@@ -266,7 +266,7 @@ const ProfilePage = () => {
 													</Badge>
 												))
 											) : (
-												<span className='font-medium'>Rien d’indiqué pour l’instant</span>
+												<span className='font-medium'>Pas d’allergie ni de régime</span>
 											)}
 										</div>
 									</div>

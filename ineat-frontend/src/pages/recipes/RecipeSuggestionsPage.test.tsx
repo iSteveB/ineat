@@ -179,7 +179,7 @@ describe('RecipeSuggestionsPage', () => {
 		await user.click(screen.getByRole('button', { name: /plat/i }));
 		await user.click(screen.getByRole('button', { name: /dessert/i }));
 		await user.click(screen.getByRole('button', { name: /avec quelques courses/i }));
-		fireEvent.change(screen.getByLabelText(/ingrédients à acheter, au maximum/i), {
+		fireEvent.change(screen.getByLabelText(/ingrédients? à acheter/i), {
 			target: { value: '5' },
 		});
 		await user.click(screen.getByRole('button', { name: /trouver des idées/i }));

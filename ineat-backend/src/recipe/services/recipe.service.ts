@@ -31,6 +31,10 @@ const TYPE_LABELS: Record<RecipeType, string> = {
   DESSERT: 'dessert',
 };
 
+/** Nombre minimal de produits en stock pour lancer une recherche d'idées. */
+const MIN_INVENTORY_FOR_STRICT_GENERATION = 5;
+const MIN_INVENTORY_FOR_FLEXIBLE_GENERATION = 2;
+
 @Injectable()
 export class RecipeService {
   constructor(
@@ -354,15 +358,21 @@ export class RecipeService {
     mode: RecipeGenerationModeDto,
     inventoryCount: number,
   ) {
-    if (mode === RecipeGenerationModeDto.STRICT && inventoryCount < 2) {
+    if (
+      mode === RecipeGenerationModeDto.STRICT &&
+      inventoryCount < MIN_INVENTORY_FOR_STRICT_GENERATION
+    ) {
       throw new BadRequestException(
-        'Votre inventaire est trop limité pour générer une recette en mode strict',
+        `Il faut au moins ${MIN_INVENTORY_FOR_STRICT_GENERATION} produits dans votre stock pour cette recherche`,
       );
     }
 
-    if (mode === RecipeGenerationModeDto.FLEXIBLE && inventoryCount < 1) {
+    if (
+      mode === RecipeGenerationModeDto.FLEXIBLE &&
+      inventoryCount < MIN_INVENTORY_FOR_FLEXIBLE_GENERATION
+    ) {
       throw new BadRequestException(
-        'Ajoutez au moins un produit à votre inventaire pour générer une recette',
+        `Ajoutez au moins ${MIN_INVENTORY_FOR_FLEXIBLE_GENERATION} produits à votre stock pour trouver des idées`,
       );
     }
   }

@@ -46,6 +46,10 @@ const difficultyLabels = {
 	HARD: 'Difficile',
 };
 
+/** Nombre minimal de produits en stock, aligné sur la validation du backend. */
+const MIN_INVENTORY_FOR_STRICT_GENERATION = 5;
+const MIN_INVENTORY_FOR_FLEXIBLE_GENERATION = 2;
+
 const savedRecipeFilters: Array<{ value: RecipeFilter; label: string }> = [
 	{ value: 'all', label: 'Toutes' },
 	{ value: 'favorites', label: 'Favoris' },
@@ -109,11 +113,11 @@ export function RecipeSuggestionsPage() {
 		if (!canGenerateAiRecipes) return 'Les idées de recettes sont réservées à Premium.';
 		if (quotaRemaining <= 0) return 'Vous avez utilisé vos 5 recherches du jour. Revenez demain pour de nouvelles idées.';
 		if (selectedTypes.length === 0) return 'Choisissez au moins une entrée, un plat ou un dessert.';
-		if (mode === 'STRICT' && nonBasicInventoryCount < 2) {
-			return 'Il faut au moins 2 produits dans votre stock. Ajoutez-en, ou choisissez «\u00A0Avec quelques courses\u00A0».';
+		if (mode === 'STRICT' && nonBasicInventoryCount < MIN_INVENTORY_FOR_STRICT_GENERATION) {
+			return `Il faut au moins ${MIN_INVENTORY_FOR_STRICT_GENERATION} produits dans votre stock. Ajoutez-en, ou choisissez «\u00A0Avec quelques courses\u00A0».`;
 		}
-		if (mode === 'FLEXIBLE' && nonBasicInventoryCount < 1) {
-			return 'Ajoutez au moins 1 produit à votre stock pour trouver des idées.';
+		if (mode === 'FLEXIBLE' && nonBasicInventoryCount < MIN_INVENTORY_FOR_FLEXIBLE_GENERATION) {
+			return `Ajoutez au moins ${MIN_INVENTORY_FOR_FLEXIBLE_GENERATION} produits à votre stock pour trouver des idées.`;
 		}
 		return null;
 	}, [
@@ -205,13 +209,13 @@ export function RecipeSuggestionsPage() {
 					<Sparkles className='size-4' aria-hidden='true' />
 					{quotaRemaining > 0
 						? `Encore ${quotaRemaining} recherche${quotaRemaining > 1 ? 's' : ''} aujourd’hui`
-						: 'Plus de recherche aujourd’hui'}
+						: 'Recherches du jour épuisées'}
 				</p>
 			</header>
 
 			<section aria-labelledby='recipe-generator-title' className='card p-4 sm:p-5'>
 				<h2 id='recipe-generator-title' className='type-h2 text-neutral-900'>
-					Qu’est-ce qu’on mange&nbsp;?
+					Créez de nouvelles recettes
 				</h2>
 				<div className='mt-4 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]'>
 					<div className='flex flex-col gap-5'>
@@ -282,8 +286,8 @@ export function RecipeSuggestionsPage() {
 								</div>
 								<p className='mt-1.5 text-sm text-neutral-600'>
 									{mode === 'STRICT'
-										? 'Vos produits, plus sel, poivre, huile et eau.'
-										: 'Vos produits, complétés par quelques achats.'}
+										? 'Limité à votre stock actuel.'
+										: 'Votre stock + quelques achats.'}
 								</p>
 							</fieldset>
 						</div>
@@ -291,7 +295,7 @@ export function RecipeSuggestionsPage() {
 						{mode === 'FLEXIBLE' && (
 							<div className='flex flex-col gap-1.5'>
 								<label htmlFor='extra-ingredients' className='text-sm font-medium text-neutral-900'>
-									Ingrédients à acheter, au maximum&nbsp;: {extraIngredientLimit}
+									Jusqu’à {extraIngredientLimit} ingrédient{extraIngredientLimit > 1 ? 's' : ''} à acheter
 								</label>
 								<input
 									id='extra-ingredients'
@@ -311,11 +315,9 @@ export function RecipeSuggestionsPage() {
 							<Info className='size-4 text-accent-700' aria-hidden='true' />
 							Bon à savoir
 						</p>
-						<ul className='flex list-disc flex-col gap-1.5 pl-5 text-sm text-neutral-700'>
-							<li>Une idée de recette par case cochée.</li>
-							<li>Sel, poivre, eau et huile neutre sont toujours disponibles.</li>
-							<li>La photo est créée quand vous ajoutez la recette à vos recettes.</li>
-						</ul>
+						<p className='text-sm text-neutral-700'>
+							Les indispensables (sel, poivre…) sont toujours considérés comme disponibles.
+						</p>
 						<p role='status' className={cn(generationBlockedReason && 'rounded-md bg-warning-50 px-3 py-2 text-sm text-warning-700')}>
 							{generationBlockedReason}
 						</p>
