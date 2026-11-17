@@ -23,6 +23,14 @@ const renderHighlightedAllergens = (ingredients: string): React.ReactNode[] =>
 		return <React.Fragment key={`${part}-${index}`}>{part}</React.Fragment>;
 	});
 
+/**
+ * Affiche une liste d'ingrédients Open Food Facts sans les « _ » qui entourent
+ * les allergènes : ceux-ci sont mis en gras, comme sur les emballages.
+ */
+export const HighlightedIngredients: React.FC<{ ingredients: string }> = ({
+	ingredients,
+}) => <>{renderHighlightedAllergens(ingredients)}</>;
+
 export const IngredientsCard: React.FC<IngredientsCardProps> = ({
 	ingredients,
 	className,

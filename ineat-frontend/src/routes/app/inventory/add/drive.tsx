@@ -44,6 +44,7 @@ import { inventoryService } from '@/services/inventoryService';
 import { useAuthStore } from '@/stores/authStore';
 import { useInventoryActions } from '@/stores/inventoryStore';
 import { STORAGE_LOCATION_OPTIONS } from '@/constants/inventory';
+import { HighlightedIngredients } from '@/features/product/IngredientsCard';
 import {
 	canChooseInvoiceProductCreation,
 	getInvoiceTotals,
@@ -178,48 +179,45 @@ const getSuggestedEans = (item: InvoiceItem): string[] =>
 const getItemImageUrl = (item: InvoiceItem): string | null =>
 	item.externalProductData?.imageUrl ?? null;
 
-const getReviewStatus = (item: InvoiceItem) => {
+/**
+ * Badge affiché sur une ligne du ticket. Une ligne reconnue et prête à être ajoutée n'en a pas,
+ * pour alléger la liste. Les nouveaux produits gardent leur type (emballé, en vrac, frais).
+ */
+const getReviewStatus = (
+	item: InvoiceItem,
+	needsCorrection: boolean
+): { label: string; variant: 'secondary' | 'warning' } | null => {
 	if (item.validated) {
-		return { label: 'Déjà validé', variant: 'secondary' as const };
-	}
-
-	if (item.externalProductStatus === 'FOUND' && item.confidence >= 0.75) {
-		return { label: 'Reconnu', variant: 'success' as const };
-	}
-
-	if (item.productId || item.product) {
-		return { label: 'Déjà connu', variant: 'success' as const };
+		return { label: 'Déjà ajouté', variant: 'secondary' };
 	}
 
 	if (item.externalProductStatus === 'ERROR') {
-		return {
-			label: 'OFF indisponible · réessayer',
-			variant: 'warning' as const
-		};
+		return { label: 'Recherche indisponible, réessayez', variant: 'warning' };
 	}
 
-	if (canChooseInvoiceProductCreation(item)) {
-		if (!item.productFormConfirmed) {
-			return { label: 'À choisir', variant: 'warning' as const };
+	if (needsCorrection) {
+		return { label: 'À vérifier', variant: 'warning' };
+	}
+
+	if (!item.productId && !item.product && item.externalProductStatus !== 'FOUND') {
+		if (canChooseInvoiceProductCreation(item)) {
+			return {
+				label:
+					item.productForm === 'PACKAGED'
+						? 'Nouveau produit'
+						: getBarcodeFreeProductLabel(item),
+				variant: 'secondary'
+			};
 		}
 
-		return {
-			label:
-				item.productForm === 'PACKAGED'
-					? 'Nouveau produit'
-					: getBarcodeFreeProductLabel(item),
-			variant: 'secondary' as const
-		};
+		if (!hasInvoiceItemBarcode(item)) {
+			return { label: getBarcodeFreeProductLabel(item), variant: 'secondary' };
+		}
+
+		return { label: 'À vérifier', variant: 'warning' };
 	}
 
-	if (!hasInvoiceItemBarcode(item)) {
-		return {
-			label: getBarcodeFreeProductLabel(item),
-			variant: 'secondary' as const
-		};
-	}
-
-	return { label: 'À compléter', variant: 'warning' as const };
+	return null;
 };
 
 const formatProductScore = (score?: string | null): string =>
@@ -238,6 +236,9 @@ function DriveInvoiceImportPage() {
 	const [result, setResult] = useState<ValidateInvoiceResponse | null>(null);
 	const [localError, setLocalError] = useState<string | null>(null);
 	const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+	const [openAssociationIds, setOpenAssociationIds] = useState<Set<string>>(
+		() => new Set()
+	);
 	const [pendingInvoiceFile, setPendingInvoiceFile] = useState<File | null>(
 		null
 	);
@@ -972,11 +973,14 @@ function DriveInvoiceImportPage() {
 										Lignes à vérifier
 									</CardTitle>
 									<p className="mt-1 text-sm text-neutral-600">
-										{
-											orderedItems.filter(requiresInvoiceItemCorrection)
-												.length
-										}{' '}
-										à corriger en priorité
+										{(() => {
+											const toReviewCount = orderedItems.filter(
+												requiresInvoiceItemCorrection
+											).length;
+											return toReviewCount > 0
+												? `${toReviewCount} à vérifier en priorité`
+												: 'Tout est prêt à être ajouté.';
+										})()}
 									</p>
 								</div>
 								<div className="flex flex-col gap-2 sm:flex-row">
@@ -1022,11 +1026,24 @@ function DriveInvoiceImportPage() {
 											productForm: draft.productForm,
 											productFormConfirmed: draft.productFormConfirmed
 										};
-										const reviewStatus = getReviewStatus(reviewedItem);
 										const needsCorrection =
 											requiresInvoiceItemCorrection(reviewedItem);
+										const reviewStatus = getReviewStatus(
+											reviewedItem,
+											needsCorrection
+										);
 										const canChooseCreation =
 											canChooseInvoiceProductCreation(reviewedItem);
+										// Un produit reconnu n'a pas besoin du choix de correspondance :
+										// il reste accessible via « Ce n'est pas le bon produit ? ».
+										const isRecognized =
+											Boolean(draft.productId) ||
+											(item.externalProductStatus === 'FOUND' &&
+												Boolean(draft.selectedEan));
+										const showAssociation =
+											!isRecognized ||
+											needsCorrection ||
+											openAssociationIds.has(item.id);
 										const saveState = saveStates[item.id] ?? 'idle';
 
 										return (
@@ -1075,26 +1092,17 @@ function DriveInvoiceImportPage() {
 															<p className="truncate font-semibold text-neutral-900">
 																{draft.detectedName || 'Produit sans nom'}
 															</p>
-															<p className="mt-1 text-xs text-neutral-600">
-																{item.validated
-																	? 'Déjà validé'
-																	: isSelected
-																		? 'Sélectionné'
-																		: 'Ignoré à la validation'}
-															</p>
-															<Badge
-																variant={reviewStatus.variant}
-																className="mt-2 w-fit"
-															>
-																{reviewStatus.variant === 'warning' && (
-																	<AlertTriangle className="mr-1 size-3" />
-																)}
-																{reviewStatus.label}
-															</Badge>
-															<p className="mt-2 text-xs text-neutral-600">
-																Confiance {Math.round(item.confidence * 100)} %
-																{needsCorrection ? ' · à corriger' : ' · sûr'}
-															</p>
+															{reviewStatus && (
+																<Badge
+																	variant={reviewStatus.variant}
+																	className="mt-2 w-fit"
+																>
+																	{reviewStatus.variant === 'warning' && (
+																		<AlertTriangle className="mr-1 size-3" />
+																	)}
+																	{reviewStatus.label}
+																</Badge>
+															)}
 														</div>
 														<div className="grid shrink-0 grid-cols-2 gap-2 text-right sm:min-w-44">
 															<div>
@@ -1187,10 +1195,7 @@ function DriveInvoiceImportPage() {
 													<div className="border-t border-neutral-100 p-4">
 														{item.externalProductData && (
 															<div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
-																<p className="text-sm font-semibold text-neutral-900">
-																	Produit trouvé dans notre base
-																</p>
-																<div className="mt-3 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+																<div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
 																	<div>
 																		<span className="text-neutral-600">
 																			Nom
@@ -1244,8 +1249,15 @@ function DriveInvoiceImportPage() {
 																			Ingrédients
 																		</span>
 																		<p className="font-medium text-neutral-900">
-																			{item.externalProductData.ingredients ??
-																				'Information non disponible'}
+																			{item.externalProductData.ingredients ? (
+																				<HighlightedIngredients
+																					ingredients={
+																						item.externalProductData.ingredients
+																					}
+																				/>
+																			) : (
+																				'Information non disponible'
+																			)}
 																		</p>
 																	</div>
 																</div>
@@ -1325,72 +1337,84 @@ function DriveInvoiceImportPage() {
 																	disabled={item.validated}
 																/>
 															</div>
-															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Association
-																</label>
-																<Select
-																	value={getAssociationValue(draft)}
-																	onValueChange={(value) =>
-																		updateAssociation(item.id, value)
-																	}
-																	disabled={item.validated}
-																>
-																	<SelectTrigger className="w-full">
-																		<SelectValue />
-																	</SelectTrigger>
-																	<SelectContent>
-																		<SelectItem value="new">
-																			Nouveau produit
-																		</SelectItem>
-																		{item.product && (
-																			<SelectItem
-																				value={`product:${item.product.id}`}
-																			>
-																				{item.product.name}
+															{showAssociation ? (
+																<div className="space-y-1.5">
+																	<label className="text-xs font-medium uppercase text-neutral-600">
+																		Produit correspondant
+																	</label>
+																	<Select
+																		value={getAssociationValue(draft)}
+																		onValueChange={(value) =>
+																			updateAssociation(item.id, value)
+																		}
+																		disabled={item.validated}
+																	>
+																		<SelectTrigger className="w-full">
+																			<SelectValue />
+																		</SelectTrigger>
+																		<SelectContent>
+																			<SelectItem value="new">
+																				Nouveau produit
 																			</SelectItem>
-																		)}
-																		{suggestedEans.map((ean) => (
-																			<SelectItem
-																				key={ean}
-																				value={`ean:${ean}`}
-																			>
-																				EAN {ean}
-																			</SelectItem>
+																			{item.product && (
+																				<SelectItem
+																					value={`product:${item.product.id}`}
+																				>
+																					{item.product.name}
+																				</SelectItem>
+																			)}
+																			{suggestedEans.map((ean) => (
+																				<SelectItem
+																					key={ean}
+																					value={`ean:${ean}`}
+																				>
+																					Code-barres {ean}
+																				</SelectItem>
+																			))}
+																		</SelectContent>
+																	</Select>
+																	{!item.product &&
+																		(suggestedEans.length > 0 ? (
+																			<p className="text-xs text-warning-700">
+																				{suggestedEans.length > 1
+																					? `${suggestedEans.length} codes-barres proposés`
+																					: '1 code-barres proposé'}
+																			</p>
+																		) : (
+																			<p className="text-xs text-neutral-600">
+																				Il sera créé à l’ajout au stock.
+																			</p>
 																		))}
-																	</SelectContent>
-																</Select>
-																{item.product ? (
-																	<p className="text-xs text-neutral-600">
-																		Produit connu
-																		{item.product.barcode
-																			? ` · ${item.product.barcode}`
-																			: ''}
-																	</p>
-																) : suggestedEans.length > 0 ? (
-																	<p className="text-xs text-warning-700">
-																		{suggestedEans.length} EAN proposé
-																		{suggestedEans.length > 1 ? 's' : ''}
-																	</p>
-																) : (
-																	<p className="text-xs text-neutral-600">
-																		Création à la validation
-																	</p>
-																)}
-																<Input
-																	inputMode="numeric"
-																	placeholder="EAN (8 à 13 chiffres)"
-																	value={draft.selectedEan ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'selectedEan',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																/>
-															</div>
+																	<Input
+																		inputMode="numeric"
+																		aria-label="Code-barres"
+																		placeholder="Code-barres (8 à 13 chiffres)"
+																		value={draft.selectedEan ?? ''}
+																		onChange={(event) =>
+																			updateDraft(
+																				item.id,
+																				'selectedEan',
+																				event.target.value
+																			)
+																		}
+																		disabled={item.validated}
+																	/>
+																</div>
+															) : (
+																<div className="flex items-end">
+																	<button
+																		type="button"
+																		onClick={() =>
+																			setOpenAssociationIds((current) =>
+																				new Set(current).add(item.id)
+																			)
+																		}
+																		className="cursor-pointer rounded-sm text-sm font-medium text-accent-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600"
+																	>
+																		Ce n’est pas le bon produit&nbsp;?
+																	</button>
+																</div>
+															)}
 															<div className="space-y-1.5">
 																<label className="text-xs font-medium uppercase text-neutral-600">
 																	Catégorie
