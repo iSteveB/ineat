@@ -247,6 +247,10 @@ function DriveInvoiceImportPage() {
 	const [result, setResult] = useState<ValidateInvoiceResponse | null>(null);
 	const [localError, setLocalError] = useState<string | null>(null);
 	const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+	// Détails gardés montés le temps de l'animation de fermeture.
+	const [mountedDetailIds, setMountedDetailIds] = useState<ReadonlySet<string>>(
+		() => new Set()
+	);
 	const [openAssociationIds, setOpenAssociationIds] = useState<Set<string>>(
 		() => new Set()
 	);
@@ -1081,11 +1085,14 @@ function DriveInvoiceImportPage() {
 													<button
 														type="button"
 														aria-expanded={isExpanded}
-														onClick={() =>
+														onClick={() => {
+															setMountedDetailIds((current) =>
+																new Set(current).add(item.id)
+															);
 															setExpandedItemId((current) =>
 																current === item.id ? null : item.id
-															)
-														}
+															);
+														}}
 														className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 													>
 														<div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-brand-50">
@@ -1199,370 +1206,389 @@ function DriveInvoiceImportPage() {
 														</div>
 													)}
 
-												{isExpanded && (
-													<div className="border-t border-neutral-100 p-4">
-														{item.externalProductData && (
-															<dl className="mb-4 text-base">
-																<div className="flex items-start gap-3 pb-3">
-																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
-																		Produit
-																	</dt>
-																	<dd className="min-w-0 font-medium text-neutral-900">
-																		{item.externalProductData.name ??
-																			'Nom non disponible'}
-																		{item.externalProductData.brand && (
-																			<span className="font-normal text-neutral-600">
-																				{' · '}
-																				{item.externalProductData.brand}
-																			</span>
-																		)}
-																	</dd>
-																</div>
-																<div className="flex items-center gap-3 border-t border-neutral-100 py-3">
-																	<dt className="w-28 shrink-0 text-sm text-neutral-600">
-																		Nutri-Score
-																	</dt>
-																	<dd>
-																		{item.externalProductData.nutriscore ? (
-																			<NutriScore
-																				score={item.externalProductData.nutriscore}
-																				size="sm"
-																			/>
-																		) : (
-																			<span className="text-neutral-500">
-																				Non disponible
-																			</span>
-																		)}
-																	</dd>
-																</div>
-																<div className="flex items-start gap-3 border-t border-neutral-100 py-3">
-																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
-																		NOVA
-																	</dt>
-																	<dd className="min-w-0">
-																		{formatNovaShort(item.externalProductData.novascore)}
-																	</dd>
-																</div>
-																<div className="flex items-start gap-3 border-t border-neutral-100 py-3">
-																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
-																		Eco-Score
-																	</dt>
-																	<dd
-																		className={
-																			item.externalProductData.ecoscore
-																				? 'font-medium text-neutral-900'
-																				: 'text-neutral-500'
-																		}
-																	>
-																		{item.externalProductData.ecoscore ?? 'Non disponible'}
-																	</dd>
-																</div>
-																<div className="flex items-start gap-3 border-t border-neutral-100 pt-3">
-																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
-																		Ingrédients
-																	</dt>
-																	<dd className="min-w-0 leading-relaxed text-neutral-900">
-																		{item.externalProductData.ingredients ? (
-																			<HighlightedIngredients
-																				ingredients={
-																					item.externalProductData.ingredients
+												{(isExpanded || mountedDetailIds.has(item.id)) && (
+													<div
+														inert={!isExpanded}
+														onTransitionEnd={(event) => {
+															if (event.target !== event.currentTarget || isExpanded) return;
+															setMountedDetailIds((current) => {
+																const next = new Set(current);
+																next.delete(item.id);
+																return next;
+															});
+														}}
+														className={`grid transition-[grid-template-rows,opacity] duration-200 ease-in-out starting:grid-rows-[0fr] starting:opacity-0 motion-reduce:transition-none ${
+															isExpanded
+																? 'grid-rows-[1fr] opacity-100'
+																: 'grid-rows-[0fr] opacity-0'
+														}`}
+													>
+														<div className="min-h-0 overflow-hidden">
+															<div className="border-t border-neutral-100 p-4">
+																{item.externalProductData && (
+																	<dl className="mb-4 text-base">
+																		<div className="flex items-start gap-3 pb-3">
+																			<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																				Produit
+																			</dt>
+																			<dd className="min-w-0 font-medium text-neutral-900">
+																				{item.externalProductData.name ??
+																					'Nom non disponible'}
+																				{item.externalProductData.brand && (
+																					<span className="font-normal text-neutral-600">
+																						{' · '}
+																						{item.externalProductData.brand}
+																					</span>
+																				)}
+																			</dd>
+																		</div>
+																		<div className="flex items-center gap-3 border-t border-neutral-100 py-3">
+																			<dt className="w-28 shrink-0 text-sm text-neutral-600">
+																				Nutri-Score
+																			</dt>
+																			<dd>
+																				{item.externalProductData.nutriscore ? (
+																					<NutriScore
+																						score={item.externalProductData.nutriscore}
+																						size="sm"
+																					/>
+																				) : (
+																					<span className="text-neutral-500">
+																						Non disponible
+																					</span>
+																				)}
+																			</dd>
+																		</div>
+																		<div className="flex items-start gap-3 border-t border-neutral-100 py-3">
+																			<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																				NOVA
+																			</dt>
+																			<dd className="min-w-0">
+																				{formatNovaShort(item.externalProductData.novascore)}
+																			</dd>
+																		</div>
+																		<div className="flex items-start gap-3 border-t border-neutral-100 py-3">
+																			<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																				Eco-Score
+																			</dt>
+																			<dd
+																				className={
+																					item.externalProductData.ecoscore
+																						? 'font-medium text-neutral-900'
+																						: 'text-neutral-500'
 																				}
-																			/>
-																		) : (
-																			<span className="text-neutral-500">
-																				Non disponible
-																			</span>
-																		)}
-																	</dd>
-																</div>
-															</dl>
-														)}
-														<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-															<div className="space-y-1.5 md:col-span-2 lg:col-span-1">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Produit
-																</label>
-																<Input
-																	value={draft.detectedName ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'detectedName',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																/>
-															</div>
-															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Quantité
-																</label>
-																<Input
-																	type="number"
-																	min="1"
-																	step="1"
-																	value={draft.quantity ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'quantity',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																/>
-															</div>
-															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Prix unitaire TTC
-																</label>
-																<Input
-																	type="number"
-																	min="0"
-																	step="0.01"
-																	value={draft.unitPrice ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'unitPrice',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																/>
-															</div>
-															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Total ligne
-																</label>
-																<Input
-																	type="number"
-																	min="0"
-																	step="0.01"
-																	value={draft.totalPrice ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'totalPrice',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																/>
-															</div>
-															{showAssociation ? (
-																<div className="space-y-1.5">
-																	<label className="text-xs font-medium uppercase text-neutral-600">
-																		Produit correspondant
-																	</label>
-																	<Select
-																		value={getAssociationValue(draft)}
-																		onValueChange={(value) =>
-																			updateAssociation(item.id, value)
-																		}
-																		disabled={item.validated}
-																	>
-																		<SelectTrigger className="w-full">
-																			<SelectValue />
-																		</SelectTrigger>
-																		<SelectContent>
-																			<SelectItem value="new">
-																				Nouveau produit
-																			</SelectItem>
-																			{item.product && (
-																				<SelectItem
-																					value={`product:${item.product.id}`}
-																				>
-																					{item.product.name}
-																				</SelectItem>
-																			)}
-																			{suggestedEans.map((ean) => (
-																				<SelectItem
-																					key={ean}
-																					value={`ean:${ean}`}
-																				>
-																					Code-barres {ean}
-																				</SelectItem>
-																			))}
-																		</SelectContent>
-																	</Select>
-																	{!item.product &&
-																		(suggestedEans.length > 0 ? (
-																			<p className="text-xs text-warning-700">
-																				{suggestedEans.length > 1
-																					? `${suggestedEans.length} codes-barres proposés`
-																					: '1 code-barres proposé'}
-																			</p>
-																		) : (
-																			<p className="text-xs text-neutral-600">
-																				Il sera créé à l’ajout au stock.
-																			</p>
-																		))}
-																	<Input
-																		inputMode="numeric"
-																		aria-label="Code-barres"
-																		placeholder="Code-barres (8 à 13 chiffres)"
-																		value={draft.selectedEan ?? ''}
-																		onChange={(event) =>
-																			updateDraft(
-																				item.id,
-																				'selectedEan',
-																				event.target.value
-																			)
-																		}
-																		disabled={item.validated}
-																	/>
-																</div>
-															) : (
-																<div className="flex items-end">
-																	<button
-																		type="button"
-																		onClick={() =>
-																			setOpenAssociationIds((current) =>
-																				new Set(current).add(item.id)
-																			)
-																		}
-																		className="cursor-pointer rounded-sm text-sm font-medium text-accent-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600"
-																	>
-																		Ce n’est pas le bon produit&nbsp;?
-																	</button>
-																</div>
-															)}
-															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Catégorie
-																</label>
-																<Select
-																	value={draft.category ?? undefined}
-																	onValueChange={(value) =>
-																		updateDraft(item.id, 'category', value)
-																	}
-																	disabled={item.validated || categoriesLoading}
-																>
-																	<SelectTrigger className="w-full">
-																		<SelectValue placeholder="Catégorie" />
-																	</SelectTrigger>
-																	<SelectContent>
-																		{categories.map((category) => (
-																			<SelectItem
-																				key={category.id}
-																				value={category.slug}
 																			>
-																				{category.name}
-																			</SelectItem>
-																		))}
-																	</SelectContent>
-																</Select>
-															</div>
-															<div className="space-y-1.5">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Stockage
-																</label>
-																<Select
-																	value={normalizeStorageSelectValue(
-																		draft.storageLocation
-																	)}
-																	onValueChange={(value) =>
-																		updateDraft(
-																			item.id,
-																			'storageLocation',
-																			value === NO_STORAGE_VALUE ? '' : value
-																		)
-																	}
-																	disabled={item.validated}
-																>
-																	<SelectTrigger className="w-full">
-																		<SelectValue placeholder="Lieu de stockage" />
-																	</SelectTrigger>
-																	<SelectContent>
-																		<SelectItem value={NO_STORAGE_VALUE}>
-																			Non renseigné
-																		</SelectItem>
-																		{STORAGE_LOCATION_OPTIONS.map(
-																			(location) => (
-																				<SelectItem
-																					key={location}
-																					value={location}
-																				>
-																					{location}
-																				</SelectItem>
-																			)
-																		)}
-																	</SelectContent>
-																</Select>
-															</div>
-															<div className="space-y-1.5">
-													<label className="flex items-center gap-1 text-xs font-medium uppercase text-neutral-600">
-														Date de péremption
-														<ExpiryTypeInfo />
-														{draft.expiryDateSource === 'ESTIMATED' && draft.expiryDate && (
-															<span title="Date estimée" aria-label="Date estimée">
-																<Info className="size-3.5" aria-hidden="true" />
-															</span>
-														)}
-													</label>
-																<Input
-																	type="date"
-																	value={draft.expiryDate?.slice(0, 10) ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'expiryDate',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																/>
-															</div>
-															<div className="space-y-1.5 md:col-span-2">
-																<label className="text-xs font-medium uppercase text-neutral-600">
-																	Notes
-																</label>
-																<Textarea
-																	value={draft.notes ?? ''}
-																	onChange={(event) =>
-																		updateDraft(
-																			item.id,
-																			'notes',
-																			event.target.value
-																		)
-																	}
-																	disabled={item.validated}
-																	placeholder="Facultatif"
-																/>
-															</div>
-														</div>
-														<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-															<p
-																className={`text-xs ${
-																	saveState === 'error'
-																		? 'text-warning-700'
-																		: 'text-neutral-600'
-																}`}
-																role="status"
-															>
-																{saveState === 'saving' && 'Sauvegarde…'}
-																{saveState === 'saved' && 'Modifications enregistrées'}
-																{saveState === 'error' &&
-																	'Enregistrement impossible · vos modifications restent sur cet écran'}
-															</p>
-															<Button
-																type="button"
-																variant="outline"
-																size="sm"
-																disabled={
-																	item.validated || updateItemMutation.isPending
-																}
-																onClick={() => saveDraft(item)}
-															>
-																{updateItemMutation.isPending ? (
-																	<Loader2 className="mr-2 size-4 animate-spin" />
-																) : (
-																	<Save className="mr-2 size-4" />
+																				{item.externalProductData.ecoscore ?? 'Non disponible'}
+																			</dd>
+																		</div>
+																		<div className="flex items-start gap-3 border-t border-neutral-100 pt-3">
+																			<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																				Ingrédients
+																			</dt>
+																			<dd className="min-w-0 leading-relaxed text-neutral-900">
+																				{item.externalProductData.ingredients ? (
+																					<HighlightedIngredients
+																						ingredients={
+																							item.externalProductData.ingredients
+																						}
+																					/>
+																				) : (
+																					<span className="text-neutral-500">
+																						Non disponible
+																					</span>
+																				)}
+																			</dd>
+																		</div>
+																	</dl>
 																)}
-																Enregistrer la ligne
-															</Button>
+																<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+																	<div className="space-y-1.5 md:col-span-2 lg:col-span-1">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Produit
+																		</label>
+																		<Input
+																			value={draft.detectedName ?? ''}
+																			onChange={(event) =>
+																				updateDraft(
+																					item.id,
+																					'detectedName',
+																					event.target.value
+																				)
+																			}
+																			disabled={item.validated}
+																		/>
+																	</div>
+																	<div className="space-y-1.5">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Quantité
+																		</label>
+																		<Input
+																			type="number"
+																			min="1"
+																			step="1"
+																			value={draft.quantity ?? ''}
+																			onChange={(event) =>
+																				updateDraft(
+																					item.id,
+																					'quantity',
+																					event.target.value
+																				)
+																			}
+																			disabled={item.validated}
+																		/>
+																	</div>
+																	<div className="space-y-1.5">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Prix unitaire TTC
+																		</label>
+																		<Input
+																			type="number"
+																			min="0"
+																			step="0.01"
+																			value={draft.unitPrice ?? ''}
+																			onChange={(event) =>
+																				updateDraft(
+																					item.id,
+																					'unitPrice',
+																					event.target.value
+																				)
+																			}
+																			disabled={item.validated}
+																		/>
+																	</div>
+																	<div className="space-y-1.5">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Total ligne
+																		</label>
+																		<Input
+																			type="number"
+																			min="0"
+																			step="0.01"
+																			value={draft.totalPrice ?? ''}
+																			onChange={(event) =>
+																				updateDraft(
+																					item.id,
+																					'totalPrice',
+																					event.target.value
+																				)
+																			}
+																			disabled={item.validated}
+																		/>
+																	</div>
+																	{showAssociation ? (
+																		<div className="space-y-1.5">
+																			<label className="text-xs font-medium uppercase text-neutral-600">
+																				Produit correspondant
+																			</label>
+																			<Select
+																				value={getAssociationValue(draft)}
+																				onValueChange={(value) =>
+																					updateAssociation(item.id, value)
+																				}
+																				disabled={item.validated}
+																			>
+																				<SelectTrigger className="w-full">
+																					<SelectValue />
+																				</SelectTrigger>
+																				<SelectContent>
+																					<SelectItem value="new">
+																						Nouveau produit
+																					</SelectItem>
+																					{item.product && (
+																						<SelectItem
+																							value={`product:${item.product.id}`}
+																						>
+																							{item.product.name}
+																						</SelectItem>
+																					)}
+																					{suggestedEans.map((ean) => (
+																						<SelectItem
+																							key={ean}
+																							value={`ean:${ean}`}
+																						>
+																							Code-barres {ean}
+																						</SelectItem>
+																					))}
+																				</SelectContent>
+																			</Select>
+																			{!item.product &&
+																				(suggestedEans.length > 0 ? (
+																					<p className="text-xs text-warning-700">
+																						{suggestedEans.length > 1
+																							? `${suggestedEans.length} codes-barres proposés`
+																							: '1 code-barres proposé'}
+																					</p>
+																				) : (
+																					<p className="text-xs text-neutral-600">
+																						Il sera créé à l’ajout au stock.
+																					</p>
+																				))}
+																			<Input
+																				inputMode="numeric"
+																				aria-label="Code-barres"
+																				placeholder="Code-barres (8 à 13 chiffres)"
+																				value={draft.selectedEan ?? ''}
+																				onChange={(event) =>
+																					updateDraft(
+																						item.id,
+																						'selectedEan',
+																						event.target.value
+																					)
+																				}
+																				disabled={item.validated}
+																			/>
+																		</div>
+																	) : (
+																		<div className="flex items-end">
+																			<button
+																				type="button"
+																				onClick={() =>
+																					setOpenAssociationIds((current) =>
+																						new Set(current).add(item.id)
+																					)
+																				}
+																				className="cursor-pointer rounded-sm text-sm font-medium text-accent-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-600"
+																			>
+																				Ce n’est pas le bon produit&nbsp;?
+																			</button>
+																		</div>
+																	)}
+																	<div className="space-y-1.5">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Catégorie
+																		</label>
+																		<Select
+																			value={draft.category ?? undefined}
+																			onValueChange={(value) =>
+																				updateDraft(item.id, 'category', value)
+																			}
+																			disabled={item.validated || categoriesLoading}
+																		>
+																			<SelectTrigger className="w-full">
+																				<SelectValue placeholder="Catégorie" />
+																			</SelectTrigger>
+																			<SelectContent>
+																				{categories.map((category) => (
+																					<SelectItem
+																						key={category.id}
+																						value={category.slug}
+																					>
+																						{category.name}
+																					</SelectItem>
+																				))}
+																			</SelectContent>
+																		</Select>
+																	</div>
+																	<div className="space-y-1.5">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Stockage
+																		</label>
+																		<Select
+																			value={normalizeStorageSelectValue(
+																				draft.storageLocation
+																			)}
+																			onValueChange={(value) =>
+																				updateDraft(
+																					item.id,
+																					'storageLocation',
+																					value === NO_STORAGE_VALUE ? '' : value
+																				)
+																			}
+																			disabled={item.validated}
+																		>
+																			<SelectTrigger className="w-full">
+																				<SelectValue placeholder="Lieu de stockage" />
+																			</SelectTrigger>
+																			<SelectContent>
+																				<SelectItem value={NO_STORAGE_VALUE}>
+																					Non renseigné
+																				</SelectItem>
+																				{STORAGE_LOCATION_OPTIONS.map(
+																					(location) => (
+																						<SelectItem
+																							key={location}
+																							value={location}
+																						>
+																							{location}
+																						</SelectItem>
+																					)
+																				)}
+																			</SelectContent>
+																		</Select>
+																	</div>
+																	<div className="space-y-1.5">
+															<label className="flex items-center gap-1 text-xs font-medium uppercase text-neutral-600">
+																Date de péremption
+																<ExpiryTypeInfo />
+																{draft.expiryDateSource === 'ESTIMATED' && draft.expiryDate && (
+																	<span title="Date estimée" aria-label="Date estimée">
+																		<Info className="size-3.5" aria-hidden="true" />
+																	</span>
+																)}
+															</label>
+																		<Input
+																			type="date"
+																			value={draft.expiryDate?.slice(0, 10) ?? ''}
+																			onChange={(event) =>
+																				updateDraft(
+																					item.id,
+																					'expiryDate',
+																					event.target.value
+																				)
+																			}
+																			disabled={item.validated}
+																		/>
+																	</div>
+																	<div className="space-y-1.5 md:col-span-2">
+																		<label className="text-xs font-medium uppercase text-neutral-600">
+																			Notes
+																		</label>
+																		<Textarea
+																			value={draft.notes ?? ''}
+																			onChange={(event) =>
+																				updateDraft(
+																					item.id,
+																					'notes',
+																					event.target.value
+																				)
+																			}
+																			disabled={item.validated}
+																			placeholder="Facultatif"
+																		/>
+																	</div>
+																</div>
+																<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+																	<p
+																		className={`text-xs ${
+																			saveState === 'error'
+																				? 'text-warning-700'
+																				: 'text-neutral-600'
+																		}`}
+																		role="status"
+																	>
+																		{saveState === 'saving' && 'Sauvegarde…'}
+																		{saveState === 'saved' && 'Modifications enregistrées'}
+																		{saveState === 'error' &&
+																			'Enregistrement impossible · vos modifications restent sur cet écran'}
+																	</p>
+																	<Button
+																		type="button"
+																		variant="outline"
+																		size="sm"
+																		disabled={
+																			item.validated || updateItemMutation.isPending
+																		}
+																		onClick={() => saveDraft(item)}
+																	>
+																		{updateItemMutation.isPending ? (
+																			<Loader2 className="mr-2 size-4 animate-spin" />
+																		) : (
+																			<Save className="mr-2 size-4" />
+																		)}
+																		Enregistrer la ligne
+																	</Button>
+																</div>
+															</div>
 														</div>
 													</div>
 												)}
