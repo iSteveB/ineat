@@ -54,7 +54,7 @@ import {
 	requiresInvoiceItemCorrection,
 	sortInvoiceItemsForReview
 } from '@/features/invoice/invoiceReview';
-import { formatNovaScore } from '@/utils/productPresentation';
+import NutriScore from '@/components/common/NutriScore';
 import { ExpiryTypeInfo } from "@/components/common/ExpiryTypeInfo";
 
 export const Route = createFileRoute('/app/inventory/add/drive')({
@@ -220,8 +220,19 @@ const getReviewStatus = (
 	return null;
 };
 
-const formatProductScore = (score?: string | null): string =>
-	score ?? 'Information non disponible';
+const NOVA_SHORT_LABELS: Record<string, string> = {
+	GROUP_1: 'Non transformé',
+	GROUP_2: 'Ingrédient culinaire',
+	GROUP_3: 'Transformé',
+	GROUP_4: 'Ultra-transformé',
+};
+
+const formatNovaShort = (score?: string | null): string => {
+	if (!score) return 'Non disponible';
+	const group = score.replace('GROUP_', '');
+	const label = NOVA_SHORT_LABELS[score];
+	return label ? `${group} · ${label}` : score;
+};
 
 function DriveInvoiceImportPage() {
 	const navigate = useNavigate();
@@ -1056,14 +1067,14 @@ function DriveInvoiceImportPage() {
 												}`}
 												data-state={isSelected ? 'selected' : undefined}
 											>
-												<div className="flex items-stretch">
-													<label className="flex w-12 shrink-0 cursor-pointer items-center justify-center border-r border-neutral-100">
+												<div className="flex items-center gap-1 py-2 pl-1 pr-2 transition-colors hover:bg-neutral-50">
+													<label className="flex size-11 shrink-0 cursor-pointer items-center justify-center">
 														<input
 															type="checkbox"
 															checked={isSelected}
 															disabled={item.validated}
 															onChange={() => toggleItem(item.id)}
-															className="size-4"
+															className="size-5 accent-accent-600"
 															aria-label={`Sélectionner ${draft.detectedName}`}
 														/>
 													</label>
@@ -1075,58 +1086,55 @@ function DriveInvoiceImportPage() {
 																current === item.id ? null : item.id
 															)
 														}
-														className="flex min-w-0 flex-1 items-center gap-3 p-3 text-left transition-colors hover:bg-neutral-50 sm:gap-4"
+														className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
 													>
-														<div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50">
+														<div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-brand-50">
 															{imageUrl ? (
 																<img
 																	src={imageUrl}
-																	alt={draft.detectedName}
+																	alt=""
 																	className="size-full object-cover"
 																/>
 															) : (
-																<Package className="size-6 text-neutral-600" />
+																<Package className="size-6 text-brand-800" />
 															)}
 														</div>
-														<div className="min-w-0 flex-1">
-															<p className="truncate font-semibold text-neutral-900">
+														<div className="flex min-w-0 flex-1 flex-col gap-1.5">
+															<p
+																className={`font-semibold leading-tight text-neutral-900 ${
+																	isExpanded ? '' : 'line-clamp-2'
+																}`}
+															>
 																{draft.detectedName || 'Produit sans nom'}
 															</p>
 															{reviewStatus && (
 																<Badge
 																	variant={reviewStatus.variant}
-																	className="mt-2 w-fit"
+																	className="w-fit"
 																>
 																	{reviewStatus.variant === 'warning' && (
-																		<AlertTriangle className="mr-1 size-3" />
+																		<AlertTriangle className="mr-1 size-3.5" />
 																	)}
 																	{reviewStatus.label}
 																</Badge>
 															)}
 														</div>
-														<div className="grid shrink-0 grid-cols-2 gap-2 text-right sm:min-w-44">
-															<div>
-																<p className="text-xs uppercase text-neutral-600">
-																	Qté
-																</p>
-																<p className="font-semibold text-neutral-900">
-																	{draft.quantity ?? '-'}
-																</p>
-															</div>
-															<div>
-																<p className="text-xs uppercase text-neutral-600">
-																	Prix
-																</p>
-																<p className="font-semibold text-neutral-900">
-																	{formatOptionalCurrency(getLineTotal(draft))}
-																</p>
-															</div>
+														<div className="shrink-0 px-1 text-right">
+															<p className="text-lg font-bold text-neutral-900">
+																{formatOptionalCurrency(getLineTotal(draft))}
+															</p>
+															<p className="text-sm text-neutral-600">
+																Qté {draft.quantity ?? '-'}
+															</p>
 														</div>
-														<ChevronDown
-															className={`size-5 shrink-0 text-neutral-600 transition-transform ${
-																isExpanded ? 'rotate-180' : ''
-															}`}
-														/>
+														<span className="flex size-11 shrink-0 items-center justify-center text-neutral-600">
+															<ChevronDown
+																aria-hidden="true"
+																className={`size-5 transition-transform ${
+																	isExpanded ? 'rotate-180' : ''
+																}`}
+															/>
+														</span>
 													</button>
 												</div>
 
@@ -1194,74 +1202,80 @@ function DriveInvoiceImportPage() {
 												{isExpanded && (
 													<div className="border-t border-neutral-100 p-4">
 														{item.externalProductData && (
-															<div className="mb-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
-																<div className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
-																	<div>
-																		<span className="text-neutral-600">
-																			Nom
-																		</span>
-																		<p className="font-medium text-neutral-900">
-																			{item.externalProductData.name ??
-																				'Information non disponible'}
-																		</p>
-																	</div>
-																	<div>
-																		<span className="text-neutral-600">
-																			Marque
-																		</span>
-																		<p className="font-medium text-neutral-900">
-																			{item.externalProductData.brand ??
-																				'Information non disponible'}
-																		</p>
-																	</div>
-																	<div>
-																		<span className="text-neutral-600">
-																			Nutri-Score
-																		</span>
-																		<p className="font-medium text-neutral-900">
-																			{formatProductScore(
-																				item.externalProductData.nutriscore
-																			)}
-																		</p>
-																	</div>
-																	<div>
-																		<span className="text-neutral-600">
-																			Eco-Score
-																		</span>
-																		<p className="font-medium text-neutral-900">
-																			{formatProductScore(
-																				item.externalProductData.ecoscore
-																			)}
-																		</p>
-																	</div>
-																	<div>
-																		<span className="text-neutral-600">
-																			NOVA
-																		</span>
-																		<p className="font-medium text-neutral-900">
-																			{formatNovaScore(
-																				item.externalProductData.novascore
-																			)}
-																		</p>
-																	</div>
-																	<div className="sm:col-span-2 lg:col-span-3">
-																		<span className="text-neutral-600">
-																			Ingrédients
-																		</span>
-																		<p className="font-medium text-neutral-900">
-																			{item.externalProductData.ingredients ? (
-																				<HighlightedIngredients
-																					ingredients={
-																						item.externalProductData.ingredients
-																					}
-																				/>
-																			) : (
-																				'Information non disponible'
-																			)}
-																		</p>
-																	</div>
+															<dl className="mb-4 text-base">
+																<div className="flex items-start gap-3 pb-3">
+																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																		Produit
+																	</dt>
+																	<dd className="min-w-0 font-medium text-neutral-900">
+																		{item.externalProductData.name ??
+																			'Nom non disponible'}
+																		{item.externalProductData.brand && (
+																			<span className="font-normal text-neutral-600">
+																				{' · '}
+																				{item.externalProductData.brand}
+																			</span>
+																		)}
+																	</dd>
 																</div>
-															</div>
+																<div className="flex items-center gap-3 border-t border-neutral-100 py-3">
+																	<dt className="w-28 shrink-0 text-sm text-neutral-600">
+																		Nutri-Score
+																	</dt>
+																	<dd>
+																		{item.externalProductData.nutriscore ? (
+																			<NutriScore
+																				score={item.externalProductData.nutriscore}
+																				size="sm"
+																			/>
+																		) : (
+																			<span className="text-neutral-500">
+																				Non disponible
+																			</span>
+																		)}
+																	</dd>
+																</div>
+																<div className="flex items-start gap-3 border-t border-neutral-100 py-3">
+																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																		NOVA
+																	</dt>
+																	<dd className="min-w-0">
+																		{formatNovaShort(item.externalProductData.novascore)}
+																	</dd>
+																</div>
+																<div className="flex items-start gap-3 border-t border-neutral-100 py-3">
+																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																		Eco-Score
+																	</dt>
+																	<dd
+																		className={
+																			item.externalProductData.ecoscore
+																				? 'font-medium text-neutral-900'
+																				: 'text-neutral-500'
+																		}
+																	>
+																		{item.externalProductData.ecoscore ?? 'Non disponible'}
+																	</dd>
+																</div>
+																<div className="flex items-start gap-3 border-t border-neutral-100 pt-3">
+																	<dt className="w-28 shrink-0 pt-0.5 text-sm text-neutral-600">
+																		Ingrédients
+																	</dt>
+																	<dd className="min-w-0 leading-relaxed text-neutral-900">
+																		{item.externalProductData.ingredients ? (
+																			<HighlightedIngredients
+																				ingredients={
+																					item.externalProductData.ingredients
+																				}
+																			/>
+																		) : (
+																			<span className="text-neutral-500">
+																				Non disponible
+																			</span>
+																		)}
+																	</dd>
+																</div>
+															</dl>
 														)}
 														<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 															<div className="space-y-1.5 md:col-span-2 lg:col-span-1">
