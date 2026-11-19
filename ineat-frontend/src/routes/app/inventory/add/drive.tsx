@@ -11,7 +11,9 @@ import {
 	ChefHat,
 	FileText,
 	Loader2,
+	Minus,
 	Package,
+	Plus,
 	Save,
 	Info,
 	RotateCcw,
@@ -126,6 +128,12 @@ const getLineTotal = (draft: InvoiceItemDraft): number | undefined =>
 		: typeof draft.quantity === 'number' && typeof draft.unitPrice === 'number'
 			? roundCurrency(draft.quantity * draft.unitPrice)
 			: undefined;
+
+const getUnitPrice = (draft: InvoiceItemDraft): number | undefined => {
+	if (typeof draft.unitPrice === 'number') return draft.unitPrice;
+	if (typeof draft.totalPrice !== 'number') return undefined;
+	return roundCurrency(draft.totalPrice / normalizeDraftQuantity(draft.quantity));
+};
 
 const normalizeDraftQuantity = (value: unknown): number => {
 	const numericValue =
@@ -727,6 +735,34 @@ function DriveInvoiceImportPage() {
 		});
 	};
 
+	// Sélecteur − / + de la carte : la quantité reste ≥ 1 et le total suit
+	// le prix unitaire (déduit du total quand le ticket ne le donne pas).
+	const stepQuantity = (itemId: string, delta: 1 | -1) => {
+		setDrafts((current) => {
+			const currentDraft = current[itemId];
+			const quantity = normalizeDraftQuantity(currentDraft.quantity);
+			const nextQuantity = Math.max(1, quantity + delta);
+			if (nextQuantity === quantity) return current;
+
+			const unitPrice = getUnitPrice(currentDraft);
+			const nextDraft = {
+				...currentDraft,
+				quantity: nextQuantity,
+				unitPrice,
+				totalPrice:
+					typeof unitPrice === 'number'
+						? roundCurrency(nextQuantity * unitPrice)
+						: undefined
+			};
+			scheduleDraftAutosave(itemId, nextDraft);
+
+			return {
+				...current,
+				[itemId]: nextDraft
+			};
+		});
+	};
+
 	const updateAssociation = (itemId: string, value: string) => {
 		setDrafts((current) => {
 			const draft = current[itemId];
@@ -1060,6 +1096,8 @@ function DriveInvoiceImportPage() {
 											needsCorrection ||
 											openAssociationIds.has(item.id);
 										const saveState = saveStates[item.id] ?? 'idle';
+										const quantity = normalizeDraftQuantity(draft.quantity);
+										const unitPrice = getUnitPrice(draft);
 
 										return (
 											<div
@@ -1071,78 +1109,114 @@ function DriveInvoiceImportPage() {
 												}`}
 												data-state={isSelected ? 'selected' : undefined}
 											>
-												<div className="flex items-center gap-1 py-2 pl-1 pr-2 transition-colors hover:bg-neutral-50">
-													<label className="flex size-11 shrink-0 cursor-pointer items-center justify-center">
-														<input
-															type="checkbox"
-															checked={isSelected}
-															disabled={item.validated}
-															onChange={() => toggleItem(item.id)}
-															className="size-5 accent-accent-600"
-															aria-label={`Sélectionner ${draft.detectedName}`}
-														/>
-													</label>
-													<button
-														type="button"
-														aria-expanded={isExpanded}
-														onClick={() => {
-															setMountedDetailIds((current) =>
-																new Set(current).add(item.id)
-															);
-															setExpandedItemId((current) =>
-																current === item.id ? null : item.id
-															);
-														}}
-														className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-													>
-														<div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-brand-50">
-															{imageUrl ? (
-																<img
-																	src={imageUrl}
-																	alt=""
-																	className="size-full object-cover"
-																/>
-															) : (
-																<Package className="size-6 text-brand-800" />
-															)}
-														</div>
-														<div className="flex min-w-0 flex-1 flex-col gap-1.5">
-															<p
-																className={`font-semibold leading-tight text-neutral-900 ${
-																	isExpanded ? '' : 'line-clamp-2'
-																}`}
-															>
-																{draft.detectedName || 'Produit sans nom'}
-															</p>
-															{reviewStatus && (
-																<Badge
-																	variant={reviewStatus.variant}
-																	className="w-fit"
+												<div className="transition-colors hover:bg-neutral-50">
+													<div className="flex items-center gap-1 pb-1 pl-1 pr-2 pt-2">
+														<label className="flex size-11 shrink-0 cursor-pointer items-center justify-center">
+															<input
+																type="checkbox"
+																checked={isSelected}
+																disabled={item.validated}
+																onChange={() => toggleItem(item.id)}
+																className="size-5 accent-accent-600"
+																aria-label={`Sélectionner ${draft.detectedName}`}
+															/>
+														</label>
+														<button
+															type="button"
+															aria-expanded={isExpanded}
+															onClick={() => {
+																setMountedDetailIds((current) =>
+																	new Set(current).add(item.id)
+																);
+																setExpandedItemId((current) =>
+																	current === item.id ? null : item.id
+																);
+															}}
+															className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+														>
+															<div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-brand-50">
+																{imageUrl ? (
+																	<img
+																		src={imageUrl}
+																		alt=""
+																		className="size-full object-cover"
+																	/>
+																) : (
+																	<Package className="size-6 text-brand-800" />
+																)}
+															</div>
+															<div className="flex min-w-0 flex-1 flex-col gap-1.5">
+																<p
+																	className={`font-semibold leading-tight text-neutral-900 ${
+																		isExpanded ? '' : 'line-clamp-2'
+																	}`}
 																>
-																	{reviewStatus.variant === 'warning' && (
-																		<AlertTriangle className="mr-1 size-3.5" />
-																	)}
-																	{reviewStatus.label}
-																</Badge>
-															)}
+																	{draft.detectedName || 'Produit sans nom'}
+																</p>
+																{reviewStatus && (
+																	<Badge
+																		variant={reviewStatus.variant}
+																		className="w-fit"
+																	>
+																		{reviewStatus.variant === 'warning' && (
+																			<AlertTriangle className="mr-1 size-3.5" />
+																		)}
+																		{reviewStatus.label}
+																	</Badge>
+																)}
+															</div>
+															<span className="flex size-11 shrink-0 items-center justify-center text-neutral-600">
+																<ChevronDown
+																	aria-hidden="true"
+																	className={`size-5 transition-transform ${
+																		isExpanded ? 'rotate-180' : ''
+																	}`}
+																/>
+															</span>
+														</button>
+													</div>
+													<div className="flex items-center gap-2 pb-3 pl-30 pr-4">
+														<div
+															role="group"
+															aria-label={`Quantité de ${draft.detectedName || 'ce produit'}`}
+															className="flex items-center gap-1"
+														>
+															<button
+																type="button"
+																onClick={() => stepQuantity(item.id, -1)}
+																disabled={item.validated || quantity <= 1}
+																aria-label="Retirer un"
+																className="flex size-10 items-center justify-center rounded-md border border-neutral-200 bg-surface text-neutral-900 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500"
+															>
+																<Minus aria-hidden="true" className="size-4" />
+															</button>
+															<output
+																aria-live="polite"
+																className="w-8 text-center font-semibold text-neutral-900"
+															>
+																{quantity}
+															</output>
+															<button
+																type="button"
+																onClick={() => stepQuantity(item.id, 1)}
+																disabled={item.validated}
+																aria-label="Ajouter un"
+																className="flex size-10 items-center justify-center rounded-md border border-neutral-200 bg-surface text-neutral-900 transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500"
+															>
+																<Plus aria-hidden="true" className="size-4" />
+															</button>
 														</div>
-														<div className="shrink-0 px-1 text-right">
+														<div className="ml-auto text-right">
 															<p className="text-lg font-bold text-neutral-900">
 																{formatOptionalCurrency(getLineTotal(draft))}
 															</p>
-															<p className="text-sm text-neutral-600">
-																Qté {draft.quantity ?? '-'}
-															</p>
+															{quantity > 1 && typeof unitPrice === 'number' && (
+																<p className="text-sm text-neutral-600">
+																	{formatCurrency(unitPrice)} / u
+																</p>
+															)}
 														</div>
-														<span className="flex size-11 shrink-0 items-center justify-center text-neutral-600">
-															<ChevronDown
-																aria-hidden="true"
-																className={`size-5 transition-transform ${
-																	isExpanded ? 'rotate-180' : ''
-																}`}
-															/>
-														</span>
-													</button>
+													</div>
 												</div>
 
 												{canChooseCreation && (
@@ -1312,25 +1386,6 @@ function DriveInvoiceImportPage() {
 																				updateDraft(
 																					item.id,
 																					'detectedName',
-																					event.target.value
-																				)
-																			}
-																			disabled={item.validated}
-																		/>
-																	</div>
-																	<div className="space-y-1.5">
-																		<label className="text-xs font-medium uppercase text-neutral-600">
-																			Quantité
-																		</label>
-																		<Input
-																			type="number"
-																			min="1"
-																			step="1"
-																			value={draft.quantity ?? ''}
-																			onChange={(event) =>
-																				updateDraft(
-																					item.id,
-																					'quantity',
 																					event.target.value
 																				)
 																			}
